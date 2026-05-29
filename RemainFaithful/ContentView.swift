@@ -18,28 +18,6 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Group tab (placeholder)
-
-struct GroupView: View {
-    var body: some View {
-        ZStack {
-            Color.rfNavy.ignoresSafeArea()
-            VStack(spacing: 14) {
-                Image(systemName: "person.2.fill")
-                    .font(.system(size: 38))
-                    .foregroundStyle(Color.rfGold.opacity(0.55))
-                Text("Your Group")
-                    .font(.system(size: 20, weight: .bold, design: .serif))
-                    .foregroundStyle(.white)
-                Text("Coming soon")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.white.opacity(0.38))
-            }
-        }
-        .toolbar(.hidden, for: .navigationBar)
-    }
-}
-
 // MARK: - Settings tab (placeholder)
 
 struct SettingsView: View {
