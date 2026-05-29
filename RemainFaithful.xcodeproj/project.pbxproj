@@ -11,33 +11,7 @@
 		CF1000000000000000000011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000C /* ContentView.swift */; };
 		CF1000000000000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000D /* Assets.xcassets */; };
 		CF1000000000000000000013 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000E /* Preview Assets.xcassets */; };
-		CF100000000000000000001F /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000001B /* SampleHandler.swift */; };
-		CF1000000000000000000028 /* RemainFaithfulBroadcast.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		CF100000000000000000002A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CF1000000000000000000009 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = CF1000000000000000000023;
-			remoteInfo = RemainFaithfulBroadcast;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		CF1000000000000000000027 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				CF1000000000000000000028 /* RemainFaithfulBroadcast.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		CF100000000000000000000B /* RemainFaithfulApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainFaithfulApp.swift; sourceTree = "<group>"; };
@@ -45,22 +19,11 @@
 		CF100000000000000000000D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CF100000000000000000000E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CF100000000000000000000F /* RemainFaithful.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RemainFaithful.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulBroadcast.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF100000000000000000001B /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
-		CF100000000000000000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF100000000000000000001D /* RemainFaithful.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithful.entitlements; sourceTree = "<group>"; };
-		CF100000000000000000001E /* RemainFaithfulBroadcast.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulBroadcast.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		CF1000000000000000000016 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CF1000000000000000000022 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -74,7 +37,6 @@
 			isa = PBXGroup;
 			children = (
 				CF1000000000000000000017 /* RemainFaithful */,
-				CF100000000000000000001A /* RemainFaithfulBroadcast */,
 				CF1000000000000000000008 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -83,7 +45,6 @@
 			isa = PBXGroup;
 			children = (
 				CF100000000000000000000F /* RemainFaithful.app */,
-				CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,16 +69,6 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		CF100000000000000000001A /* RemainFaithfulBroadcast */ = {
-			isa = PBXGroup;
-			children = (
-				CF100000000000000000001B /* SampleHandler.swift */,
-				CF100000000000000000001C /* Info.plist */,
-				CF100000000000000000001E /* RemainFaithfulBroadcast.entitlements */,
-			);
-			path = RemainFaithfulBroadcast;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -128,34 +79,15 @@
 				CF1000000000000000000014 /* Sources */,
 				CF1000000000000000000015 /* Resources */,
 				CF1000000000000000000016 /* Frameworks */,
-				CF1000000000000000000027 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				CF1000000000000000000029 /* PBXTargetDependency */,
 			);
 			name = RemainFaithful;
 			productName = RemainFaithful;
 			productReference = CF100000000000000000000F /* RemainFaithful.app */;
 			productType = "com.apple.product-type.application";
-		};
-		CF1000000000000000000023 /* RemainFaithfulBroadcast */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CF1000000000000000000024 /* Build configuration list for PBXNativeTarget "RemainFaithfulBroadcast" */;
-			buildPhases = (
-				CF1000000000000000000020 /* Sources */,
-				CF1000000000000000000021 /* Resources */,
-				CF1000000000000000000022 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = RemainFaithfulBroadcast;
-			productName = RemainFaithfulBroadcast;
-			productReference = CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */;
-			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -168,9 +100,6 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					CF100000000000000000000A = {
-						CreatedOnToolsVersion = 15.0;
-					};
-					CF1000000000000000000023 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -189,7 +118,6 @@
 			projectRoot = "";
 			targets = (
 				CF100000000000000000000A /* RemainFaithful */,
-				CF1000000000000000000023 /* RemainFaithfulBroadcast */,
 			);
 		};
 /* End PBXProject section */
@@ -201,13 +129,6 @@
 			files = (
 				CF1000000000000000000013 /* Preview Assets.xcassets in Resources */,
 				CF1000000000000000000012 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CF1000000000000000000021 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,23 +144,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CF1000000000000000000020 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CF100000000000000000001F /* SampleHandler.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		CF1000000000000000000029 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = CF1000000000000000000023 /* RemainFaithfulBroadcast */;
-			targetProxy = CF100000000000000000002A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		CF1000000000000000000003 /* Debug */ = {
@@ -414,50 +319,6 @@
 			};
 			name = Release;
 		};
-		CF1000000000000000000025 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
-				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.broadcast;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		CF1000000000000000000026 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
-				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.broadcast;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -475,15 +336,6 @@
 			buildConfigurations = (
 				CF1000000000000000000005 /* Debug */,
 				CF1000000000000000000006 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CF1000000000000000000024 /* Build configuration list for PBXNativeTarget "RemainFaithfulBroadcast" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CF1000000000000000000025 /* Debug */,
-				CF1000000000000000000026 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
