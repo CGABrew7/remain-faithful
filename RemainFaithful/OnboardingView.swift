@@ -18,6 +18,8 @@ enum AccountabilityType {
 
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("userName")  private var storedName  = ""
+    @AppStorage("userEmail") private var storedEmail = ""
     @State private var step = 0
     @State private var selectedType: AccountabilityType?
     @State private var name  = ""
@@ -51,6 +53,8 @@ struct OnboardingView: View {
                         .transition(.push(from: .trailing))
                     } else {
                         CreateAccountStep(name: $name, email: $email) {
+                            storedName  = name
+                            storedEmail = email
                             hasCompletedOnboarding = true
                         }
                         .transition(.push(from: .trailing))

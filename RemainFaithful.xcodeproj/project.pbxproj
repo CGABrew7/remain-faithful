@@ -12,6 +12,7 @@
 		CF1000000000000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000D /* Assets.xcassets */; };
 		CF1000000000000000000013 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000E /* Preview Assets.xcassets */; };
 		CF1000000000000000000030 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000002F /* OnboardingView.swift */; };
+		CF1000000000000000000032 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000031 /* DashboardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		CF100000000000000000000F /* RemainFaithful.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RemainFaithful.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF100000000000000000001D /* RemainFaithful.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithful.entitlements; sourceTree = "<group>"; };
 		CF100000000000000000002F /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		CF1000000000000000000031 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 				CF100000000000000000000B /* RemainFaithfulApp.swift */,
 				CF100000000000000000000C /* ContentView.swift */,
 				CF100000000000000000002F /* OnboardingView.swift */,
+				CF1000000000000000000031 /* DashboardView.swift */,
 				CF100000000000000000000D /* Assets.xcassets */,
 				CF100000000000000000001D /* RemainFaithful.entitlements */,
 				CF1000000000000000000018 /* Preview Content */,
@@ -145,6 +148,7 @@
 				CF1000000000000000000011 /* ContentView.swift in Sources */,
 				CF1000000000000000000010 /* RemainFaithfulApp.swift in Sources */,
 				CF1000000000000000000030 /* OnboardingView.swift in Sources */,
+				CF1000000000000000000032 /* DashboardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
