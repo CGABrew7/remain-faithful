@@ -14,13 +14,16 @@ NC='\033[0m'
 
 # Patterns that strongly indicate a real secret value.
 # Each entry is a grep -E extended-regex.
+# Note: use [[:space:]] not \s (BSD grep / macOS compatibility).
+#       Put - at end of character classes to avoid range errors.
+#       All patterns passed with -e to avoid -- prefix ambiguity.
 SECRET_PATTERNS=(
   # Stripe
   'sk_(test|live)_[A-Za-z0-9]{24,}'
   'rk_(test|live)_[A-Za-z0-9]{24,}'
   'whsec_[A-Za-z0-9+/]{32,}'
   # Anthropic / Claude
-  'sk-ant-[A-Za-z0-9\-_]{20,}'
+  'sk-ant-[A-Za-z0-9_-]{20,}'
   # SendGrid
   'SG\.[A-Za-z0-9_-]{22,}\.[A-Za-z0-9_-]{43,}'
   # AWS
@@ -31,9 +34,9 @@ SECRET_PATTERNS=(
   # Fly.io deploy tokens
   'fm2_[A-Za-z0-9+/=]{40,}'
   # Generic high-entropy assignments (e.g. JWT_SECRET=<64-char hex>)
-  '(SECRET|TOKEN|PASSWORD|API_KEY|PRIVATE_KEY)\s*[:=]\s*["'"'"']?[A-Za-z0-9+/\-_]{32,}["'"'"']?'
-  # PEM private keys
-  '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'
+  '(SECRET|TOKEN|PASSWORD|API_KEY|PRIVATE_KEY)[[:space:]]*[:=][[:space:]]*[A-Za-z0-9+/_-]{32,}'
+  # PEM private keys (use [^ ] trick to avoid leading-dash option confusion)
+  'BEGIN[[:space:]]+(RSA[[:space:]]+|EC[[:space:]]+|DSA[[:space:]]+|OPENSSH[[:space:]]+)?PRIVATE[[:space:]]+KEY'
 )
 
 STAGED=$(git diff --cached --name-only --diff-filter=ACM)
@@ -42,12 +45,15 @@ STAGED=$(git diff --cached --name-only --diff-filter=ACM)
 FOUND=0
 
 for file in $STAGED; do
-  # Skip binary files and the hook itself
+  # Skip the hook scripts themselves
   [[ "$file" == ".githooks/"* ]] && continue
-  git show ":$file" 2>/dev/null | file - | grep -q "binary" && continue
+
+  # Skip binary files
+  content=$(git show ":$file" 2>/dev/null) || continue
+  echo "$content" | file - | grep -q "binary" && continue
 
   for pattern in "${SECRET_PATTERNS[@]}"; do
-    match=$(git show ":$file" 2>/dev/null | grep -En "$pattern" | head -3 || true)
+    match=$(echo "$content" | grep -En -e "$pattern" | head -3 || true)
     if [ -n "$match" ]; then
       echo -e "${RED}[secret-scan] Possible secret in staged file: $file${NC}"
       echo -e "${YELLOW}  Pattern : $pattern${NC}"
