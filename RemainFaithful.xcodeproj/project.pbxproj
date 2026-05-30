@@ -56,6 +56,27 @@
 		};
 /* End PBXCopyFilesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		CF3000000000000000000010 /* Strip Broadcast Extension on Simulator */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Strip Broadcast Extension on Simulator";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# ReplayKit broadcast upload extensions cannot run on the iOS Simulator.\n# Remove the appex from the built product so simulator installs stay clean.\nif [[ \"$PLATFORM_NAME\" == iphonesimulator ]]; then\n    APPEX=\"${BUILT_PRODUCTS_DIR}/${PLUGINS_FOLDER_PATH}/RemainFaithfulBroadcast.appex\"\n    [ -d \"$APPEX\" ] && rm -rf \"$APPEX\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXFileReference section */
 		CF100000000000000000000B /* RemainFaithfulApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainFaithfulApp.swift; sourceTree = "<group>"; };
 		CF100000000000000000000C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -179,6 +200,7 @@
 				CF1000000000000000000015 /* Resources */,
 				CF1000000000000000000016 /* Frameworks */,
 				CF1000000000000000000027 /* Embed Foundation Extensions */,
+				CF3000000000000000000010 /* Strip Broadcast Extension on Simulator */,
 			);
 			buildRules = (
 			);
