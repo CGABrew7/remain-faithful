@@ -1,4 +1,4 @@
-# Xcode
+# ── Xcode ────────────────────────────────────────────────────────────────────
 *.xcuserstate
 xcuserdata/
 *.xccheckout
@@ -9,26 +9,35 @@ DerivedData/
 *.dSYM.zip
 *.dSYM
 
-# Build output
+# ── Build output ──────────────────────────────────────────────────────────────
 build/
 *.o
 *.a
 
-# Go compiled binaries
+# ── Go ───────────────────────────────────────────────────────────────────────
 backend/server
 backend/*.test
 
-# macOS
+# ── macOS ────────────────────────────────────────────────────────────────────
 .DS_Store
 .AppleDouble
 .LSOverride
+._*
+.Spotlight-V100
+.Trashes
 
-# Node / website
+# ── Node / website ───────────────────────────────────────────────────────────
 node_modules/
 .next/
 .vercel/
-website/.env*.local
+*.tsbuildinfo
 
-# Env files
+# ── Environment & secrets — never commit real values ─────────────────────────
 .env
 .env.local
+.env.*.local
+backend/.env
+backend/.env.*
+website/.env
+website/.env.*
+!**/.env.example
