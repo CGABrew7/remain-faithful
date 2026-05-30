@@ -301,6 +301,10 @@ struct LoginView: View {
     }
 
     private func handleGoogleSignIn() {
+        guard GIDSignIn.sharedInstance.configuration != nil else {
+            errorMsg = "Google Sign In is not available"
+            return
+        }
         guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let rootVC = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController else { return }
         isLoading = true

@@ -52,6 +52,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        configureGoogleSignIn()
         // TODO: migrate to BGAppRefreshTask (deprecated in iOS 13).
         // Add "com.remainfaithful.app.fetch" to BGTaskSchedulerPermittedIdentifiers in
         // Xcode → Target → Info, then replace with BGTaskScheduler.shared.register + submit.
@@ -62,6 +63,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             handlePayload(payload)
         }
         return true
+    }
+
+    private func configureGoogleSignIn() {
+        guard GIDSignIn.sharedInstance.configuration == nil else { return }
+        if let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+           let plist = NSDictionary(contentsOfFile: path),
+           let clientID = plist["CLIENT_ID"] as? String {
+            GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+        }
     }
 
     // MARK: - Google Sign In URL handling
