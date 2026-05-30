@@ -75,7 +75,7 @@ export default function Footer() {
             {/* Social */}
             <div className="flex items-center gap-3 mt-6">
               <a
-                href="https://github.com/remainfaithful"
+                href="https://github.com/CGABrew7/remain-faithful"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-lg bg-[#162235] border border-[#1E3050] flex items-center justify-center text-[#8A9BB0] hover:text-[#F0EDE8] hover:border-[#C9A84C] transition-colors"

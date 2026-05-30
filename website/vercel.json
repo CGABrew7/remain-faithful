@@ -3,6 +3,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "env": {
-    "BACKEND_URL": "@backend-url"
+    "BACKEND_URL": "https://api.remainfaithful.com"
   }
 }

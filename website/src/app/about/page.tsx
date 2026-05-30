@@ -1,7 +1,14 @@
-'use client'
-
-import { useState } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import ContactForm from '@/components/ContactForm'
+
+export const metadata: Metadata = {
+  title: 'About',
+  description:
+    'Learn about the mission, values, and team behind Remain Faithful — free accountability software built on trust, not surveillance.',
+}
+
+const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
 
 export default function AboutPage() {
   return (
@@ -126,7 +133,7 @@ export default function AboutPage() {
                 Security researchers, privacy advocates, and curious developers are all welcome to inspect, fork, and contribute.
               </p>
               <a
-                href="https://github.com/remainfaithful"
+                href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-[#1E3050] bg-[#162235] text-[#F0EDE8] text-sm font-semibold hover:border-[#C9A84C]/50 transition-colors"
@@ -227,7 +234,7 @@ export default function AboutPage() {
             <div className="flex-1 p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
               <p className="text-xs text-[#8A9BB0] uppercase tracking-wide mb-1">Bug Reports</p>
               <a
-                href="https://github.com/remainfaithful"
+                href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#C9A84C] text-sm hover:underline"
@@ -239,109 +246,5 @@ export default function AboutPage() {
         </div>
       </section>
     </>
-  )
-}
-
-function ContactForm() {
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
-
-  function update(key: string, val: string) {
-    setForm((f) => ({ ...f, [key]: val }))
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, type: 'general' }),
-      })
-      if (!res.ok) throw new Error('failed')
-      setSubmitted(true)
-    } catch {
-      setError('Something went wrong. Please try again or email us directly.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (submitted) {
-    return (
-      <div className="text-center py-12 rounded-2xl border border-[#C9A84C]/20 bg-[#162235]">
-        <div className="text-4xl mb-4">✅</div>
-        <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-3">Message Sent</h3>
-        <p className="text-[#8A9BB0] text-sm">We&apos;ll get back to you within 2–3 business days.</p>
-      </div>
-    )
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="grid sm:grid-cols-2 gap-5">
-        <div>
-          <label className="block text-sm font-medium text-[#F0EDE8] mb-2">Name <span className="text-[#C9A84C]">*</span></label>
-          <input
-            type="text"
-            required
-            value={form.name}
-            onChange={(e) => update('name', e.target.value)}
-            placeholder="Your name"
-            className="input-field"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#F0EDE8] mb-2">Email <span className="text-[#C9A84C]">*</span></label>
-          <input
-            type="email"
-            required
-            value={form.email}
-            onChange={(e) => update('email', e.target.value)}
-            placeholder="you@example.com"
-            className="input-field"
-          />
-        </div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-[#F0EDE8] mb-2">Subject <span className="text-[#C9A84C]">*</span></label>
-        <select
-          required
-          value={form.subject}
-          onChange={(e) => update('subject', e.target.value)}
-          className="input-field"
-        >
-          <option value="">Select a subject</option>
-          <option>General Question</option>
-          <option>Bug Report</option>
-          <option>Partnership Inquiry</option>
-          <option>Media / Press</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-[#F0EDE8] mb-2">Message <span className="text-[#C9A84C]">*</span></label>
-        <textarea
-          required
-          rows={5}
-          value={form.message}
-          onChange={(e) => update('message', e.target.value)}
-          placeholder="What's on your mind?"
-          className="input-field resize-none"
-        />
-      </div>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Sending...' : 'Send Message'}
-      </button>
-    </form>
   )
 }

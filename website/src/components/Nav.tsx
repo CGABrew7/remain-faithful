@@ -110,12 +110,14 @@ export default function Nav() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/#download"
+            <a
+              href="https://apps.apple.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-5 py-2 rounded-full text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-md shadow-[#C9A84C]/20"
             >
               Download
-            </Link>
+            </a>
           </div>
 
           {/* Mobile hamburger */}
@@ -166,12 +168,14 @@ export default function Nav() {
               </Link>
             ))}
             <div className="mt-4 pt-4 border-t border-[#1E3050]">
-              <Link
-                href="/#download"
+              <a
+                href="https://apps.apple.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center justify-center px-5 py-3 rounded-full text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A]"
               >
                 Download for iPhone
-              </Link>
+              </a>
             </div>
           </nav>
         </div>

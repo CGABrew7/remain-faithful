@@ -6,6 +6,7 @@ const AMOUNTS = [5, 10, 25, 50]
 
 export default function DonateButton() {
   const [selected, setSelected] = useState(10)
+  const [recurring, setRecurring] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -16,7 +17,7 @@ export default function DonateButton() {
       const res = await fetch('/api/donate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: selected }),
+        body: JSON.stringify({ amount: selected, recurring }),
       })
       if (!res.ok) throw new Error('Request failed')
       const data = await res.json()
@@ -33,6 +34,30 @@ export default function DonateButton() {
 
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* One-time / Monthly toggle */}
+      <div className="flex items-center gap-1 p-1 rounded-full bg-[#162235] border border-[#1E3050]">
+        <button
+          onClick={() => setRecurring(false)}
+          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+            !recurring
+              ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] shadow'
+              : 'text-[#8A9BB0] hover:text-[#F0EDE8]'
+          }`}
+        >
+          One-time
+        </button>
+        <button
+          onClick={() => setRecurring(true)}
+          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+            recurring
+              ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] shadow'
+              : 'text-[#8A9BB0] hover:text-[#F0EDE8]'
+          }`}
+        >
+          Monthly
+        </button>
+      </div>
+
       {/* Amount selector */}
       <div className="flex gap-2">
         {AMOUNTS.map((amount) => (
@@ -69,7 +94,7 @@ export default function DonateButton() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
             </svg>
-            Give ${selected}
+            Give ${selected}{recurring ? '/mo' : ''}
           </>
         )}
       </button>

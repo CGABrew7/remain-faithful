@@ -1,7 +1,12 @@
-'use client'
-
-import { useState } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import FaqAccordion from '@/components/FaqAccordion'
+
+export const metadata: Metadata = {
+  title: 'How It Works',
+  description:
+    'A complete breakdown of Remain Faithful\'s accountability model, on-device monitoring pipeline, covenant system, and frequently asked questions.',
+}
 
 const faqs = [
   {
@@ -238,12 +243,14 @@ export default function HowItWorksPage() {
         <div className="max-w-xl mx-auto px-4 text-center">
           <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">Ready to start?</h2>
           <p className="text-[#8A9BB0] mb-8">Download Remain Faithful and invite your first partner today.</p>
-          <Link
-            href="/#download"
+          <a
+            href="https://apps.apple.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200"
           >
             Download for iPhone
-          </Link>
+          </a>
         </div>
       </section>
     </>
@@ -265,34 +272,6 @@ function ModeCard({ title, icon, points }: { title: string; icon: string; points
           </li>
         ))}
       </ul>
-    </div>
-  )
-}
-
-function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
-  const [open, setOpen] = useState<number | null>(0)
-  return (
-    <div className="space-y-3">
-      {faqs.map((faq, i) => (
-        <div key={i} className="rounded-xl border border-[#1E3050] bg-[#162235] overflow-hidden">
-          <button
-            className="w-full flex items-center justify-between px-6 py-5 text-left"
-            onClick={() => setOpen(open === i ? null : i)}
-            aria-expanded={open === i}
-          >
-            <span className="font-semibold text-[#F0EDE8] text-sm sm:text-base pr-4">{faq.q}</span>
-            <svg
-              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2.5" strokeLinecap="round"
-              className={`flex-shrink-0 transition-transform duration-200 ${open === i ? 'rotate-45' : ''}`}
-            >
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </button>
-          <div className={`overflow-hidden transition-all duration-300 ${open === i ? 'max-h-96' : 'max-h-0'}`}>
-            <p className="px-6 pb-5 text-sm text-[#8A9BB0] leading-relaxed">{faq.a}</p>
-          </div>
-        </div>
-      ))}
     </div>
   )
 }
