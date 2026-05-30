@@ -5,7 +5,9 @@ import GoogleSignIn
 // MARK: - LoginView
 
 struct LoginView: View {
+    var showDismissButton: Bool = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var showCreateAccount = false
     @AppStorage("userName")  private var storedName  = ""
     @AppStorage("userEmail") private var storedEmail = ""
 
@@ -14,6 +16,7 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var errorMsg: String?
     @State private var showForgotPassword = false
+    @Environment(\.dismiss) private var dismiss
 
     @FocusState private var focused: Field?
     private enum Field { case email, password }
@@ -71,6 +74,19 @@ struct LoginView: View {
                 .presentationDetents([.height(340)])
                 .presentationDragIndicator(.hidden)
         }
+        .fullScreenCover(isPresented: $showCreateAccount) {
+            OnboardingView(showDismissButton: true)
+        }
+        .overlay(alignment: .topLeading) {
+            if showDismissButton {
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(Color.white.opacity(0.55))
+                        .padding(20)
+                }
+            }
+        }
     }
 
     // MARK: - Logo
@@ -84,8 +100,8 @@ struct LoginView: View {
                 Circle()
                     .fill(Color.rfGold.opacity(0.12))
                     .frame(width: 72, height: 72)
-                Image(systemName: "cross.fill")
-                    .font(.system(size: 30, weight: .medium))
+                Image(systemName: "checkmark.shield.fill")
+                    .font(.system(size: 32, weight: .medium))
                     .foregroundStyle(Color.rfGold)
             }
             VStack(spacing: 6) {
@@ -204,10 +220,10 @@ struct LoginView: View {
             .frame(height: 54)
             .cornerRadius(14)
 
-            // Google Sign In
+            // Google Sign In — hidden on simulator (no GIDConfiguration without GoogleService-Info.plist)
+            #if !targetEnvironment(simulator)
             Button(action: handleGoogleSignIn) {
                 HStack(spacing: 12) {
-                    // Google "G" logo approximation
                     ZStack {
                         Text("G")
                             .font(.system(size: 17, weight: .bold))
@@ -226,6 +242,20 @@ struct LoginView: View {
                 .overlay(RoundedRectangle(cornerRadius: 14)
                     .stroke(Color(white: 0.82), lineWidth: 1))
             }
+            #endif
+
+            // Create account link
+            Button { showCreateAccount = true } label: {
+                HStack(spacing: 4) {
+                    Text("New here?")
+                        .foregroundStyle(Color.white.opacity(0.50))
+                    Text("Create Account")
+                        .foregroundStyle(Color.rfGold)
+                        .fontWeight(.semibold)
+                }
+                .font(.system(size: 15))
+            }
+            .padding(.top, 4)
         }
     }
 

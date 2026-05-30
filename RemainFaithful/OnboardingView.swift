@@ -17,7 +17,10 @@ enum AccountabilityType {
 // MARK: - Container
 
 struct OnboardingView: View {
+    var showDismissButton: Bool = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var showLogin = false
+    @Environment(\.dismiss) private var dismiss
     @AppStorage("userName")  private var storedName  = ""
     @AppStorage("userEmail") private var storedEmail = ""
     @State private var step = 0
@@ -44,7 +47,7 @@ struct OnboardingView: View {
                 // Swap step views with a push transition
                 ZStack {
                     if step == 0 {
-                        WelcomeStep(onContinue: advance)
+                        WelcomeStep(onContinue: advance, onSignIn: { showLogin = true })
                             .transition(.push(from: .trailing))
                     } else if step == 1 {
                         AccountabilityTypeStep(
@@ -64,6 +67,19 @@ struct OnboardingView: View {
                 }
                 .animation(.easeInOut(duration: 0.35), value: step)
             }
+        }
+        .overlay(alignment: .topLeading) {
+            if showDismissButton {
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(Color.white.opacity(0.55))
+                        .padding(20)
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showLogin) {
+            LoginView(showDismissButton: true)
         }
     }
 
@@ -87,6 +103,7 @@ struct OnboardingView: View {
 
 private struct WelcomeStep: View {
     let onContinue: () -> Void
+    var onSignIn: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -100,8 +117,8 @@ private struct WelcomeStep: View {
                 Circle()
                     .fill(Color.rfGold.opacity(0.12))
                     .frame(width: 130, height: 130)
-                Image(systemName: "cross.fill")
-                    .font(.system(size: 52, weight: .medium))
+                Image(systemName: "checkmark.shield.fill")
+                    .font(.system(size: 54, weight: .medium))
                     .foregroundStyle(Color.rfGold)
             }
             .padding(.bottom, 44)
@@ -138,7 +155,19 @@ private struct WelcomeStep: View {
             Spacer()
 
             RFButton(title: "Begin Your Journey", action: onContinue)
-                .padding(.bottom, 52)
+                .padding(.bottom, 16)
+
+            Button { onSignIn?() } label: {
+                HStack(spacing: 4) {
+                    Text("Already have an account?")
+                        .foregroundStyle(Color.white.opacity(0.50))
+                    Text("Sign In")
+                        .foregroundStyle(Color.rfGold)
+                        .fontWeight(.semibold)
+                }
+                .font(.system(size: 15))
+            }
+            .padding(.bottom, 44)
         }
         .padding(.horizontal, 32)
     }

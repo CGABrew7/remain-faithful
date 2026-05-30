@@ -9,6 +9,15 @@ struct RemainFaithfulApp: App {
     @StateObject private var appState  = AppState.shared
     @StateObject private var authState = AuthState.shared
 
+    init() {
+        // Clear stale onboarding state when no account exists in Keychain.
+        // UserDefaults (AppStorage) persists across simulator installs;
+        // Keychain does not — so Keychain is the authoritative "has account" signal.
+        if AuthState.shared.currentUser == nil && !AuthState.shared.isAuthenticated {
+            UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+        }
+    }
+
     // In DEBUG builds, `xcrun simctl spawn <id> defaults write com.remainfaithful.app
     // debugShowDashboard -bool true` bypasses auth so the Dashboard can be tested
     // in the simulator without a running backend.
@@ -26,7 +35,7 @@ struct RemainFaithfulApp: App {
             Group {
                 if showDashboard {
                     ContentView()
-                } else if hasCompletedOnboarding {
+                } else if hasCompletedOnboarding || authState.currentUser != nil {
                     LoginView()
                 } else {
                     OnboardingView()
