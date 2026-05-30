@@ -20,6 +20,7 @@
 		CF1000000000000000000038 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000037 /* SettingsView.swift */; };
 		CF1000000000000000000039 /* PanicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003A /* PanicView.swift */; };
 		CF100000000000000000003B /* AlertDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003C /* AlertDetailView.swift */; };
+		CF100000000000000000003D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003E /* APIClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +65,7 @@
 		CF1000000000000000000037 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CF100000000000000000003A /* PanicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanicView.swift; sourceTree = "<group>"; };
 		CF100000000000000000003C /* AlertDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertDetailView.swift; sourceTree = "<group>"; };
+		CF100000000000000000003E /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +116,7 @@
 				CF1000000000000000000037 /* SettingsView.swift */,
 				CF100000000000000000003A /* PanicView.swift */,
 				CF100000000000000000003C /* AlertDetailView.swift */,
+				CF100000000000000000003E /* APIClient.swift */,
 				CF100000000000000000000D /* Assets.xcassets */,
 				CF100000000000000000001D /* RemainFaithful.entitlements */,
 				CF1000000000000000000018 /* Preview Content */,
@@ -247,6 +250,7 @@
 				CF1000000000000000000038 /* SettingsView.swift in Sources */,
 				CF1000000000000000000039 /* PanicView.swift in Sources */,
 				CF100000000000000000003B /* AlertDetailView.swift in Sources */,
+				CF100000000000000000003D /* APIClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

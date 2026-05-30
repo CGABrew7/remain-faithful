@@ -19,6 +19,18 @@ enum EventCategory: String {
         }
     }
 
+    // Maps the string stored in the API back to an enum case.
+    // Accepts both the rawValue ("Adult Content") and snake_case ("adult_content").
+    init?(apiString: String) {
+        switch apiString.lowercased().replacingOccurrences(of: " ", with: "_") {
+        case "adult_content": self = .adultContent
+        case "gambling":      self = .gambling
+        case "social_media":  self = .socialMedia
+        case "gaming":        self = .gaming
+        default:              return nil
+        }
+    }
+
     var tint: Color {
         switch self {
         case .adultContent: Color(red: 0.90, green: 0.25, blue: 0.30)
@@ -120,6 +132,34 @@ struct ActivityEvent: Identifiable {
     }
 }
 
+// MARK: - API conversion
+
+extension ActivityEvent {
+    /// Converts a RemoteEvent from the API into a local ActivityEvent.
+    /// Returns nil if the category or severity value is unrecognised.
+    static func from(remote r: RemoteEvent) -> ActivityEvent? {
+        // Category: try rawValue first ("Adult Content"), then snake_case ("adult_content")
+        let cat = EventCategory(rawValue: r.category) ?? EventCategory(apiString: r.category)
+        guard let category = cat else { return nil }
+
+        // Severity: API stores lowercase ("low"), enum rawValues are title-cased ("Low")
+        let severity = FlagSeverity(rawValue: r.severity.capitalized) ?? .low
+
+        // Parse ISO-8601 timestamp; try with and without fractional seconds
+        let fmt = ISO8601DateFormatter()
+        fmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let date = fmt.date(from: r.timestamp) ?? {
+            let f2 = ISO8601DateFormatter()
+            f2.formatOptions = [.withInternetDateTime]
+            return f2.date(from: r.timestamp) ?? Date()
+        }()
+        let minutesAgo = max(0, Int(Date().timeIntervalSince(date) / 60))
+
+        return ActivityEvent(category: category, severity: severity,
+                             description: r.summary, minutesAgo: minutesAgo)
+    }
+}
+
 // MARK: - Mock data
 
 private let sampleEvents: [ActivityEvent] = [
@@ -138,8 +178,9 @@ private let weekClean = [true, true, false, true, true, true, false]
 struct DashboardView: View {
     @AppStorage("userName") private var userName = ""
 
-    @State private var status: MonitoringStatus = .active
-    @State private var showPanic = false
+    @State private var status:    MonitoringStatus = .active
+    @State private var showPanic: Bool             = false
+    @State private var events:    [ActivityEvent]  = sampleEvents
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -163,7 +204,7 @@ struct DashboardView: View {
                     StatusCard(status: $status)
                     StreakCard(days: 14, best: 21, week: weekClean)
                     VerseCard()
-                    ActivitySection(events: sampleEvents)
+                    ActivitySection(events: events)
                     panicButton
                 }
                 .padding(.horizontal, 20)
@@ -173,6 +214,19 @@ struct DashboardView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $showPanic) { PanicView() }
+        .task { await loadEvents() }
+    }
+
+    @MainActor
+    private func loadEvents() async {
+        guard APIClient.shared.isAuthenticated else { return }
+        do {
+            let remote = try await APIClient.shared.listEvents()
+            let converted = remote.compactMap { ActivityEvent.from(remote: $0) }
+            if !converted.isEmpty { events = converted }
+        } catch {
+            // Keep mock data visible if the server is unreachable
+        }
     }
 
     private var panicButton: some View {
