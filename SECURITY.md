@@ -10,7 +10,7 @@
 
 **Please do not open a public GitHub issue for security vulnerabilities.**
 
-Email **jeff@cornerstonelicensing.com** with the subject line `[SECURITY] Remain Faithful — <brief description>`.
+Email **jeff@hanokventures.co** with the subject line `[SECURITY] Remain Faithful — <brief description>`.
 
 Include:
 - A description of the vulnerability and its potential impact
