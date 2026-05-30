@@ -58,6 +58,7 @@ struct SettingsView: View {
         }
         .alert("Delete Account", isPresented: $showDeleteAlert) {
             Button("Delete Account", role: .destructive) {
+                APIClient.shared.logout()
                 userName  = ""
                 userEmail = ""
                 hasCompletedOnboarding = false
@@ -210,6 +211,7 @@ struct SettingsView: View {
 
             // Sign out sits below the danger zone — less severe than deletion
             Button {
+                APIClient.shared.logout()
                 userName  = ""
                 userEmail = ""
                 hasCompletedOnboarding = false

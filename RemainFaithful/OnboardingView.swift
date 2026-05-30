@@ -22,8 +22,9 @@ struct OnboardingView: View {
     @AppStorage("userEmail") private var storedEmail = ""
     @State private var step = 0
     @State private var selectedType: AccountabilityType?
-    @State private var name  = ""
-    @State private var email = ""
+    @State private var name     = ""
+    @State private var email    = ""
+    @State private var password = ""
 
     var body: some View {
         ZStack {
@@ -52,7 +53,7 @@ struct OnboardingView: View {
                         )
                         .transition(.push(from: .trailing))
                     } else {
-                        CreateAccountStep(name: $name, email: $email) {
+                        CreateAccountStep(name: $name, email: $email, password: $password) {
                             storedName  = name
                             storedEmail = email
                             hasCompletedOnboarding = true
@@ -251,18 +252,22 @@ private struct TypeCard: View {
 // MARK: - Step 3: Create Account
 
 private struct CreateAccountStep: View {
-    @Binding var name: String
-    @Binding var email: String
+    @Binding var name:     String
+    @Binding var email:    String
+    @Binding var password: String
     let onComplete: () -> Void
 
     @FocusState private var focused: Field?
+    @State private var isLoading  = false
+    @State private var errorMsg: String?
 
-    private enum Field { case name, email }
+    private enum Field { case name, email, password }
 
     private var canSubmit: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty
-            && email.contains("@")
-            && email.contains(".")
+            && email.contains("@") && email.contains(".")
+            && password.count >= 8
+            && !isLoading
     }
 
     var body: some View {
@@ -276,7 +281,7 @@ private struct CreateAccountStep: View {
             .padding(.bottom, 36)
 
             VStack(spacing: 14) {
-                // Name field
+                // Name
                 HStack(spacing: 12) {
                     Image(systemName: "person.fill")
                         .font(.system(size: 15))
@@ -293,7 +298,7 @@ private struct CreateAccountStep: View {
                 }
                 .fieldStyle(isFocused: focused == .name)
 
-                // Email field
+                // Email
                 HStack(spacing: 12) {
                     Image(systemName: "envelope.fill")
                         .font(.system(size: 15))
@@ -307,10 +312,36 @@ private struct CreateAccountStep: View {
                         .autocorrectionDisabled()
                         .foregroundStyle(.white)
                         .focused($focused, equals: .email)
-                        .submitLabel(.done)
-                        .onSubmit { if canSubmit { onComplete() } }
+                        .submitLabel(.next)
+                        .onSubmit { focused = .password }
                 }
                 .fieldStyle(isFocused: focused == .email)
+
+                // Password
+                HStack(spacing: 12) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 15))
+                        .foregroundStyle(focused == .password ? Color.rfGold : Color.white.opacity(0.45))
+                        .frame(width: 22)
+                    SecureField("", text: $password,
+                                prompt: Text("Password (8+ characters)").foregroundColor(Color.white.opacity(0.38)))
+                        .textContentType(.newPassword)
+                        .foregroundStyle(.white)
+                        .focused($focused, equals: .password)
+                        .submitLabel(.done)
+                        .onSubmit { if canSubmit { submit() } }
+                }
+                .fieldStyle(isFocused: focused == .password)
+            }
+
+            // Inline API error
+            if let msg = errorMsg {
+                Text(msg)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 12)
+                    .transition(.opacity)
             }
 
             Text("By continuing you agree to our Terms of Service\nand Privacy Policy.")
@@ -318,15 +349,46 @@ private struct CreateAccountStep: View {
                 .foregroundStyle(Color.white.opacity(0.30))
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
-                .padding(.top, 20)
+                .padding(.top, 16)
 
             Spacer()
 
-            RFButton(title: "Get Started", isEnabled: canSubmit, action: onComplete)
-                .padding(.bottom, 52)
-                .animation(.easeInOut(duration: 0.2), value: canSubmit)
+            RFButton(
+                title: isLoading ? "Creating account…" : "Get Started",
+                isEnabled: canSubmit,
+                action: submit
+            )
+            .padding(.bottom, 52)
+            .animation(.easeInOut(duration: 0.2), value: canSubmit)
         }
         .padding(.horizontal, 24)
+        .animation(.easeInOut(duration: 0.2), value: errorMsg)
+    }
+
+    private func submit() {
+        guard canSubmit else { return }
+        focused = nil
+        isLoading = true
+        errorMsg  = nil
+        Task {
+            // Try the backend; fall through locally if unavailable so the
+            // simulator works without a running server.
+            do {
+                _ = try await APIClient.shared.register(name: name, email: email, password: password)
+                _ = try await APIClient.shared.login(email: email, password: password)
+            } catch let e as APIError {
+                // Surface server-side errors (e.g. "email already taken") but
+                // treat network failures as offline mode and proceed anyway.
+                if case .server(let msg) = e {
+                    await MainActor.run {
+                        errorMsg  = msg
+                        isLoading = false
+                    }
+                    return
+                }
+            } catch { }
+            await MainActor.run { onComplete() }
+        }
     }
 }
 

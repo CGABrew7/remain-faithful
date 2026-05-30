@@ -66,8 +66,17 @@ Signed and agreed upon this day, before God and this brotherhood.
 // MARK: - GroupView
 
 struct GroupView: View {
-    @State private var showCovenant = false
-    @State private var showInvite   = false
+    // Non-zero when the user has a real group on the server.
+    // Set this by storing the group ID returned from POST /groups or GET /groups/:id.
+    @AppStorage("primaryGroupID") private var primaryGroupID = 0
+
+    @State private var showCovenant  = false
+    @State private var showInvite    = false
+    @State private var liveGroupName = ""
+    @State private var liveMembers:  [GroupMember] = []
+
+    private var displayName:    String        { liveGroupName.isEmpty ? groupName    : liveGroupName }
+    private var displayMembers: [GroupMember] { liveMembers.isEmpty   ? sampleMembers : liveMembers  }
 
     var body: some View {
         ZStack {
@@ -76,7 +85,7 @@ struct GroupView: View {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 18) {
-                        GroupHeaderCard(name: groupName, memberCount: sampleMembers.count)
+                        GroupHeaderCard(name: displayName, memberCount: displayMembers.count)
                         membersSection
                         CovenantButton { showCovenant = true }
                     }
@@ -90,7 +99,20 @@ struct GroupView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showCovenant) { CovenantSheet() }
-        .sheet(isPresented: $showInvite)   { InviteSheet(groupName: groupName) }
+        .sheet(isPresented: $showInvite)   { InviteSheet(groupName: displayName, groupID: primaryGroupID) }
+        .task { await loadGroup() }
+    }
+
+    @MainActor
+    private func loadGroup() async {
+        guard primaryGroupID > 0, APIClient.shared.isAuthenticated else { return }
+        guard let group = try? await APIClient.shared.getGroup(id: primaryGroupID) else { return }
+        liveGroupName = group.name
+        // Map API members to the local GroupMember model.
+        // Streak and health aren't tracked by the API yet — show defaults.
+        liveMembers = (group.members ?? []).map { m in
+            GroupMember(name: m.user.name, streak: 0, health: .strong)
+        }
     }
 
     private var membersSection: some View {
@@ -100,7 +122,7 @@ struct GroupView: View {
                 .foregroundStyle(.white)
 
             VStack(spacing: 10) {
-                ForEach(sampleMembers) { MemberRow(member: $0) }
+                ForEach(displayMembers) { MemberRow(member: $0) }
             }
         }
     }
@@ -348,10 +370,19 @@ private struct CovenantSheet: View {
 
 private struct InviteSheet: View {
     let groupName: String
+    let groupID:   Int
     @Environment(\.dismiss) private var dismiss
-    @State private var copied = false
+    @FocusState private var emailFocused: Bool
+    @State private var inviteEmail = ""
+    @State private var isSent      = false
+    @State private var copied      = false
 
     private let inviteCode = "remainfaithful.app/join/ib-4x9k"
+    private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
+
+    private var canSend: Bool {
+        inviteEmail.contains("@") && inviteEmail.contains(".") && !isSent
+    }
 
     var body: some View {
         ZStack {
@@ -369,7 +400,7 @@ private struct InviteSheet: View {
                         Text("Invite a Member")
                             .font(.system(size: 20, weight: .bold, design: .serif))
                             .foregroundStyle(.white)
-                        Text("Share the link to \(groupName)")
+                        Text("Add someone to \(groupName)")
                             .font(.system(size: 13))
                             .foregroundStyle(Color.white.opacity(0.45))
                     }
@@ -386,30 +417,80 @@ private struct InviteSheet: View {
                 .padding(.bottom, 24)
 
                 Divider().overlay(Color.white.opacity(0.08))
-                    .padding(.bottom, 36)
+                    .padding(.bottom, 28)
 
-                ZStack {
-                    Circle()
-                        .fill(Color.rfGold.opacity(0.12))
-                        .frame(width: 80, height: 80)
-                    Image(systemName: "person.badge.plus")
-                        .font(.system(size: 34))
-                        .foregroundStyle(Color.rfGold)
+                // Email section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("INVITE BY EMAIL")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color.rfGold.opacity(0.75))
+                        .kerning(1.2)
+                        .padding(.horizontal, 24)
+
+                    HStack(spacing: 12) {
+                        Image(systemName: "envelope.fill")
+                            .font(.system(size: 15))
+                            .foregroundStyle(emailFocused ? Color.rfGold : Color.white.opacity(0.45))
+                            .frame(width: 22)
+                        TextField("", text: $inviteEmail,
+                                  prompt: Text("Email address").foregroundColor(Color.white.opacity(0.38)))
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .foregroundStyle(.white)
+                            .focused($emailFocused)
+                            .submitLabel(.send)
+                            .onSubmit { sendInvite() }
+                    }
+                    .padding(.horizontal, 18)
+                    .frame(height: 54)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white.opacity(emailFocused ? 0.11 : 0.07))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(emailFocused ? Color.rfGold : Color.white.opacity(0.10),
+                                            lineWidth: 1.5)
+                            )
+                    )
+                    .animation(.easeInOut(duration: 0.18), value: emailFocused)
+                    .padding(.horizontal, 24)
+
+                    Button { sendInvite() } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: isSent ? "checkmark.circle.fill" : "paperplane.fill")
+                                .font(.system(size: 16))
+                            Text(isSent ? "Invite Sent!" : "Send Invite")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundStyle(isSent ? green : Color.rfNavy)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(isSent ? green.opacity(0.15)
+                                      : (canSend ? Color.rfGold : Color.rfGold.opacity(0.35)))
+                        )
+                    }
+                    .disabled(!canSend)
+                    .animation(.easeInOut(duration: 0.2), value: isSent)
+                    .padding(.horizontal, 24)
                 }
-                .padding(.bottom, 16)
 
-                Text("Add a brother to your group")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.bottom, 8)
+                // "or share a link" divider
+                HStack {
+                    Rectangle().fill(Color.white.opacity(0.08)).frame(height: 1)
+                    Text("or share a link")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.white.opacity(0.30))
+                        .padding(.horizontal, 12)
+                        .fixedSize()
+                    Rectangle().fill(Color.white.opacity(0.08)).frame(height: 1)
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 24)
 
-                Text("Invite someone you trust to walk\nthis journey alongside you.")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.white.opacity(0.45))
-                    .multilineTextAlignment(.center)
-                    .padding(.bottom, 36)
-
-                // Invite link row
+                // Invite link copy row
                 HStack(spacing: 12) {
                     Image(systemName: "link")
                         .font(.system(size: 14))
@@ -428,31 +509,21 @@ private struct InviteSheet: View {
                     } label: {
                         Text(copied ? "Copied!" : "Copy")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(copied ? Color(red: 0.20, green: 0.78, blue: 0.45) : Color.rfGold)
+                            .foregroundStyle(copied ? green : Color.rfGold)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(
-                                Capsule().fill(
-                                    copied
-                                    ? Color(red: 0.20, green: 0.78, blue: 0.45).opacity(0.14)
-                                    : Color.rfGold.opacity(0.14)
-                                )
-                            )
+                            .background(Capsule().fill(copied ? green.opacity(0.14) : Color.rfGold.opacity(0.14)))
                     }
                 }
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white.opacity(0.055))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                        )
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.08), lineWidth: 1))
                 )
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
 
-                // Share button
                 ShareLink(item: URL(string: "https://\(inviteCode)")!) {
                     HStack(spacing: 10) {
                         Image(systemName: "square.and.arrow.up")
@@ -463,15 +534,21 @@ private struct InviteSheet: View {
                     .foregroundStyle(Color.rfNavy)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.rfGold)
-                    )
+                    .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold.opacity(0.6)))
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 8)
             }
         }
+    }
+
+    private func sendInvite() {
+        guard canSend else { return }
+        emailFocused = false
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { isSent = true }
+        let email = inviteEmail
+        let gid   = groupID
+        Task { try? await APIClient.shared.inviteMember(groupID: gid, email: email) }
     }
 }
 
