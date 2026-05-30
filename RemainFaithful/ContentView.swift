@@ -31,6 +31,22 @@ struct ContentView: View {
         .toolbarBackground(Color(red: 0.05, green: 0.09, blue: 0.22), for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .fullScreenCover(isPresented: $showPanic) { PanicView() }
+        #if targetEnvironment(simulator)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if appState.isDemoMode {
+                HStack(spacing: 5) {
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.system(size: 10, weight: .bold))
+                    Text("DEMO MODE — sample data only")
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundStyle(Color(red: 0.10, green: 0.10, blue: 0.10))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .background(Color(red: 0.98, green: 0.82, blue: 0.25))
+            }
+        }
+        #endif
         // Deep-link handling from notification taps
         .onReceive(appState.$deepLink.compactMap { $0 }) { link in
             handleDeepLink(link)

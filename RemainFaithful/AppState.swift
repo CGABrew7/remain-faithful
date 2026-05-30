@@ -39,6 +39,8 @@ final class AppState: ObservableObject {
     @Published var deepLink: DeepLink?
     @Published var partnerFlagAlert: PartnerFlagAlert?
     @Published var unreadAlertCount: Int = 0
+    /// Simulator-only: bypass auth and show the dashboard with sample data.
+    @Published var isDemoMode: Bool = false
 
     private init() {}
 

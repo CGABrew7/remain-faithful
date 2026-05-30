@@ -24,6 +24,7 @@ struct RemainFaithfulApp: App {
     private var showDashboard: Bool {
         guard !authState.isAuthenticated else { return true }
         #if DEBUG
+        if appState.isDemoMode { return true }
         return UserDefaults.standard.bool(forKey: "debugShowDashboard")
         #else
         return false

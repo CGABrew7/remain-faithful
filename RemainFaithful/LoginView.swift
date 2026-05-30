@@ -256,6 +256,25 @@ struct LoginView: View {
                 .font(.system(size: 15))
             }
             .padding(.top, 4)
+
+            #if targetEnvironment(simulator)
+            Button { AppState.shared.isDemoMode = true } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.system(size: 13))
+                    Text("Use Demo Mode")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .foregroundStyle(Color.white.opacity(0.35))
+                .padding(.horizontal, 18)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+            }
+            .padding(.top, 8)
+            #endif
         }
     }
 
