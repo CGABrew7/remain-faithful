@@ -57,7 +57,6 @@ struct OnboardingView: View {
                             storedName  = name
                             storedEmail = email
                             hasCompletedOnboarding = true
-                            // Request APNs permission right after account creation.
                             NotificationService.shared.requestPermission()
                         }
                         .transition(.push(from: .trailing))

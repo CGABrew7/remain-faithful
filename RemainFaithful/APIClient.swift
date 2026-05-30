@@ -106,12 +106,8 @@ final class APIClient {
 
     private let session = URLSession.shared
 
-    /// JWT stored in UserDefaults so it survives app restarts.
-    /// Views can read it via @AppStorage("authToken") for conditional rendering.
-    var token: String? {
-        get { UserDefaults.standard.string(forKey: "authToken") }
-        set { UserDefaults.standard.set(newValue, forKey: "authToken") }
-    }
+    /// JWT stored in Keychain. Reads through AuthState so the token is always current.
+    var token: String? { AuthState.shared.token }
 
     var isAuthenticated: Bool { token != nil }
 
@@ -127,12 +123,21 @@ final class APIClient {
         let resp: AuthResponse = try await post("/auth/login",
                                                 body: ["email": email, "password": password],
                                                 auth: false)
-        token = resp.token
+        AuthState.shared.setSession(token: resp.token, user: resp.user)
         return resp
     }
 
     func logout() {
-        token = nil
+        AuthState.shared.clearSession()
+    }
+
+    func refreshTokenIfNeeded() async throws {
+        guard let expiry = AuthState.shared.tokenExpiresAt,
+              expiry.timeIntervalSinceNow < 3600 else { return }
+        let resp: [String: String] = try await post("/auth/refresh", body: [String: String]())
+        if let newToken = resp["token"] {
+            KeychainHelper.shared.set(newToken, for: "authToken")
+        }
     }
 
     // MARK: - Users
@@ -178,6 +183,31 @@ final class APIClient {
         try await postVoid("/groups/\(groupID)/invite", body: ["user_email": email])
     }
 
+    // MARK: - Social auth
+
+    func appleSignIn(identityToken: String, authorizationCode: String,
+                     firstName: String, lastName: String) async throws -> AuthResponse {
+        let body: [String: Any] = [
+            "identity_token":     identityToken,
+            "authorization_code": authorizationCode,
+            "name": ["firstName": firstName, "lastName": lastName],
+        ]
+        return try await postAny("/auth/apple", body: body, auth: false)
+    }
+
+    func googleSignIn(idToken: String) async throws -> AuthResponse {
+        try await post("/auth/google", body: ["id_token": idToken], auth: false)
+    }
+
+    func forgotPassword(email: String) async throws {
+        try await postVoid("/auth/forgot-password", body: ["email": email], auth: false)
+    }
+
+    func resetPassword(token: String, password: String) async throws {
+        try await postVoid("/auth/reset-password",
+                           body: ["token": token, "password": password], auth: false)
+    }
+
     // MARK: - Push notifications
 
     func registerDeviceToken(_ token: String) async throws {
@@ -214,16 +244,27 @@ final class APIClient {
     }
 
     /// Fire-and-forget POST for endpoints where we don't need the response body.
-    private func postVoid<Body: Encodable>(_ path: String, body: Body) async throws {
+    private func postVoid<Body: Encodable>(_ path: String, body: Body,
+                                           auth: Bool = true) async throws {
         var req = try makeRequest(path, method: "POST")
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)
-        try attachToken(&req)
+        if auth { try attachToken(&req) }
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
             let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
             throw APIError.server(msg ?? "HTTP \(http.statusCode)")
         }
+    }
+
+    /// POST where the body is `[String: Any]` (not Encodable) — needed for nested dicts.
+    private func postAny<T: Decodable>(_ path: String, body: [String: Any],
+                                        auth: Bool = true) async throws -> T {
+        var req = try makeRequest(path, method: "POST")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        if auth { try attachToken(&req) }
+        return try await send(req)
     }
 
     private func makeRequest(_ path: String, method: String = "GET") throws -> URLRequest {

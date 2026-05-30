@@ -58,7 +58,7 @@ struct SettingsView: View {
         }
         .alert("Delete Account", isPresented: $showDeleteAlert) {
             Button("Delete Account", role: .destructive) {
-                APIClient.shared.logout()
+                AuthState.shared.clearSession()
                 userName  = ""
                 userEmail = ""
                 hasCompletedOnboarding = false
@@ -211,10 +211,10 @@ struct SettingsView: View {
 
             // Sign out sits below the danger zone — less severe than deletion
             Button {
-                APIClient.shared.logout()
+                AuthState.shared.clearSession()
                 userName  = ""
                 userEmail = ""
-                hasCompletedOnboarding = false
+                // Keep hasCompletedOnboarding = true so LoginView appears on next launch
             } label: {
                 Text("Sign Out")
                     .font(.system(size: 15, weight: .semibold))

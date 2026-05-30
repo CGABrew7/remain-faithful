@@ -1,22 +1,28 @@
 import SwiftUI
 import UserNotifications
+import GoogleSignIn
 
 @main
 struct RemainFaithfulApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @StateObject private var appState = AppState.shared
+    @StateObject private var appState  = AppState.shared
+    @StateObject private var authState = AuthState.shared
 
     var body: some Scene {
         WindowGroup {
             Group {
-                if hasCompletedOnboarding {
+                if authState.isAuthenticated {
                     ContentView()
+                } else if hasCompletedOnboarding {
+                    LoginView()
                 } else {
                     OnboardingView()
                 }
             }
             .environmentObject(appState)
+            .environmentObject(authState)
+            .task { try? await APIClient.shared.refreshTokenIfNeeded() }
         }
     }
 }
@@ -30,15 +36,23 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
-        // Enable background fetch for silent alert polling.
         application.setMinimumBackgroundFetchInterval(
             UIApplication.backgroundFetchIntervalMinimum
         )
-        // Handle notification that cold-launched the app.
         if let payload = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
             handlePayload(payload)
         }
         return true
+    }
+
+    // MARK: - Google Sign In URL handling
+
+    func application(
+        _ app: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> Bool {
+        GIDSignIn.sharedInstance.handle(url)
     }
 
     // MARK: - Remote notification registration
@@ -68,7 +82,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     // MARK: - UNUserNotificationCenterDelegate
 
-    /// Show banners even when the app is in the foreground.
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -77,7 +90,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         completionHandler([.banner, .sound, .badge])
     }
 
-    /// Route taps whether the app was in background or was cold-launched.
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
@@ -90,8 +102,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     // MARK: - Private
 
     private func handlePayload(_ payload: [AnyHashable: Any]) {
-        // Defer navigation until after the root view appears by posting to the
-        // AppState singleton (which will be picked up by ContentView.onReceive).
         let type = payload["notification_type"] as? String ?? ""
         switch type {
         case NotificationType.contentFlagged:

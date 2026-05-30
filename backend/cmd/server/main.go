@@ -10,6 +10,7 @@ import (
 
 	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/apns"
+	"remain-faithful/backend/internal/email"
 	"remain-faithful/backend/internal/handler"
 
 	"github.com/gorilla/mux"
@@ -39,7 +40,9 @@ func main() {
 		log.Fatalf("apns: %v", err)
 	}
 
-	h := &handler.H{DB: db, APNS: apnsClient}
+	emailClient := email.New()
+
+	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient}
 	srv := &http.Server{
 		Addr:         ":" + port(),
 		Handler:      routes(h),
@@ -63,8 +66,12 @@ func routes(h *handler.H) http.Handler {
 	}).Methods(http.MethodGet)
 
 	// Public auth routes
-	r.HandleFunc("/auth/register", h.Register).Methods(http.MethodPost)
-	r.HandleFunc("/auth/login", h.Login).Methods(http.MethodPost)
+	r.HandleFunc("/auth/register",       h.Register).Methods(http.MethodPost)
+	r.HandleFunc("/auth/login",          h.Login).Methods(http.MethodPost)
+	r.HandleFunc("/auth/apple",          h.AppleSignIn).Methods(http.MethodPost)
+	r.HandleFunc("/auth/google",         h.GoogleSignIn).Methods(http.MethodPost)
+	r.HandleFunc("/auth/forgot-password", h.ForgotPassword).Methods(http.MethodPost)
+	r.HandleFunc("/auth/reset-password", h.ResetPassword).Methods(http.MethodPost)
 
 	// Protected routes — JWT required
 	api := r.NewRoute().Subrouter()
@@ -81,6 +88,7 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/alerts",               h.ListAlerts).Methods(http.MethodGet)
 	api.HandleFunc("/users/device-token",   h.RegisterDeviceToken).Methods(http.MethodPost)
 	api.HandleFunc("/panic",                h.SendPanicAlert).Methods(http.MethodPost)
+	api.HandleFunc("/auth/refresh",         h.RefreshToken).Methods(http.MethodPost)
 
 	return r
 }
@@ -137,7 +145,9 @@ func migrate(db *sql.DB) error {
 		id            BIGSERIAL    PRIMARY KEY,
 		name          TEXT         NOT NULL,
 		email         TEXT         NOT NULL UNIQUE,
-		password_hash TEXT         NOT NULL,
+		password_hash TEXT         NOT NULL DEFAULT '',
+		apple_id      TEXT         UNIQUE,
+		google_id     TEXT         UNIQUE,
 		created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 	);
 
@@ -198,6 +208,19 @@ func migrate(db *sql.DB) error {
 		UNIQUE (user_id, token)
 	);
 	CREATE INDEX IF NOT EXISTS idx_device_tokens_user ON device_tokens(user_id);
+
+	CREATE TABLE IF NOT EXISTS password_reset_tokens (
+		id         BIGSERIAL   PRIMARY KEY,
+		user_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		token      TEXT        NOT NULL UNIQUE,
+		expires_at TIMESTAMPTZ NOT NULL,
+		UNIQUE (user_id)
+	);
+
+	-- Idempotent column additions for existing databases.
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id  TEXT UNIQUE;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;
+	ALTER TABLE users ALTER COLUMN password_hash SET DEFAULT '';
 	`)
 	return err
 }

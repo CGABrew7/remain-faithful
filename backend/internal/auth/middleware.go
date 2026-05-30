@@ -38,3 +38,9 @@ func UserIDFromContext(ctx context.Context) (int64, bool) {
 	id, ok := ctx.Value(ctxUserID).(int64)
 	return id, ok
 }
+
+// EmailFromContext extracts the authenticated user's email injected by Middleware.
+func EmailFromContext(ctx context.Context) (string, bool) {
+	email, ok := ctx.Value(ctxEmail).(string)
+	return email, ok
+}

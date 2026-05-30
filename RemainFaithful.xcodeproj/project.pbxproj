@@ -23,6 +23,10 @@
 		CF100000000000000000003D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003E /* APIClient.swift */; };
 		CF1000000000000000000040 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003F /* AppState.swift */; };
 		CF1000000000000000000042 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000041 /* NotificationService.swift */; };
+		CF2000000000000000000011 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000010 /* KeychainHelper.swift */; };
+		CF2000000000000000000013 /* AuthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000012 /* AuthState.swift */; };
+		CF2000000000000000000015 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000014 /* LoginView.swift */; };
+		CF2000000000000000000023 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = CF2000000000000000000022 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +74,9 @@
 		CF100000000000000000003E /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		CF100000000000000000003F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		CF1000000000000000000041 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		CF2000000000000000000010 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		CF2000000000000000000012 /* AuthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthState.swift; sourceTree = "<group>"; };
+		CF2000000000000000000014 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF2000000000000000000023 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,6 +123,7 @@
 				CF100000000000000000000B /* RemainFaithfulApp.swift */,
 				CF100000000000000000000C /* ContentView.swift */,
 				CF100000000000000000002F /* OnboardingView.swift */,
+				CF2000000000000000000014 /* LoginView.swift */,
 				CF1000000000000000000031 /* DashboardView.swift */,
 				CF1000000000000000000033 /* GroupView.swift */,
 				CF1000000000000000000037 /* SettingsView.swift */,
@@ -122,6 +131,8 @@
 				CF100000000000000000003C /* AlertDetailView.swift */,
 				CF100000000000000000003E /* APIClient.swift */,
 				CF100000000000000000003F /* AppState.swift */,
+				CF2000000000000000000012 /* AuthState.swift */,
+				CF2000000000000000000010 /* KeychainHelper.swift */,
 				CF1000000000000000000041 /* NotificationService.swift */,
 				CF100000000000000000000D /* Assets.xcassets */,
 				CF100000000000000000001D /* RemainFaithful.entitlements */,
@@ -166,6 +177,9 @@
 				CF1000000000000000000029 /* PBXTargetDependency */,
 			);
 			name = RemainFaithful;
+			packageProductDependencies = (
+				CF2000000000000000000022 /* GoogleSignIn */,
+			);
 			productName = RemainFaithful;
 			productReference = CF100000000000000000000F /* RemainFaithful.app */;
 			productType = "com.apple.product-type.application";
@@ -214,6 +228,9 @@
 				Base,
 			);
 			mainGroup = CF1000000000000000000007;
+			packageReferences = (
+				CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
 			productRefGroup = CF1000000000000000000008 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -259,6 +276,9 @@
 				CF100000000000000000003D /* APIClient.swift in Sources */,
 				CF1000000000000000000040 /* AppState.swift in Sources */,
 				CF1000000000000000000042 /* NotificationService.swift in Sources */,
+				CF2000000000000000000011 /* KeychainHelper.swift in Sources */,
+				CF2000000000000000000013 /* AuthState.swift in Sources */,
+				CF2000000000000000000015 /* LoginView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -504,6 +524,25 @@
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CF2000000000000000000022 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCConfigurationList section */
 		CF1000000000000000000001 /* Build configuration list for PBXProject "RemainFaithful" */ = {

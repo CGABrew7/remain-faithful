@@ -15,10 +15,16 @@ type APNSSender interface {
 	Send(ctx context.Context, n *apns.Notification) error
 }
 
+// EmailSender is the interface used by handlers to send transactional email.
+type EmailSender interface {
+	SendPasswordReset(toEmail, toName, resetURL string) error
+}
+
 // H holds shared dependencies for all HTTP handlers.
 type H struct {
-	DB   *sql.DB
-	APNS APNSSender
+	DB    *sql.DB
+	APNS  APNSSender
+	Email EmailSender
 }
 
 // writeJSON serialises v as JSON and writes it with the given status code.
