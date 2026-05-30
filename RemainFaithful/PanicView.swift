@@ -7,10 +7,11 @@ struct PanicView: View {
     @State private var alertSent = false
     @State private var pulse: CGFloat = 1.0
 
-    // Mock partner — real app would pull from user's partner model
-    private let partnerName    = "James Bishop"
+    // PLACEHOLDER: replace with the real accountability partner loaded from UserDefaults/API.
+    // The partner name, initials, and phone number should come from the user's relationship data.
+    private let partnerName     = "James Bishop"
     private let partnerInitials = "JB"
-    private let partnerPhone   = "5555550100"
+    private let partnerPhone    = "5555550100"
 
     private var partnerFirstName: String {
         partnerName.components(separatedBy: " ").first ?? partnerName

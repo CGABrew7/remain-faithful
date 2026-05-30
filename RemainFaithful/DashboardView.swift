@@ -193,7 +193,9 @@ extension ActivityEvent {
     }
 }
 
-// MARK: - Mock data
+// MARK: - Placeholder data
+// PLACEHOLDER: sampleEvents and weekClean are shown until real data loads from GET /events.
+// streak data (days:14, best:21) is also hardcoded until a streak API endpoint is built.
 
 private let sampleEvents: [ActivityEvent] = [
     .init(category: .adultContent, severity: .high,   description: "Flagged during browsing session",  minutesAgo: 23),
@@ -215,9 +217,10 @@ struct DashboardView: View {
     @EnvironmentObject private var appState: AppState
     @Binding var showPanic: Bool
 
-    @State private var status:       MonitoringStatus = .active
-    @State private var events:       [ActivityEvent]  = sampleEvents
-    @State private var showDonation: Bool             = false
+    @State private var status:         MonitoringStatus = .active
+    @State private var events:         [ActivityEvent]  = sampleEvents
+    @State private var showDonation:   Bool             = false
+    @State private var isLoadingEvents = false
 
     private var shouldShowDonateBanner: Bool {
         guard !hasDonated else { return false }
@@ -256,7 +259,7 @@ struct DashboardView: View {
                         .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
                     }
                     VerseCard()
-                    ActivitySection(events: events)
+                    ActivitySection(events: events, isLoading: isLoadingEvents)
                     panicButton
                 }
                 .padding(.horizontal, 20)
@@ -303,12 +306,15 @@ struct DashboardView: View {
     @MainActor
     private func loadEvents() async {
         guard APIClient.shared.isAuthenticated else { return }
+        isLoadingEvents = true
+        defer { isLoadingEvents = false }
         do {
             let remote = try await APIClient.shared.listEvents()
             let converted = remote.compactMap { ActivityEvent.from(remote: $0) }
             if !converted.isEmpty { events = converted }
+            // If empty, placeholder sampleEvents remain visible so the UI isn't blank.
         } catch {
-            // Keep mock data visible if the server is unreachable
+            // Keep placeholder data visible if the server is unreachable.
         }
     }
 
@@ -575,6 +581,7 @@ private struct VerseCard: View {
 
 private struct ActivitySection: View {
     let events: [ActivityEvent]
+    var isLoading: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -583,12 +590,16 @@ private struct ActivitySection: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.white)
                 Spacer()
-                Text("See all")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.rfGold)
+                if isLoading {
+                    ProgressView().tint(Color.rfGold).scaleEffect(0.75)
+                } else {
+                    Text("See all")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.rfGold)
+                }
             }
 
-            if events.isEmpty {
+            if events.isEmpty && !isLoading {
                 emptyState
             } else {
                 VStack(spacing: 10) {

@@ -109,6 +109,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 				"sound": "default",
 			},
 			"notification_type": "CONTENT_FLAGGED",
+			"sender_name":       capturedCaller,
 			"event_id":          capturedEventID,
 			"category":          capturedCategory,
 			"severity":          capturedSeverity,

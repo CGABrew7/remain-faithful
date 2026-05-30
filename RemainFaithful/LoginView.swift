@@ -302,7 +302,7 @@ struct LoginView: View {
 
     private func handleGoogleSignIn() {
         guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootVC = scene.windows.first?.rootViewController else { return }
+              let rootVC = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController else { return }
         isLoading = true
         errorMsg  = nil
         GIDSignIn.sharedInstance.signIn(withPresenting: rootVC) { result, error in

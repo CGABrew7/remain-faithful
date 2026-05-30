@@ -52,6 +52,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        // TODO: migrate to BGAppRefreshTask (deprecated in iOS 13).
+        // Add "com.remainfaithful.app.fetch" to BGTaskSchedulerPermittedIdentifiers in
+        // Xcode → Target → Info, then replace with BGTaskScheduler.shared.register + submit.
         application.setMinimumBackgroundFetchInterval(
             UIApplication.backgroundFetchIntervalMinimum
         )

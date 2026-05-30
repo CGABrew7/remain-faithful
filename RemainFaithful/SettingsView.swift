@@ -54,7 +54,11 @@ struct SettingsView: View {
         .sheet(isPresented: $showCovenant)    { SettingsCovenantSheet() }
         .sheet(isPresented: $showActivityLog) { ActivityLogSheet() }
         .alert("Leave All Groups", isPresented: $showLeaveAlert) {
-            Button("Leave All Groups", role: .destructive) { }
+            Button("Leave All Groups", role: .destructive) {
+                // PLACEHOLDER: call DELETE /groups/:id or a dedicated leave endpoint once built.
+                // For now, clear the stored group ID so the view stops showing stale data.
+                UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+            }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("You will be removed from all accountability groups. This cannot be undone.")
