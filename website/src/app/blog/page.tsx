@@ -4,7 +4,7 @@ import { posts } from './posts'
 
 export const metadata: Metadata = {
   title: 'Blog',
-  description: 'Insights on accountability, sexual purity, men\'s ministry, and the technology behind Remain Faithful.',
+  description: 'Insights on accountability, purity, men\'s ministry, and the technology behind Remain Faithful.',
 }
 
 export default function BlogPage() {
@@ -17,7 +17,7 @@ export default function BlogPage() {
             Thoughts on Accountability
           </h1>
           <p className="text-[#8A9BB0] max-w-xl mx-auto">
-            Practical guides, theological reflections, and honest conversations about the struggle — and the tools we&apos;ve built to face it together.
+            Practical guides, theological reflections, and honest conversations about the struggle and the tools we&apos;ve built to face it together.
           </p>
         </div>
 

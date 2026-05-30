@@ -17,8 +17,11 @@ export default function PrivacyPage() {
 
         <div className="prose-content space-y-12">
           <Section title="Our Commitment">
+            <p className="font-semibold text-[#F0EDE8] leading-relaxed">
+              Your name, email address, and personal information will never be shared, sold, or disclosed to any third party, at any time, for any reason. This is a permanent commitment.
+            </p>
             <p>
-              Remain Faithful is an accountability app for adults committed to sexual purity. Because of the deeply personal nature of what this app does, we have designed our privacy model first and built the technology to match it. This policy describes exactly what data we collect, what stays on your device, and what your partners can see.
+              Remain Faithful is an accountability app for adults committed to purity. Because of the deeply personal nature of what this app does, we have designed our privacy model first and built the technology to match it. This policy describes exactly what data we collect, what stays on your device, and what your partners can see.
             </p>
             <p>
               If you have any questions about this policy, contact us at{' '}
@@ -57,7 +60,7 @@ export default function PrivacyPage() {
 
             <Subsection title="Usage Analytics">
               <p>
-                We use Google Analytics (GA4) to understand how users navigate the website. This is optional — you can opt out via your browser&apos;s Do Not Track setting or a GA opt-out extension. The app itself does not include analytics SDKs.
+                We use Google Analytics (GA4) to understand how users navigate the website. This is optional. You can opt out via your browser&apos;s Do Not Track setting or a GA opt-out extension. The app itself does not include analytics SDKs.
               </p>
             </Subsection>
 

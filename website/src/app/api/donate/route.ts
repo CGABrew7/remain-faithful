@@ -31,7 +31,7 @@ export async function POST(request: Request) {
             product_data: {
               name: 'Donation to Remain Faithful',
               description:
-                'Supports free accountability tools for men committed to sexual purity.',
+                'Supports free accountability tools for men committed to purity.',
             },
             unit_amount: amountCents,
             ...(recurring ? { recurring: { interval: 'month' } } : {}),

@@ -6,9 +6,9 @@ import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
 
 export const metadata: Metadata = {
-  title: 'Remain Faithful — Accountability That Actually Works',
+  title: 'Remain Faithful: Accountability That Works',
   description:
-    'Free peer accountability for adults committed to sexual purity. On-device AI, privacy-first, built on trust — not surveillance.',
+    'Free peer accountability for adults committed to purity. On-device AI, privacy-first, built on trust, not surveillance.',
 }
 
 export default function HomePage() {
@@ -38,15 +38,6 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left: Copy */}
             <div className="max-w-xl">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/10 text-[#C9A84C] text-sm font-medium mb-8">
-                <svg width="14" height="16" viewBox="0 0 32 36" fill="none">
-                  <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="#C9A84C"/>
-                  <path d="M11 18L14.5 21.5L21 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Free · Open Source · Privacy-First
-              </div>
-
               <h1 className="font-serif text-5xl sm:text-6xl font-bold leading-[1.1] text-[#F0EDE8] mb-6">
                 Accountability<br />
                 <span
@@ -57,12 +48,12 @@ export default function HomePage() {
                     backgroundClip: 'text',
                   }}
                 >
-                  That Actually Works
+                  That Works
                 </span>
               </h1>
 
               <p className="text-lg text-[#8A9BB0] leading-relaxed mb-10">
-                Free peer accountability for adults committed to sexual purity.
+                Free peer accountability for adults committed to purity.
                 Built on trust, not surveillance. Your content never leaves your device.
               </p>
 
@@ -90,12 +81,11 @@ export default function HomePage() {
               </div>
 
               {/* Trust indicators */}
-              <div className="flex items-center gap-6 mt-10 pt-8 border-t border-[#1E3050]">
-                <Stat number="100%" label="Free forever" />
-                <div className="w-px h-8 bg-[#1E3050]"/>
-                <Stat number="On-device" label="AI processing" />
-                <div className="w-px h-8 bg-[#1E3050]"/>
-                <Stat number="Zero" label="Data sold" />
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-10 pt-8 border-t border-[#1E3050]">
+                <TrustItem>100% Free, Forever</TrustItem>
+                <TrustItem>Donation Funded</TrustItem>
+                <TrustItem>On-Device AI &amp; Security</TrustItem>
+                <TrustItem>Zero Data Shared Off Your Device</TrustItem>
               </div>
             </div>
 
@@ -139,7 +129,7 @@ export default function HomePage() {
                 </svg>
               }
               title="On-Device Privacy"
-              body="All AI classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see metadata — not your screen."
+              body="All AI classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see metadata, not your screen."
             />
             <FeatureCard
               icon={
@@ -193,7 +183,7 @@ export default function HomePage() {
                 </svg>
               }
               title="Enable Monitoring"
-              body="Grant screen broadcast permission. The app runs quietly in the background — using on-device AI to classify content according to your agreed standards."
+              body="Grant screen broadcast permission. The app runs quietly in the background, using on-device AI to classify content according to your agreed standards."
             />
             <Step
               number="03"
@@ -203,7 +193,7 @@ export default function HomePage() {
                 </svg>
               }
               title="Stay Accountable"
-              body="When something is flagged, you're notified first — then your partners receive a discreet alert. No surprises, no shame spirals. Just honest accountability."
+              body="When something is flagged, you and your partners receive a discreet alert. No surprises, no shame spirals. Just honest accountability."
             />
           </div>
 
@@ -254,7 +244,7 @@ export default function HomePage() {
               />
               <PrivacyPoint
                 title="You Control Access"
-                body="You approve every partner. You set alert thresholds. You can pause monitoring or remove partners at any time — instantly."
+                body="You approve every partner. You set alert thresholds. You can pause monitoring or remove partners at any time, instantly."
               />
             </div>
           </div>
@@ -273,8 +263,8 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6">
             <Testimonial
               quote="RF changed our men's group. We went from vague commitments to real accountability. The alerts make the invisible visible, without the shame spiral."
-              author="Pastor Mike"
-              role="Church of the Resurrection, TX"
+              author="Beta User"
+              role="Kansas City, Missouri"
             />
             <Testimonial
               quote="I finally have partners who actually know the struggle. The app makes it real, not just talk. And knowing they'll get an alert... that changes the moment."
@@ -355,7 +345,7 @@ export default function HomePage() {
           </p>
           <DonateButton />
           <p className="text-xs text-[#8A9BB0]/50 mt-6">
-            Donations are processed securely via Stripe. Not tax-deductible. We are not a registered nonprofit.
+            Donations are processed securely via Stripe.
           </p>
         </div>
       </section>
@@ -363,11 +353,13 @@ export default function HomePage() {
   )
 }
 
-function Stat({ number, label }: { number: string; label: string }) {
+function TrustItem({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <p className="text-[#C9A84C] font-serif font-bold text-xl">{number}</p>
-      <p className="text-xs text-[#8A9BB0] mt-0.5">{label}</p>
+    <div className="flex items-center gap-2">
+      <svg className="flex-shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2.5" strokeLinecap="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span className="text-xs font-medium text-[#8A9BB0]">{children}</span>
     </div>
   )
 }

@@ -21,14 +21,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Remain Faithful — Accountability That Actually Works',
+    default: 'Remain Faithful: Accountability That Works',
     template: '%s | Remain Faithful',
   },
   description:
-    'Free peer accountability for adults committed to sexual purity. On-device AI, privacy-first, built on trust — not surveillance.',
+    'Free peer accountability for adults committed to purity. On-device AI, privacy-first, built on trust, not surveillance.',
   keywords: [
     'accountability app',
-    'sexual purity',
+    'purity',
     'Christian men',
     'accountability partner',
     'purity app',
@@ -46,23 +46,23 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     siteName: 'Remain Faithful',
-    title: 'Remain Faithful — Accountability That Actually Works',
+    title: 'Remain Faithful: Accountability That Works',
     description:
-      'Free peer accountability for adults committed to sexual purity. On-device AI, privacy-first, built on trust — not surveillance.',
+      'Free peer accountability for adults committed to purity. On-device AI, privacy-first, built on trust, not surveillance.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Remain Faithful — Accountability That Actually Works',
+        alt: 'Remain Faithful: Accountability That Works',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Remain Faithful — Accountability That Actually Works',
+    title: 'Remain Faithful: Accountability That Works',
     description:
-      'Free peer accountability for adults committed to sexual purity. On-device AI, privacy-first.',
+      'Free peer accountability for adults committed to purity. On-device AI, privacy-first.',
     images: ['/og-image.png'],
   },
   robots: {

@@ -5,7 +5,7 @@ import ContactForm from '@/components/ContactForm'
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Learn about the mission, values, and team behind Remain Faithful — free accountability software built on trust, not surveillance.',
+    'Learn about the mission, values, and team behind Remain Faithful, free accountability software built on trust, not surveillance.',
 }
 
 const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
@@ -31,9 +31,9 @@ export default function AboutPage() {
               style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
             >
               <p className="font-serif text-lg text-[#F0EDE8] italic leading-relaxed">
-                &ldquo;Accountability without relationship is just surveillance. We built RF to be the former, never the latter.&rdquo;
+                &ldquo;Peer accountability is one of the best ways to encourage purity. Our system does not depend on self-disclosure but instead provides continuous monitoring set up during your good times to prevent the hard times.&rdquo;
               </p>
-              <p className="text-sm text-[#8A9BB0] mt-4">— The RF Team</p>
+              <p className="text-sm text-[#8A9BB0] mt-4">The RF Team</p>
             </div>
           </div>
         </div>
@@ -46,10 +46,10 @@ export default function AboutPage() {
             <div>
               <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Why We Built This</h2>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
-                The existing accountability software market has a few products, but they tend toward one of two failure modes: either they&apos;re heavy-handed surveillance tools that damage trust, or they&apos;re check-in apps that depend entirely on self-reporting honesty — defeating the point of accountability.
+                The existing accountability software market has a few products, but they tend toward one of two failure modes: either they&apos;re heavy-handed surveillance tools that damage trust, or they&apos;re check-in apps that depend entirely on self-reporting honesty, defeating the point of accountability.
               </p>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
-                We wanted something that creates automatic, consistent signals — so that disclosure isn&apos;t a choice that a struggling person has to summon the courage to make in their worst moment — while simultaneously preserving dignity and privacy.
+                We wanted something that creates automatic, consistent signals, so that disclosure isn&apos;t a choice a struggling person has to summon the courage to make in their worst moment, while still preserving dignity and privacy.
               </p>
               <p className="text-[#8A9BB0] leading-relaxed">
                 The on-device AI model was the key insight. Your screen content never leaves your device. Partners see metadata, not surveillance. That changes everything about what&apos;s possible in this space.
@@ -61,13 +61,13 @@ export default function AboutPage() {
                 <div className="p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
                   <h3 className="font-semibold text-[#C9A84C] mb-2 text-sm uppercase tracking-wide">Mission</h3>
                   <p className="text-sm text-[#8A9BB0] leading-relaxed">
-                    To provide every person committed to sexual purity with a free, dignified, and effective accountability tool — regardless of their economic situation.
+                    To provide every person committed to purity with a free, dignified, and effective accountability tool, regardless of their economic situation.
                   </p>
                 </div>
                 <div className="p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
                   <h3 className="font-semibold text-[#C9A84C] mb-2 text-sm uppercase tracking-wide">Vision</h3>
                   <p className="text-sm text-[#8A9BB0] leading-relaxed">
-                    A world where no man or woman faces the struggle alone — where accountability is normalized, technology-assisted, and built on genuine community rather than shame.
+                    A world where no man or woman faces the struggle alone, where accountability is normalized, technology-assisted, and built on genuine community rather than shame.
                   </p>
                 </div>
               </div>
@@ -85,32 +85,25 @@ export default function AboutPage() {
           <div className="grid sm:grid-cols-2 gap-5">
             {[
               {
-                icon: '🔒',
                 title: 'Privacy-First',
-                desc: 'We designed the privacy model before the first line of code was written. On-device AI is not a feature — it is the architecture. Your content stays on your device. This is non-negotiable.',
+                desc: 'We designed the privacy model before the first line of code was written. On-device AI is not a feature; it is the architecture. Your content stays on your device. This is non-negotiable.',
               },
               {
-                icon: '❤️',
                 title: 'Radically Free',
                 desc: 'No one should have to choose between their financial situation and access to accountability. We will never charge for this app. Donations sustain the project; they do not gate it.',
               },
               {
-                icon: '🤝',
                 title: 'Peer-Centered',
-                desc: 'Accountability must be relational. RF is a tool for people who already have — or are building — relationships of trust. The app facilitates; the people do the real work.',
+                desc: 'Accountability must be relational. RF is a tool for people who already have, or are building, relationships of trust. The app facilitates; the people do the real work.',
               },
               {
-                icon: '✝️',
                 title: 'Faith-Grounded',
-                desc: 'RF is built from a Christian perspective and reflects a biblical view of sexuality, covenant, and community. That said, the app itself is open to anyone who finds its accountability model valuable.',
+                desc: 'RF is built from a Christian perspective and reflects a biblical view of purity, covenant, and community. That said, the app itself is open to anyone who finds its accountability model valuable.',
               },
             ].map((v) => (
-              <div key={v.title} className="flex gap-5 p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
-                <div className="text-3xl flex-shrink-0">{v.icon}</div>
-                <div>
-                  <h3 className="font-serif text-lg font-semibold text-[#F0EDE8] mb-2">{v.title}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{v.desc}</p>
-                </div>
+              <div key={v.title} className="p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
+                <h3 className="font-serif text-lg font-semibold text-[#F0EDE8] mb-2">{v.title}</h3>
+                <p className="text-sm text-[#8A9BB0] leading-relaxed">{v.desc}</p>
               </div>
             ))}
           </div>
@@ -124,7 +117,7 @@ export default function AboutPage() {
             <div>
               <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Open Source Commitment</h2>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
-                Remain Faithful is open source. Every line of code — iOS app, Go backend, and this website — is publicly available on GitHub.
+                Remain Faithful is open source. Every line of code (iOS app, Go backend, and this website) is publicly available on GitHub.
               </p>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
                 For an app that handles intimate personal behavioral data, open source isn&apos;t optional. You should be able to verify our privacy claims by reading the code. Anyone who tells you to &ldquo;just trust us&rdquo; with this kind of data is asking too much.
@@ -190,7 +183,7 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-5">Why Donations, Not Subscriptions</h2>
           <p className="text-[#8A9BB0] leading-relaxed mb-8">
-            A subscription model creates a perverse incentive: we benefit when you stay subscribed, not necessarily when you succeed. Donations reverse this. We depend on users who find real value in the app — users who are succeeding.
+            A subscription model creates a perverse incentive: we benefit when you stay subscribed, not necessarily when you succeed. Donations reverse this. We depend on users who find real value in the app, users who are succeeding. Server costs run approximately $4 per month per participant, so even a small donation goes a long way.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 text-left mb-10">
             {[
@@ -220,7 +213,7 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Get in Touch</h2>
             <p className="text-[#8A9BB0]">
-              Questions, feedback, bug reports, or partnership inquiries — we read everything.
+              Questions, feedback, bug reports, or partnership inquiries: we read everything.
             </p>
           </div>
           <ContactForm />

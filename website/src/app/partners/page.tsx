@@ -18,7 +18,7 @@ export default function PartnersPage() {
             Equip Your Men&apos;s Ministry
           </h1>
           <p className="text-[#8A9BB0] text-lg max-w-2xl mx-auto">
-            Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and men&apos;s ministry programs — at no cost to your church.
+            Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and men&apos;s ministry programs, at no cost to your church.
           </p>
         </div>
       </section>
@@ -35,28 +35,23 @@ export default function PartnersPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
-                icon: '🤝',
                 title: 'Structured Accountability',
                 desc: 'Replace vague monthly check-ins with consistent, automatic alerts that keep conversations grounded in reality.',
               },
               {
-                icon: '⚙️',
                 title: 'Easy Group Setup',
-                desc: 'Create a group, generate an invite code, share it with your men. They\'re monitoring within minutes — no IT required.',
+                desc: 'Create a group, generate an invite code, share it with your men. They\'re monitoring within minutes. No IT required.',
               },
               {
-                icon: '👁',
                 title: 'Pastoral Oversight',
                 desc: 'As group leader, you receive a weekly aggregate digest. Members control whether you see individual alerts.',
               },
               {
-                icon: '🔒',
                 title: 'Privacy by Design',
                 desc: 'Screen content stays on member devices. You see alert metadata, not surveillance footage. Dignity is preserved.',
               },
             ].map((b) => (
               <div key={b.title} className="rounded-2xl p-6 border border-[#1E3050] bg-[#162235]">
-                <div className="text-3xl mb-4">{b.icon}</div>
                 <h3 className="font-serif text-lg font-semibold text-[#F0EDE8] mb-2">{b.title}</h3>
                 <p className="text-sm text-[#8A9BB0] leading-relaxed">{b.desc}</p>
               </div>
@@ -97,12 +92,17 @@ export default function PartnersPage() {
           </div>
 
           <div className="mt-8 text-center">
-            <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-[#1E3050] text-[#8A9BB0] text-sm">
+            <a
+              href="/group-setup-guide"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-[#C9A84C]/40 bg-[#C9A84C]/10 text-[#C9A84C] text-sm font-medium hover:bg-[#C9A84C]/20 transition-colors"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
               </svg>
-              Group Setup Guide — Coming Soon
-            </span>
+              Download Group Setup Guide (PDF)
+            </a>
           </div>
         </div>
       </section>
@@ -116,14 +116,14 @@ export default function PartnersPage() {
           <div className="grid md:grid-cols-2 gap-6">
             {[
               {
-                quote: 'Our men\'s group had been meeting for two years without any real accountability mechanism. RF gave us that mechanism without making it weird. The alerts happen automatically — conversations happen naturally.',
-                author: 'Pastor James W.',
-                role: 'Bethel Community Church, Colorado',
+                quote: 'Our men\'s group had been meeting for two years without any real accountability mechanism. RF gave us that mechanism without making it weird. The alerts happen automatically. Conversations happen naturally.',
+                author: 'Senior Pastor',
+                role: 'Mountain West Region',
               },
               {
-                quote: 'I was skeptical of any tech solution to a spiritual problem. But RF doesn\'t replace relationship — it undergirds it. My men say the app makes them feel like someone actually notices when they struggle.',
-                author: 'Rev. Marcus T.',
-                role: 'Men\'s Ministry Director, Georgia',
+                quote: 'I was skeptical of any tech solution to a spiritual problem. But RF doesn\'t replace relationship. It undergirds it. My men say the app makes them feel like someone actually notices when they struggle.',
+                author: 'Men\'s Ministry Director',
+                role: 'Southeast Region',
               },
             ].map((t, i) => (
               <div key={i} className="rounded-2xl p-7 border border-[#1E3050] bg-[#162235]">

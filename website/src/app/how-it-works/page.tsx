@@ -11,31 +11,31 @@ export const metadata: Metadata = {
 const faqs = [
   {
     q: 'Is it really free?',
-    a: 'Yes — always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. We have committed to this model indefinitely.',
+    a: 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. We have committed to this model indefinitely.',
   },
   {
     q: 'Who sees my data?',
-    a: 'Your chosen accountability partners can see alert metadata — the timestamp, the category (e.g., "adult content"), and the severity level. They do not see screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
+    a: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), and the severity level. They do not see screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
   },
   {
     q: 'Can I be anonymous?',
-    a: 'You choose your display name when you create your account. However, accountability by design requires that your partners know who they are holding accountable. Anonymity defeats the purpose. Your partners see the name you provide — typically your real name.',
+    a: 'You choose your display name when you create your account. However, accountability by design requires that your partners know who they are holding accountable. Anonymity defeats the purpose. Your partners see the name you provide, typically your real name.',
   },
   {
     q: 'What exactly gets monitored?',
-    a: 'When you enable monitoring and grant screen broadcast permission, the app analyzes frames from your screen using Apple\'s built-in Vision OCR and SensitiveContentAnalysis frameworks. It looks for concerning content across all apps. The analysis is performed entirely on-device — nothing is sent to a server for classification (unless the on-device classifiers are uncertain, in which case a category-only query — no content — may reach our cloud classifier).',
+    a: 'When you enable monitoring and grant screen broadcast permission, the app analyzes frames from your screen using Apple\'s built-in Vision OCR and SensitiveContentAnalysis frameworks. It looks for concerning content across all apps. The analysis is performed entirely on-device. Nothing is sent to a server for classification (unless the on-device classifiers are uncertain, in which case a category-only query (no content) may reach our cloud classifier).',
   },
   {
     q: 'How do I leave a group?',
-    a: 'Navigate to Settings → Groups → select the group → Leave Group. Your data is not retained after leaving. Partners will no longer receive alerts from you. Your historical alerts within the group are purged per your data retention setting (default 30 days).',
+    a: 'Navigate to Settings → Groups → select the group → Leave Group. When you leave a group, all group members are notified. Your data is not retained after leaving. Partners will no longer receive alerts from you. Your historical alerts within the group are purged per your data retention setting (default 30 days).',
   },
   {
     q: 'Does this work on Android?',
-    a: 'Not yet. The current app requires iOS 17 or later due to its reliance on Apple-specific frameworks (ReplayKit, Vision, SensitiveContentAnalysis). Android support is planned for 2025 but not yet available.',
+    a: 'Not yet. The current app requires iOS 17 or later due to its reliance on Apple-specific frameworks (ReplayKit, Vision, SensitiveContentAnalysis). Android support is planned for late 2026 or early 2027 but is not yet available.',
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'iOS\'s ReplayKit framework allows apps to record the screen via a separate extension process. This extension runs in isolation from the main app — it cannot access the internet or your personal data directly. It captures frames, runs AI analysis locally, and only sends a structured alert event (not the frame) to the main app if something is flagged.',
+    a: 'iOS\'s ReplayKit framework allows apps to record the screen via a separate extension process. This extension runs in isolation from the main app. It cannot access the internet or your personal data directly. It captures frames, runs AI analysis locally, and only sends a structured alert event (not the frame) to the main app if something is flagged.',
   },
 ]
 
@@ -65,13 +65,13 @@ export default function HowItWorksPage() {
                 The Accountability Model
               </h2>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
-                Lasting change in sexual purity requires three things: vulnerability, consistent visibility, and a community of trust. Most accountability fails because it operates on the honor system — you report what you choose to report, when you choose to report it.
+                Lasting change in purity requires three things: vulnerability, consistent visibility, and a community of trust. Most accountability fails because it operates on the honor system: you report what you choose to report, when you choose to report it.
               </p>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
-                Remain Faithful creates a consistent, automatic signal that removes the decision to disclose. When your device flags something, your partners know — regardless of whether you would have told them. This isn&apos;t surveillance. It&apos;s the covenant made real.
+                Remain Faithful creates a consistent, automatic signal that removes the decision to disclose. When your device flags something, your partners know, regardless of whether you would have told them. This isn&apos;t surveillance. It&apos;s the covenant made real.
               </p>
               <p className="text-[#8A9BB0] leading-relaxed">
-                The app is a tool, not a replacement for relationship. Alerts are conversation starters, not verdicts. Partners are expected to respond with grace, not judgment.
+                The app is a tool, not a replacement for relationship. Alerts are conversation starters, not verdicts.
               </p>
             </div>
             <div className="space-y-4">
@@ -107,7 +107,6 @@ export default function HowItWorksPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <ModeCard
               title="One-to-One Partnership"
-              icon="👥"
               points={[
                 'Maximum privacy between two people',
                 'Deep, focused relationship built on mutual trust',
@@ -118,7 +117,6 @@ export default function HowItWorksPage() {
             />
             <ModeCard
               title="Small Group"
-              icon="🏛"
               points={[
                 'Up to 20 members in a single group',
                 'Group leader (pastor or facilitator) can view aggregate dashboards',
@@ -149,7 +147,7 @@ export default function HowItWorksPage() {
               {
                 step: '1',
                 title: 'Broadcast Extension Captures Frames',
-                body: 'When you enable monitoring, iOS activates a ReplayKit broadcast extension — a sandboxed process separate from the main app. It captures screen frames at intervals without access to the network or your personal data.',
+                body: 'When you enable monitoring, iOS activates a ReplayKit broadcast extension, a sandboxed process separate from the main app. It captures screen frames at intervals without access to the network or your personal data.',
               },
               {
                 step: '2',
@@ -164,7 +162,7 @@ export default function HowItWorksPage() {
               {
                 step: '4',
                 title: 'Tier 3: Cloud Classifier (Category Only)',
-                body: 'If the on-device classifiers are uncertain and the content appears borderline, a category query — containing only the text category, never the image — is sent to our Claude-based classifier at /classify. No screenshot. No personal content.',
+                body: 'If the on-device classifiers are uncertain and the content appears borderline, a category query (containing only the text category, never the image) is sent to our Claude-based classifier at /classify. No screenshot. No personal content.',
               },
               {
                 step: '5',
@@ -210,7 +208,7 @@ export default function HowItWorksPage() {
               <ul className="space-y-3">
                 {[
                   'I will be honest with my partner, even when it is difficult.',
-                  'I will not use this app to judge or condemn my partner.',
+                  'I will not use this app to condemn my partner.',
                   'I will respond to alerts with grace and genuine care.',
                   'I will not share my partner\'s alerts with others.',
                   'I will pursue my partner\'s flourishing above my own curiosity.',
@@ -257,10 +255,9 @@ export default function HowItWorksPage() {
   )
 }
 
-function ModeCard({ title, icon, points }: { title: string; icon: string; points: string[] }) {
+function ModeCard({ title, points }: { title: string; points: string[] }) {
   return (
     <div className="rounded-2xl p-8 border border-[#1E3050] bg-[#162235]">
-      <div className="text-3xl mb-4">{icon}</div>
       <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-5">{title}</h3>
       <ul className="space-y-2.5">
         {points.map((p, i) => (
