@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab  = 0
     @State private var homePath     = NavigationPath()
     @State private var showPanic    = false
@@ -14,7 +15,8 @@ struct ContentView: View {
                         AlertDetailView(event: event)
                     }
             }
-            .tabItem { Label("Home",     systemImage: "house.fill") }
+            .tabItem { Label("Home", systemImage: "house.fill") }
+            .badge(appState.unreadAlertCount)
             .tag(0)
 
             NavigationStack { GroupView() }
@@ -33,6 +35,25 @@ struct ContentView: View {
         .onReceive(appState.$deepLink.compactMap { $0 }) { link in
             handleDeepLink(link)
         }
+        // Mark alerts seen and clear badge when user lands on Home
+        .onChange(of: selectedTab) { _, newTab in
+            if newTab == 0 { markSeenAndClearBadge() }
+        }
+        // Refresh unread count each time the app comes to the foreground
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active, APIClient.shared.isAuthenticated else { return }
+            Task {
+                let count = (try? await APIClient.shared.alertUnreadCount()) ?? 0
+                appState.unreadAlertCount = count
+                // Auto-clear badge if user is already on Home tab
+                if selectedTab == 0 && count > 0 { markSeenAndClearBadge() }
+            }
+        }
+    }
+
+    private func markSeenAndClearBadge() {
+        appState.resetUnreadCount()
+        Task { try? await APIClient.shared.markAlertsSeen() }
     }
 
     private func handleDeepLink(_ link: DeepLink) {
@@ -40,7 +61,6 @@ struct ContentView: View {
         switch link {
         case .alertDetail(let event):
             selectedTab = 0
-            // Small delay lets the tab switch settle before pushing.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 homePath.append(event)
             }

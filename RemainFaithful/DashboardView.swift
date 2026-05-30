@@ -209,13 +209,22 @@ private let weekClean = [true, true, false, true, true, true, false]
 // MARK: - Dashboard root
 
 struct DashboardView: View {
-    @AppStorage("userName") private var userName = ""
-    /// Driven by ContentView so notification taps can open PanicView even when
-    /// the dashboard isn't the deepest view on the stack.
+    @AppStorage("userName")                  private var userName             = ""
+    @AppStorage("hasDonated")                private var hasDonated           = false
+    @AppStorage("donateBannerLastDismissed") private var donateBannerLastDismissed: Double = 0
+    @EnvironmentObject private var appState: AppState
     @Binding var showPanic: Bool
 
-    @State private var status: MonitoringStatus = .active
-    @State private var events: [ActivityEvent]  = sampleEvents
+    @State private var status:       MonitoringStatus = .active
+    @State private var events:       [ActivityEvent]  = sampleEvents
+    @State private var showDonation: Bool             = false
+
+    private var shouldShowDonateBanner: Bool {
+        guard !hasDonated else { return false }
+        guard donateBannerLastDismissed > 0 else { return true }
+        let days = (Date().timeIntervalSince1970 - donateBannerLastDismissed) / 86_400
+        return days >= 7
+    }
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -230,7 +239,7 @@ struct DashboardView: View {
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color.rfNavy.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
@@ -238,6 +247,14 @@ struct DashboardView: View {
                     headerRow
                     StatusCard(status: $status)
                     StreakCard(days: 14, best: 21, week: weekClean)
+                    if shouldShowDonateBanner {
+                        DonateBanner(
+                            onDonate:  { showDonation = true;
+                                         donateBannerLastDismissed = Date().timeIntervalSince1970 },
+                            onDismiss: { donateBannerLastDismissed = Date().timeIntervalSince1970 }
+                        )
+                        .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
+                    }
                     VerseCard()
                     ActivitySection(events: events)
                     panicButton
@@ -246,8 +263,40 @@ struct DashboardView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 32)
             }
+
+            // Partner flag banner — slides in from top when a foreground push arrives
+            if let alert = appState.partnerFlagAlert {
+                PartnerFlagBanner(
+                    alert: alert,
+                    onTap: {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            appState.clearPartnerAlert()
+                        }
+                        if let event = alert.event {
+                            AppState.shared.navigate(to: .alertDetail(event))
+                        }
+                    },
+                    onDismiss: {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            appState.clearPartnerAlert()
+                        }
+                    }
+                )
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .zIndex(10)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                // Auto-dismiss after 6 seconds; reset if a new alert replaces this one
+                .task(id: alert.id) {
+                    try? await Task.sleep(for: .seconds(6))
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                        appState.clearPartnerAlert()
+                    }
+                }
+            }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $showDonation) { DonationView() }
         .task { await loadEvents() }
     }
 
@@ -612,6 +661,119 @@ private struct ActivityRow: View {
     }
 }
 
+// MARK: - Donate Banner
+
+private struct DonateBanner: View {
+    let onDonate:  () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color.rfGold.opacity(0.14))
+                    .frame(width: 36, height: 36)
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.rfGold)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Keep RF Free — Donate")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+                Text("This app runs on generous support.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.45))
+            }
+
+            Spacer(minLength: 4)
+
+            Button(action: onDonate) {
+                Text("Give")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color(red: 0.05, green: 0.09, blue: 0.22))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(Color.rfGold))
+            }
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Color.white.opacity(0.35))
+                    .padding(6)
+                    .background(Circle().fill(Color.white.opacity(0.07)))
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.04))
+                .overlay(RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.rfGold.opacity(0.22), lineWidth: 1))
+        )
+    }
+}
+
+// MARK: - Partner Flag Banner
+
+private struct PartnerFlagBanner: View {
+    let alert: PartnerFlagAlert
+    let onTap: () -> Void
+    let onDismiss: () -> Void
+
+    private let orange = Color(red: 0.95, green: 0.58, blue: 0.12)
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(orange.opacity(0.18))
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(orange)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(alert.senderName) flagged \(alert.displayCategory)")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    Text("Tap to review the alert")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.50))
+                }
+
+                Spacer(minLength: 4)
+
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.45))
+                        .padding(8)
+                        .background(Circle().fill(Color.white.opacity(0.08)))
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(red: 0.14, green: 0.18, blue: 0.34))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(orange.opacity(0.40), lineWidth: 1.5)
+                    )
+                    .shadow(color: .black.opacity(0.35), radius: 12, y: 4)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Shared card background
 
 private var card: some View {
@@ -629,4 +791,5 @@ private var card: some View {
         DashboardView(showPanic: $showPanic)
             .navigationDestination(for: ActivityEvent.self) { AlertDetailView(event: $0) }
     }
+    .environmentObject(AppState.shared)
 }

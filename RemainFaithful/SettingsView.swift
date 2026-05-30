@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var showActivityLog     = false
     @State private var showLeaveAlert      = false
     @State private var showDeleteAlert     = false
+    @State private var showDonation        = false
 
     private var initials: String {
         let parts = userName.components(separatedBy: " ").filter { !$0.isEmpty }
@@ -34,6 +35,7 @@ struct SettingsView: View {
                     accountabilitySection
                     monitoringSection
                     privacySection
+                    supportUsSection
                     supportSection
                     dangerZone
                 }
@@ -48,6 +50,7 @@ struct SettingsView: View {
                 .presentationDetents([.height(320)])
                 .presentationDragIndicator(.hidden)
         }
+        .sheet(isPresented: $showDonation)    { DonationView() }
         .sheet(isPresented: $showCovenant)    { SettingsCovenantSheet() }
         .sheet(isPresented: $showActivityLog) { ActivityLogSheet() }
         .alert("Leave All Groups", isPresented: $showLeaveAlert) {
@@ -163,7 +166,33 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Support
+    // MARK: - Support Us (donations)
+
+    private var supportUsSection: some View {
+        SettingsSection(title: "SUPPORT US") {
+            Button { showDonation = true } label: {
+                HStack(spacing: 14) {
+                    iconBadge("heart.fill", tint: Color(red: 0.90, green: 0.25, blue: 0.48))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Support Remain Faithful")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.white)
+                        Text("Keep RF free — one-time or monthly")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.white.opacity(0.38))
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.20))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+        }
+    }
+
+    // MARK: - Help & Support
 
     private var supportSection: some View {
         SettingsSection(title: "SUPPORT") {

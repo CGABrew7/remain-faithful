@@ -36,8 +36,10 @@ services:
       APNS_KEY_ID:       ${APNS_KEY_ID:-}
       APNS_TEAM_ID:      ${APNS_TEAM_ID:-}
       APNS_PRIVATE_KEY:  ${APNS_PRIVATE_KEY:-}
-      APNS_BUNDLE_ID:    ${APNS_BUNDLE_ID:-com.remainfaithful.app}
-      APNS_PRODUCTION:   ${APNS_PRODUCTION:-false}
+      APNS_BUNDLE_ID:        ${APNS_BUNDLE_ID:-com.remainfaithful.app}
+      APNS_PRODUCTION:       ${APNS_PRODUCTION:-false}
+      STRIPE_SECRET_KEY:     ${STRIPE_SECRET_KEY:-}      # Stripe payments
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}  # Stripe webhook verification
     depends_on:
       postgres:
         condition: service_healthy

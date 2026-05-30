@@ -9,10 +9,22 @@ struct RemainFaithfulApp: App {
     @StateObject private var appState  = AppState.shared
     @StateObject private var authState = AuthState.shared
 
+    // In DEBUG builds, `xcrun simctl spawn <id> defaults write com.remainfaithful.app
+    // debugShowDashboard -bool true` bypasses auth so the Dashboard can be tested
+    // in the simulator without a running backend.
+    private var showDashboard: Bool {
+        guard !authState.isAuthenticated else { return true }
+        #if DEBUG
+        return UserDefaults.standard.bool(forKey: "debugShowDashboard")
+        #else
+        return false
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {
-                if authState.isAuthenticated {
+                if showDashboard {
                     ContentView()
                 } else if hasCompletedOnboarding {
                     LoginView()
@@ -86,12 +98,30 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     // MARK: - UNUserNotificationCenterDelegate
 
+    /// Intercept foreground notifications.
+    /// CONTENT_FLAGGED → show our own in-app banner; all others → system banner.
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        completionHandler([.banner, .sound, .badge])
+        let userInfo = notification.request.content.userInfo
+        let type = userInfo["notification_type"] as? String
+
+        if type == NotificationType.contentFlagged {
+            let senderName = userInfo["sender_name"] as? String ?? "Your partner"
+            let category   = userInfo["category"]    as? String ?? "content"
+            let event      = ActivityEvent.from(notificationPayload: userInfo)
+            AppState.shared.showPartnerAlert(senderName: senderName,
+                                             category: category,
+                                             event: event)
+            completionHandler([.sound])
+        } else if type == "DONATION_THANKS" {
+            UserDefaults.standard.set(true, forKey: "hasDonated")
+            completionHandler([.banner, .sound])
+        } else {
+            completionHandler([.banner, .sound, .badge])
+        }
     }
 
     func userNotificationCenter(

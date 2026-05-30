@@ -8,6 +8,7 @@ import (
 
 	"remain-faithful/backend/internal/anthropic"
 	"remain-faithful/backend/internal/apns"
+	"remain-faithful/backend/internal/payment"
 )
 
 // APNSSender is the interface used by handlers to send push notifications.
@@ -32,6 +33,7 @@ type H struct {
 	APNS   APNSSender
 	Email  EmailSender
 	Claude Classifier
+	Stripe *payment.Client
 }
 
 // writeJSON serialises v as JSON and writes it with the given status code.

@@ -169,6 +169,27 @@ final class APIClient {
         try await get("/alerts")
     }
 
+    func alertUnreadCount() async throws -> Int {
+        let resp: [String: Int] = try await get("/alerts/count")
+        return resp["unseen"] ?? 0
+    }
+
+    func markAlertsSeen() async throws {
+        try await postVoid("/alerts/mark-seen", body: [String: String]())
+    }
+
+    // MARK: - Donations
+
+    func createCheckoutSession(amountDollars: Int, monthly: Bool) async throws -> URL {
+        let body: [String: Any] = ["amount_dollars": amountDollars, "monthly": monthly]
+        let resp: [String: String] = try await postAny(
+            "/donations/create-checkout-session", body: body, auth: true)
+        guard let urlStr = resp["url"], let url = URL(string: urlStr) else {
+            throw APIError.server("Invalid checkout URL")
+        }
+        return url
+    }
+
     // MARK: - Groups
 
     func getGroup(id: Int) async throws -> RemoteGroup {

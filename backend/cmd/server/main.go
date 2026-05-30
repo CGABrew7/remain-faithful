@@ -13,6 +13,7 @@ import (
 	"remain-faithful/backend/internal/apns"
 	"remain-faithful/backend/internal/email"
 	"remain-faithful/backend/internal/handler"
+	"remain-faithful/backend/internal/payment"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -41,10 +42,11 @@ func main() {
 		log.Fatalf("apns: %v", err)
 	}
 
-	emailClient  := email.New()
-	claudeClient := anthropic.New()
+	emailClient   := email.New()
+	claudeClient  := anthropic.New()
+	stripeClient  := payment.New()
 
-	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Claude: claudeClient}
+	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Claude: claudeClient, Stripe: stripeClient}
 	srv := &http.Server{
 		Addr:         ":" + port(),
 		Handler:      routes(h),
@@ -91,9 +93,15 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/events",               h.CreateEvent).Methods(http.MethodPost)
 	api.HandleFunc("/events",               h.ListEvents).Methods(http.MethodGet)
 	api.HandleFunc("/alerts",               h.ListAlerts).Methods(http.MethodGet)
-	api.HandleFunc("/users/device-token",   h.RegisterDeviceToken).Methods(http.MethodPost)
-	api.HandleFunc("/panic",                h.SendPanicAlert).Methods(http.MethodPost)
-	api.HandleFunc("/auth/refresh",         h.RefreshToken).Methods(http.MethodPost)
+	api.HandleFunc("/alerts/count",         h.AlertUnreadCount).Methods(http.MethodGet)
+	api.HandleFunc("/alerts/mark-seen",     h.MarkAlertsSeen).Methods(http.MethodPost)
+	api.HandleFunc("/users/device-token",                  h.RegisterDeviceToken).Methods(http.MethodPost)
+	api.HandleFunc("/panic",                               h.SendPanicAlert).Methods(http.MethodPost)
+	api.HandleFunc("/auth/refresh",                        h.RefreshToken).Methods(http.MethodPost)
+	api.HandleFunc("/donations/create-checkout-session",   h.CreateCheckoutSession).Methods(http.MethodPost)
+
+	// Stripe webhook — unauthenticated, verified by Stripe-Signature header
+	r.HandleFunc("/donations/webhook", h.DonationWebhook).Methods(http.MethodPost)
 
 	return r
 }
@@ -221,6 +229,16 @@ func migrate(db *sql.DB) error {
 		expires_at TIMESTAMPTZ NOT NULL,
 		UNIQUE (user_id)
 	);
+
+	CREATE TABLE IF NOT EXISTS donations (
+		id                BIGSERIAL    PRIMARY KEY,
+		user_id           BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		stripe_session_id TEXT         NOT NULL UNIQUE,
+		amount_cents      BIGINT       NOT NULL,
+		monthly           BOOLEAN      NOT NULL DEFAULT FALSE,
+		created_at        TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+	);
+	CREATE INDEX IF NOT EXISTS idx_donations_user ON donations(user_id);
 
 	-- Idempotent column additions for existing databases.
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id  TEXT UNIQUE;
