@@ -88,12 +88,15 @@ enum FlagSeverity: String {
     }
 }
 
-struct ActivityEvent: Identifiable {
+struct ActivityEvent: Identifiable, Hashable {
     let id = UUID()
     let category:    EventCategory
     let severity:    FlagSeverity
     let description: String
     let minutesAgo:  Int
+
+    static func == (lhs: ActivityEvent, rhs: ActivityEvent) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 
     var timeLabel: String {
         switch minutesAgo {
@@ -160,6 +163,36 @@ extension ActivityEvent {
     }
 }
 
+// MARK: - Notification payload conversion
+
+extension ActivityEvent {
+    /// Reconstruct an ActivityEvent from an APNs notification userInfo dict so
+    /// tapping a CONTENT_FLAGGED push can open AlertDetailView directly.
+    static func from(notificationPayload p: [AnyHashable: Any]) -> ActivityEvent? {
+        guard let catStr = p["category"] as? String else { return nil }
+        let category = EventCategory(rawValue: catStr) ?? EventCategory(apiString: catStr)
+        guard let category else { return nil }
+
+        let severityStr = p["severity"] as? String ?? "low"
+        let severity    = FlagSeverity(rawValue: severityStr.capitalized) ?? .low
+        let description = p["summary"]  as? String ?? category.rawValue
+
+        var minutesAgo = 0
+        if let ts = p["timestamp"] as? String {
+            let fmt = ISO8601DateFormatter()
+            fmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            let date = fmt.date(from: ts) ?? {
+                let f2 = ISO8601DateFormatter()
+                f2.formatOptions = [.withInternetDateTime]
+                return f2.date(from: ts) ?? Date()
+            }()
+            minutesAgo = max(0, Int(Date().timeIntervalSince(date) / 60))
+        }
+        return ActivityEvent(category: category, severity: severity,
+                             description: description, minutesAgo: minutesAgo)
+    }
+}
+
 // MARK: - Mock data
 
 private let sampleEvents: [ActivityEvent] = [
@@ -177,10 +210,12 @@ private let weekClean = [true, true, false, true, true, true, false]
 
 struct DashboardView: View {
     @AppStorage("userName") private var userName = ""
+    /// Driven by ContentView so notification taps can open PanicView even when
+    /// the dashboard isn't the deepest view on the stack.
+    @Binding var showPanic: Bool
 
-    @State private var status:    MonitoringStatus = .active
-    @State private var showPanic: Bool             = false
-    @State private var events:    [ActivityEvent]  = sampleEvents
+    @State private var status: MonitoringStatus = .active
+    @State private var events: [ActivityEvent]  = sampleEvents
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -213,7 +248,6 @@ struct DashboardView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .fullScreenCover(isPresented: $showPanic) { PanicView() }
         .task { await loadEvents() }
     }
 
@@ -510,7 +544,7 @@ private struct ActivitySection: View {
             } else {
                 VStack(spacing: 10) {
                     ForEach(events) { event in
-                        NavigationLink(destination: AlertDetailView(event: event)) {
+                        NavigationLink(value: event) {
                             ActivityRow(event: event)
                         }
                         .buttonStyle(.plain)
@@ -590,5 +624,9 @@ private var card: some View {
 }
 
 #Preview {
-    DashboardView()
+    @Previewable @State var showPanic = false
+    NavigationStack {
+        DashboardView(showPanic: $showPanic)
+            .navigationDestination(for: ActivityEvent.self) { AlertDetailView(event: $0) }
+    }
 }

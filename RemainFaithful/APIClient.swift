@@ -178,6 +178,16 @@ final class APIClient {
         try await postVoid("/groups/\(groupID)/invite", body: ["user_email": email])
     }
 
+    // MARK: - Push notifications
+
+    func registerDeviceToken(_ token: String) async throws {
+        try await postVoid("/users/device-token", body: ["token": token, "platform": "ios"])
+    }
+
+    func sendPanicAlert() async throws {
+        try await postVoid("/panic", body: [String: String]())
+    }
+
     // MARK: - Relationships
 
     func createRelationship(partnerEmail: String, type: String = "partner") async throws {

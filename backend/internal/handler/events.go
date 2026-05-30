@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	rfauth "remain-faithful/backend/internal/auth"
+	"remain-faithful/backend/internal/apns"
 )
 
 // CreateEvent records a flagged monitoring event from a device and fans out
@@ -81,6 +84,45 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to commit transaction")
 		return
 	}
+
+	// Look up the caller's display name for the push payload.
+	var callerName string
+	_ = h.DB.QueryRowContext(r.Context(),
+		`SELECT name FROM users WHERE id = $1`, userID,
+	).Scan(&callerName)
+
+	// Fan out push notifications to partners in the background so the HTTP
+	// response is not delayed.
+	capturedEventID := eventID
+	capturedCategory := req.Category
+	capturedSeverity := req.Severity
+	capturedSummary := req.Summary
+	capturedTimestamp := timestamp
+	capturedCaller := callerName
+	go func() {
+		pushPayload := map[string]any{
+			"aps": map[string]any{
+				"alert": map[string]string{
+					"title": "Monitoring Alert",
+					"body":  fmt.Sprintf("%s's device flagged %s", capturedCaller, capturedCategory),
+				},
+				"sound": "default",
+			},
+			"notification_type": "CONTENT_FLAGGED",
+			"event_id":          capturedEventID,
+			"category":          capturedCategory,
+			"severity":          capturedSeverity,
+			"summary":           capturedSummary,
+			"timestamp":         capturedTimestamp,
+		}
+		n := &apns.Notification{
+			PushType:   "alert",
+			Priority:   10,
+			CollapseID: fmt.Sprintf("event-%d", capturedEventID),
+			Payload:    pushPayload,
+		}
+		h.notifyPartners(context.Background(), userID, capturedCaller, n)
+	}()
 
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"id":        eventID,

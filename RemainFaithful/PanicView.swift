@@ -212,6 +212,7 @@ But when you are tempted, he will also provide a way out so that you can endure 
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                 alertSent = true
             }
+            Task { try? await APIClient.shared.sendPanicAlert() }
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: sent ? "checkmark.circle.fill" : "bell.badge.fill")

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	rfauth "remain-faithful/backend/internal/auth"
+	"remain-faithful/backend/internal/apns"
 	"remain-faithful/backend/internal/handler"
 
 	"github.com/gorilla/mux"
@@ -27,7 +28,18 @@ func main() {
 	}
 	log.Println("database ready")
 
-	h := &handler.H{DB: db}
+	apnsClient, err := apns.New(
+		os.Getenv("APNS_KEY_ID"),
+		os.Getenv("APNS_TEAM_ID"),
+		getenv("APNS_BUNDLE_ID", "com.remainfaithful.app"),
+		os.Getenv("APNS_PRIVATE_KEY"),
+		os.Getenv("APNS_PRODUCTION") == "true",
+	)
+	if err != nil {
+		log.Fatalf("apns: %v", err)
+	}
+
+	h := &handler.H{DB: db, APNS: apnsClient}
 	srv := &http.Server{
 		Addr:         ":" + port(),
 		Handler:      routes(h),
@@ -67,6 +79,8 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/events",               h.CreateEvent).Methods(http.MethodPost)
 	api.HandleFunc("/events",               h.ListEvents).Methods(http.MethodGet)
 	api.HandleFunc("/alerts",               h.ListAlerts).Methods(http.MethodGet)
+	api.HandleFunc("/users/device-token",   h.RegisterDeviceToken).Methods(http.MethodPost)
+	api.HandleFunc("/panic",                h.SendPanicAlert).Methods(http.MethodPost)
 
 	return r
 }
@@ -172,6 +186,18 @@ func migrate(db *sql.DB) error {
 	CREATE INDEX IF NOT EXISTS idx_alerts_relationship   ON alerts(relationship_id);
 	CREATE INDEX IF NOT EXISTS idx_relationships_user    ON relationships(user_id);
 	CREATE INDEX IF NOT EXISTS idx_relationships_partner ON relationships(partner_id);
+
+	CREATE TABLE IF NOT EXISTS device_tokens (
+		id         BIGSERIAL   PRIMARY KEY,
+		user_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		token      TEXT        NOT NULL,
+		platform   TEXT        NOT NULL DEFAULT 'ios',
+		is_active  BOOLEAN     NOT NULL DEFAULT TRUE,
+		created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		UNIQUE (user_id, token)
+	);
+	CREATE INDEX IF NOT EXISTS idx_device_tokens_user ON device_tokens(user_id);
 	`)
 	return err
 }

@@ -21,6 +21,8 @@
 		CF1000000000000000000039 /* PanicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003A /* PanicView.swift */; };
 		CF100000000000000000003B /* AlertDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003C /* AlertDetailView.swift */; };
 		CF100000000000000000003D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003E /* APIClient.swift */; };
+		CF1000000000000000000040 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003F /* AppState.swift */; };
+		CF1000000000000000000042 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000041 /* NotificationService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +68,8 @@
 		CF100000000000000000003A /* PanicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanicView.swift; sourceTree = "<group>"; };
 		CF100000000000000000003C /* AlertDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertDetailView.swift; sourceTree = "<group>"; };
 		CF100000000000000000003E /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		CF100000000000000000003F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		CF1000000000000000000041 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +121,8 @@
 				CF100000000000000000003A /* PanicView.swift */,
 				CF100000000000000000003C /* AlertDetailView.swift */,
 				CF100000000000000000003E /* APIClient.swift */,
+				CF100000000000000000003F /* AppState.swift */,
+				CF1000000000000000000041 /* NotificationService.swift */,
 				CF100000000000000000000D /* Assets.xcassets */,
 				CF100000000000000000001D /* RemainFaithful.entitlements */,
 				CF1000000000000000000018 /* Preview Content */,
@@ -251,6 +257,8 @@
 				CF1000000000000000000039 /* PanicView.swift in Sources */,
 				CF100000000000000000003B /* AlertDetailView.swift in Sources */,
 				CF100000000000000000003D /* APIClient.swift in Sources */,
+				CF1000000000000000000040 /* AppState.swift in Sources */,
+				CF1000000000000000000042 /* NotificationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -401,6 +409,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "fetch remote-notification";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -430,6 +439,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "fetch remote-notification";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

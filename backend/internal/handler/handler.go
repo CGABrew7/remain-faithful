@@ -1,14 +1,24 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"net/http"
+
+	"remain-faithful/backend/internal/apns"
 )
+
+// APNSSender is the interface used by handlers to send push notifications.
+// *apns.Client satisfies this interface.
+type APNSSender interface {
+	Send(ctx context.Context, n *apns.Notification) error
+}
 
 // H holds shared dependencies for all HTTP handlers.
 type H struct {
-	DB *sql.DB
+	DB   *sql.DB
+	APNS APNSSender
 }
 
 // writeJSON serialises v as JSON and writes it with the given status code.
