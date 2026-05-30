@@ -4,12 +4,12 @@ import Foundation
 //
 // Simulator + docker-compose on the same Mac: http://localhost:8080 (default)
 // Real device + local network:                http://<YOUR_MAC_IP>:8080
-// Production:                                 https://api.yourserver.com
+// Production:                                 https://remain-faithful-api.fly.dev
 //
 // Override at runtime by setting the API_BASE_URL environment variable in the
 // scheme's Run arguments, or change the constant below.
 
-private let apiBase = ProcessInfo.processInfo.environment["API_BASE_URL"] ?? "http://localhost:8080"
+private let apiBase = ProcessInfo.processInfo.environment["API_BASE_URL"] ?? "https://remain-faithful-api.fly.dev"
 
 // MARK: - Remote response types (mirror the Go API)
 

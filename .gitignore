@@ -1,0 +1,34 @@
+# Xcode
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Build output
+build/
+*.o
+*.a
+
+# Go compiled binaries
+backend/server
+backend/*.test
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node / website
+node_modules/
+.next/
+.vercel/
+website/.env*.local
+
+# Env files
+.env
+.env.local
