@@ -27,6 +27,39 @@ enum EventCategory: String {
         case .gaming:       Color(red: 0.60, green: 0.30, blue: 0.90)
         }
     }
+
+    var conversationStarters: [String] {
+        switch self {
+        case .adultContent:
+            return [
+                "What was going on in your heart before this happened — were you stressed, lonely, or bored?",
+                "Was this something you sought out, or did you stumble onto it? What happened in that moment?",
+                "What does your relationship with purity look like right now? What would help most this week?",
+                "How can I be praying for you specifically in this area?"
+            ]
+        case .gambling:
+            return [
+                "Are there financial pressures or anxieties you've been carrying lately that we should talk about?",
+                "What draws you to this — the thrill, a sense of control, or something else entirely?",
+                "Have you spoken with a pastor or counselor about this pattern? Would that be helpful?",
+                "What would one concrete boundary look like here, and how can I help hold you to it?"
+            ]
+        case .socialMedia:
+            return [
+                "How much of your time and mental energy is social media taking up lately?",
+                "Are you using it to connect, or to avoid something? What might you be escaping?",
+                "How do you feel after time on these platforms — refreshed, or drained and restless?",
+                "What's one limit we could agree on together around your phone use this week?"
+            ]
+        case .gaming:
+            return [
+                "What were you feeling right before the session started — stressed, restless, or wanting to check out?",
+                "Do you think gaming is helping you unwind, or helping you avoid something harder?",
+                "Late nights often point to something deeper. How's your sleep and your emotional state been?",
+                "What would a healthy rhythm with gaming look like for you?"
+            ]
+        }
+    }
 }
 
 enum FlagSeverity: String {
@@ -57,6 +90,34 @@ struct ActivityEvent: Identifiable {
         default:        return "\(minutesAgo / 1440)d ago"
         }
     }
+
+    var fullTimestamp: String {
+        let eventDate = Date().addingTimeInterval(-Double(minutesAgo) * 60)
+        let cal = Calendar.current
+        let fmt = DateFormatter()
+        fmt.timeStyle = .short
+        if cal.isDateInToday(eventDate)     { return "Today at \(fmt.string(from: eventDate))" }
+        if cal.isDateInYesterday(eventDate) { return "Yesterday at \(fmt.string(from: eventDate))" }
+        fmt.dateStyle = .medium
+        fmt.timeStyle = .short
+        return fmt.string(from: eventDate)
+    }
+
+    var extendedDescription: String {
+        switch category {
+        case .adultContent:
+            if description.contains("search") {
+                return "Search terms associated with adult content were detected during this session. The monitoring system logged the query for accountability review."
+            }
+            return "Adult content was detected during a web browsing session. The monitoring system flagged one or more pages containing explicit material."
+        case .gambling:
+            return "A gambling or sports-betting website was visited during this session. The monitoring system flagged the domain as a gambling-related destination."
+        case .socialMedia:
+            return "Extended time was spent on social media platforms during this session. Usage exceeded typical daily thresholds and was flagged for review."
+        case .gaming:
+            return "A gaming session was detected that ran late into the night. Extended play during these hours is flagged as a potential accountability concern."
+        }
+    }
 }
 
 // MARK: - Mock data
@@ -78,6 +139,7 @@ struct DashboardView: View {
     @AppStorage("userName") private var userName = ""
 
     @State private var status: MonitoringStatus = .active
+    @State private var showPanic = false
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -102,6 +164,7 @@ struct DashboardView: View {
                     StreakCard(days: 14, best: 21, week: weekClean)
                     VerseCard()
                     ActivitySection(events: sampleEvents)
+                    panicButton
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -109,6 +172,38 @@ struct DashboardView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .fullScreenCover(isPresented: $showPanic) { PanicView() }
+    }
+
+    private var panicButton: some View {
+        Button { showPanic = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 15))
+                Text("I Need Support Right Now")
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 54)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.45, green: 0.20, blue: 0.70),
+                                Color(red: 0.28, green: 0.12, blue: 0.50)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
+            )
+        }
     }
 
     private var headerRow: some View {
@@ -360,7 +455,12 @@ private struct ActivitySection: View {
                 emptyState
             } else {
                 VStack(spacing: 10) {
-                    ForEach(events) { ActivityRow(event: $0) }
+                    ForEach(events) { event in
+                        NavigationLink(destination: AlertDetailView(event: event)) {
+                            ActivityRow(event: event)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
         }
