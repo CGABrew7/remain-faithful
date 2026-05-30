@@ -9,6 +9,7 @@ import (
 	"time"
 
 	rfauth "remain-faithful/backend/internal/auth"
+	"remain-faithful/backend/internal/anthropic"
 	"remain-faithful/backend/internal/apns"
 	"remain-faithful/backend/internal/email"
 	"remain-faithful/backend/internal/handler"
@@ -40,9 +41,10 @@ func main() {
 		log.Fatalf("apns: %v", err)
 	}
 
-	emailClient := email.New()
+	emailClient  := email.New()
+	claudeClient := anthropic.New()
 
-	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient}
+	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Claude: claudeClient}
 	srv := &http.Server{
 		Addr:         ":" + port(),
 		Handler:      routes(h),
@@ -64,6 +66,9 @@ func routes(h *handler.H) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"status":"ok"}`)
 	}).Methods(http.MethodGet)
+
+	// Tier 3 classification (unauthenticated — text only, no PII)
+	r.HandleFunc("/classify", h.Classify).Methods(http.MethodPost)
 
 	// Public auth routes
 	r.HandleFunc("/auth/register",       h.Register).Methods(http.MethodPost)

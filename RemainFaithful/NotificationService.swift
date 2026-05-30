@@ -79,13 +79,17 @@ final class NotificationService: NSObject {
 
     // MARK: - Background Fetch
 
-    /// Used by `application(_:performFetchWithCompletionHandler:)`.
+    /// Called by `application(_:performFetchWithCompletionHandler:)`.
+    /// Processes events from the broadcast extension AND polls the server for
+    /// new alerts so the dashboard can refresh.
     func performBackgroundFetch(completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         guard APIClient.shared.isAuthenticated else {
             completionHandler(.noData)
             return
         }
         Task {
+            // Drain any events the broadcast extension queued in shared defaults.
+            await EventProcessor.shared.processPendingEvents()
             do {
                 let events = try await APIClient.shared.listEvents()
                 completionHandler(events.isEmpty ? .noData : .newData)

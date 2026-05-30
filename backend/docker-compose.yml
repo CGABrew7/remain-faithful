@@ -29,8 +29,15 @@ services:
       DB_USER:     postgres
       DB_PASSWORD: postgres
       DB_NAME:     remainfaithful
-      JWT_SECRET:  change-me-in-production   # override in .env for real deployments
-      PORT:        "8080"
+      JWT_SECRET:        change-me-in-production   # override in .env for real deployments
+      PORT:              "8080"
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}    # Tier 3 classification via Claude
+      SENDGRID_API_KEY:  ${SENDGRID_API_KEY:-}     # password reset emails
+      APNS_KEY_ID:       ${APNS_KEY_ID:-}
+      APNS_TEAM_ID:      ${APNS_TEAM_ID:-}
+      APNS_PRIVATE_KEY:  ${APNS_PRIVATE_KEY:-}
+      APNS_BUNDLE_ID:    ${APNS_BUNDLE_ID:-com.remainfaithful.app}
+      APNS_PRODUCTION:   ${APNS_PRODUCTION:-false}
     depends_on:
       postgres:
         condition: service_healthy

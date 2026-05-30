@@ -22,7 +22,11 @@ struct RemainFaithfulApp: App {
             }
             .environmentObject(appState)
             .environmentObject(authState)
-            .task { try? await APIClient.shared.refreshTokenIfNeeded() }
+            .task {
+                try? await APIClient.shared.refreshTokenIfNeeded()
+                // Drain any events queued by the broadcast extension while the app was closed.
+                await EventProcessor.shared.processPendingEvents()
+            }
         }
     }
 }
