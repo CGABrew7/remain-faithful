@@ -248,8 +248,11 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     headerRow
-                    panicButton
+                    StatusCard(status: $status)
                     VerseCard()
+                    StreakCard(days: 14, best: 21, week: weekClean)
+                    ActivitySection(events: events, isLoading: isLoadingEvents)
+                    panicButton
                     if shouldShowDonateBanner {
                         DonateBanner(
                             onDonate:  { showDonation = true;
@@ -258,9 +261,6 @@ struct DashboardView: View {
                         )
                         .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
                     }
-                    StatusCard(status: $status)
-                    StreakCard(days: 14, best: 21, week: weekClean)
-                    ActivitySection(events: events, isLoading: isLoadingEvents)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)

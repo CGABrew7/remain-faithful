@@ -215,9 +215,8 @@ struct SettingsView: View {
             SRow(icon: "bubble.left.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "Contact Support") {
-                let subject = "Remain%20Faithful%20Support%20Request"
-                if let url = URL(string: "mailto:support@remainfaithful.com?subject=\(subject)") {
-                    openURL(url)
+                if let url = URL(string: "mailto:support@remainfaithful.com?subject=Remain%20Faithful%20Support%20Request") {
+                    UIApplication.shared.open(url)
                 }
             }
             rowDivider
@@ -228,9 +227,8 @@ struct SettingsView: View {
             SRow(icon: "lightbulb.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "Suggest an Improvement") {
-                let subject = "Remain%20Faithful%20Feature%20Suggestion"
-                if let url = URL(string: "mailto:feedback@remainfaithful.com?subject=\(subject)") {
-                    openURL(url)
+                if let url = URL(string: "mailto:feedback@remainfaithful.com?subject=Remain%20Faithful%20Feature%20Suggestion") {
+                    UIApplication.shared.open(url)
                 }
             }
         }
@@ -1019,6 +1017,7 @@ private struct HowItWorksView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 16)
