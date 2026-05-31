@@ -15,12 +15,13 @@ import (
 
 // CreateGroup creates a new accountability group and adds the creator as admin.
 // POST /groups
-// Body: { "name": "..." }
+// Body: { "name": "...", "covenant": "..." }
 func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	var req struct {
-		Name string `json:"name"`
+		Name     string `json:"name"`
+		Covenant string `json:"covenant"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -41,8 +42,8 @@ func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	var groupID int64
 	var createdAt string
 	err = tx.QueryRowContext(r.Context(),
-		`INSERT INTO groups (name) VALUES ($1) RETURNING id, created_at`,
-		req.Name,
+		`INSERT INTO groups (name, covenant) VALUES ($1, $2) RETURNING id, created_at`,
+		req.Name, req.Covenant,
 	).Scan(&groupID, &createdAt)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to create group")
@@ -65,6 +66,7 @@ func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"id":         groupID,
 		"name":       req.Name,
+		"covenant":   req.Covenant,
 		"created_at": createdAt,
 	})
 }

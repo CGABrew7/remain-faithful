@@ -527,6 +527,7 @@ private struct ManagePartnersView: View {
     private let red   = Color(red: 0.90, green: 0.30, blue: 0.30)
 
     @State private var partners: [PartnerItem] = []
+    @State private var isLoadingPartners = false
 
     var body: some View {
         ZStack {
@@ -545,6 +546,7 @@ private struct ManagePartnersView: View {
                 }
             }
         }
+        .task { await loadPartners() }
         .alert("Remove Partner", isPresented: $showRemoveConfirm) {
             Button("Remove", role: .destructive) {
                 if let p = partnerToRemove {
@@ -559,12 +561,17 @@ private struct ManagePartnersView: View {
 
     private var partnersListSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("CURRENT PARTNERS")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color.rfGold.opacity(0.75))
-                .kerning(1.2)
+            HStack {
+                Text("CURRENT PARTNERS")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color.rfGold.opacity(0.75))
+                    .kerning(1.2)
+                if isLoadingPartners {
+                    ProgressView().tint(Color.rfGold).scaleEffect(0.7).padding(.leading, 4)
+                }
+            }
 
-            if partners.isEmpty {
+            if !isLoadingPartners && partners.isEmpty {
                 Text("No partners yet. Invite someone below.")
                     .font(.system(size: 14))
                     .foregroundStyle(Color.white.opacity(0.45))
@@ -682,19 +689,34 @@ private struct ManagePartnersView: View {
         inviteEmail.contains("@") && inviteEmail.contains(".") && !sentSuccess && !isSending
     }
 
+    @MainActor
+    private func loadPartners() async {
+        guard APIClient.shared.isAuthenticated else { return }
+        isLoadingPartners = true
+        defer { isLoadingPartners = false }
+        if let rels = try? await APIClient.shared.listRelationships() {
+            partners = rels.map { r in
+                PartnerItem(name: r.partner.name, email: r.partner.email, status: r.status)
+            }
+        }
+    }
+
     private func sendInvite() {
         guard canSendInvite else { return }
         emailFocused = false
         errorMsg = nil
         isSending = true
+        let email = inviteEmail
         Task {
             do {
-                try await APIClient.shared.createRelationship(partnerEmail: inviteEmail)
+                try await APIClient.shared.invitePartner(email: email)
                 await MainActor.run {
                     withAnimation { sentSuccess = true }
                     isSending = false
                     inviteEmail = ""
                 }
+                // Reload partner list to include the new connection if they had an account.
+                await loadPartners()
             } catch {
                 await MainActor.run {
                     errorMsg = "Failed to send invitation — check your connection"
@@ -706,9 +728,10 @@ private struct ManagePartnersView: View {
 }
 
 private struct PartnerItem: Identifiable {
-    let id   = UUID()
-    let name:  String
-    let email: String
+    let id     = UUID()
+    let name:   String
+    let email:  String
+    var status: String = "accepted"
     var initials: String {
         name.components(separatedBy: " ")
             .compactMap(\.first).prefix(2).map(String.init).joined().uppercased()

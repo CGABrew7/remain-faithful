@@ -35,6 +35,10 @@ func main() {
 	}
 	log.Println("database ready")
 
+	if os.Getenv("JWT_SECRET") == "" {
+		log.Println("WARNING: JWT_SECRET not set — using insecure dev default. Set it before production use.")
+	}
+
 	apnsClient, err := apns.New(
 		os.Getenv("APNS_KEY_ID"),
 		os.Getenv("APNS_TEAM_ID"),
@@ -134,11 +138,14 @@ func routes(h *handler.H) http.Handler {
 	api.Use(rfauth.Middleware)
 
 	api.HandleFunc("/users/me",             h.GetMe).Methods(http.MethodGet)
-	api.HandleFunc("/relationships",        h.CreateRelationship).Methods(http.MethodPost)
-	api.HandleFunc("/relationships",        h.ListRelationships).Methods(http.MethodGet)
-	api.HandleFunc("/groups",               h.CreateGroup).Methods(http.MethodPost)
-	api.HandleFunc("/groups/{id}",          h.GetGroup).Methods(http.MethodGet)
-	api.HandleFunc("/groups/{id}/invite",   h.InviteMember).Methods(http.MethodPost)
+	api.HandleFunc("/relationships",               h.CreateRelationship).Methods(http.MethodPost)
+	api.HandleFunc("/relationships",               h.ListRelationships).Methods(http.MethodGet)
+	api.HandleFunc("/relationships/invite",        h.InvitePartner).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/accept-invite", h.AcceptPartnerInvite).Methods(http.MethodPost)
+	api.HandleFunc("/groups",                    h.CreateGroup).Methods(http.MethodPost)
+	api.HandleFunc("/groups/{id}",               h.GetGroup).Methods(http.MethodGet)
+	api.HandleFunc("/groups/{id}/invite",        h.InviteMember).Methods(http.MethodPost)
+	api.HandleFunc("/groups/{id}/email-invite",  h.GroupEmailInvite).Methods(http.MethodPost)
 	api.HandleFunc("/events",               h.CreateEvent).Methods(http.MethodPost)
 	api.HandleFunc("/events",               h.ListEvents).Methods(http.MethodGet)
 	api.HandleFunc("/alerts",               h.ListAlerts).Methods(http.MethodGet)
@@ -293,6 +300,33 @@ func migrate(db *sql.DB) error {
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id  TEXT UNIQUE;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;
 	ALTER TABLE users ALTER COLUMN password_hash SET DEFAULT '';
+
+	CREATE TABLE IF NOT EXISTS relationship_invites (
+		id            BIGSERIAL   PRIMARY KEY,
+		inviter_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		invitee_email TEXT        NOT NULL,
+		token         TEXT        NOT NULL UNIQUE,
+		status        TEXT        NOT NULL DEFAULT 'pending',
+		created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		UNIQUE (inviter_id, invitee_email)
+	);
+	CREATE INDEX IF NOT EXISTS idx_invites_email  ON relationship_invites(invitee_email);
+	CREATE INDEX IF NOT EXISTS idx_invites_token  ON relationship_invites(token);
+
+	CREATE TABLE IF NOT EXISTS group_invites (
+		id            BIGSERIAL   PRIMARY KEY,
+		inviter_id    BIGINT      NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
+		group_id      BIGINT      NOT NULL REFERENCES groups(id)  ON DELETE CASCADE,
+		invitee_email TEXT        NOT NULL,
+		token         TEXT        NOT NULL UNIQUE,
+		status        TEXT        NOT NULL DEFAULT 'pending',
+		created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		UNIQUE (group_id, invitee_email)
+	);
+	CREATE INDEX IF NOT EXISTS idx_group_invites_email ON group_invites(invitee_email);
+	CREATE INDEX IF NOT EXISTS idx_group_invites_token ON group_invites(token);
+
+	ALTER TABLE groups ADD COLUMN IF NOT EXISTS covenant TEXT NOT NULL DEFAULT '';
 	`)
 	return err
 }

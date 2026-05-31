@@ -193,9 +193,7 @@ extension ActivityEvent {
     }
 }
 
-// MARK: - Placeholder data
-// PLACEHOLDER: sampleEvents and weekClean are shown until real data loads from GET /events.
-// streak data (days:14, best:21) is also hardcoded until a streak API endpoint is built.
+// MARK: - Placeholder data (used in demo mode only)
 
 private let sampleEvents: [ActivityEvent] = [
     .init(category: .adultContent, severity: .high,   description: "Flagged during browsing session",  minutesAgo: 23),
@@ -205,8 +203,71 @@ private let sampleEvents: [ActivityEvent] = [
     .init(category: .gaming,       severity: .low,    description: "Late-night gaming session",        minutesAgo: 2160),
 ]
 
-// true = clean day, false = flagged day  (Sun → Sat)
 private let weekClean = [true, true, false, true, true, true, false]
+
+// MARK: - Streak computation
+
+private func computeStreak(from remoteEvents: [RemoteEvent]) -> (days: Int, best: Int, week: [Bool]) {
+    let cal = Calendar.current
+    let fmt = DateFormatter()
+    fmt.dateFormat = "yyyy-MM-dd"
+    fmt.locale = Locale(identifier: "en_US_POSIX")
+
+    let isoFull = ISO8601DateFormatter()
+    isoFull.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    let isoShort = ISO8601DateFormatter()
+    isoShort.formatOptions = [.withInternetDateTime]
+
+    // Build set of date strings that have at least one flagged event.
+    let flaggedDates = Set(remoteEvents.compactMap { evt -> String? in
+        let date = isoFull.date(from: evt.timestamp) ?? isoShort.date(from: evt.timestamp)
+        return date.map { fmt.string(from: $0) }
+    })
+
+    // Current streak: count consecutive clean days from today backward.
+    var streak = 0
+    var checkDate = Date()
+    while !flaggedDates.contains(fmt.string(from: checkDate)) {
+        streak += 1
+        guard let prev = cal.date(byAdding: .day, value: -1, to: checkDate) else { break }
+        checkDate = prev
+        if streak > 365 { break }
+    }
+
+    // 7-day view: last 7 days ordered oldest → newest.
+    var week = Array(repeating: true, count: 7)
+    for i in 0..<7 {
+        if let day = cal.date(byAdding: .day, value: -(6 - i), to: Date()),
+           flaggedDates.contains(fmt.string(from: day)) {
+            week[i] = false
+        }
+    }
+
+    // Best streak: longest consecutive clean run within the events window.
+    let allDates: [String] = {
+        var dates: [String] = []
+        var d = Date()
+        for _ in 0..<90 {
+            dates.append(fmt.string(from: d))
+            guard let prev = cal.date(byAdding: .day, value: -1, to: d) else { break }
+            d = prev
+        }
+        return dates
+    }()
+    var best = 0
+    var run  = 0
+    for dateStr in allDates {
+        if flaggedDates.contains(dateStr) {
+            best = max(best, run)
+            run  = 0
+        } else {
+            run += 1
+        }
+    }
+    best = max(best, run)
+
+    return (streak, best, week)
+}
 
 // MARK: - Dashboard root
 
@@ -217,13 +278,15 @@ struct DashboardView: View {
     @EnvironmentObject private var appState: AppState
     @Binding var showPanic: Bool
 
-    @State private var status:         MonitoringStatus = .active
-    @State private var events:         [ActivityEvent]  = []
-    @State private var streakDays:     Int              = 0
-    @State private var streakBest:     Int              = 0
-    @State private var streakWeek:     [Bool]           = Array(repeating: true, count: 7)
-    @State private var showDonation:   Bool             = false
-    @State private var isLoadingEvents = false
+    @State private var status:           MonitoringStatus = .active
+    @State private var events:           [ActivityEvent]  = []
+    @State private var streakDays:       Int              = 0
+    @State private var streakBest:       Int              = 0
+    @State private var streakWeek:       [Bool]           = Array(repeating: true, count: 7)
+    @State private var showDonation:     Bool             = false
+    @State private var isLoadingEvents   = false
+    @State private var eventsLoadError:  String?
+    @State private var isBroadcasting   = true
 
     private var shouldShowDonateBanner: Bool {
         guard !hasDonated else { return false }
@@ -251,10 +314,17 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     headerRow
+                    if !isBroadcasting {
+                        BroadcastPausedBanner()
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
                     StatusCard(status: $status)
                     VerseCard()
                     StreakCard(days: streakDays, best: streakBest, week: streakWeek)
-                    ActivitySection(events: events, isLoading: isLoadingEvents)
+                    ActivitySection(events: events,
+                                    isLoading: isLoadingEvents,
+                                    error: eventsLoadError,
+                                    onRetry: { Task { await loadEvents() } })
                     panicButton
                     if shouldShowDonateBanner {
                         DonateBanner(
@@ -304,12 +374,19 @@ struct DashboardView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showDonation) { DonationView() }
         .task { await loadEvents() }
+        .task {
+            // Poll broadcast status every 5 seconds while the view is active.
+            while !Task.isCancelled {
+                isBroadcasting = EventProcessor.shared.isBroadcasting()
+                try? await Task.sleep(for: .seconds(5))
+            }
+        }
     }
 
     @MainActor
     private func loadEvents() async {
         if appState.isDemoMode {
-            events = sampleEvents
+            events     = sampleEvents
             streakDays = 14
             streakBest = 21
             streakWeek = weekClean
@@ -317,11 +394,18 @@ struct DashboardView: View {
         }
         guard APIClient.shared.isAuthenticated else { return }
         isLoadingEvents = true
+        eventsLoadError = nil
         defer { isLoadingEvents = false }
         do {
             let remote = try await APIClient.shared.listEvents()
             events = remote.compactMap { ActivityEvent.from(remote: $0) }
-        } catch { }
+            let (days, best, week) = computeStreak(from: remote)
+            streakDays = days
+            streakBest = best
+            streakWeek = week
+        } catch {
+            eventsLoadError = "Couldn't load activity. Tap to retry."
+        }
     }
 
     private var panicButton: some View {
@@ -589,8 +673,10 @@ private struct VerseCard: View {
 // MARK: - Activity feed
 
 private struct ActivitySection: View {
-    let events: [ActivityEvent]
-    var isLoading: Bool = false
+    let events:    [ActivityEvent]
+    var isLoading: Bool   = false
+    var error:     String? = nil
+    var onRetry:   (() -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -601,14 +687,14 @@ private struct ActivitySection: View {
                 Spacer()
                 if isLoading {
                     ProgressView().tint(Color.rfGold).scaleEffect(0.75)
-                } else {
-                    Text("See all")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Color.rfGold)
                 }
             }
 
-            if events.isEmpty && !isLoading {
+            if isLoading && events.isEmpty {
+                loadingState
+            } else if let err = error {
+                errorState(err)
+            } else if events.isEmpty {
                 emptyState
             } else {
                 VStack(spacing: 10) {
@@ -623,12 +709,45 @@ private struct ActivitySection: View {
         }
     }
 
+    private var loadingState: some View {
+        HStack {
+            Spacer()
+            ProgressView()
+                .tint(Color.rfGold)
+                .padding(.vertical, 36)
+            Spacer()
+        }
+    }
+
+    private func errorState(_ message: String) -> some View {
+        Button(action: { onRetry?() }) {
+            VStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(Color(red: 0.95, green: 0.62, blue: 0.10))
+                Text(message)
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.white.opacity(0.60))
+                    .multilineTextAlignment(.center)
+                Text("Tap to retry")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.rfGold)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(Color.rfGold.opacity(0.14)))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 28)
+        }
+        .buttonStyle(.plain)
+    }
+
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.shield.fill")
                 .font(.system(size: 34))
                 .foregroundStyle(Color(red: 0.20, green: 0.78, blue: 0.45))
-            Text("No activity yet")
+            Text("No flags yet — great work")
                 .font(.system(size: 15))
                 .foregroundStyle(Color.white.opacity(0.45))
         }
@@ -734,6 +853,137 @@ private struct DonateBanner: View {
                 .overlay(RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.rfGold.opacity(0.22), lineWidth: 1))
         )
+    }
+}
+
+// MARK: - Broadcast Paused Banner
+
+private struct BroadcastPausedBanner: View {
+    @State private var showInstructions = false
+
+    var body: some View {
+        Button { showInstructions = true } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color(red: 0.95, green: 0.62, blue: 0.10).opacity(0.18))
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "shield.slash.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color(red: 0.95, green: 0.62, blue: 0.10))
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Monitoring is paused")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                    Text("Tap to resume accountability")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.55))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.white.opacity(0.25))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(red: 0.14, green: 0.18, blue: 0.30))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color(red: 0.95, green: 0.62, blue: 0.10).opacity(0.35), lineWidth: 1.5)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showInstructions) {
+            BroadcastInstructionsSheet()
+        }
+    }
+}
+
+private struct BroadcastInstructionsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private let steps: [(String, String)] = [
+        ("1", "Swipe down from the top-right corner to open Control Center."),
+        ("2", "Tap and hold the Screen Recording button (circle inside a circle)."),
+        ("3", "Select "Remain Faithful" from the list of broadcast receivers."),
+        ("4", "Tap "Start Broadcast" — monitoring resumes immediately."),
+    ]
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 12)
+                    .padding(.bottom, 20)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Resume Monitoring")
+                            .font(.system(size: 20, weight: .bold, design: .serif))
+                            .foregroundStyle(.white)
+                        Text("Start the broadcast from Control Center")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                    }
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.55))
+                            .padding(10)
+                            .background(Circle().fill(Color.white.opacity(0.09)))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+
+                Divider().overlay(Color.white.opacity(0.08))
+                    .padding(.bottom, 24)
+
+                VStack(spacing: 16) {
+                    ForEach(steps, id: \.0) { step in
+                        HStack(alignment: .top, spacing: 16) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.rfGold.opacity(0.14))
+                                    .frame(width: 32, height: 32)
+                                Text(step.0)
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(Color.rfGold)
+                            }
+                            Text(step.1)
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color.white.opacity(0.80))
+                                .lineSpacing(3)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+
+                Spacer()
+
+                Button { dismiss() } label: {
+                    Text("Got it")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.rfNavy)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 36)
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 

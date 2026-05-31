@@ -55,6 +55,22 @@ struct RemoteAlert: Decodable, Identifiable {
     }
 }
 
+struct RemoteRelationship: Decodable {
+    let id: Int
+    let userId: Int
+    let partnerId: Int
+    let type: String
+    let status: String
+    let createdAt: String
+    let partner: RemoteUser
+    enum CodingKeys: String, CodingKey {
+        case id, type, status, partner
+        case userId    = "user_id"
+        case partnerId = "partner_id"
+        case createdAt = "created_at"
+    }
+}
+
 struct RemoteGroup: Decodable {
     let id: Int
     let name: String
@@ -196,8 +212,8 @@ final class APIClient {
         try await get("/groups/\(id)")
     }
 
-    func createGroup(name: String) async throws -> RemoteGroup {
-        try await post("/groups", body: ["name": name])
+    func createGroup(name: String, covenant: String = "") async throws -> RemoteGroup {
+        try await post("/groups", body: ["name": name, "covenant": covenant])
     }
 
     func inviteMember(groupID: Int, email: String) async throws {
@@ -244,6 +260,21 @@ final class APIClient {
     func createRelationship(partnerEmail: String, type: String = "partner") async throws {
         try await postVoid("/relationships",
                            body: ["partner_email": partnerEmail, "type": type])
+    }
+
+    /// Invite a partner by email — creates the relationship if they already have
+    /// an account, otherwise sends them an email with a sign-up deep link.
+    func invitePartner(email: String) async throws {
+        try await postVoid("/relationships/invite", body: ["email": email])
+    }
+
+    func listRelationships() async throws -> [RemoteRelationship] {
+        try await get("/relationships")
+    }
+
+    /// Send an email-based group invite (invitee may not have an account yet).
+    func groupEmailInvite(groupID: Int, email: String) async throws {
+        try await postVoid("/groups/\(groupID)/email-invite", body: ["email": email])
     }
 
     // MARK: - Primitives

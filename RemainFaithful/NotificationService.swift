@@ -36,6 +36,27 @@ final class NotificationService: NSObject {
         }
     }
 
+    /// Call on every authenticated app launch to refresh the device token with APNs.
+    /// If permission has already been granted, this re-registers and updates the
+    /// token on the backend. If permission is not determined, it does nothing
+    /// (the onboarding flow will call requestPermission() for new users).
+    func ensureRegisteredIfAuthorized() {
+        Task {
+            let center   = UNUserNotificationCenter.current()
+            let settings = await center.notificationSettings()
+            guard settings.authorizationStatus == .authorized else { return }
+            await MainActor.run {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+    }
+
+    /// Publish whether the user has denied notification permission.
+    /// Used to show an in-app prompt explaining why notifications matter.
+    func checkNotificationPermission() async -> UNAuthorizationStatus {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
     // MARK: - Device Token
 
     /// Convert the raw token data to a hex string and upload it to the backend.

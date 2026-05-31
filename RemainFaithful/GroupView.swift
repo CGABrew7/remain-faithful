@@ -1125,139 +1125,388 @@ private struct InviteSheet: View {
     }
 }
 
-// MARK: - Create Group sheet
+// MARK: - Create Group sheet (multi-step)
+
+private let defaultCovenant = """
+We, the members of this accountability group, covenant together before God and one another to:
+
+1. PURSUE PURITY — We commit to actively pursue sexual purity in thought, word, and deed.
+
+2. WALK IN HONESTY — We will be completely truthful about our struggles, failures, and victories.
+
+3. PRAY FAITHFULLY — We commit to pray regularly for each member of this group.
+
+4. RESPOND QUICKLY — When a brother sends an alert, we will respond promptly with encouragement and prayer.
+
+5. GUARD ONE ANOTHER — We take responsibility for one another's spiritual health.
+
+6. HOLD CONFIDENCE — What is shared in this group stays in this group.
+
+7. PRESS FORWARD — We refuse to be defined by our failures. We spur one another toward freedom in Christ.
+
+Signed and agreed upon this day, before God and this brotherhood.
+"""
 
 private struct CreateGroupSheet: View {
     let onCreate: (String) -> Void
     @AppStorage("primaryGroupID") private var primaryGroupID = 0
     @Environment(\.dismiss) private var dismiss
-    @FocusState private var focused: Bool
-    @State private var name = ""
-    @State private var isCreating = false
+
+    @State private var step         = 0          // 0=name, 1=covenant, 2=invite, 3=review
+    @State private var groupName    = ""
+    @State private var covenant     = defaultCovenant
+    @State private var inviteEmails: [String] = [""]  // at least one field
+    @State private var isCreating   = false
     @State private var createError: String?
 
     var body: some View {
         ZStack {
             Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
             VStack(spacing: 0) {
+                // Drag indicator + step dots
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color.white.opacity(0.18))
                     .frame(width: 40, height: 4)
                     .padding(.top, 12)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 16)
 
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Create a Group")
-                            .font(.system(size: 20, weight: .bold, design: .serif))
-                            .foregroundStyle(.white)
-                        Text("Start your accountability brotherhood")
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color.white.opacity(0.45))
-                    }
-                    Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
+                HStack(spacing: 7) {
+                    ForEach(0..<4) { i in
+                        Capsule()
+                            .fill(i == step ? Color.rfGold : Color.white.opacity(0.20))
+                            .frame(width: i == step ? 20 : 7, height: 7)
+                            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: step)
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .padding(.bottom, 20)
 
-                Divider().overlay(Color.white.opacity(0.08))
-                    .padding(.bottom, 24)
-
-                HStack(spacing: 12) {
-                    Image(systemName: "person.3.fill")
-                        .font(.system(size: 15))
-                        .foregroundStyle(focused ? Color.rfGold : Color.white.opacity(0.45))
-                        .frame(width: 22)
-                    TextField("", text: $name,
-                              prompt: Text("Group name (e.g. Iron Brotherhood)").foregroundColor(Color.white.opacity(0.38)))
-                        .textInputAutocapitalization(.words)
-                        .foregroundStyle(.white)
-                        .focused($focused)
-                        .submitLabel(.done)
-                        .onSubmit { createGroup() }
+                // Step content
+                ZStack {
+                    if step == 0 { stepName }
+                    else if step == 1 { stepCovenant }
+                    else if step == 2 { stepInvite }
+                    else { stepReview }
                 }
-                .padding(.horizontal, 18)
-                .frame(height: 54)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(focused ? 0.11 : 0.07))
-                        .overlay(RoundedRectangle(cornerRadius: 14)
-                            .stroke(focused ? Color.rfGold : Color.white.opacity(0.10), lineWidth: 1.5))
-                )
-                .animation(.easeInOut(duration: 0.18), value: focused)
+                .animation(.easeInOut(duration: 0.3), value: step)
+            }
+        }
+        .presentationDetents([.large])
+    }
+
+    // MARK: Step 0 — Name
+
+    @FocusState private var nameFocused: Bool
+
+    private var stepName: some View {
+        VStack(spacing: 0) {
+            sheetHeaderBlock(
+                title: "Name your group",
+                subtitle: "Choose a name that captures your brotherhood"
+            )
+
+            HStack(spacing: 12) {
+                Image(systemName: "person.3.fill")
+                    .font(.system(size: 15))
+                    .foregroundStyle(nameFocused ? Color.rfGold : Color.white.opacity(0.45))
+                    .frame(width: 22)
+                TextField("", text: $groupName,
+                          prompt: Text("e.g. Iron Brotherhood").foregroundColor(Color.white.opacity(0.38)))
+                    .textInputAutocapitalization(.words)
+                    .foregroundStyle(.white)
+                    .focused($nameFocused)
+                    .submitLabel(.next)
+                    .onSubmit { if !groupName.trimmingCharacters(in: .whitespaces).isEmpty { step = 1 } }
+            }
+            .padding(.horizontal, 18)
+            .frame(height: 54)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white.opacity(nameFocused ? 0.11 : 0.07))
+                    .overlay(RoundedRectangle(cornerRadius: 14)
+                        .stroke(nameFocused ? Color.rfGold : Color.white.opacity(0.10), lineWidth: 1.5))
+            )
+            .animation(.easeInOut(duration: 0.18), value: nameFocused)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+
+            navButtons(
+                nextLabel: "Set Covenant",
+                nextEnabled: !groupName.trimmingCharacters(in: .whitespaces).isEmpty,
+                onNext: { step = 1 }
+            )
+        }
+        .onAppear { nameFocused = true }
+    }
+
+    // MARK: Step 1 — Covenant
+
+    private var stepCovenant: some View {
+        VStack(spacing: 0) {
+            sheetHeaderBlock(
+                title: "Group Covenant",
+                subtitle: "Edit the agreement your members will sign"
+            )
+
+            TextEditor(text: $covenant)
+                .scrollContentBackground(.hidden)
+                .background(Color.white.opacity(0.07))
+                .foregroundStyle(Color.white.opacity(0.85))
+                .font(.system(size: 13, design: .serif))
+                .lineSpacing(3)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.10), lineWidth: 1))
+                .frame(maxHeight: .infinity)
                 .padding(.horizontal, 24)
-                .padding(.bottom, 12)
+                .padding(.bottom, 16)
 
-                if let err = createError {
-                    Text(err)
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 12)
-                        .transition(.opacity)
-                }
+            navButtons(
+                backLabel: "Back",
+                nextLabel: "Invite Members",
+                nextEnabled: !covenant.trimmingCharacters(in: .whitespaces).isEmpty,
+                onBack: { step = 0 },
+                onNext: { step = 2 }
+            )
+        }
+    }
 
-                Button(action: createGroup) {
-                    HStack(spacing: 10) {
-                        if isCreating {
-                            ProgressView().tint(Color.rfNavy).scaleEffect(0.9)
-                        } else {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 16))
+    // MARK: Step 2 — Invite
+
+    private var stepInvite: some View {
+        VStack(spacing: 0) {
+            sheetHeaderBlock(
+                title: "Invite Members",
+                subtitle: "Enter emails — they'll receive an invitation link"
+            )
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 10) {
+                    ForEach(inviteEmails.indices, id: \.self) { i in
+                        HStack(spacing: 10) {
+                            Image(systemName: "envelope.fill")
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color.white.opacity(0.40))
+                                .frame(width: 20)
+                            TextField("", text: $inviteEmails[i],
+                                      prompt: Text("Email address").foregroundColor(Color.white.opacity(0.32)))
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .foregroundStyle(.white)
+                                .font(.system(size: 14))
+                            if inviteEmails.count > 1 {
+                                Button { inviteEmails.remove(at: i) } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundStyle(Color(red: 0.90, green: 0.30, blue: 0.30).opacity(0.70))
+                                }
+                            }
                         }
-                        Text(isCreating ? "Creating…" : "Create Group")
-                            .font(.system(size: 16, weight: .semibold))
+                        .padding(.horizontal, 16)
+                        .frame(height: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white.opacity(0.07))
+                                .overlay(RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.09), lineWidth: 1))
+                        )
                     }
-                    .foregroundStyle(canCreate ? Color.rfNavy : Color.white.opacity(0.35))
+
+                    Button {
+                        inviteEmails.append("")
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 14))
+                            Text("Add another email")
+                                .font(.system(size: 14))
+                        }
+                        .foregroundStyle(Color.rfGold.opacity(0.75))
+                    }
+                    .padding(.top, 4)
+                }
+                .padding(.horizontal, 24)
+            }
+            .frame(maxHeight: .infinity)
+            .padding(.bottom, 8)
+
+            navButtons(
+                backLabel: "Back",
+                nextLabel: "Review & Create",
+                nextEnabled: true,
+                onBack: { step = 1 },
+                onNext: { step = 3 }
+            )
+        }
+    }
+
+    // MARK: Step 3 — Review
+
+    private var stepReview: some View {
+        VStack(spacing: 0) {
+            sheetHeaderBlock(
+                title: "Review",
+                subtitle: "Confirm and create your group"
+            )
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
+                    reviewRow(icon: "person.3.fill", label: "Name", value: groupName)
+                    Divider().overlay(Color.white.opacity(0.08))
+                    reviewRow(icon: "doc.text.fill", label: "Covenant", value: "Custom group covenant set")
+
+                    let validEmails = inviteEmails.filter { $0.contains("@") }
+                    if !validEmails.isEmpty {
+                        Divider().overlay(Color.white.opacity(0.08))
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "envelope.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(Color.rfGold.opacity(0.7))
+                                Text("Inviting \(validEmails.count) member\(validEmails.count == 1 ? "" : "s")")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(.white)
+                            }
+                            ForEach(validEmails, id: \.self) { email in
+                                Text("• " + email)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color.white.opacity(0.55))
+                            }
+                        }
+                    }
+
+                    if let err = createError {
+                        Text(err)
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                            .transition(.opacity)
+                    }
+                }
+                .padding(20)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.white.opacity(0.055))
+                        .overlay(RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                )
+                .padding(.horizontal, 24)
+            }
+            .frame(maxHeight: .infinity)
+            .padding(.bottom, 8)
+
+            navButtons(
+                backLabel: "Back",
+                nextLabel: isCreating ? "Creating…" : "Create Group",
+                nextEnabled: !isCreating,
+                onBack: { step = 2 },
+                onNext: { Task { await createGroup() } }
+            )
+        }
+    }
+
+    // MARK: Create
+
+    @MainActor
+    private func createGroup() async {
+        guard !isCreating else { return }
+        isCreating = true
+        createError = nil
+        let trimmed = groupName.trimmingCharacters(in: .whitespaces)
+        do {
+            let group = try await APIClient.shared.createGroup(name: trimmed, covenant: covenant)
+            primaryGroupID = group.id
+            // Send email invites for all valid addresses.
+            let validEmails = inviteEmails.filter { $0.contains("@") && $0.contains(".") }
+            for email in validEmails {
+                try? await APIClient.shared.groupEmailInvite(groupID: group.id, email: email)
+            }
+            onCreate(group.name)
+            dismiss()
+        } catch {
+            createError = "Couldn't create group — check your connection"
+        }
+        isCreating = false
+    }
+
+    // MARK: Shared subviews
+
+    private func sheetHeaderBlock(title: String, subtitle: String) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 20, weight: .bold, design: .serif))
+                    .foregroundStyle(.white)
+                Text(subtitle)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.45))
+            }
+            Spacer()
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.white.opacity(0.55))
+                    .padding(10)
+                    .background(Circle().fill(Color.white.opacity(0.09)))
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 20)
+    }
+
+    private func reviewRow(icon: String, label: String, value: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundStyle(Color.rfGold.opacity(0.7))
+                .frame(width: 20)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color.rfGold.opacity(0.65))
+                    .kerning(0.8)
+                Text(value)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+        }
+    }
+
+    private func navButtons(
+        backLabel: String? = nil,
+        nextLabel: String,
+        nextEnabled: Bool,
+        onBack: (() -> Void)? = nil,
+        onNext: @escaping () -> Void
+    ) -> some View {
+        HStack(spacing: 12) {
+            if let backLabel, let onBack {
+                Button(action: onBack) {
+                    Text(backLabel)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.65))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color.white.opacity(0.08))
+                                .overlay(RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1))
+                        )
+                }
+            }
+            Button(action: onNext) {
+                Text(nextLabel)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(nextEnabled ? Color.rfNavy : Color.white.opacity(0.35))
                     .frame(maxWidth: .infinity)
-                    .frame(height: 52)
+                    .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(canCreate ? Color.rfGold : Color.white.opacity(0.08))
+                            .fill(nextEnabled ? Color.rfGold : Color.white.opacity(0.08))
                     )
-                }
-                .disabled(!canCreate)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
             }
+            .disabled(!nextEnabled)
         }
-        .presentationDetents([.height(360)])
-        .onAppear { focused = true }
-    }
-
-    private var canCreate: Bool {
-        !name.trimmingCharacters(in: .whitespaces).isEmpty && !isCreating
-    }
-
-    private func createGroup() {
-        guard canCreate else { return }
-        focused = false
-        createError = nil
-        isCreating = true
-        let trimmed = name.trimmingCharacters(in: .whitespaces)
-        Task {
-            do {
-                let group = try await APIClient.shared.createGroup(name: trimmed)
-                await MainActor.run {
-                    primaryGroupID = group.id
-                    isCreating = false
-                    onCreate(group.name)
-                    dismiss()
-                }
-            } catch {
-                await MainActor.run {
-                    createError = "Couldn't create group — check your connection"
-                    isCreating = false
-                }
-            }
-        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 32)
     }
 }
 

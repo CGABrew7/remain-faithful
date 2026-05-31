@@ -24,6 +24,53 @@ func New() *Client {
 	}
 }
 
+// SendPartnerInvite sends an accountability partner invitation email.
+func (c *Client) SendPartnerInvite(toEmail, inviterName, acceptURL string) error {
+	subject := inviterName + " invited you to Remain Faithful"
+	plain := fmt.Sprintf(
+		"Hi,\n\n%s has invited you to join them as an accountability partner on Remain Faithful.\n\n"+
+			"Click the link below to accept the invitation, create your account, and get started:\n\n%s\n\n"+
+			"Remain Faithful is a faith-based accountability app that helps you and a trusted partner\n"+
+			"walk together in integrity.\n\n"+
+			"If you weren't expecting this, you can safely ignore this email.\n\n— Remain Faithful",
+		inviterName, acceptURL,
+	)
+	html := fmt.Sprintf(
+		`<p>Hi,</p>`+
+			`<p><strong>%s</strong> has invited you to join them as an accountability partner on Remain Faithful.</p>`+
+			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
+			`text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>`+
+			`<p>Remain Faithful is a faith-based accountability app that helps you and a trusted partner `+
+			`walk together in integrity.</p>`+
+			`<p style="color:#888;">If you weren't expecting this, you can safely ignore this email.</p>`+
+			`<p>— Remain Faithful</p>`,
+		inviterName, acceptURL,
+	)
+	return c.send(toEmail, "", subject, plain, html)
+}
+
+// SendGroupInvite sends a group member invitation email.
+func (c *Client) SendGroupInvite(toEmail, inviterName, groupName, acceptURL string) error {
+	subject := inviterName + " invited you to join " + groupName + " on Remain Faithful"
+	plain := fmt.Sprintf(
+		"Hi,\n\n%s has invited you to join the accountability group \"%s\" on Remain Faithful.\n\n"+
+			"Click the link below to accept the invitation and join the group:\n\n%s\n\n"+
+			"If you weren't expecting this, you can safely ignore this email.\n\n— Remain Faithful",
+		inviterName, groupName, acceptURL,
+	)
+	html := fmt.Sprintf(
+		`<p>Hi,</p>`+
+			`<p><strong>%s</strong> has invited you to join the accountability group `+
+			`<strong>"%s"</strong> on Remain Faithful.</p>`+
+			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
+			`text-decoration:none;font-weight:bold;display:inline-block;">Join Group</a></p>`+
+			`<p style="color:#888;">If you weren't expecting this, you can safely ignore this email.</p>`+
+			`<p>— Remain Faithful</p>`,
+		inviterName, groupName, acceptURL,
+	)
+	return c.send(toEmail, "", subject, plain, html)
+}
+
 // SendPasswordReset sends a reset-link email to the given address.
 func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 	subject := "Reset your Remain Faithful password"

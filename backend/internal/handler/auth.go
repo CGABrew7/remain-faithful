@@ -62,12 +62,45 @@ func (h *H) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Auto-accept any pending partner invites for this email address.
+	go h.acceptPendingInvites(id, req.Email)
+
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"id":         id,
 		"name":       req.Name,
 		"email":      req.Email,
 		"created_at": createdAt,
 	})
+}
+
+// acceptPendingInvites runs in a goroutine after registration to create
+// relationships for any pending partner invites sent to this email.
+func (h *H) acceptPendingInvites(newUserID int64, email string) {
+	rows, err := h.DB.Query(
+		`SELECT inviter_id, token FROM relationship_invites
+		 WHERE invitee_email = $1 AND status = 'pending'
+		   AND created_at > NOW() - INTERVAL '7 days'`,
+		email,
+	)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var inviterID int64
+		var token string
+		if err := rows.Scan(&inviterID, &token); err != nil {
+			continue
+		}
+		h.DB.Exec( //nolint
+			`INSERT INTO relationships (user_id, partner_id, type, status)
+			 VALUES ($1, $2, 'partner', 'accepted')
+			 ON CONFLICT (user_id, partner_id) DO UPDATE SET status = 'accepted'`,
+			inviterID, newUserID,
+		)
+		h.DB.Exec( //nolint
+			`UPDATE relationship_invites SET status = 'accepted' WHERE token = $1`, token)
+	}
 }
 
 // Login authenticates a user and returns a JWT.

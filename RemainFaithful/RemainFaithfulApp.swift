@@ -10,8 +10,15 @@ struct RemainFaithfulApp: App {
     @StateObject private var authState = AuthState.shared
 
     init() {
-        // Clear stale onboarding state when no account exists in Keychain.
-        // UserDefaults (AppStorage) persists across simulator installs;
+        // Invalidate expired tokens. Keychain persists across app reinstalls on
+        // iOS so a stale token would otherwise skip onboarding forever. If the
+        // JWT is present but past its expiry date, clear the entire session so
+        // the user must sign in (or onboard) again.
+        if let expiry = AuthState.shared.tokenExpiresAt, expiry < Date() {
+            AuthState.shared.clearSession()
+        }
+        // Clear stale onboarding flag when no valid account exists in Keychain.
+        // UserDefaults (AppStorage) persists across simulator installs but
         // Keychain does not — so Keychain is the authoritative "has account" signal.
         if AuthState.shared.currentUser == nil && !AuthState.shared.isAuthenticated {
             UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
@@ -48,6 +55,10 @@ struct RemainFaithfulApp: App {
                 try? await APIClient.shared.refreshTokenIfNeeded()
                 // Drain any events queued by the broadcast extension while the app was closed.
                 await EventProcessor.shared.processPendingEvents()
+                // Refresh APNs device token on every authenticated launch.
+                if AuthState.shared.isAuthenticated {
+                    NotificationService.shared.ensureRegisteredIfAuthorized()
+                }
             }
         }
     }
