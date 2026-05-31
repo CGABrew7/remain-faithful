@@ -65,8 +65,8 @@ export default function TermsPage() {
           <Section title="Contact">
             <p>
               Questions about these Terms may be directed to{' '}
-              <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">
-                support@remainfaithful.com
+              <a href="mailto:jeff@hanokventures.co" className="text-[#C9A84C] hover:underline">
+                jeff@hanokventures.co
               </a>.
             </p>
           </Section>

@@ -357,8 +357,8 @@ export default function PrivacyArchitecturePage() {
                 <tr>
                   <th className="text-left pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Privacy Dimension</th>
                   <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Remain Faithful</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Covenant Eyes</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Ever Accountable</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider A ($16/mo)</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider B ($20/mo)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1E3050]">

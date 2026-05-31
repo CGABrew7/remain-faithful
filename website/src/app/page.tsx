@@ -36,7 +36,7 @@ const faqs = [
     a: 'Your accountability partners receive a discreet alert. The goal is conversation, not condemnation. Every alert includes conversation starter prompts to help your partners respond with grace.',
   },
   {
-    q: 'Is this like Covenant Eyes?',
+    q: 'How is this different from other accountability apps?',
     a: 'Remain Faithful is different in three key ways: it is 100% free forever, all content analysis happens on your device (not in the cloud), and the entire codebase is open source so anyone can verify exactly what it does.',
   },
   {
@@ -479,39 +479,6 @@ export default function HomePage() {
           <p className="text-xs text-[#8A9BB0]/60 mt-6">
             Android launching Fall 2026. Join the waitlist to be notified.
           </p>
-        </div>
-      </section>
-
-      {/* ── Meet the Founder ── */}
-      <section className="py-20 border-t border-[#1E3050]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className="rounded-3xl p-10 sm:p-12"
-            style={{
-              background: 'linear-gradient(135deg, #162235 0%, #1A2A40 100%)',
-              border: '1px solid rgba(201,168,76,0.2)',
-            }}
-          >
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">Meet the Founder</p>
-            <blockquote className="font-serif text-lg sm:text-xl text-[#F0EDE8] leading-relaxed mb-6">
-              &ldquo;I&apos;m Jeff Brewer, a husband, father of five, foster and adoptive parent, business leader, and longtime follower of Christ from Fort Wayne, Indiana. I built Remain Faithful because genuine accountability relationships were one of the most effective tools for pursuing purity in my own life. I&apos;m not just the founder. I use the app myself and rely on the same accountability relationships and technology that every member uses.&rdquo;
-            </blockquote>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] font-bold text-sm">
-                JB
-              </div>
-              <div>
-                <p className="font-semibold text-[#F0EDE8]">Jeff Brewer</p>
-                <p className="text-sm text-[#8A9BB0]">Founder, Remain Faithful · Fort Wayne, Indiana</p>
-              </div>
-              <Link
-                href="/about"
-                className="ml-auto text-sm text-[#C9A84C] hover:underline underline-offset-4 whitespace-nowrap"
-              >
-                Full story →
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
 

@@ -300,8 +300,8 @@ export default function AboutPage() {
           <div className="mt-10 flex flex-col sm:flex-row gap-4 text-center sm:text-left">
             <div className="flex-1 p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
               <p className="text-xs text-[#8A9BB0] uppercase tracking-wide mb-1">Email</p>
-              <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] text-sm hover:underline">
-                support@remainfaithful.com
+              <a href="mailto:jeff@hanokventures.co" className="text-[#C9A84C] text-sm hover:underline">
+                jeff@hanokventures.co
               </a>
             </div>
             <div className="flex-1 p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
