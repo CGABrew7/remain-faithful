@@ -256,8 +256,9 @@ class SampleHandler: RPBroadcastSampleHandler {
     private let textClassifier = FallbackTextClassifier()
     private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 
-    private var frameCount = 0
-    private let sampleInterval = 30
+    // 3-second intervals balance detection accuracy with battery efficiency.
+    // A user cannot meaningfully view and dismiss problematic content faster than this interval.
+    private var lastAnalysisTime: Date = Date()
 
     // Hash blocklist — populated from server-side list at broadcast start
     private var hashBlocklist: Set<UInt64> = []
@@ -282,7 +283,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     override func broadcastFinished() {
         sharedDefaults?.set(false, forKey: "isBroadcasting")
-        logger.info("Broadcast finished — frames processed: \(self.frameCount)")
+        logger.info("Broadcast finished")
     }
 
     // MARK: - Frame processing
@@ -292,13 +293,12 @@ class SampleHandler: RPBroadcastSampleHandler {
         guard sampleBufferType == .video,
               let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
-        frameCount += 1
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
 
         // — Tier 1a: perceptual hash check (every frame, ~0.1 ms) —
         let hash = dHash(from: ciImage, context: ciContext)
         if hashBlocklist.contains(where: { hammingDistance($0, hash) < 10 }) {
-            logger.warning("Tier 1 hash match on frame \(self.frameCount)")
+            logger.warning("Tier 1 hash match")
             let event = makeEvent(
                 category: .explicitSexual, tier: 1, confidence: 1.0,
                 summary: "Explicit image detected (perceptual hash match)"
@@ -306,14 +306,15 @@ class SampleHandler: RPBroadcastSampleHandler {
             writeEvent(event, to: sharedDefaults)
         }
 
-        // — Full Tier 2 processing on every Nth frame —
-        guard frameCount % sampleInterval == 0 else { return }
+        // — Full Tier 2 processing every 3 seconds —
+        let now = Date()
+        guard now.timeIntervalSince(lastAnalysisTime) >= 3.0 else { return }
+        lastAnalysisTime = now
 
         // Render CGImage once; reused by OCR, SCA, and hash update
         guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else { return }
 
         let capturedDefaults = sharedDefaults
-        let capturedFrame    = frameCount
         let capturedAnalyzer = scaAnalyzer
         let capturedClassifier = textClassifier
         let apiBase = capturedDefaults?.string(forKey: "apiBaseURL") ?? "http://localhost:8080"
@@ -321,7 +322,6 @@ class SampleHandler: RPBroadcastSampleHandler {
         Task.detached(priority: .utility) { [self] in
             await self.analyzeFrame(
                 cgImage: cgImage, ciImage: ciImage,
-                frameNumber: capturedFrame,
                 scaAnalyzer: capturedAnalyzer,
                 textClassifier: capturedClassifier,
                 defaults: capturedDefaults,
@@ -335,7 +335,6 @@ class SampleHandler: RPBroadcastSampleHandler {
     private func analyzeFrame(
         cgImage: CGImage,
         ciImage: CIImage,
-        frameNumber: Int,
         scaAnalyzer: SCSensitivityAnalyzer,
         textClassifier: FallbackTextClassifier,
         defaults: UserDefaults?,
@@ -343,7 +342,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     ) async {
         // ——— TIER 2a: Vision OCR ———
         let ocrText = await extractText(from: cgImage)
-        logger.info("OCR frame \(frameNumber): \(ocrText.count) chars — \(String(ocrText.prefix(120)).debugDescription)")
+        logger.info("OCR: \(ocrText.count) chars — \(String(ocrText.prefix(120)).debugDescription)")
 
         defaults?.set(ocrText.prefix(500).description, forKey: "lastOCRText")
         defaults?.set(Date().timeIntervalSince1970, forKey: "lastOCRTimestamp")
@@ -352,7 +351,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         var tier1Triggered = false
         let domains = extractDomains(from: ocrText)
         for domain in domains where Tier1Rules.matchesURL(domain) {
-            logger.warning("Tier 1 URL match: \(domain) on frame \(frameNumber)")
+            logger.warning("Tier 1 URL match: \(domain)")
             let event = makeEvent(
                 category: .explicitSexual, tier: 1, confidence: 1.0,
                 summary: "Blocked domain detected: \(domain)"
@@ -361,7 +360,7 @@ class SampleHandler: RPBroadcastSampleHandler {
             tier1Triggered = true
         }
         if !tier1Triggered && Tier1Rules.matchesKeyword(in: ocrText) {
-            logger.warning("Tier 1 keyword match on frame \(frameNumber): \(String(ocrText.prefix(80)))")
+            logger.warning("Tier 1 keyword match: \(String(ocrText.prefix(80)))")
             let event = makeEvent(
                 category: .explicitSexual, tier: 1, confidence: 0.95,
                 summary: "Explicit keyword detected in screen text"
@@ -374,22 +373,22 @@ class SampleHandler: RPBroadcastSampleHandler {
         var scaIsSensitive = false
         if scaAnalyzer.analysisPolicy != .disabled {
             let tmpURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent("rf_sca_\(frameNumber).jpg")
+                .appendingPathComponent("rf_sca_\(UUID().uuidString).jpg")
             defer { try? FileManager.default.removeItem(at: tmpURL) }
             if let jpeg = cgImageToJPEG(cgImage) {
                 try? jpeg.write(to: tmpURL, options: .atomic)
                 if let analysis = try? await scaAnalyzer.analyzeImage(at: tmpURL) {
                     scaIsSensitive = analysis.isSensitive
-                    logger.info("SCA frame \(frameNumber): sensitive=\(analysis.isSensitive)")
+                    logger.info("SCA: sensitive=\(analysis.isSensitive)")
                 }
             }
         } else {
-            logger.debug("SCA frame \(frameNumber): policy=disabled, skipping")
+            logger.debug("SCA: policy=disabled, skipping")
         }
 
         // ——— TIER 2c: Text classifier ———
         let textResult = textClassifier.classify(ocrText)
-        logger.info("Text classifier frame \(frameNumber): \(textResult.category.rawValue) @ \(String(format: "%.2f", textResult.confidence))")
+        logger.info("Text classifier: \(textResult.category.rawValue) @ \(String(format: "%.2f", textResult.confidence))")
 
         // ——— Composite score ———
         let scaScore: Float = scaIsSensitive ? 0.85 : 0.0
@@ -405,7 +404,7 @@ class SampleHandler: RPBroadcastSampleHandler {
             compositeConfidence = 0.0
         }
 
-        logger.info("Composite frame \(frameNumber): \(compositeCategory.rawValue) @ \(String(format: "%.2f", compositeConfidence))")
+        logger.info("Composite: \(compositeCategory.rawValue) @ \(String(format: "%.2f", compositeConfidence))")
 
         // ——— Route by confidence ———
         if compositeConfidence >= 0.3 && compositeCategory != .clean {
