@@ -21,13 +21,15 @@ struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showLogin = false
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("userName")  private var storedName  = ""
-    @AppStorage("userEmail") private var storedEmail = ""
+    @AppStorage("userName")        private var storedName  = ""
+    @AppStorage("userEmail")       private var storedEmail = ""
+    @AppStorage("userPhoneNumber") private var storedPhone = ""
     @State private var step = 0
     @State private var selectedType: AccountabilityType?
     @State private var name     = ""
     @State private var email    = ""
     @State private var password = ""
+    @State private var phone    = ""
 
     var body: some View {
         ZStack {
@@ -56,9 +58,10 @@ struct OnboardingView: View {
                         )
                         .transition(.push(from: .trailing))
                     } else {
-                        CreateAccountStep(name: $name, email: $email, password: $password) {
+                        CreateAccountStep(name: $name, email: $email, password: $password, phone: $phone) {
                             storedName  = name
                             storedEmail = email
+                            storedPhone = phone
                             hasCompletedOnboarding = true
                             NotificationService.shared.requestPermission()
                         }
@@ -285,18 +288,22 @@ private struct CreateAccountStep: View {
     @Binding var name:     String
     @Binding var email:    String
     @Binding var password: String
+    @Binding var phone:    String
     let onComplete: () -> Void
 
     @FocusState private var focused: Field?
     @State private var isLoading  = false
     @State private var errorMsg: String?
 
-    private enum Field { case name, email, password }
+    private enum Field { case name, email, password, phone }
+
+    private var strippedPhone: String { phone.filter { $0.isNumber } }
 
     private var canSubmit: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty
             && email.contains("@") && email.contains(".")
             && password.count >= 8
+            && strippedPhone.count >= 10
             && !isLoading
     }
 
@@ -358,10 +365,31 @@ private struct CreateAccountStep: View {
                         .textContentType(.newPassword)
                         .foregroundStyle(.white)
                         .focused($focused, equals: .password)
-                        .submitLabel(.done)
-                        .onSubmit { if canSubmit { submit() } }
+                        .submitLabel(.next)
+                        .onSubmit { focused = .phone }
                 }
                 .fieldStyle(isFocused: focused == .password)
+
+                // Phone
+                HStack(spacing: 12) {
+                    Image(systemName: "phone.fill")
+                        .font(.system(size: 15))
+                        .foregroundStyle(focused == .phone ? Color.rfGold : Color.white.opacity(0.45))
+                        .frame(width: 22)
+                    TextField("", text: $phone,
+                              prompt: Text("Your phone number").foregroundColor(Color.white.opacity(0.38)))
+                        .keyboardType(.phonePad)
+                        .textContentType(.telephoneNumber)
+                        .foregroundStyle(.white)
+                        .focused($focused, equals: .phone)
+                }
+                .fieldStyle(isFocused: focused == .phone)
+
+                Text("This is shared with your accountability partners so they can reach out when you need support.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.40))
+                    .padding(.horizontal, 4)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             // Inline API error
@@ -401,14 +429,10 @@ private struct CreateAccountStep: View {
         isLoading = true
         errorMsg  = nil
         Task {
-            // Try the backend; fall through locally if unavailable so the
-            // simulator works without a running server.
             do {
                 _ = try await APIClient.shared.register(name: name, email: email, password: password)
                 _ = try await APIClient.shared.login(email: email, password: password)
             } catch let e as APIError {
-                // Surface server-side errors (e.g. "email already taken") but
-                // treat network failures as offline mode and proceed anyway.
                 if case .server(let msg) = e {
                     await MainActor.run {
                         errorMsg  = msg

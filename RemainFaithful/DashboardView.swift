@@ -248,8 +248,8 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     headerRow
-                    StatusCard(status: $status)
-                    StreakCard(days: 14, best: 21, week: weekClean)
+                    panicButton
+                    VerseCard()
                     if shouldShowDonateBanner {
                         DonateBanner(
                             onDonate:  { showDonation = true;
@@ -258,9 +258,9 @@ struct DashboardView: View {
                         )
                         .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
                     }
-                    VerseCard()
+                    StatusCard(status: $status)
+                    StreakCard(days: 14, best: 21, week: weekClean)
                     ActivitySection(events: events, isLoading: isLoadingEvents)
-                    panicButton
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -413,6 +413,12 @@ private struct StatusCard: View {
                         .font(.system(size: 13))
                         .foregroundStyle(Color.white.opacity(0.6))
                         .fixedSize(horizontal: false, vertical: true)
+                    if isActive {
+                        Text("Pausing will notify your accountability group")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color(red: 0.95, green: 0.72, blue: 0.22))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
 
                 Spacer(minLength: 0)
@@ -503,9 +509,6 @@ private struct StreakCard: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
-                    Image(systemName: "cross.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(Color.rfGold.opacity(0.65))
                     Text("Best: \(best)d")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color.white.opacity(0.38))

@@ -89,7 +89,7 @@ struct PanicView: View {
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
 
-                Text("This moment will pass.\nYour brothers are standing with you.")
+                Text("Your accountability partners want to hear from you right now. Reaching out is a sign of strength, not weakness.")
                     .font(.system(size: 15))
                     .foregroundStyle(Color.white.opacity(0.58))
                     .multilineTextAlignment(.center)

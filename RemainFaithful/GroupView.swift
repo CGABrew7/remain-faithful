@@ -29,20 +29,25 @@ struct GroupMember: Identifiable {
     let name: String
     let streak: Int
     let health: AccountabilityHealth
+    var phone: String? = nil
 }
 
-// MARK: - Placeholder data (shown until real API data loads)
-// PLACEHOLDER: groupName and sampleMembers are shown until the backend returns real data.
-// Replace by fetching group info and member list via GET /groups/:id after login.
+// MARK: - Placeholder data
 
 private let groupName = "Iron Brotherhood"
 
 private let sampleMembers: [GroupMember] = [
-    .init(name: "James Bishop",  streak: 21, health: .strong),
-    .init(name: "Marcus Cole",   streak: 7,  health: .watchful),
-    .init(name: "David Torres",  streak: 3,  health: .struggling),
-    .init(name: "Nathan Wells",  streak: 14, health: .strong),
+    .init(name: "James Bishop",  streak: 21, health: .strong,     phone: "5555550101"),
+    .init(name: "Marcus Cole",   streak: 7,  health: .watchful,   phone: "5555550102"),
+    .init(name: "David Torres",  streak: 3,  health: .struggling, phone: "5555550103"),
+    .init(name: "Nathan Wells",  streak: 14, health: .strong,     phone: "5555550104"),
     .init(name: "Chris Hammond", streak: 0,  health: .struggling),
+]
+
+private let memberSampleEvents: [ActivityEvent] = [
+    .init(category: .adultContent, severity: .high,   description: "Flagged during browsing session",  minutesAgo: 23),
+    .init(category: .socialMedia,  severity: .low,    description: "Extended social media usage",      minutesAgo: 145),
+    .init(category: .gambling,     severity: .medium, description: "Sports betting site visited",      minutesAgo: 360),
 ]
 
 private let covenantText = """
@@ -68,19 +73,24 @@ Signed and agreed upon this day, before God and this brotherhood.
 // MARK: - GroupView
 
 struct GroupView: View {
-    // Non-zero when the user has a real group on the server.
-    // Set this by storing the group ID returned from POST /groups or GET /groups/:id.
-    @AppStorage("primaryGroupID") private var primaryGroupID = 0
+    @AppStorage("primaryGroupID")    private var primaryGroupID    = 0
+    @AppStorage("customCovenantText") private var customCovenantText = ""
 
-    @State private var showCovenant  = false
-    @State private var showInvite    = false
-    @State private var liveGroupName = ""
+    @State private var showCovenant       = false
+    @State private var showInvite         = false
+    @State private var showRenameGroup    = false
+    @State private var renameGroupText    = ""
+    @State private var selectedMember: GroupMember? = nil
+    @State private var showEditCovenant   = false
+    @State private var showCovenantAlert  = false
+    @State private var liveGroupName      = ""
     @State private var liveMembers:  [GroupMember] = []
-    @State private var isLoading     = false
+    @State private var isLoading          = false
     @State private var loadError: String?
 
-    private var displayName:    String        { liveGroupName.isEmpty ? groupName    : liveGroupName }
-    private var displayMembers: [GroupMember] { liveMembers.isEmpty   ? sampleMembers : liveMembers  }
+    private var displayName:    String        { liveGroupName.isEmpty ? groupName     : liveGroupName }
+    private var displayMembers: [GroupMember] { liveMembers.isEmpty   ? sampleMembers : liveMembers   }
+    private var displayCovenant: String       { customCovenantText.isEmpty ? covenantText : customCovenantText }
 
     var body: some View {
         ZStack {
@@ -89,7 +99,10 @@ struct GroupView: View {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 18) {
-                        GroupHeaderCard(name: displayName, memberCount: displayMembers.count)
+                        GroupHeaderCard(name: displayName, memberCount: displayMembers.count) {
+                            renameGroupText = displayName
+                            showRenameGroup = true
+                        }
                         if isLoading {
                             ProgressView()
                                 .tint(Color.rfGold)
@@ -113,8 +126,30 @@ struct GroupView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: $showCovenant) { CovenantSheet() }
-        .sheet(isPresented: $showInvite)   { InviteSheet(groupName: displayName, groupID: primaryGroupID) }
+        .sheet(isPresented: $showCovenant) {
+            CovenantSheet(covenantText: displayCovenant) { showEditCovenant = true }
+        }
+        .sheet(isPresented: $showInvite) {
+            InviteSheet(groupName: displayName, groupID: primaryGroupID)
+        }
+        .sheet(isPresented: $showRenameGroup) {
+            RenameGroupSheet(name: $renameGroupText) { newName in
+                liveGroupName = newName
+            }
+        }
+        .sheet(item: $selectedMember) { member in
+            MemberDetailView(member: member)
+        }
+        .sheet(isPresented: $showEditCovenant) {
+            EditCovenantSheet(text: $customCovenantText) {
+                showCovenantAlert = true
+            }
+        }
+        .alert("Covenant Updated", isPresented: $showCovenantAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("All members have been notified that the group covenant has been updated and will be prompted to re-accept it.")
+        }
         .task { await loadGroup() }
     }
 
@@ -127,7 +162,6 @@ struct GroupView: View {
         do {
             let group = try await APIClient.shared.getGroup(id: primaryGroupID)
             liveGroupName = group.name
-            // PLACEHOLDER: streak and health aren't tracked by the API yet — defaults shown.
             liveMembers = (group.members ?? []).map { m in
                 GroupMember(name: m.user.name, streak: 0, health: .strong)
             }
@@ -143,7 +177,12 @@ struct GroupView: View {
                 .foregroundStyle(.white)
 
             VStack(spacing: 10) {
-                ForEach(displayMembers) { MemberRow(member: $0) }
+                ForEach(displayMembers) { member in
+                    Button { selectedMember = member } label: {
+                        MemberRow(member: member)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }
@@ -181,6 +220,7 @@ struct GroupView: View {
 private struct GroupHeaderCard: View {
     let name: String
     let memberCount: Int
+    let onRename: () -> Void
 
     var body: some View {
         HStack(spacing: 16) {
@@ -203,6 +243,14 @@ private struct GroupHeaderCard: View {
             }
 
             Spacer()
+
+            Button(action: onRename) {
+                Image(systemName: "pencil")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.rfGold)
+                    .padding(9)
+                    .background(Circle().fill(Color.rfGold.opacity(0.13)))
+            }
         }
         .padding(20)
         .background(
@@ -225,6 +273,101 @@ private struct GroupHeaderCard: View {
     }
 }
 
+// MARK: - Rename group sheet
+
+private struct RenameGroupSheet: View {
+    @Binding var name: String
+    let onSave: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 12)
+                    .padding(.bottom, 24)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Rename Group")
+                            .font(.system(size: 20, weight: .bold, design: .serif))
+                            .foregroundStyle(.white)
+                        Text("Choose a new name for this group")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                    }
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.55))
+                            .padding(10)
+                            .background(Circle().fill(Color.white.opacity(0.09)))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+
+                Divider().overlay(Color.white.opacity(0.08))
+                    .padding(.bottom, 24)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "person.3.fill")
+                        .font(.system(size: 15))
+                        .foregroundStyle(focused ? Color.rfGold : Color.white.opacity(0.45))
+                        .frame(width: 22)
+                    TextField("", text: $name,
+                              prompt: Text("Group name").foregroundColor(Color.white.opacity(0.38)))
+                        .textInputAutocapitalization(.words)
+                        .foregroundStyle(.white)
+                        .focused($focused)
+                        .submitLabel(.done)
+                        .onSubmit { saveAndDismiss() }
+                }
+                .padding(.horizontal, 18)
+                .frame(height: 54)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white.opacity(focused ? 0.11 : 0.07))
+                        .overlay(RoundedRectangle(cornerRadius: 14)
+                            .stroke(focused ? Color.rfGold : Color.white.opacity(0.10), lineWidth: 1.5))
+                )
+                .animation(.easeInOut(duration: 0.18), value: focused)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+
+                Button(action: saveAndDismiss) {
+                    Text("Save")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.white.opacity(0.35) : Color.rfNavy)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.white.opacity(0.08) : Color.rfGold)
+                        )
+                }
+                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
+            }
+        }
+        .presentationDetents([.height(320)])
+        .onAppear { focused = true }
+    }
+
+    private func saveAndDismiss() {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        onSave(trimmed)
+        dismiss()
+    }
+}
+
 // MARK: - Member row
 
 private struct MemberRow: View {
@@ -242,7 +385,6 @@ private struct MemberRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            // Avatar with status dot
             ZStack {
                 Circle()
                     .fill(Color.rfGold.opacity(0.14))
@@ -278,6 +420,10 @@ private struct MemberRow: View {
                     .font(.system(size: 10))
                     .foregroundStyle(Color.white.opacity(0.35))
             }
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(Color.white.opacity(0.20))
         }
         .padding(14)
         .background(
@@ -287,6 +433,232 @@ private struct MemberRow: View {
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
+        )
+    }
+}
+
+// MARK: - Member detail view
+
+private struct MemberDetailView: View {
+    let member: GroupMember
+    @Environment(\.dismiss)  private var dismiss
+    @Environment(\.openURL)  private var openURL
+    @State private var encouragementSent = false
+
+    private var firstName: String {
+        member.name.components(separatedBy: " ").first ?? member.name
+    }
+
+    private var initials: String {
+        member.name.components(separatedBy: " ")
+            .compactMap(\.first).prefix(2).map(String.init).joined().uppercased()
+    }
+
+    private var memberEvents: [ActivityEvent] {
+        Array(memberSampleEvents.prefix(3))
+    }
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.04, green: 0.07, blue: 0.18).ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                dismissBar
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        // Avatar + name + health
+                        VStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.rfGold.opacity(0.14))
+                                    .frame(width: 80, height: 80)
+                                Text(initials)
+                                    .font(.system(size: 28, weight: .semibold))
+                                    .foregroundStyle(Color.rfGold)
+                            }
+                            .overlay(alignment: .bottomTrailing) {
+                                Circle()
+                                    .fill(member.health.color)
+                                    .frame(width: 18, height: 18)
+                                    .overlay(Circle().stroke(Color(red: 0.04, green: 0.07, blue: 0.18), lineWidth: 2.5))
+                                    .offset(x: 3, y: 3)
+                            }
+
+                            Text(member.name)
+                                .font(.system(size: 22, weight: .bold, design: .serif))
+                                .foregroundStyle(.white)
+
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(member.health.color)
+                                    .frame(width: 8, height: 8)
+                                Text(member.health.label)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(member.health.color)
+                            }
+                        }
+                        .padding(.top, 8)
+
+                        // Streak card
+                        HStack(spacing: 0) {
+                            VStack(spacing: 4) {
+                                Text("\(member.streak)")
+                                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color.rfGold)
+                                Text("day streak")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color.white.opacity(0.45))
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.white.opacity(0.055))
+                                .overlay(RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                        )
+
+                        // Recent flags
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Recent Flags")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+
+                            VStack(spacing: 10) {
+                                ForEach(memberEvents) { event in
+                                    memberEventRow(event)
+                                }
+                            }
+                        }
+
+                        // Action buttons
+                        VStack(spacing: 12) {
+                            if let phone = member.phone {
+                                Button {
+                                    if let url = URL(string: "tel://\(phone)") {
+                                        openURL(url)
+                                    }
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "phone.fill")
+                                            .font(.system(size: 16))
+                                        Text("Call \(firstName)")
+                                            .font(.system(size: 16, weight: .semibold))
+                                    }
+                                    .foregroundStyle(Color.rfNavy)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 54)
+                                    .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
+                                }
+                            }
+
+                            Button {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                    encouragementSent = true
+                                }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: encouragementSent ? "checkmark.circle.fill" : "hand.raised.fill")
+                                        .font(.system(size: 16))
+                                    Text(encouragementSent ? "Encouragement Sent!" : "Send Encouragement")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .foregroundStyle(encouragementSent
+                                    ? Color(red: 0.20, green: 0.78, blue: 0.45)
+                                    : Color(red: 0.28, green: 0.56, blue: 0.95))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 54)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill((encouragementSent
+                                               ? Color(red: 0.20, green: 0.78, blue: 0.45)
+                                               : Color(red: 0.28, green: 0.56, blue: 0.95)).opacity(0.13))
+                                        .overlay(RoundedRectangle(cornerRadius: 14)
+                                            .stroke((encouragementSent
+                                                     ? Color(red: 0.20, green: 0.78, blue: 0.45)
+                                                     : Color(red: 0.28, green: 0.56, blue: 0.95)).opacity(0.35), lineWidth: 1.5))
+                                )
+                            }
+                            .disabled(encouragementSent)
+                            .animation(.easeInOut(duration: 0.25), value: encouragementSent)
+                        }
+
+                        Button { dismiss() } label: {
+                            Text("Close")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(Color.white.opacity(0.60))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(Color.white.opacity(0.07))
+                                        .overlay(RoundedRectangle(cornerRadius: 14)
+                                            .stroke(Color.white.opacity(0.12), lineWidth: 1))
+                                )
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
+                }
+            }
+        }
+    }
+
+    private var dismissBar: some View {
+        HStack {
+            Spacer()
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.white.opacity(0.40))
+                    .padding(10)
+                    .background(Circle().fill(Color.white.opacity(0.08)))
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
+    }
+
+    private func memberEventRow(_ event: ActivityEvent) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(event.category.tint.opacity(0.14))
+                    .frame(width: 38, height: 38)
+                Image(systemName: event.category.icon)
+                    .font(.system(size: 14))
+                    .foregroundStyle(event.category.tint)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(event.category.rawValue)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+                Text(event.description)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.48))
+            }
+            Spacer(minLength: 4)
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(event.severity.rawValue.uppercased())
+                    .font(.system(size: 9, weight: .bold))
+                    .kerning(0.5)
+                    .foregroundStyle(event.severity.color)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(event.severity.color.opacity(0.14)))
+                Text(event.timeLabel)
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.white.opacity(0.32))
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.055))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.08), lineWidth: 1))
         )
     }
 }
@@ -339,6 +711,8 @@ private struct CovenantButton: View {
 // MARK: - Covenant sheet
 
 private struct CovenantSheet: View {
+    let covenantText: String
+    let onEdit: () -> Void
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -382,7 +756,110 @@ private struct CovenantSheet: View {
                         .lineSpacing(6)
                         .padding(24)
                 }
+
+                Divider().overlay(Color.white.opacity(0.08))
+                    .padding(.bottom, 16)
+
+                Button {
+                    dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { onEdit() }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("Edit Covenant")
+                            .font(.system(size: 15, weight: .semibold))
+                    }
+                    .foregroundStyle(Color.rfGold)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.rfGold.opacity(0.10))
+                            .overlay(RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.rfGold.opacity(0.22), lineWidth: 1))
+                    )
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
             }
+        }
+    }
+}
+
+// MARK: - Edit covenant sheet
+
+private struct EditCovenantSheet: View {
+    @Binding var text: String
+    let onSave: () -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var draft = ""
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 12)
+                    .padding(.bottom, 20)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Edit Covenant")
+                            .font(.system(size: 20, weight: .bold, design: .serif))
+                            .foregroundStyle(.white)
+                        Text("Changes will notify all members")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color(red: 0.95, green: 0.72, blue: 0.22))
+                    }
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.55))
+                            .padding(10)
+                            .background(Circle().fill(Color.white.opacity(0.09)))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
+
+                Divider().overlay(Color.white.opacity(0.08))
+                    .padding(.bottom, 16)
+
+                TextEditor(text: $draft)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
+                    .foregroundStyle(Color.white.opacity(0.85))
+                    .font(.system(size: 14, design: .serif))
+                    .lineSpacing(4)
+                    .padding(.horizontal, 20)
+
+                Divider().overlay(Color.white.opacity(0.08))
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+
+                Button {
+                    text = draft
+                    dismiss()
+                    onSave()
+                } label: {
+                    Text("Save Covenant")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.rfNavy)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
+            }
+        }
+        .onAppear {
+            draft = text.isEmpty ? covenantText : text
         }
     }
 }
@@ -399,7 +876,6 @@ private struct InviteSheet: View {
     @State private var copied       = false
     @State private var inviteError: String?
 
-    // PLACEHOLDER: replace with a real per-group invite link generated by the backend
     private let inviteCode = "remainfaithful.app/join/ib-4x9k"
     private var inviteURL: URL { URL(string: "https://\(inviteCode)") ?? URL(string: "https://remainfaithful.app")! }
     private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
@@ -443,7 +919,6 @@ private struct InviteSheet: View {
                 Divider().overlay(Color.white.opacity(0.08))
                     .padding(.bottom, 28)
 
-                // Email section
                 VStack(alignment: .leading, spacing: 12) {
                     Text("INVITE BY EMAIL")
                         .font(.system(size: 11, weight: .bold))
@@ -510,7 +985,6 @@ private struct InviteSheet: View {
                     }
                 }
 
-                // "or share a link" divider
                 HStack {
                     Rectangle().fill(Color.white.opacity(0.08)).frame(height: 1)
                     Text("or share a link")
@@ -523,7 +997,6 @@ private struct InviteSheet: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 24)
 
-                // Invite link copy row
                 HStack(spacing: 12) {
                     Image(systemName: "link")
                         .font(.system(size: 14))
