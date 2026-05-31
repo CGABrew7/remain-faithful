@@ -4,7 +4,7 @@ import { posts } from './posts'
 
 export const metadata: Metadata = {
   title: 'Blog',
-  description: 'Insights on accountability, purity, men\'s ministry, and the technology behind Remain Faithful.',
+  description: 'Insights on accountability, purity, ministry, and the technology behind Remain Faithful.',
 }
 
 export default function BlogPage() {
@@ -42,8 +42,7 @@ export default function BlogPage() {
                 <p className="text-sm text-[#8A9BB0] leading-relaxed mb-5 line-clamp-3">
                   {post.excerpt}
                 </p>
-                <div className="flex items-center justify-between text-xs text-[#8A9BB0]">
-                  <span>{post.date}</span>
+                <div className="flex items-center justify-end text-xs text-[#8A9BB0]">
                   <span>{post.readTime}</span>
                 </div>
               </div>

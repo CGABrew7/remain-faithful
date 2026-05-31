@@ -11,7 +11,7 @@ export default function PilotForm() {
     church: '',
     email: '',
     role: '',
-    groupSize: '',
+    numGroups: '',
     referral: '',
   })
 
@@ -27,7 +27,7 @@ export default function PilotForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, type: 'pilot_program' }),
+        body: JSON.stringify({ ...form, type: 'church_pilot' }),
       })
       if (!res.ok) throw new Error('Submit failed')
       setSubmitted(true)
@@ -44,7 +44,7 @@ export default function PilotForm() {
         <div className="text-4xl mb-4">✅</div>
         <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-3">Request Received</h3>
         <p className="text-[#8A9BB0] text-sm max-w-sm mx-auto">
-          We&apos;ll be in touch within 3 business days to discuss your ministry&apos;s pilot program.
+          We&apos;ll be in touch within 3 business days to discuss your church pilot program.
         </p>
       </div>
     )
@@ -100,18 +100,18 @@ export default function PilotForm() {
             <option>Other</option>
           </select>
         </Field>
-        <Field label="Estimated Group Size" required>
+        <Field label="Estimated Number of Groups" required>
           <select
             required
-            value={form.groupSize}
-            onChange={(e) => update('groupSize', e.target.value)}
+            value={form.numGroups}
+            onChange={(e) => update('numGroups', e.target.value)}
             className="input-field"
           >
-            <option value="">Select size</option>
-            <option>2–5 men</option>
-            <option>6–10 men</option>
-            <option>11–20 men</option>
-            <option>20+ men</option>
+            <option value="">Select</option>
+            <option>1 group</option>
+            <option>2–3 groups</option>
+            <option>4–10 groups</option>
+            <option>10+ groups</option>
           </select>
         </Field>
       </div>
@@ -132,7 +132,7 @@ export default function PilotForm() {
         disabled={loading}
         className="w-full py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        {loading ? 'Submitting...' : 'Request Pilot Program'}
+        {loading ? 'Submitting...' : 'Request Church Pilot'}
       </button>
       <p className="text-center text-xs text-[#8A9BB0]">
         We respond within 3 business days. No spam, ever.

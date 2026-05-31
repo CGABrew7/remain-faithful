@@ -25,19 +25,22 @@ export const metadata: Metadata = {
     template: '%s | Remain Faithful',
   },
   description:
-    'Free peer accountability for adults committed to purity. On-device AI, privacy-first, built on trust, not surveillance.',
+    'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, built on trust, not surveillance. Join the waitlist.',
   keywords: [
     'accountability app',
     'purity',
-    'Christian men',
+    'Christian accountability',
     'accountability partner',
     'purity app',
-    'mens ministry',
+    'church accountability',
+    'small group accountability',
     'screen monitoring',
     'privacy-first',
+    'open source accountability',
+    'free accountability app',
   ],
-  authors: [{ name: 'Remain Faithful Team' }],
-  creator: 'Remain Faithful',
+  authors: [{ name: 'Jeff Brewer' }],
+  creator: 'Jeff Brewer',
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || 'https://remainfaithful.com'
   ),
@@ -48,10 +51,10 @@ export const metadata: Metadata = {
     siteName: 'Remain Faithful',
     title: 'Remain Faithful: Accountability That Works',
     description:
-      'Free peer accountability for adults committed to purity. On-device AI, privacy-first, built on trust, not surveillance.',
+      'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, built on trust, not surveillance.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'Remain Faithful: Accountability That Works',
@@ -62,8 +65,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Remain Faithful: Accountability That Works',
     description:
-      'Free peer accountability for adults committed to purity. On-device AI, privacy-first.',
-    images: ['/og-image.png'],
+      'Free peer accountability for Christians committed to purity. On-device AI, privacy-first.',
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,

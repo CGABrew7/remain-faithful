@@ -1,11 +1,13 @@
 import Link from 'next/link'
+import WaitlistForm from './WaitlistForm'
 
 const footerLinks = {
   product: {
     title: 'Product',
     links: [
       { label: 'How It Works', href: '/how-it-works' },
-      { label: 'Download', href: '/#download' },
+      { label: 'Privacy Architecture', href: '/privacy-architecture' },
+      { label: 'Early Access', href: '/#waitlist' },
       { label: 'Donate', href: '/#donate' },
     ],
   },
@@ -14,6 +16,7 @@ const footerLinks = {
     links: [
       { label: 'Partners', href: '/partners' },
       { label: 'Group Setup', href: '/partners#group-setup' },
+      { label: 'Group Setup Guide', href: '/group-setup-guide' },
     ],
   },
   company: {
@@ -37,6 +40,24 @@ export default function Footer() {
   return (
     <footer className="bg-[#0A1420] border-t border-[#1E3050]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+        {/* Newsletter strip */}
+        <div
+          className="rounded-2xl p-6 sm:p-8 mb-12 border border-[#C9A84C]/20"
+          style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+        >
+          <div className="grid sm:grid-cols-2 gap-6 items-center">
+            <div>
+              <h3 className="font-serif text-lg font-bold text-[#F0EDE8] mb-1">
+                Join the accountability newsletter
+              </h3>
+              <p className="text-sm text-[#8A9BB0]">
+                Monthly encouragement, guides, and updates from the Remain Faithful team.
+              </p>
+            </div>
+            <WaitlistForm variant="footer" buttonText="Subscribe" />
+          </div>
+        </div>
+
         {/* Top grid */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8 pb-12 border-b border-[#1E3050]">
           {/* Logo + tagline */}
@@ -70,7 +91,7 @@ export default function Footer() {
               <span className="font-serif font-semibold text-[#F0EDE8]">Remain Faithful</span>
             </Link>
             <p className="text-sm text-[#8A9BB0] leading-relaxed max-w-[240px]">
-              Accountability That Works. Free forever, privacy-first, built for men who are serious about purity.
+              Accountability That Works. Free forever, privacy-first, built for believers serious about purity.
             </p>
             {/* Social */}
             <div className="flex items-center gap-3 mt-6">
@@ -116,7 +137,7 @@ export default function Footer() {
             © 2025 Remain Faithful. Free forever. Open source.
           </p>
           <p className="text-xs text-[#8A9BB0]/60">
-            Built with integrity, for the men who need it most.
+            Built with integrity, for all who need it.
           </p>
         </div>
       </div>

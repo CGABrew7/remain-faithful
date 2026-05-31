@@ -2,13 +2,20 @@
 
 import { useState } from 'react'
 
-const AMOUNTS = [5, 10, 25, 50]
+const AMOUNTS = [
+  { value: 5, impact: 'Supports one person for one week' },
+  { value: 10, impact: 'Supports outreach to 5 new churches' },
+  { value: 25, impact: 'Keeps the servers running for a month' },
+  { value: 50, impact: 'Sponsors a full small group for a month' },
+]
 
 export default function DonateButton() {
   const [selected, setSelected] = useState(10)
   const [recurring, setRecurring] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const currentImpact = AMOUNTS.find((a) => a.value === selected)?.impact ?? ''
 
   async function handleDonate() {
     setLoading(true)
@@ -60,20 +67,27 @@ export default function DonateButton() {
 
       {/* Amount selector */}
       <div className="flex gap-2">
-        {AMOUNTS.map((amount) => (
+        {AMOUNTS.map((a) => (
           <button
-            key={amount}
-            onClick={() => setSelected(amount)}
+            key={a.value}
+            onClick={() => setSelected(a.value)}
             className={`w-16 h-10 rounded-full text-sm font-semibold border transition-all duration-200 ${
-              selected === amount
+              selected === a.value
                 ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] border-transparent shadow-md shadow-[#C9A84C]/30'
                 : 'bg-transparent text-[#8A9BB0] border-[#1E3050] hover:border-[#C9A84C] hover:text-[#F0EDE8]'
             }`}
           >
-            ${amount}
+            ${a.value}
           </button>
         ))}
       </div>
+
+      {/* Impact label */}
+      {currentImpact && (
+        <p className="text-xs text-[#C9A84C]/80 text-center">
+          ${selected} {currentImpact.toLowerCase()}
+        </p>
+      )}
 
       {/* Donate button */}
       <button
@@ -102,6 +116,11 @@ export default function DonateButton() {
       {error && (
         <p className="text-sm text-red-400">{error}</p>
       )}
+
+      {/* Disclosure */}
+      <div className="text-center text-xs text-[#8A9BB0]/70 max-w-sm leading-relaxed mt-1">
+        Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Processed securely via Stripe.
+      </div>
     </div>
   )
 }

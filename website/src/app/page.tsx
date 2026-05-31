@@ -4,23 +4,96 @@ import Link from 'next/link'
 import AppMockup from '@/components/AppMockup'
 import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
+import WaitlistForm from '@/components/WaitlistForm'
 
 export const metadata: Metadata = {
   title: 'Remain Faithful: Accountability That Works',
   description:
-    'Free peer accountability for adults committed to purity. On-device AI, privacy-first, built on trust, not surveillance.',
+    'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, built on trust, not surveillance. Join the waitlist.',
+  openGraph: {
+    title: 'Remain Faithful: Accountability That Works',
+    description:
+      'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, open source.',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
+  },
 }
 
+const faqs = [
+  {
+    q: 'Can my accountability partners see what I was looking at?',
+    a: 'No. Remain Faithful never captures or shares screenshots. Partners receive a discreet alert with a category (like "Adult Content") and severity level, never the actual content. This protects partners from being exposed to harmful material.',
+  },
+  {
+    q: 'Can my spouse be my accountability partner?',
+    a: 'Yes. You can set up a one-to-one partnership with your spouse, a friend, a mentor, or a pastor. You choose who sees your alerts.',
+  },
+  {
+    q: 'Can our church use this for small groups?',
+    a: 'Absolutely. Remain Faithful was designed for small group accountability. Groups of 3 to 12 members can all monitor and encourage each other. We provide a free Group Setup Guide for ministry leaders.',
+  },
+  {
+    q: 'What happens if I slip up?',
+    a: 'Your accountability partners receive a discreet alert. The goal is conversation, not condemnation. Every alert includes conversation starter prompts to help your partners respond with grace.',
+  },
+  {
+    q: 'Is this like Covenant Eyes?',
+    a: 'Remain Faithful is different in three key ways: it is 100% free forever, all content analysis happens on your device (not in the cloud), and the entire codebase is open source so anyone can verify exactly what it does.',
+  },
+  {
+    q: 'Does this work on Android?',
+    a: 'Android support is planned for Fall 2026. Currently Remain Faithful is available for iPhone (iOS 17+). Join the waitlist to be notified when Android launches.',
+  },
+]
+
 export default function HomePage() {
+  const orgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Remain Faithful',
+    url: 'https://remainfaithful.com',
+    logo: 'https://remainfaithful.com/opengraph-image',
+    founder: { '@type': 'Person', name: 'Jeff Brewer' },
+    sameAs: ['https://github.com/CGABrew7/remain-faithful'],
+  }
+
+  const appSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Remain Faithful',
+    operatingSystem: 'iOS',
+    applicationCategory: 'LifestyleApplication',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    description:
+      'Free peer accountability app for Christians committed to purity. On-device AI ensures your content never leaves your device.',
+    author: { '@type': 'Person', name: 'Jeff Brewer' },
+  }
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+
       <Suspense fallback={null}>
         <DonationSuccessBanner />
       </Suspense>
 
       {/* ── Hero ── */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
-        {/* Background radial */}
         <div
           className="absolute inset-0 pointer-events-none"
           aria-hidden="true"
@@ -36,7 +109,6 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 pt-32 w-full">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Copy */}
             <div className="max-w-xl">
               <h1 className="font-serif text-5xl sm:text-6xl font-bold leading-[1.1] text-[#F0EDE8] mb-6">
                 Accountability<br />
@@ -53,21 +125,20 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg text-[#8A9BB0] leading-relaxed mb-10">
-                Free peer accountability for adults committed to purity.
+                Free peer accountability for believers committed to purity.
                 Built on trust, not surveillance. Your content never leaves your device.
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <a
-                  href="https://apps.apple.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#waitlist"
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-lg shadow-[#C9A84C]/20"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
                   </svg>
-                  Download for iPhone
+                  Get Early Access
                 </a>
                 <Link
                   href="/how-it-works"
@@ -80,7 +151,6 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Trust indicators */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-10 pt-8 border-t border-[#1E3050]">
                 <TrustItem>100% Free, Forever</TrustItem>
                 <TrustItem>Donation Funded</TrustItem>
@@ -89,11 +159,30 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: Phone mockup */}
             <div className="flex justify-center lg:justify-end">
               <AppMockup />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Waitlist / Email Capture ── */}
+      <section id="waitlist" className="py-20 bg-[#0A1420] border-y border-[#1E3050]">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 mb-6">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+              <path d="M22 17H2a3 3 0 000 6h20a3 3 0 000-6z"/>
+              <path d="M5.45 5.11L2 12v3a2 2 0 002 2h16a2 2 0 002-2v-3l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
+            </svg>
+          </div>
+          <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Coming Soon</p>
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#F0EDE8] mb-4">
+            Be the First to Know When We Launch
+          </h2>
+          <p className="text-[#8A9BB0] mb-10">
+            Enter your email below and we&apos;ll notify you the moment Remain Faithful is available.
+          </p>
+          <WaitlistForm variant="default" buttonText="Join the Waitlist" />
         </div>
       </section>
 
@@ -119,7 +208,7 @@ export default function HomePage() {
                 </svg>
               }
               title="One-to-One or Group"
-              body="Choose a single trusted partner or set up a small group. RF works for close friendships, mentorship relationships, and men's ministry groups alike."
+              body="Choose a single trusted partner or set up a small group. RF works for close friendships, mentorship relationships, and accountability groups alike."
             />
             <FeatureCard
               icon={
@@ -158,7 +247,6 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* Connector line (desktop) */}
             <div className="hidden md:block absolute top-10 left-[calc(16.667%+20px)] right-[calc(16.667%+20px)] h-px bg-gradient-to-r from-[#C9A84C]/40 via-[#C9A84C]/20 to-[#C9A84C]/40" />
 
             <Step
@@ -211,11 +299,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Privacy Callout ── */}
+      {/* ── Privacy Callout + Device Table ── */}
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className="rounded-3xl p-10 sm:p-14 text-center"
+            className="rounded-3xl p-10 sm:p-14 text-center mb-12"
             style={{
               background: 'linear-gradient(135deg, #162235 0%, #1A2A40 100%)',
               border: '1px solid rgba(201,168,76,0.25)',
@@ -248,6 +336,73 @@ export default function HomePage() {
               />
             </div>
           </div>
+
+          {/* What Leaves Your Device table */}
+          <div className="rounded-3xl overflow-hidden border border-[#1E3050]">
+            <div className="grid grid-cols-2">
+              <div className="bg-[#162235] p-6 border-r border-[#1E3050]">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-[#F0EDE8] text-sm">Stays on Your Device</h3>
+                </div>
+                <ul className="space-y-2.5">
+                  {[
+                    'Screenshots & raw screen content',
+                    'Browsing history',
+                    'App usage details',
+                    'Passwords & financial data',
+                    'Message content',
+                    'Photos & videos',
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-sm text-[#8A9BB0]">
+                      <svg className="flex-shrink-0 text-green-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-[#0F1B2D] p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-8 h-8 rounded-lg bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+                      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.86 9.5"/>
+                      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-[#F0EDE8] text-sm">Shared with Partners</h3>
+                </div>
+                <ul className="space-y-2.5">
+                  {[
+                    'Alert category (e.g. "Adult Content")',
+                    'Severity level (Low / Medium / High)',
+                    'Timestamp',
+                    'Brief system-generated description',
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-sm text-[#8A9BB0]">
+                      <svg className="flex-shrink-0 text-[#C9A84C]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="bg-[#162235]/60 px-6 py-4 border-t border-[#1E3050]">
+              <p className="text-xs text-[#8A9BB0]/80 leading-relaxed">
+                In rare cases where our on-device AI is uncertain (&lt;5% of events), a text-only category query — never screenshots or raw content — may be sent to our secure classification server. No identifying information is included.{' '}
+                <Link href="/privacy-architecture" className="text-[#C9A84C] hover:underline">
+                  Full Privacy Architecture →
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -262,7 +417,7 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             <Testimonial
-              quote="RF changed our men's group. We went from vague commitments to real accountability. The alerts make the invisible visible, without the shame spiral."
+              quote="RF changed our group. We went from vague commitments to real accountability. The alerts make the invisible visible, without the shame spiral."
               author="Beta User"
               role="Kansas City, Missouri"
             />
@@ -280,7 +435,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Download ── */}
+      {/* ── Join Waitlist / Platform Download ── */}
       <section id="download" className="py-24 bg-[#0A1420] border-t border-[#1E3050]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Get Started</p>
@@ -292,40 +447,95 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* App Store */}
+            {/* iOS Waitlist */}
             <a
-              href="https://apps.apple.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-black border border-[#2A3F5F] hover:border-[#C9A84C]/50 transition-colors group"
+              href="#waitlist"
+              className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-lg shadow-[#C9A84C]/20 group"
             >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="#F0EDE8" className="group-hover:scale-105 transition-transform">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#0F1B2D" className="group-hover:scale-105 transition-transform">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
               </svg>
               <div className="text-left">
-                <p className="text-[10px] text-[#8A9BB0] leading-none">Download on the</p>
-                <p className="text-[15px] font-semibold text-[#F0EDE8] leading-tight">App Store</p>
+                <p className="text-[10px] text-[#0F1B2D]/70 leading-none font-medium">iPhone (iOS 17+)</p>
+                <p className="text-[15px] font-semibold text-[#0F1B2D] leading-tight">Join the Waitlist</p>
               </div>
             </a>
 
-            {/* Android Coming Soon */}
-            <div className="relative flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#162235] border border-[#1E3050] opacity-60 cursor-not-allowed">
+            {/* Android Fall 2026 */}
+            <div className="relative flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#162235] border border-[#1E3050] opacity-70 cursor-not-allowed">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="#8A9BB0">
                 <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C14.15 1.23 13.1 1 12 1c-1.1 0-2.15.23-3.12.63L7.4.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.1 3.26 5 5.01 5 7h14c0-1.99-1.1-3.74-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
               </svg>
               <div className="text-left">
-                <p className="text-[10px] text-[#8A9BB0] leading-none">Coming Soon to</p>
-                <p className="text-[15px] font-semibold text-[#8A9BB0] leading-tight">Google Play</p>
+                <p className="text-[10px] text-[#8A9BB0] leading-none">Android launching</p>
+                <p className="text-[15px] font-semibold text-[#8A9BB0] leading-tight">Fall 2026</p>
               </div>
               <div className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-[#C9A84C] text-[#0F1B2D] text-[9px] font-bold uppercase tracking-wide">
-                Soon
+                2026
               </div>
             </div>
           </div>
 
           <p className="text-xs text-[#8A9BB0]/60 mt-6">
-            Requires iOS 17.0 or later. Free. No in-app purchases.
+            Android launching Fall 2026. Join the waitlist to be notified.
           </p>
+        </div>
+      </section>
+
+      {/* ── Meet the Founder ── */}
+      <section className="py-20 border-t border-[#1E3050]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className="rounded-3xl p-10 sm:p-12"
+            style={{
+              background: 'linear-gradient(135deg, #162235 0%, #1A2A40 100%)',
+              border: '1px solid rgba(201,168,76,0.2)',
+            }}
+          >
+            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">Meet the Founder</p>
+            <blockquote className="font-serif text-lg sm:text-xl text-[#F0EDE8] leading-relaxed mb-6">
+              &ldquo;I&apos;m Jeff Brewer, a husband, father of five, foster and adoptive parent, business leader, and longtime follower of Christ from Fort Wayne, Indiana. I built Remain Faithful because genuine accountability relationships were one of the most effective tools for pursuing purity in my own life. I&apos;m not just the founder. I use the app myself and rely on the same accountability relationships and technology that every member uses.&rdquo;
+            </blockquote>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] font-bold text-sm">
+                JB
+              </div>
+              <div>
+                <p className="font-semibold text-[#F0EDE8]">Jeff Brewer</p>
+                <p className="text-sm text-[#8A9BB0]">Founder, Remain Faithful · Fort Wayne, Indiana</p>
+              </div>
+              <Link
+                href="/about"
+                className="ml-auto text-sm text-[#C9A84C] hover:underline underline-offset-4 whitespace-nowrap"
+              >
+                Full story →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQs ── */}
+      <section className="py-24 bg-[#0A1420] border-t border-[#1E3050]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Common Questions</p>
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#F0EDE8]">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq) => (
+              <div
+                key={faq.q}
+                className="rounded-2xl border border-[#1E3050] bg-[#162235] p-6"
+              >
+                <h3 className="font-semibold text-[#F0EDE8] mb-3">{faq.q}</h3>
+                <p className="text-sm text-[#8A9BB0] leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -344,9 +554,6 @@ export default function HomePage() {
             We&apos;re committed to never charging for accountability. Your donation funds server costs, development, and ministry outreach.
           </p>
           <DonateButton />
-          <p className="text-xs text-[#8A9BB0]/50 mt-6">
-            Donations are processed securely via Stripe.
-          </p>
         </div>
       </section>
     </>

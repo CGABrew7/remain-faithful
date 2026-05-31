@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { posts } from '../posts'
+import WaitlistForm from '@/components/WaitlistForm'
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }))
@@ -17,7 +18,11 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.excerpt,
-    openGraph: { title: post.title, description: post.excerpt },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+    },
   }
 }
 
@@ -66,8 +71,27 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
   const related = posts.filter((p) => p.slug !== post.slug).slice(0, 3)
 
+  const blogSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    author: { '@type': 'Person', name: 'Jeff Brewer' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Remain Faithful',
+      url: 'https://remainfaithful.com',
+    },
+    articleSection: post.category,
+  }
+
   return (
     <div className="pt-32 pb-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+      />
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-[1fr_300px] gap-12">
           {/* Article */}
@@ -95,12 +119,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <div className="flex items-center gap-4 text-sm text-[#8A9BB0] mb-8 pb-8 border-b border-[#1E3050]">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] text-xs font-bold">
-                  RF
+                  JB
                 </div>
-                <span>RF Team</span>
+                <span>Jeff Brewer</span>
               </div>
-              <span>·</span>
-              <span>{post.date}</span>
               <span>·</span>
               <span>{post.readTime}</span>
             </div>
@@ -109,22 +131,36 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               {renderBody(post.body)}
             </div>
 
-            {/* CTA */}
+            {/* Newsletter CTA */}
             <div
-              className="mt-12 p-8 rounded-2xl border border-[#C9A84C]/20 text-center"
+              className="mt-12 p-8 rounded-2xl border border-[#C9A84C]/20"
+              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+            >
+              <h3 className="font-serif text-xl font-bold text-[#F0EDE8] mb-2">
+                Want more like this?
+              </h3>
+              <p className="text-[#8A9BB0] text-sm mb-5">
+                Get the monthly accountability newsletter — practical guides, theological reflections, and updates from the Remain Faithful team.
+              </p>
+              <WaitlistForm variant="inline" buttonText="Subscribe" />
+            </div>
+
+            {/* Download CTA */}
+            <div
+              className="mt-6 p-8 rounded-2xl border border-[#C9A84C]/20 text-center"
               style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
             >
               <h3 className="font-serif text-xl font-bold text-[#F0EDE8] mb-3">
                 Ready to start?
               </h3>
               <p className="text-[#8A9BB0] text-sm mb-5">
-                Download Remain Faithful and take the first step toward real accountability.
+                Join the waitlist and be first to know when Remain Faithful launches.
               </p>
               <Link
-                href="/#download"
+                href="/#waitlist"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 text-sm"
               >
-                Download for iPhone
+                Get Early Access
               </Link>
             </div>
           </article>

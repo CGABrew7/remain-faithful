@@ -13,12 +13,12 @@ export const posts: Post[] = [
     slug: 'why-accountability-fails',
     title: 'Why Accountability Fails (And How RF Fixes It)',
     excerpt:
-      "Most accountability systems fail within months. Not because the men aren't serious. The structure places the burden of disclosure on the person most likely to avoid it.",
+      "Most accountability systems fail within months. Not because people aren't serious. The structure places the burden of disclosure on the person most likely to avoid it.",
     category: 'Accountability',
     date: 'May 15, 2025',
     readTime: '5 min read',
     body: `
-Most accountability programs follow a predictable pattern. A men's group meets, they talk about the struggle, they make commitments to each other, someone volunteers to be an accountability partner, phone numbers are exchanged. For a few weeks, there are check-in texts. Then the texts get shorter. Then less frequent. Then they stop.
+Most accountability programs follow a predictable pattern. A small group meets, they talk about the struggle, they make commitments to each other, someone volunteers to be an accountability partner, phone numbers are exchanged. For a few weeks, there are check-in texts. Then the texts get shorter. Then less frequent. Then they stop.
 
 This isn't a character failure. It's a structural one.
 
@@ -56,14 +56,14 @@ Remain Faithful flips three things:
 
 **Response is governed by covenant, not by reaction.** Partners agree before they gain access. They know what they're signing up for and what's expected of them. This shapes how they respond when an alert comes in.
 
-None of this replaces the relational work. The technology facilitates; the humans do the real thing. But it changes what's possible, and for men who are serious about change, that matters.
+None of this replaces the relational work. The technology facilitates; the humans do the real thing. But it changes what's possible, and for anyone serious about change, that matters.
     `.trim(),
   },
   {
     slug: 'setting-up-your-first-group',
     title: 'Setting Up Your First Accountability Group',
     excerpt:
-      "A step-by-step guide to launching a Remain Faithful group in your men's ministry, friendship circle, or discipleship cohort.",
+      "A step-by-step guide to launching a Remain Faithful group in your ministry, friendship circle, or discipleship cohort.",
     category: 'Guide',
     date: 'May 10, 2025',
     readTime: '4 min read',
@@ -87,7 +87,7 @@ After creating your account:
 
 1. Tap the **Group** tab at the bottom of the screen
 2. Tap **New Group**
-3. Enter a group name (e.g., "Tuesday Men," "Iron Sharpens Iron," or whatever your group calls itself)
+3. Enter a group name (e.g., "Tuesday Accountability," "Iron Sharpens Iron," or whatever your group calls itself)
 4. Review the covenant text (this is what every member will agree to before joining)
 5. Choose your leader visibility settings:
    - **Alert summaries:** receive aggregate weekly data (recommended)
@@ -168,7 +168,7 @@ RF gives that conversation a concrete starting point: an actual alert event, rat
 
 The studies on commitment devices and social norming are useful. But they don't capture something that matters a lot in this context: the spiritual dimension of accountability.
 
-A man who has made a covenant with a partner he trusts, who knows that partner cares about his soul and not just his behavior, is in a different situation than someone participating in a behavioral study. The data is consistent. But the lived experience is richer than the data.
+A person who has made a covenant with a partner they trust, who knows that partner cares about their soul and not just their behavior, is in a different situation than someone participating in a behavioral study. The data is consistent. But the lived experience is richer than the data.
 
 RF is built for both. The mechanism is behavioral. The foundation is covenantal.
     `.trim(),
@@ -246,36 +246,36 @@ That's what distinguishes accountability that works from accountability that jus
   },
   {
     slug: 'mens-ministry-accountability',
-    title: 'Modernizing Men\'s Ministry Accountability',
+    title: 'Modernizing Ministry Accountability',
     excerpt:
-      'How churches are moving from informal check-ins to structured accountability programs, and what the next generation of men\'s ministry looks like.',
+      'How churches are moving from informal check-ins to structured accountability programs, and what the next generation of ministry accountability looks like.',
     category: 'Ministry',
     date: 'April 12, 2025',
     readTime: '8 min read',
     body: `
-Men's ministry has a long history of accountability groups. What's changed is the landscape of temptation, along with the tools available to meet it.
+Ministry accountability groups have a long history in the church. What's changed is the landscape of temptation, along with the tools available to meet it.
 
 ## The Smartphone as the Arena
 
-A generation ago, accountability conversations were about what men were watching on cable TV or renting from video stores. Today, the internet puts near-unlimited explicit content in every pocket, available at 2am, with no external accountability whatsoever.
+A generation ago, accountability conversations were about what people were watching on cable TV or renting from video stores. Today, the internet puts near-unlimited explicit content in every pocket, available at 2am, with no external accountability whatsoever.
 
 The informal accountability group hasn't kept pace. Monthly meetings and occasional texts are not matched to the moment-by-moment nature of digital temptation.
 
 ## What Structured Technology Accountability Looks Like
 
-Churches that have implemented RF-style accountability report a consistent pattern: the conversations get better, not worse. Men who initially feel exposed by the monitoring typically say, after a few months, that the relief of not having to decide whether to disclose outweighs the discomfort of the monitoring itself.
+Churches that have implemented RF-style accountability report a consistent pattern: the conversations get better, not worse. Participants who initially feel exposed by the monitoring typically say, after a few months, that the relief of not having to decide whether to disclose outweighs the discomfort of the monitoring itself.
 
 That's a significant shift. The thing that sounds most intrusive turns out to be, in practice, the thing that removes the most burden.
 
 ## Building It Into Your Ministry Structure
 
-The most successful implementations integrate RF into existing discipleship structures rather than making it a standalone program. Men's groups that were already meeting use RF as an accountability layer for what happens between meetings. One-on-one discipleship relationships use the partner accountability feature.
+The most successful implementations integrate RF into existing discipleship structures rather than making it a standalone program. Groups that were already meeting use RF as an accountability layer for what happens between meetings. One-on-one discipleship relationships use the partner accountability feature.
 
 RF isn't a program. It's infrastructure. The ministry is what happens around it.
 
 ## What Leaders Say
 
-The feedback from pastors and ministry leaders is consistent: the app works best when it's introduced relationally, not just technically. Men need to understand why they're doing this before they understand what the app does.
+The feedback from pastors and ministry leaders is consistent: the app works best when it's introduced relationally, not just technically. People need to understand why they're doing this before they understand what the app does.
 
 That means having the hard conversation before handing someone an invite code. It means talking about covenant before talking about screen monitoring. The technology is easy. The relationship it serves is the hard part. And the hard part is the point.
     `.trim(),
