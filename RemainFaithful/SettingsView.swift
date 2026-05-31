@@ -526,11 +526,7 @@ private struct ManagePartnersView: View {
     private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
     private let red   = Color(red: 0.90, green: 0.30, blue: 0.30)
 
-    // PLACEHOLDER: Replace with real partner data from API
-    @State private var partners: [PartnerItem] = [
-        PartnerItem(name: "James Bishop", email: "james@example.com"),
-        PartnerItem(name: "Marcus Cole",  email: "marcus@example.com"),
-    ]
+    @State private var partners: [PartnerItem] = []
 
     var body: some View {
         ZStack {
@@ -729,10 +725,8 @@ private struct ManageGroupsView: View {
     @State private var isCreating       = false
     @State private var createError: String?
     @State private var showLeaveConfirm = false
+    @State private var groups: [String] = []
     @FocusState private var groupNameFocused: Bool
-
-    // PLACEHOLDER: Replace with real group list from API
-    private let groups = ["Iron Brotherhood"]
 
     var body: some View {
         ZStack {
@@ -754,10 +748,17 @@ private struct ManageGroupsView: View {
         .alert("Leave Group", isPresented: $showLeaveConfirm) {
             Button("Leave", role: .destructive) {
                 UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                groups = []
             }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("You will be removed from this group and all members will be notified.")
+        }
+        .task {
+            guard primaryGroupID > 0 else { return }
+            if let group = try? await APIClient.shared.getGroup(id: primaryGroupID) {
+                groups = [group.name]
+            }
         }
     }
 

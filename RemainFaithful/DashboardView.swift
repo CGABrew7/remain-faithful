@@ -218,7 +218,10 @@ struct DashboardView: View {
     @Binding var showPanic: Bool
 
     @State private var status:         MonitoringStatus = .active
-    @State private var events:         [ActivityEvent]  = sampleEvents
+    @State private var events:         [ActivityEvent]  = []
+    @State private var streakDays:     Int              = 0
+    @State private var streakBest:     Int              = 0
+    @State private var streakWeek:     [Bool]           = Array(repeating: true, count: 7)
     @State private var showDonation:   Bool             = false
     @State private var isLoadingEvents = false
 
@@ -250,7 +253,7 @@ struct DashboardView: View {
                     headerRow
                     StatusCard(status: $status)
                     VerseCard()
-                    StreakCard(days: 14, best: 21, week: weekClean)
+                    StreakCard(days: streakDays, best: streakBest, week: streakWeek)
                     ActivitySection(events: events, isLoading: isLoadingEvents)
                     panicButton
                     if shouldShowDonateBanner {
@@ -305,17 +308,20 @@ struct DashboardView: View {
 
     @MainActor
     private func loadEvents() async {
+        if appState.isDemoMode {
+            events = sampleEvents
+            streakDays = 14
+            streakBest = 21
+            streakWeek = weekClean
+            return
+        }
         guard APIClient.shared.isAuthenticated else { return }
         isLoadingEvents = true
         defer { isLoadingEvents = false }
         do {
             let remote = try await APIClient.shared.listEvents()
-            let converted = remote.compactMap { ActivityEvent.from(remote: $0) }
-            if !converted.isEmpty { events = converted }
-            // If empty, placeholder sampleEvents remain visible so the UI isn't blank.
-        } catch {
-            // Keep placeholder data visible if the server is unreachable.
-        }
+            events = remote.compactMap { ActivityEvent.from(remote: $0) }
+        } catch { }
     }
 
     private var panicButton: some View {
@@ -622,7 +628,7 @@ private struct ActivitySection: View {
             Image(systemName: "checkmark.shield.fill")
                 .font(.system(size: 34))
                 .foregroundStyle(Color(red: 0.20, green: 0.78, blue: 0.45))
-            Text("No flags in the last 7 days")
+            Text("No activity yet")
                 .font(.system(size: 15))
                 .foregroundStyle(Color.white.opacity(0.45))
         }

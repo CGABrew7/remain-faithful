@@ -75,6 +75,7 @@ Signed and agreed upon this day, before God and this brotherhood.
 struct GroupView: View {
     @AppStorage("primaryGroupID")    private var primaryGroupID    = 0
     @AppStorage("customCovenantText") private var customCovenantText = ""
+    @EnvironmentObject private var appState: AppState
 
     @State private var showCovenant       = false
     @State private var showInvite         = false
@@ -83,46 +84,59 @@ struct GroupView: View {
     @State private var selectedMember: GroupMember? = nil
     @State private var showEditCovenant   = false
     @State private var showCovenantAlert  = false
+    @State private var showCreateGroup    = false
     @State private var liveGroupName      = ""
     @State private var liveMembers:  [GroupMember] = []
     @State private var isLoading          = false
     @State private var loadError: String?
 
-    private var displayName:    String        { liveGroupName.isEmpty ? groupName     : liveGroupName }
-    private var displayMembers: [GroupMember] { liveMembers.isEmpty   ? sampleMembers : liveMembers   }
+    private var displayName: String {
+        if !liveGroupName.isEmpty { return liveGroupName }
+        return appState.isDemoMode ? groupName : ""
+    }
+    private var displayMembers: [GroupMember] {
+        if !liveMembers.isEmpty { return liveMembers }
+        return appState.isDemoMode ? sampleMembers : []
+    }
     private var displayCovenant: String       { customCovenantText.isEmpty ? covenantText : customCovenantText }
 
     var body: some View {
         ZStack {
             Color.rfNavy.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 18) {
-                        GroupHeaderCard(name: displayName, memberCount: displayMembers.count) {
-                            renameGroupText = displayName
-                            showRenameGroup = true
+            if !appState.isDemoMode && primaryGroupID == 0 {
+                noGroupEmptyState
+            } else {
+                VStack(spacing: 0) {
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 18) {
+                            GroupHeaderCard(name: displayName, memberCount: displayMembers.count) {
+                                renameGroupText = displayName
+                                showRenameGroup = true
+                            }
+                            if isLoading {
+                                ProgressView()
+                                    .tint(Color.rfGold)
+                                    .padding(.vertical, 12)
+                            } else if let err = loadError {
+                                Text(err)
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(Color.white.opacity(0.45))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.vertical, 8)
+                            }
+                            if !displayMembers.isEmpty {
+                                membersSection
+                            }
+                            CovenantButton { showCovenant = true }
                         }
-                        if isLoading {
-                            ProgressView()
-                                .tint(Color.rfGold)
-                                .padding(.vertical, 12)
-                        } else if let err = loadError {
-                            Text(err)
-                                .font(.system(size: 13))
-                                .foregroundStyle(Color.white.opacity(0.45))
-                                .multilineTextAlignment(.center)
-                                .padding(.vertical, 8)
-                        }
-                        membersSection
-                        CovenantButton { showCovenant = true }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 8)
+                        .padding(.bottom, 24)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 24)
-                }
 
-                inviteBar
+                    inviteBar
+                }
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -145,16 +159,58 @@ struct GroupView: View {
                 showCovenantAlert = true
             }
         }
+        .sheet(isPresented: $showCreateGroup) {
+            CreateGroupSheet { createdName in
+                liveGroupName = createdName
+            }
+        }
         .alert("Covenant Updated", isPresented: $showCovenantAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text("All members have been notified that the group covenant has been updated and will be prompted to re-accept it.")
         }
-        .task { await loadGroup() }
+        .task(id: primaryGroupID) { await loadGroup() }
+    }
+
+    private var noGroupEmptyState: some View {
+        VStack(spacing: 28) {
+            Spacer()
+            Image(systemName: "person.3.fill")
+                .font(.system(size: 52))
+                .foregroundStyle(Color.rfGold.opacity(0.35))
+            VStack(spacing: 10) {
+                Text("No Group Yet")
+                    .font(.system(size: 22, weight: .bold, design: .serif))
+                    .foregroundStyle(.white)
+                Text("You are not in any accountability groups.\nCreate one, or ask a member for an invite link.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.white.opacity(0.50))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+            }
+            .padding(.horizontal, 32)
+            Button {
+                showCreateGroup = true
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 16))
+                    Text("Create a Group")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .foregroundStyle(Color.rfNavy)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
+            }
+            .padding(.horizontal, 40)
+            Spacer()
+        }
     }
 
     @MainActor
     private func loadGroup() async {
+        guard !appState.isDemoMode else { return }
         guard primaryGroupID > 0, APIClient.shared.isAuthenticated else { return }
         isLoading = true
         loadError = nil
@@ -166,7 +222,7 @@ struct GroupView: View {
                 GroupMember(name: m.user.name, streak: 0, health: .strong)
             }
         } catch {
-            loadError = "Couldn't load group — showing cached data"
+            loadError = "Couldn't load group — check your connection"
         }
     }
 
@@ -1069,6 +1125,143 @@ private struct InviteSheet: View {
     }
 }
 
+// MARK: - Create Group sheet
+
+private struct CreateGroupSheet: View {
+    let onCreate: (String) -> Void
+    @AppStorage("primaryGroupID") private var primaryGroupID = 0
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focused: Bool
+    @State private var name = ""
+    @State private var isCreating = false
+    @State private var createError: String?
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 12)
+                    .padding(.bottom, 24)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Create a Group")
+                            .font(.system(size: 20, weight: .bold, design: .serif))
+                            .foregroundStyle(.white)
+                        Text("Start your accountability brotherhood")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                    }
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.55))
+                            .padding(10)
+                            .background(Circle().fill(Color.white.opacity(0.09)))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+
+                Divider().overlay(Color.white.opacity(0.08))
+                    .padding(.bottom, 24)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "person.3.fill")
+                        .font(.system(size: 15))
+                        .foregroundStyle(focused ? Color.rfGold : Color.white.opacity(0.45))
+                        .frame(width: 22)
+                    TextField("", text: $name,
+                              prompt: Text("Group name (e.g. Iron Brotherhood)").foregroundColor(Color.white.opacity(0.38)))
+                        .textInputAutocapitalization(.words)
+                        .foregroundStyle(.white)
+                        .focused($focused)
+                        .submitLabel(.done)
+                        .onSubmit { createGroup() }
+                }
+                .padding(.horizontal, 18)
+                .frame(height: 54)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white.opacity(focused ? 0.11 : 0.07))
+                        .overlay(RoundedRectangle(cornerRadius: 14)
+                            .stroke(focused ? Color.rfGold : Color.white.opacity(0.10), lineWidth: 1.5))
+                )
+                .animation(.easeInOut(duration: 0.18), value: focused)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 12)
+
+                if let err = createError {
+                    Text(err)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 12)
+                        .transition(.opacity)
+                }
+
+                Button(action: createGroup) {
+                    HStack(spacing: 10) {
+                        if isCreating {
+                            ProgressView().tint(Color.rfNavy).scaleEffect(0.9)
+                        } else {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 16))
+                        }
+                        Text(isCreating ? "Creating…" : "Create Group")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundStyle(canCreate ? Color.rfNavy : Color.white.opacity(0.35))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(canCreate ? Color.rfGold : Color.white.opacity(0.08))
+                    )
+                }
+                .disabled(!canCreate)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
+            }
+        }
+        .presentationDetents([.height(360)])
+        .onAppear { focused = true }
+    }
+
+    private var canCreate: Bool {
+        !name.trimmingCharacters(in: .whitespaces).isEmpty && !isCreating
+    }
+
+    private func createGroup() {
+        guard canCreate else { return }
+        focused = false
+        createError = nil
+        isCreating = true
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        Task {
+            do {
+                let group = try await APIClient.shared.createGroup(name: trimmed)
+                await MainActor.run {
+                    primaryGroupID = group.id
+                    isCreating = false
+                    onCreate(group.name)
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    createError = "Couldn't create group — check your connection"
+                    isCreating = false
+                }
+            }
+        }
+    }
+}
+
 #Preview {
     GroupView()
+        .environmentObject(AppState.shared)
 }
