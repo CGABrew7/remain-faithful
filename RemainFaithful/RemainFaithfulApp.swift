@@ -1,6 +1,7 @@
 import SwiftUI
 import UserNotifications
 import GoogleSignIn
+import BackgroundTasks
 
 @main
 struct RemainFaithfulApp: App {
@@ -74,16 +75,26 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         configureGoogleSignIn()
-        // TODO: migrate to BGAppRefreshTask (deprecated in iOS 13).
-        // Add "com.remainfaithful.app.fetch" to BGTaskSchedulerPermittedIdentifiers in
-        // Xcode → Target → Info, then replace with BGTaskScheduler.shared.register + submit.
-        application.setMinimumBackgroundFetchInterval(
-            UIApplication.backgroundFetchIntervalMinimum
-        )
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: "com.remainfaithful.app.fetch",
+            using: nil
+        ) { task in
+            NotificationService.shared.performBackgroundFetch { result in
+                task.setTaskCompleted(success: result != .failed)
+            }
+            scheduleBackgroundFetch()
+        }
+        scheduleBackgroundFetch()
         if let payload = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
             handlePayload(payload)
         }
         return true
+    }
+
+    private func scheduleBackgroundFetch() {
+        let request = BGAppRefreshTaskRequest(identifier: "com.remainfaithful.app.fetch")
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
+        try? BGTaskScheduler.shared.submit(request)
     }
 
     private func configureGoogleSignIn() {
