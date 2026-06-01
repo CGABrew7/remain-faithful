@@ -78,11 +78,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: "com.remainfaithful.app.fetch",
             using: nil
-        ) { task in
+        ) { [weak self] task in
             NotificationService.shared.performBackgroundFetch { result in
                 task.setTaskCompleted(success: result != .failed)
             }
-            scheduleBackgroundFetch()
+            self?.scheduleBackgroundFetch()
         }
         scheduleBackgroundFetch()
         if let payload = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {

@@ -909,8 +909,8 @@ private struct BroadcastInstructionsSheet: View {
     private let steps: [(String, String)] = [
         ("1", "Swipe down from the top-right corner to open Control Center."),
         ("2", "Tap and hold the Screen Recording button (circle inside a circle)."),
-        ("3", "Select "Remain Faithful" from the list of broadcast receivers."),
-        ("4", "Tap "Start Broadcast" — monitoring resumes immediately."),
+        ("3", "Select \u{201C}Remain Faithful\u{201D} from the list of broadcast receivers."),
+        ("4", "Tap \u{201C}Start Broadcast\u{201D} — monitoring resumes immediately."),
     ]
 
     var body: some View {
