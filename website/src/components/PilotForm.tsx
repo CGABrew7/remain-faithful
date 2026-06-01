@@ -32,7 +32,7 @@ export default function PilotForm() {
       if (!res.ok) throw new Error('Submit failed')
       setSubmitted(true)
     } catch {
-      setError('Something went wrong. Please try again or email us directly at jeff@hanokventures.co')
+      setError('Something went wrong. Please try again or email us directly at support@remainfaithful.com')
     } finally {
       setLoading(false)
     }

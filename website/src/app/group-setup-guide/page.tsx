@@ -283,7 +283,7 @@ export default function GroupSetupGuidePage() {
             <p className="font-serif text-lg text-[#F0EDE8] mb-2">Remain Faithful</p>
             <p className="text-sm text-[#8A9BB0] mb-4">Free peer accountability for adults committed to purity.</p>
             <p className="text-xs text-[#8A9BB0]/60">
-              remainfaithful.com &nbsp;|&nbsp; jeff@hanokventures.co &nbsp;|&nbsp; Free forever
+              remainfaithful.com &nbsp;|&nbsp; support@remainfaithful.com &nbsp;|&nbsp; Free forever
             </p>
           </div>
 

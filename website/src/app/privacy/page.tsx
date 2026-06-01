@@ -25,8 +25,8 @@ export default function PrivacyPage() {
             </p>
             <p>
               If you have any questions about this policy, contact us at{' '}
-              <a href="mailto:jeff@hanokventures.co" className="text-[#C9A84C] hover:underline">
-                jeff@hanokventures.co
+              <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">
+                support@remainfaithful.com
               </a>.
             </p>
           </Section>
@@ -126,22 +126,22 @@ export default function PrivacyPage() {
           <Section title="Your Rights">
             <p>You may, at any time:</p>
             <ul>
-              <li><strong className="text-[#F0EDE8]">Access your data:</strong> request a full export of your account data via Settings → Export My Data, or by emailing jeff@hanokventures.co</li>
+              <li><strong className="text-[#F0EDE8]">Access your data:</strong> request a full export of your account data via Settings → Export My Data, or by emailing support@remainfaithful.com</li>
               <li><strong className="text-[#F0EDE8]">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
               <li><strong className="text-[#F0EDE8]">Delete your data:</strong> delete your account in Settings → Delete Account. This triggers immediate deletion of your account data and alerts, with confirmation within 30 days</li>
               <li><strong className="text-[#F0EDE8]">Withdraw consent:</strong> disable monitoring at any time from within the app. Partners will no longer receive alerts immediately upon disabling.</li>
             </ul>
             <p>
               For data requests or concerns, contact{' '}
-              <a href="mailto:jeff@hanokventures.co" className="text-[#C9A84C] hover:underline">
-                jeff@hanokventures.co
+              <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">
+                support@remainfaithful.com
               </a>. We respond within 30 days.
             </p>
           </Section>
 
           <Section title="Children">
             <p>
-              Remain Faithful is not intended for users under the age of 18. We do not knowingly collect data from anyone under 18. If you believe we have inadvertently collected data from a minor, contact us immediately at jeff@hanokventures.co and we will delete it promptly.
+              Remain Faithful is not intended for users under the age of 18. We do not knowingly collect data from anyone under 18. If you believe we have inadvertently collected data from a minor, contact us immediately at support@remainfaithful.com and we will delete it promptly.
             </p>
           </Section>
 
@@ -160,7 +160,7 @@ export default function PrivacyPage() {
           <Section title="Contact">
             <p>
               Remain Faithful<br />
-              Email: <a href="mailto:jeff@hanokventures.co" className="text-[#C9A84C] hover:underline">jeff@hanokventures.co</a><br />
+              Email: <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">support@remainfaithful.com</a><br />
               GitHub: <a href="https://github.com/remainfaithful" className="text-[#C9A84C] hover:underline" target="_blank" rel="noopener noreferrer">github.com/remainfaithful</a>
             </p>
           </Section>
