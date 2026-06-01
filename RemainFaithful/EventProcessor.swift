@@ -34,9 +34,10 @@ final class EventProcessor {
         guard APIClient.shared.isAuthenticated else { return }
         guard let defaults = sharedDefaults else { return }
 
-        // Sync the API base URL into the shared container so the extension can read it.
+        // Sync configuration into the shared container so the extension can read it.
         let apiBase = ProcessInfo.processInfo.environment["API_BASE_URL"] ?? "https://remain-faithful-api.fly.dev"
         defaults.set(apiBase, forKey: "apiBaseURL")
+        defaults.set(ProcessInfo.processInfo.environment["CLASSIFY_SECRET"] ?? "", forKey: "classifySecret")
 
         guard let data = defaults.data(forKey: "pendingEvents"),
               var events = try? JSONDecoder().decode([DetectedEvent].self, from: data) else { return }
