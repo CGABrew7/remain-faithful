@@ -280,6 +280,7 @@ final class APIClient {
     // MARK: - Primitives
 
     private func get<T: Decodable>(_ path: String) async throws -> T {
+        try? await refreshTokenIfNeeded()
         var req = try makeRequest(path)
         try attachToken(&req)
         return try await send(req)
@@ -288,6 +289,7 @@ final class APIClient {
     private func post<Body: Encodable, T: Decodable>(_ path: String,
                                                       body: Body,
                                                       auth: Bool = true) async throws -> T {
+        try? await refreshTokenIfNeeded()
         var req = try makeRequest(path, method: "POST")
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)
