@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -83,6 +84,7 @@ func (h *H) acceptPendingInvites(newUserID int64, email string) {
 		email,
 	)
 	if err != nil {
+		log.Printf("[acceptPendingInvites] query error for %s: %v", email, err)
 		return
 	}
 	defer rows.Close()
@@ -90,16 +92,22 @@ func (h *H) acceptPendingInvites(newUserID int64, email string) {
 		var inviterID int64
 		var token string
 		if err := rows.Scan(&inviterID, &token); err != nil {
+			log.Printf("[acceptPendingInvites] scan error: %v", err)
 			continue
 		}
-		h.DB.Exec( //nolint
+		if _, err := h.DB.Exec(
 			`INSERT INTO relationships (user_id, partner_id, type, status)
 			 VALUES ($1, $2, 'partner', 'accepted')
 			 ON CONFLICT (user_id, partner_id) DO UPDATE SET status = 'accepted'`,
 			inviterID, newUserID,
-		)
-		h.DB.Exec( //nolint
-			`UPDATE relationship_invites SET status = 'accepted' WHERE token = $1`, token)
+		); err != nil {
+			log.Printf("[acceptPendingInvites] insert relationship error: %v", err)
+		}
+		if _, err := h.DB.Exec(
+			`UPDATE relationship_invites SET status = 'accepted' WHERE token = $1`, token,
+		); err != nil {
+			log.Printf("[acceptPendingInvites] update invite error: %v", err)
+		}
 	}
 }
 

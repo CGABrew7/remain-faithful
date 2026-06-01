@@ -35,10 +35,6 @@ func main() {
 	}
 	log.Println("database ready")
 
-	if os.Getenv("JWT_SECRET") == "" {
-		log.Println("WARNING: JWT_SECRET not set — using insecure dev default. Set it before production use.")
-	}
-
 	apnsClient, err := apns.New(
 		os.Getenv("APNS_KEY_ID"),
 		os.Getenv("APNS_TEAM_ID"),
@@ -84,6 +80,21 @@ func main() {
 	log.Println("server stopped")
 }
 
+// classifyMiddleware guards the /classify endpoint with an optional shared secret.
+// If CLASSIFY_SECRET is empty the endpoint remains open (backward compatible).
+func classifyMiddleware(secret string) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if secret != "" && r.Header.Get("X-Classify-Secret") != secret {
+				http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+				return
+			}
+			http.MaxBytesReader(w, r.Body, 4096)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // corsMiddleware sets CORS headers. Only origins listed in ALLOWED_ORIGINS (comma-separated) receive
 // the Allow-Origin echo; preflight OPTIONS requests are short-circuited with 204.
 func corsMiddleware(allowedOrigins []string) mux.MiddlewareFunc {
@@ -122,8 +133,9 @@ func routes(h *handler.H) http.Handler {
 		fmt.Fprint(w, `{"status":"ok"}`)
 	}).Methods(http.MethodGet)
 
-	// Tier 3 classification (unauthenticated — text only, no PII)
-	r.HandleFunc("/classify", h.Classify).Methods(http.MethodPost)
+	// Tier 3 classification — optional shared-secret auth
+	classifySecret := getenv("CLASSIFY_SECRET", "")
+	r.Handle("/classify", classifyMiddleware(classifySecret)(http.HandlerFunc(h.Classify))).Methods(http.MethodPost)
 
 	// Public auth routes
 	r.HandleFunc("/auth/register",       h.Register).Methods(http.MethodPost)

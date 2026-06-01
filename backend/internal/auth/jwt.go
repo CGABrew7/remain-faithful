@@ -50,7 +50,7 @@ func Parse(tokenStr string) (*Claims, error) {
 func secret() []byte {
 	s := os.Getenv("JWT_SECRET")
 	if s == "" {
-		s = "dev-secret-change-in-production"
+		panic("JWT_SECRET environment variable is not set — refusing to start")
 	}
 	return []byte(s)
 }

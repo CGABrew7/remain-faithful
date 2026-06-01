@@ -31,6 +31,21 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "category, severity, and summary are required")
 		return
 	}
+	validCategories := map[string]bool{
+		"adult_content": true, "gambling": true,
+		"violence": true, "self_harm": true, "clean": true,
+	}
+	validSeverities := map[string]bool{
+		"informational": true, "concerning": true, "severe": true,
+	}
+	if !validCategories[req.Category] {
+		writeError(w, http.StatusBadRequest, "invalid category")
+		return
+	}
+	if !validSeverities[req.Severity] {
+		writeError(w, http.StatusBadRequest, "invalid severity")
+		return
+	}
 
 	tx, err := h.DB.BeginTx(r.Context(), nil)
 	if err != nil {
