@@ -21,6 +21,8 @@ struct LoginView: View {
     @FocusState private var focused: Field?
     private enum Field { case email, password }
 
+    @StateObject private var appleCoordinator = AppleSignInCoordinator()
+
     private var canSubmit: Bool {
         email.contains("@") && email.contains(".") && password.count >= 8 && !isLoading
     }
@@ -209,16 +211,25 @@ struct LoginView: View {
 
     private var socialButtons: some View {
         VStack(spacing: 12) {
-            // Apple Sign In
-            SignInWithAppleButton(.signIn,
-                onRequest: { req in
-                    req.requestedScopes = [.fullName, .email]
-                },
-                onCompletion: handleAppleCompletion
-            )
-            .signInWithAppleButtonStyle(.white)
-            .frame(height: 54)
-            .cornerRadius(14)
+            // Apple Sign In — custom button styled to match Google
+            Button(action: triggerAppleSignIn) {
+                HStack(spacing: 12) {
+                    Image(systemName: "apple.logo")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(.black)
+                        .frame(width: 22)
+                    Text("Sign in with Apple")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color(red: 0.10, green: 0.10, blue: 0.10))
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .background(RoundedRectangle(cornerRadius: 14).fill(.white))
+                .overlay(RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color(white: 0.82), lineWidth: 1))
+            }
 
             // Google Sign In — hidden on simulator (no GIDConfiguration without GoogleService-Info.plist)
             #if !targetEnvironment(simulator)
@@ -347,6 +358,13 @@ struct LoginView: View {
                 }
             }
         }
+    }
+
+    private func triggerAppleSignIn() {
+        let provider = ASAuthorizationAppleIDProvider()
+        let request = provider.createRequest()
+        request.requestedScopes = [.fullName, .email]
+        appleCoordinator.perform(request: request, completion: handleAppleCompletion)
     }
 
     private func handleGoogleSignIn() {
@@ -537,6 +555,47 @@ private extension View {
                     )
             )
             .animation(.easeInOut(duration: 0.18), value: isFocused)
+    }
+}
+
+// MARK: - Apple Sign In coordinator
+
+private final class AppleSignInCoordinator: NSObject, ObservableObject,
+    ASAuthorizationControllerDelegate,
+    ASAuthorizationControllerPresentationContextProviding {
+
+    private var completion: ((Result<ASAuthorization, Error>) -> Void)?
+    private var controller: ASAuthorizationController?
+
+    func perform(request: ASAuthorizationAppleIDRequest,
+                 completion: @escaping (Result<ASAuthorization, Error>) -> Void) {
+        self.completion = completion
+        controller = ASAuthorizationController(authorizationRequests: [request])
+        controller?.delegate = self
+        controller?.presentationContextProvider = self
+        controller?.performRequests()
+    }
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scene.windows.first(where: { $0.isKeyWindow }) else {
+            return ASPresentationAnchor()
+        }
+        return window
+    }
+
+    func authorizationController(controller: ASAuthorizationController,
+                                  didCompleteWithAuthorization authorization: ASAuthorization) {
+        completion?(.success(authorization))
+        controller.delegate = nil
+        self.controller = nil
+    }
+
+    func authorizationController(controller: ASAuthorizationController,
+                                  didCompleteWithError error: Error) {
+        completion?(.failure(error))
+        controller.delegate = nil
+        self.controller = nil
     }
 }
 
