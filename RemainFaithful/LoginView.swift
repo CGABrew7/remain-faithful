@@ -23,6 +23,10 @@ struct LoginView: View {
 
     @StateObject private var appleCoordinator = AppleSignInCoordinator()
 
+    // Google Sign-In is deferred to a future release until GoogleService-Info.plist
+    // and the backend GOOGLE_CLIENT_ID are configured. Flip to true to re-enable.
+    private let googleSignInEnabled = false
+
     private var canSubmit: Bool {
         email.contains("@") && email.contains(".") && password.count >= 8 && !isLoading
     }
@@ -231,29 +235,29 @@ struct LoginView: View {
                     .stroke(Color(white: 0.82), lineWidth: 1))
             }
 
-            // Google Sign In — hidden on simulator (no GIDConfiguration without GoogleService-Info.plist)
-            #if !targetEnvironment(simulator)
-            Button(action: handleGoogleSignIn) {
-                HStack(spacing: 12) {
-                    ZStack {
-                        Text("G")
-                            .font(.system(size: 17, weight: .bold))
-                            .foregroundStyle(Color(red: 0.26, green: 0.52, blue: 0.96))
+            // Google Sign In — hidden until GoogleService-Info.plist is configured
+            if googleSignInEnabled {
+                Button(action: handleGoogleSignIn) {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            Text("G")
+                                .font(.system(size: 17, weight: .bold))
+                                .foregroundStyle(Color(red: 0.26, green: 0.52, blue: 0.96))
+                        }
+                        .frame(width: 22)
+                        Text("Sign in with Google")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color(red: 0.10, green: 0.10, blue: 0.10))
+                        Spacer()
                     }
-                    .frame(width: 22)
-                    Text("Sign in with Google")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(red: 0.10, green: 0.10, blue: 0.10))
-                    Spacer()
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background(RoundedRectangle(cornerRadius: 14).fill(.white))
+                    .overlay(RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color(white: 0.82), lineWidth: 1))
                 }
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background(RoundedRectangle(cornerRadius: 14).fill(.white))
-                .overlay(RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color(white: 0.82), lineWidth: 1))
             }
-            #endif
 
             // Create account link
             Button { showCreateAccount = true } label: {
