@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -50,8 +51,9 @@ func (h *H) RegisterDeviceToken(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
-// SendPanicAlert sends a time-sensitive push notification to all accepted
-// accountability partners of the authenticated user.
+// SendPanicAlert sends a time-sensitive push notification to the caller's
+// designated primary partner (or most recently added accepted partner as a
+// fallback). Returns 400 if no accepted partner exists.
 // POST /panic
 func (h *H) SendPanicAlert(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
@@ -61,6 +63,30 @@ func (h *H) SendPanicAlert(w http.ResponseWriter, r *http.Request) {
 		`SELECT name FROM users WHERE id = $1`, userID,
 	).Scan(&callerName); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to look up user")
+		return
+	}
+
+	// Prefer the primary partner; fall back to the most recently added accepted one.
+	var partnerID int64
+	err := h.DB.QueryRowContext(r.Context(), `
+		SELECT partner_id FROM relationships
+		WHERE user_id = $1 AND status = 'accepted' AND is_primary = TRUE
+		LIMIT 1
+	`, userID).Scan(&partnerID)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = h.DB.QueryRowContext(r.Context(), `
+			SELECT partner_id FROM relationships
+			WHERE user_id = $1 AND status = 'accepted'
+			ORDER BY created_at DESC
+			LIMIT 1
+		`, userID).Scan(&partnerID)
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		writeError(w, http.StatusBadRequest, "no accountability partner set — add a partner first")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to look up partner")
 		return
 	}
 
@@ -84,10 +110,10 @@ func (h *H) SendPanicAlert(w http.ResponseWriter, r *http.Request) {
 		Payload:    payload,
 	}
 
-	// Respond immediately; fire pushes in the background.
+	// Respond immediately; fire push in the background.
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 
-	go h.notifyPartners(context.Background(), userID, callerName, n)
+	go h.notifyPartnerByID(context.Background(), partnerID, callerName, n)
 }
 
 // notifyPartners queries all active device tokens belonging to accepted partners
@@ -143,6 +169,36 @@ func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string,
 				continue
 			}
 			log.Printf("notifyPartners: send to %s: %v", token, err)
+		}
+	}
+}
+
+// notifyPartnerByID sends n to all active device tokens belonging to the given
+// partnerID. On ErrInvalidToken it marks the token inactive.
+func (h *H) notifyPartnerByID(ctx context.Context, partnerID int64, callerName string, n *apns.Notification) {
+	rows, err := h.DB.QueryContext(ctx, `
+		SELECT token FROM device_tokens
+		WHERE user_id = $1 AND is_active = TRUE
+	`, partnerID)
+	if err != nil {
+		log.Printf("notifyPartnerByID: query tokens: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var token string
+		if err := rows.Scan(&token); err != nil {
+			continue
+		}
+		n.DeviceToken = token
+		if err := h.APNS.Send(ctx, n); err != nil {
+			var invalidErr *apns.ErrInvalidToken
+			if errors.As(err, &invalidErr) {
+				h.markTokenInactive(ctx, token)
+				continue
+			}
+			log.Printf("notifyPartnerByID: send to %s: %v", token, err)
 		}
 	}
 }

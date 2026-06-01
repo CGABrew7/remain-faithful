@@ -526,8 +526,9 @@ private struct ManagePartnersView: View {
     private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
     private let red   = Color(red: 0.90, green: 0.30, blue: 0.30)
 
-    @State private var partners: [PartnerItem] = []
+    @State private var partners:         [PartnerItem] = []
     @State private var isLoadingPartners = false
+    @State private var isSettingPrimary  = false
 
     var body: some View {
         ZStack {
@@ -589,14 +590,32 @@ private struct ManagePartnersView: View {
                                     .foregroundStyle(Color.rfGold)
                             }
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(partner.name)
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundStyle(.white)
+                                HStack(spacing: 6) {
+                                    Text(partner.name)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                    if partner.isPrimary {
+                                        Text("Primary")
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundStyle(Color.rfGold)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Capsule().fill(Color.rfGold.opacity(0.14)))
+                                    }
+                                }
                                 Text(partner.email)
                                     .font(.system(size: 12))
                                     .foregroundStyle(Color.white.opacity(0.42))
                             }
                             Spacer()
+                            Button {
+                                setPrimary(partner: partner)
+                            } label: {
+                                Image(systemName: partner.isPrimary ? "star.fill" : "star")
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(partner.isPrimary ? Color.rfGold : Color.white.opacity(0.30))
+                            }
+                            .padding(.trailing, 4)
                             Button {
                                 partnerToRemove = partner
                                 showRemoveConfirm = true
@@ -696,7 +715,21 @@ private struct ManagePartnersView: View {
         defer { isLoadingPartners = false }
         if let rels = try? await APIClient.shared.listRelationships() {
             partners = rels.map { r in
-                PartnerItem(name: r.partner.name, email: r.partner.email, status: r.status)
+                PartnerItem(relationshipID: r.id, name: r.partner.name,
+                            email: r.partner.email, status: r.status, isPrimary: r.isPrimary)
+            }
+        }
+    }
+
+    private func setPrimary(partner: PartnerItem) {
+        guard !partner.isPrimary else { return }
+        Task {
+            guard APIClient.shared.isAuthenticated else { return }
+            try? await APIClient.shared.setPrimaryPartner(relationshipID: partner.relationshipID)
+            await MainActor.run {
+                for i in partners.indices {
+                    partners[i].isPrimary = (partners[i].id == partner.id)
+                }
             }
         }
     }
@@ -728,10 +761,12 @@ private struct ManagePartnersView: View {
 }
 
 private struct PartnerItem: Identifiable {
-    let id     = UUID()
-    let name:   String
-    let email:  String
-    var status: String = "accepted"
+    let id             = UUID()
+    let relationshipID: Int
+    let name:           String
+    let email:          String
+    var status:         String = "accepted"
+    var isPrimary:      Bool   = false
     var initials: String {
         name.components(separatedBy: " ")
             .compactMap(\.first).prefix(2).map(String.init).joined().uppercased()

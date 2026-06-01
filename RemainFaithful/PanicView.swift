@@ -4,18 +4,10 @@ struct PanicView: View {
     @Environment(\.dismiss)  private var dismiss
     @Environment(\.openURL)  private var openURL
 
-    @State private var alertSent = false
+    @State private var alertSent      = false
     @State private var pulse: CGFloat = 1.0
-
-    // PLACEHOLDER: replace with the real accountability partner loaded from UserDefaults/API.
-    // The partner name, initials, and phone number should come from the user's relationship data.
-    private let partnerName     = "James Bishop"
-    private let partnerInitials = "JB"
-    private let partnerPhone    = "5555550100"
-
-    private var partnerFirstName: String {
-        partnerName.components(separatedBy: " ").first ?? partnerName
-    }
+    @State private var partner:        RemoteRelationship? = nil
+    @State private var partnerLoaded   = false
 
     var body: some View {
         ZStack {
@@ -40,6 +32,20 @@ struct PanicView: View {
                     .padding(.bottom, 40)
             }
         }
+        .task { await loadPartner() }
+    }
+
+    @MainActor
+    private func loadPartner() async {
+        guard APIClient.shared.isAuthenticated else {
+            partnerLoaded = true
+            return
+        }
+        if let rels = try? await APIClient.shared.listRelationships() {
+            let accepted = rels.filter { $0.status == "accepted" }
+            partner = accepted.first(where: { $0.isPrimary }) ?? accepted.first
+        }
+        partnerLoaded = true
     }
 
     // MARK: - Dismiss bar
@@ -141,62 +147,57 @@ But when you are tempted, he will also provide a way out so that you can endure 
                 .foregroundStyle(Color.white.opacity(0.38))
                 .kerning(1.2)
 
-            // Partner card
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(Color.rfGold.opacity(0.14))
-                        .frame(width: 52, height: 52)
-                    Text(partnerInitials)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(Color.rfGold)
-                }
+            if let p = partner {
+                let name = p.partner.name
+                let initials = name.components(separatedBy: " ")
+                    .compactMap(\.first).prefix(2).map(String.init).joined().uppercased()
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(partnerName)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
-                    Text("Accountability Partner")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.42))
-                }
+                HStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.rfGold.opacity(0.14))
+                            .frame(width: 52, height: 52)
+                        Text(initials)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(Color.rfGold)
+                    }
 
-                Spacer()
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(name)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white)
+                        Text("Accountability Partner")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.white.opacity(0.42))
+                    }
 
-                // Online indicator
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(Color(red: 0.20, green: 0.78, blue: 0.45))
-                        .frame(width: 7, height: 7)
-                    Text("Active")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color(red: 0.20, green: 0.78, blue: 0.45))
+                    Spacer()
                 }
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(0.055))
-                    .overlay(RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1))
-            )
-
-            // Call button
-            Button {
-                if let url = URL(string: "tel://\(partnerPhone)") {
-                    openURL(url)
-                }
-            } label: {
-                HStack(spacing: 10) {
-                    Image(systemName: "phone.fill")
-                        .font(.system(size: 16))
-                    Text("Call \(partnerFirstName)")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundStyle(Color(red: 0.06, green: 0.11, blue: 0.25))
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white.opacity(0.055))
+                        .overlay(RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                )
+            } else if partnerLoaded {
+                Text("Add an accountability partner to use this feature")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.white.opacity(0.55))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white.opacity(0.055))
+                            .overlay(RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                    )
+            } else {
+                ProgressView()
+                    .tint(Color.rfGold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
             }
         }
     }

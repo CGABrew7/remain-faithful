@@ -62,12 +62,27 @@ struct RemoteRelationship: Decodable {
     let type: String
     let status: String
     let createdAt: String
+    let isPrimary: Bool
     let partner: RemoteUser
+
     enum CodingKeys: String, CodingKey {
         case id, type, status, partner
         case userId    = "user_id"
         case partnerId = "partner_id"
         case createdAt = "created_at"
+        case isPrimary = "is_primary"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c  = try decoder.container(keyedBy: CodingKeys.self)
+        id        = try c.decode(Int.self,        forKey: .id)
+        userId    = try c.decode(Int.self,        forKey: .userId)
+        partnerId = try c.decode(Int.self,        forKey: .partnerId)
+        type      = try c.decode(String.self,     forKey: .type)
+        status    = try c.decode(String.self,     forKey: .status)
+        createdAt = try c.decode(String.self,     forKey: .createdAt)
+        partner   = try c.decode(RemoteUser.self, forKey: .partner)
+        isPrimary = (try? c.decode(Bool.self,     forKey: .isPrimary)) ?? false
     }
 }
 
@@ -259,6 +274,10 @@ final class APIClient {
 
     // MARK: - Relationships
 
+    func setPrimaryPartner(relationshipID: Int) async throws {
+        try await putVoid("/relationships/\(relationshipID)/primary", body: [String: String]())
+    }
+
     func createRelationship(partnerEmail: String, type: String = "partner") async throws {
         try await postVoid("/relationships",
                            body: ["partner_email": partnerEmail, "type": type])
@@ -303,6 +322,20 @@ final class APIClient {
     private func postVoid<Body: Encodable>(_ path: String, body: Body,
                                            auth: Bool = true) async throws {
         var req = try makeRequest(path, method: "POST")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONEncoder().encode(body)
+        if auth { try attachToken(&req) }
+        let (data, resp) = try await session.data(for: req)
+        if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
+            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+        }
+    }
+
+    /// Fire-and-forget PUT for endpoints where we don't need the response body.
+    private func putVoid<Body: Encodable>(_ path: String, body: Body,
+                                          auth: Bool = true) async throws {
+        var req = try makeRequest(path, method: "PUT")
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)
         if auth { try attachToken(&req) }

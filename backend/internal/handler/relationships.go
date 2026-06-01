@@ -3,8 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	rfauth "remain-faithful/backend/internal/auth"
 )
 
@@ -76,7 +78,7 @@ func (h *H) ListRelationships(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.DB.QueryContext(r.Context(), `
 		SELECT r.id, r.user_id, r.partner_id, r.type, r.status, r.created_at,
-		       u.name, u.email
+		       r.is_primary, u.name, u.email
 		FROM   relationships r
 		JOIN   users u ON u.id = r.partner_id
 		WHERE  r.user_id = $1
@@ -100,6 +102,7 @@ func (h *H) ListRelationships(w http.ResponseWriter, r *http.Request) {
 		Type      string      `json:"type"`
 		Status    string      `json:"status"`
 		CreatedAt string      `json:"created_at"`
+		IsPrimary bool        `json:"is_primary"`
 		Partner   partnerInfo `json:"partner"`
 	}
 
@@ -109,6 +112,7 @@ func (h *H) ListRelationships(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(
 			&item.ID, &item.UserID, &item.PartnerID,
 			&item.Type, &item.Status, &item.CreatedAt,
+			&item.IsPrimary,
 			&item.Partner.Name, &item.Partner.Email,
 		); err != nil {
 			continue
@@ -117,4 +121,54 @@ func (h *H) ListRelationships(w http.ResponseWriter, r *http.Request) {
 		result = append(result, item)
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// SetPrimaryPartner marks one relationship as the user's primary partner
+// (only one may be primary at a time) and clears all others.
+// PUT /relationships/{id}/primary
+func (h *H) SetPrimaryPartner(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid relationship id")
+		return
+	}
+
+	tx, err := h.DB.BeginTx(r.Context(), nil)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to start transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	// Clear all existing primary flags for this user.
+	if _, err = tx.ExecContext(r.Context(),
+		`UPDATE relationships SET is_primary = FALSE WHERE user_id = $1`, userID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update relationships")
+		return
+	}
+
+	// Set the target relationship as primary.
+	res, err := tx.ExecContext(r.Context(),
+		`UPDATE relationships SET is_primary = TRUE WHERE id = $1 AND user_id = $2`,
+		id, userID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to set primary partner")
+		return
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		writeError(w, http.StatusNotFound, "relationship not found")
+		return
+	}
+
+	if err = tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to commit")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }

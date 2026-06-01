@@ -150,10 +150,11 @@ func routes(h *handler.H) http.Handler {
 	api.Use(rfauth.Middleware)
 
 	api.HandleFunc("/users/me",             h.GetMe).Methods(http.MethodGet)
-	api.HandleFunc("/relationships",               h.CreateRelationship).Methods(http.MethodPost)
-	api.HandleFunc("/relationships",               h.ListRelationships).Methods(http.MethodGet)
-	api.HandleFunc("/relationships/invite",        h.InvitePartner).Methods(http.MethodPost)
-	api.HandleFunc("/relationships/accept-invite", h.AcceptPartnerInvite).Methods(http.MethodPost)
+	api.HandleFunc("/relationships",                    h.CreateRelationship).Methods(http.MethodPost)
+	api.HandleFunc("/relationships",                    h.ListRelationships).Methods(http.MethodGet)
+	api.HandleFunc("/relationships/invite",             h.InvitePartner).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/accept-invite",      h.AcceptPartnerInvite).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/{id}/primary",       h.SetPrimaryPartner).Methods(http.MethodPut)
 	api.HandleFunc("/groups",                    h.CreateGroup).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}",               h.GetGroup).Methods(http.MethodGet)
 	api.HandleFunc("/groups/{id}/invite",        h.InviteMember).Methods(http.MethodPost)
@@ -339,6 +340,8 @@ func migrate(db *sql.DB) error {
 	CREATE INDEX IF NOT EXISTS idx_group_invites_token ON group_invites(token);
 
 	ALTER TABLE groups ADD COLUMN IF NOT EXISTS covenant TEXT NOT NULL DEFAULT '';
+
+	ALTER TABLE relationships ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE;
 	`)
 	return err
 }
