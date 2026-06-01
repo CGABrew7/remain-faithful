@@ -215,7 +215,7 @@ struct SettingsView: View {
             SRow(icon: "bubble.left.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "Contact Support") {
-                if let url = URL(string: "mailto:jeff@hanokventures.co?subject=Remain%20Faithful%20Support%20Request") {
+                if let url = URL(string: "mailto:support@remainfaithful.com?subject=Remain%20Faithful%20Support%20Request") {
                     UIApplication.shared.open(url)
                 }
             }
@@ -227,7 +227,7 @@ struct SettingsView: View {
             SRow(icon: "lightbulb.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "Suggest an Improvement") {
-                if let url = URL(string: "mailto:jeff@hanokventures.co?subject=Remain%20Faithful%20Feature%20Suggestion") {
+                if let url = URL(string: "mailto:support@remainfaithful.com?subject=Remain%20Faithful%20Feature%20Suggestion") {
                     UIApplication.shared.open(url)
                 }
             }
