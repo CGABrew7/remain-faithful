@@ -212,6 +212,7 @@ private struct CreateAccountStep: View {
                         .focused($focused, equals: .name)
                         .submitLabel(.next)
                         .onSubmit { focused = .email }
+                        .accessibilityIdentifier("name-field")
                 }
                 .fieldStyle(isFocused: focused == .name)
 
@@ -231,6 +232,7 @@ private struct CreateAccountStep: View {
                         .focused($focused, equals: .email)
                         .submitLabel(.next)
                         .onSubmit { focused = .password }
+                        .accessibilityIdentifier("email-field")
                 }
                 .fieldStyle(isFocused: focused == .email)
 
@@ -242,10 +244,11 @@ private struct CreateAccountStep: View {
                         .frame(width: 22)
                     SecureField("", text: $password,
                                 prompt: Text("Password (8+ characters)").foregroundColor(Color.white.opacity(0.38)))
-                        .textContentType(.newPassword)
+                        .textContentType(.password)
                         .foregroundStyle(.white)
                         .focused($focused, equals: .password)
                         .submitLabel(.done)
+                        .accessibilityIdentifier("password-field")
                 }
                 .fieldStyle(isFocused: focused == .password)
             }

@@ -39,10 +39,21 @@ struct RemainFaithfulApp: App {
         #endif
     }
 
+    // Compile-time zero cost in release; lets UI tests force a clean onboarding screen.
+    private var isUITestReset: Bool {
+        #if DEBUG
+        return CommandLine.arguments.contains("-UITestReset")
+        #else
+        return false
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {
-                if showDashboard {
+                if isUITestReset {
+                    OnboardingView()
+                } else if showDashboard {
                     ContentView()
                 } else if hasCompletedOnboarding || authState.currentUser != nil {
                     LoginView()

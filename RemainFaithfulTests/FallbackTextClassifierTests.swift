@@ -94,7 +94,7 @@ private final class TestFallbackTextClassifier {
 
 final class FallbackTextClassifierTests: XCTestCase {
 
-    let classifier = TestFallbackTextClassifier()
+    fileprivate let classifier = TestFallbackTextClassifier()
 
     func testAdultContent_highConfidence() {
         let result = classifier.classify("pornhub.com free videos")
