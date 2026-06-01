@@ -8,12 +8,6 @@ extension Color {
     static let rfGold    = Color(red: 0.82, green: 0.67, blue: 0.30)
 }
 
-// MARK: - Data
-
-enum AccountabilityType {
-    case oneToOne, smallGroup
-}
-
 // MARK: - Container
 
 struct OnboardingView: View {
@@ -21,15 +15,12 @@ struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showLogin = false
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("userName")        private var storedName  = ""
-    @AppStorage("userEmail")       private var storedEmail = ""
-    @AppStorage("userPhoneNumber") private var storedPhone = ""
-    @State private var step = 0
-    @State private var selectedType: AccountabilityType?
+    @AppStorage("userName")  private var storedName  = ""
+    @AppStorage("userEmail") private var storedEmail = ""
+    @State private var step     = 0
     @State private var name     = ""
     @State private var email    = ""
     @State private var password = ""
-    @State private var phone    = ""
 
     var body: some View {
         ZStack {
@@ -51,17 +42,10 @@ struct OnboardingView: View {
                     if step == 0 {
                         WelcomeStep(onContinue: advance, onSignIn: { showLogin = true })
                             .transition(.push(from: .trailing))
-                    } else if step == 1 {
-                        AccountabilityTypeStep(
-                            selected: $selectedType,
-                            onContinue: advance
-                        )
-                        .transition(.push(from: .trailing))
                     } else {
-                        CreateAccountStep(name: $name, email: $email, password: $password, phone: $phone) {
+                        CreateAccountStep(name: $name, email: $email, password: $password) {
                             storedName  = name
                             storedEmail = email
-                            storedPhone = phone
                             hasCompletedOnboarding = true
                             NotificationService.shared.requestPermission()
                         }
@@ -88,7 +72,7 @@ struct OnboardingView: View {
 
     private var stepDots: some View {
         HStack(spacing: 7) {
-            ForEach(0..<3) { i in
+            ForEach(0..<2) { i in
                 Capsule()
                     .fill(i == step ? Color.rfGold : Color.white.opacity(0.25))
                     .frame(width: i == step ? 20 : 7, height: 7)
@@ -182,128 +166,24 @@ private struct WelcomeStep: View {
     }
 }
 
-// MARK: - Step 2: Accountability Type
-
-private struct AccountabilityTypeStep: View {
-    @Binding var selected: AccountabilityType?
-    let onContinue: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            stepHeader(
-                title: "How will you\nwalk together?",
-                subtitle: "Choose your accountability style"
-            )
-            .padding(.bottom, 36)
-
-            VStack(spacing: 14) {
-                TypeCard(
-                    icon: "person.2.fill",
-                    title: "One-to-One Partner",
-                    description: "Walk closely with a single trusted friend who knows your journey.",
-                    isSelected: selected == .oneToOne
-                ) { selected = .oneToOne }
-
-                TypeCard(
-                    icon: "person.3.fill",
-                    title: "Small Group",
-                    description: "Share the journey with a small circle of trusted friends.",
-                    isSelected: selected == .smallGroup
-                ) { selected = .smallGroup }
-            }
-
-            Spacer()
-
-            RFButton(
-                title: "Continue",
-                isEnabled: selected != nil,
-                action: onContinue
-            )
-            .padding(.bottom, 52)
-            .animation(.easeInOut(duration: 0.2), value: selected != nil)
-        }
-        .padding(.horizontal, 24)
-    }
-}
-
-private struct TypeCard: View {
-    let icon: String
-    let title: String
-    let description: String
-    let isSelected: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(alignment: .center, spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(isSelected ? Color.rfGold : Color.white.opacity(0.10))
-                        .frame(width: 52, height: 52)
-                    Image(systemName: icon)
-                        .font(.system(size: 21))
-                        .foregroundStyle(isSelected ? Color.rfNavy : .white)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
-                    Text(description)
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.white.opacity(0.55))
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineSpacing(2)
-                }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22))
-                    .foregroundStyle(isSelected ? Color.rfGold : Color.white.opacity(0.25))
-            }
-            .padding(18)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(isSelected ? 0.11 : 0.06))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                isSelected ? Color.rfGold : Color.white.opacity(0.10),
-                                lineWidth: isSelected ? 1.5 : 1
-                            )
-                    )
-            )
-        }
-        .buttonStyle(.plain)
-        .animation(.easeInOut(duration: 0.18), value: isSelected)
-    }
-}
-
-// MARK: - Step 3: Create Account
+// MARK: - Step 2: Create Account
 
 private struct CreateAccountStep: View {
     @Binding var name:     String
     @Binding var email:    String
     @Binding var password: String
-    @Binding var phone:    String
     let onComplete: () -> Void
 
     @FocusState private var focused: Field?
     @State private var isLoading  = false
     @State private var errorMsg: String?
 
-    private enum Field { case name, email, password, phone }
-
-    private var strippedPhone: String { phone.filter { $0.isNumber } }
+    private enum Field { case name, email, password }
 
     private var canSubmit: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty
             && email.contains("@") && email.contains(".")
             && password.count >= 8
-            && strippedPhone.count >= 10
             && !isLoading
     }
 
@@ -365,31 +245,9 @@ private struct CreateAccountStep: View {
                         .textContentType(.newPassword)
                         .foregroundStyle(.white)
                         .focused($focused, equals: .password)
-                        .submitLabel(.next)
-                        .onSubmit { focused = .phone }
+                        .submitLabel(.done)
                 }
                 .fieldStyle(isFocused: focused == .password)
-
-                // Phone
-                HStack(spacing: 12) {
-                    Image(systemName: "phone.fill")
-                        .font(.system(size: 15))
-                        .foregroundStyle(focused == .phone ? Color.rfGold : Color.white.opacity(0.45))
-                        .frame(width: 22)
-                    TextField("", text: $phone,
-                              prompt: Text("Your phone number").foregroundColor(Color.white.opacity(0.38)))
-                        .keyboardType(.phonePad)
-                        .textContentType(.telephoneNumber)
-                        .foregroundStyle(.white)
-                        .focused($focused, equals: .phone)
-                }
-                .fieldStyle(isFocused: focused == .phone)
-
-                Text("This is shared with your accountability partners so they can reach out when you need support.")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.40))
-                    .padding(.horizontal, 4)
-                    .fixedSize(horizontal: false, vertical: true)
             }
 
             // Inline API error
@@ -432,16 +290,22 @@ private struct CreateAccountStep: View {
             do {
                 _ = try await APIClient.shared.register(name: name, email: email, password: password)
                 _ = try await APIClient.shared.login(email: email, password: password)
+                await MainActor.run { onComplete() }
             } catch let e as APIError {
-                if case .server(let msg) = e {
-                    await MainActor.run {
-                        errorMsg  = msg
-                        isLoading = false
+                await MainActor.run {
+                    if case .server(let msg) = e {
+                        errorMsg = msg
+                    } else {
+                        errorMsg = e.localizedDescription
                     }
-                    return
+                    isLoading = false
                 }
-            } catch { }
-            await MainActor.run { onComplete() }
+            } catch {
+                await MainActor.run {
+                    errorMsg = "Something went wrong. Please try again."
+                    isLoading = false
+                }
+            }
         }
     }
 }
