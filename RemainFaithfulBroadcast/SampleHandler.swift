@@ -7,6 +7,9 @@ import os
 
 // MARK: - Shared event model (mirrors DetectedEvent in the main app target)
 
+// IMPORTANT: This struct must remain byte-for-byte identical to DetectedEvent
+// in RemainFaithful/EventProcessor.swift. Both targets share App Group UserDefaults
+// for IPC. A future refactor should move this to a shared Swift package.
 struct DetectedEvent: Codable {
     let id: String
     let timestamp: Double
@@ -223,7 +226,7 @@ private func writeEvent(_ event: DetectedEvent, to defaults: UserDefaults?) {
 
 // MARK: - Tier 3 cloud fallback
 
-private func sendToClassify(text: String, apiBase: String) async -> TextClassification? {
+private func sendToClassify(text: String, apiBase: String, defaults: UserDefaults?) async -> TextClassification? {
     guard !text.isEmpty else { return nil }
     guard let url = URL(string: apiBase + "/classify") else { return nil }
     var req = URLRequest(url: url, timeoutInterval: 10)
@@ -231,6 +234,9 @@ private func sendToClassify(text: String, apiBase: String) async -> TextClassifi
     req.setValue("application/json", forHTTPHeaderField: "Content-Type")
     guard let body = try? JSONSerialization.data(withJSONObject: ["text": String(text.prefix(500))]) else {
         return nil
+    }
+    if let secret = defaults?.string(forKey: "classifySecret"), !secret.isEmpty {
+        req.setValue(secret, forHTTPHeaderField: "X-Classify-Secret")
     }
     req.httpBody = body
     guard let (data, _) = try? await URLSession.shared.data(for: req),
@@ -250,7 +256,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     private let appGroupID = "group.com.remainfaithful.app"
 
-    private var sharedDefaults: UserDefaults? { UserDefaults(suiteName: appGroupID) }
+    private lazy var sharedDefaults: UserDefaults? = UserDefaults(suiteName: appGroupID)
 
     private let scaAnalyzer = SCSensitivityAnalyzer()
     private let textClassifier = FallbackTextClassifier()
@@ -344,9 +350,6 @@ class SampleHandler: RPBroadcastSampleHandler {
         let ocrText = await extractText(from: cgImage)
         logger.info("OCR: \(ocrText.count) chars — \(String(ocrText.prefix(120)).debugDescription)")
 
-        defaults?.set(ocrText.prefix(500).description, forKey: "lastOCRText")
-        defaults?.set(Date().timeIntervalSince1970, forKey: "lastOCRTimestamp")
-
         // ——— TIER 1b: URL + keyword check on extracted text ———
         var tier1Triggered = false
         let domains = extractDomains(from: ocrText)
@@ -414,7 +417,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
             if compositeConfidence >= 0.5 && compositeConfidence < 0.7 {
                 logger.info("Sending to Tier 3 /classify — confidence \(String(format: "%.2f", compositeConfidence))")
-                if let cloud = await sendToClassify(text: ocrText, apiBase: apiBase) {
+                if let cloud = await sendToClassify(text: ocrText, apiBase: apiBase, defaults: defaults) {
                     finalCategory   = cloud.category
                     finalConfidence = cloud.confidence
                     logger.info("Tier 3 result: \(cloud.category.rawValue) @ \(String(format: "%.2f", cloud.confidence))")

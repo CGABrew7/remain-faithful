@@ -21,6 +21,7 @@ final class KeychainHelper {
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: key,
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
         ]
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         if status == errSecSuccess {
@@ -38,6 +39,7 @@ final class KeychainHelper {
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: key,
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
             kSecReturnData: true,
             kSecMatchLimit: kSecMatchLimitOne,
         ]
@@ -52,6 +54,7 @@ final class KeychainHelper {
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: key,
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
         ]
         SecItemDelete(query as CFDictionary)
     }
