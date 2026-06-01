@@ -132,7 +132,7 @@ private struct WelcomeStep: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(5)
 
-            Text("\"Iron sharpens iron.\"  —  Proverbs 27:17")
+            Text("\"But you must remain faithful to the things you have been taught.\"  —  2 Timothy 3:14")
                 .font(.system(size: 12, weight: .regular, design: .serif))
                 .foregroundStyle(Color.white.opacity(0.38))
                 .multilineTextAlignment(.center)
