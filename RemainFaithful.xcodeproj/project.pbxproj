@@ -30,6 +30,12 @@
 		CF2000000000000000000031 /* EventProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000030 /* EventProcessor.swift */; };
 		CF3000000000000000000002 /* DonationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3000000000000000000001 /* DonationView.swift */; };
 		CF3000000000000000000004 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3000000000000000000003 /* SafariView.swift */; };
+
+		CF5000000000000000000030 /* AuthStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000010 /* AuthStateTests.swift */; };
+		CF5000000000000000000031 /* EventProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000011 /* EventProcessorTests.swift */; };
+		CF5000000000000000000032 /* FallbackTextClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000012 /* FallbackTextClassifierTests.swift */; };
+		CF5000000000000000000033 /* NotificationRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000013 /* NotificationRoutingTests.swift */; };
+		CF5000000000000000000040 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000020 /* OnboardingUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +45,21 @@
 			proxyType = 1;
 			remoteGlobalIDString = CF1000000000000000000023;
 			remoteInfo = RemainFaithfulBroadcast;
+		};
+
+		CF5000000000000000000070 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CF1000000000000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CF100000000000000000000A;
+			remoteInfo = RemainFaithful;
+		};
+		CF5000000000000000000071 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CF1000000000000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CF100000000000000000000A;
+			remoteInfo = RemainFaithful;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -86,6 +107,14 @@
 		CF2000000000000000000030 /* EventProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventProcessor.swift; sourceTree = "<group>"; };
 		CF3000000000000000000001 /* DonationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonationView.swift; sourceTree = "<group>"; };
 		CF3000000000000000000003 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
+
+		CF5000000000000000000010 /* AuthStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthStateTests.swift; sourceTree = "<group>"; };
+		CF5000000000000000000011 /* EventProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventProcessorTests.swift; sourceTree = "<group>"; };
+		CF5000000000000000000012 /* FallbackTextClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackTextClassifierTests.swift; sourceTree = "<group>"; };
+		CF5000000000000000000013 /* NotificationRoutingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRoutingTests.swift; sourceTree = "<group>"; };
+		CF5000000000000000000020 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
+		CF5000000000000000000050 /* RemainFaithfulTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RemainFaithfulTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF5000000000000000000060 /* RemainFaithfulUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RemainFaithfulUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +142,8 @@
 			children = (
 				CF1000000000000000000017 /* RemainFaithful */,
 				CF100000000000000000001A /* RemainFaithfulBroadcast */,
+				CF5000000000000000000001 /* RemainFaithfulTests */,
+				CF5000000000000000000002 /* RemainFaithfulUITests */,
 				CF1000000000000000000008 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -122,6 +153,8 @@
 			children = (
 				CF100000000000000000000F /* RemainFaithful.app */,
 				CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */,
+				CF5000000000000000000050 /* RemainFaithfulTests.xctest */,
+				CF5000000000000000000060 /* RemainFaithfulUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -172,6 +205,26 @@
 			path = RemainFaithfulBroadcast;
 			sourceTree = "<group>";
 		};
+
+		CF5000000000000000000001 /* RemainFaithfulTests */ = {
+			isa = PBXGroup;
+			children = (
+				CF5000000000000000000010 /* AuthStateTests.swift */,
+				CF5000000000000000000011 /* EventProcessorTests.swift */,
+				CF5000000000000000000012 /* FallbackTextClassifierTests.swift */,
+				CF5000000000000000000013 /* NotificationRoutingTests.swift */,
+			);
+			path = RemainFaithfulTests;
+			sourceTree = "<group>";
+		};
+		CF5000000000000000000002 /* RemainFaithfulUITests */ = {
+			isa = PBXGroup;
+			children = (
+				CF5000000000000000000020 /* OnboardingUITests.swift */,
+			);
+			path = RemainFaithfulUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -214,6 +267,41 @@
 			productReference = CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+
+		CF5000000000000000000051 /* RemainFaithfulTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CF5000000000000000000054 /* Build configuration list for PBXNativeTarget "RemainFaithfulTests" */;
+			buildPhases = (
+				CF5000000000000000000052 /* Sources */,
+				CF5000000000000000000053 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CF5000000000000000000072 /* PBXTargetDependency */,
+			);
+			name = RemainFaithfulTests;
+			productName = RemainFaithfulTests;
+			productReference = CF5000000000000000000050 /* RemainFaithfulTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		CF5000000000000000000061 /* RemainFaithfulUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CF5000000000000000000064 /* Build configuration list for PBXNativeTarget "RemainFaithfulUITests" */;
+			buildPhases = (
+				CF5000000000000000000062 /* Sources */,
+				CF5000000000000000000063 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CF5000000000000000000073 /* PBXTargetDependency */,
+			);
+			name = RemainFaithfulUITests;
+			productName = RemainFaithfulUITests;
+			productReference = CF5000000000000000000060 /* RemainFaithfulUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -250,6 +338,8 @@
 			targets = (
 				CF100000000000000000000A /* RemainFaithful */,
 				CF1000000000000000000023 /* RemainFaithfulBroadcast */,
+				CF5000000000000000000051 /* RemainFaithfulTests */,
+				CF5000000000000000000061 /* RemainFaithfulUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -265,6 +355,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		CF1000000000000000000021 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+
+		CF5000000000000000000053 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CF5000000000000000000063 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -306,6 +411,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+
+		CF5000000000000000000052 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF5000000000000000000030 /* AuthStateTests.swift in Sources */,
+				CF5000000000000000000031 /* EventProcessorTests.swift in Sources */,
+				CF5000000000000000000032 /* FallbackTextClassifierTests.swift in Sources */,
+				CF5000000000000000000033 /* NotificationRoutingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CF5000000000000000000062 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF5000000000000000000040 /* OnboardingUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -313,6 +438,17 @@
 			isa = PBXTargetDependency;
 			target = CF1000000000000000000023 /* RemainFaithfulBroadcast */;
 			targetProxy = CF100000000000000000002A /* PBXContainerItemProxy */;
+		};
+
+		CF5000000000000000000072 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CF100000000000000000000A /* RemainFaithful */;
+			targetProxy = CF5000000000000000000070 /* PBXContainerItemProxy */;
+		};
+		CF5000000000000000000073 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CF100000000000000000000A /* RemainFaithful */;
+			targetProxy = CF5000000000000000000071 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -529,6 +665,65 @@
 			};
 			name = Release;
 		};
+
+		CF5000000000000000000055 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RemainFaithful.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RemainFaithful";
+			};
+			name = Debug;
+		};
+		CF5000000000000000000056 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RemainFaithful.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RemainFaithful";
+			};
+			name = Release;
+		};
+		CF5000000000000000000065 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = RemainFaithful;
+			};
+			name = Debug;
+		};
+		CF5000000000000000000066 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = RemainFaithful;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -574,6 +769,25 @@
 			buildConfigurations = (
 				CF1000000000000000000025 /* Debug */,
 				CF1000000000000000000026 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+
+		CF5000000000000000000054 /* Build configuration list for PBXNativeTarget "RemainFaithfulTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF5000000000000000000055 /* Debug */,
+				CF5000000000000000000056 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CF5000000000000000000064 /* Build configuration list for PBXNativeTarget "RemainFaithfulUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF5000000000000000000065 /* Debug */,
+				CF5000000000000000000066 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

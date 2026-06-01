@@ -116,6 +116,8 @@ enum APIError: LocalizedError {
 
 // MARK: - APIClient
 
+extension APIClient: EventSending {}
+
 final class APIClient {
     static let shared = APIClient()
     private init() {}

@@ -73,12 +73,15 @@ final class NotificationService: NSObject {
     /// Called by the UNUserNotificationCenter delegate when the user taps a
     /// notification. Routes to the appropriate screen via AppState.
     func handleTap(_ response: UNNotificationResponse) {
-        let info = response.notification.request.content.userInfo
-        let type = info["notification_type"] as? String ?? ""
+        routeNotification(userInfo: response.notification.request.content.userInfo)
+    }
+
+    func routeNotification(userInfo: [AnyHashable: Any]) {
+        let type = userInfo["notification_type"] as? String ?? ""
 
         switch type {
         case NotificationType.contentFlagged:
-            if let event = ActivityEvent.from(notificationPayload: info) {
+            if let event = ActivityEvent.from(notificationPayload: userInfo) {
                 AppState.shared.navigate(to: .alertDetail(event))
             } else {
                 AppState.shared.navigate(to: .dashboard)

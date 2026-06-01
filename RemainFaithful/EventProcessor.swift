@@ -17,21 +17,39 @@ struct DetectedEvent: Codable {
     var processed: Bool
 }
 
+// MARK: - EventSending
+
+protocol EventSending {
+    var isAuthenticated: Bool { get }
+    func createEvent(category: String, severity: String, summary: String,
+                     timestamp: String?) async throws -> RemoteEvent
+}
+
 // MARK: - EventProcessor
 
 /// Reads events written by the broadcast extension into the shared App Group
 /// UserDefaults container and POSTs them to the backend.
 final class EventProcessor {
     static let shared = EventProcessor()
-    private let appGroupID = "group.com.remainfaithful.app"
+    private let appGroupID: String
+    private let eventSender: EventSending
     private let logger = Logger(subsystem: "com.remainfaithful.app", category: "EventProcessor")
     private lazy var sharedDefaults: UserDefaults? = UserDefaults(suiteName: appGroupID)
-    private init() {}
+
+    private init() {
+        appGroupID  = "group.com.remainfaithful.app"
+        eventSender = APIClient.shared
+    }
+
+    init(appGroupID: String, eventSender: EventSending) {
+        self.appGroupID  = appGroupID
+        self.eventSender = eventSender
+    }
 
     // MARK: - Called on foreground / background fetch
 
     func processPendingEvents() async {
-        guard APIClient.shared.isAuthenticated else { return }
+        guard eventSender.isAuthenticated else { return }
         guard let defaults = sharedDefaults else { return }
 
         // Sync configuration into the shared container so the extension can read it.
@@ -50,10 +68,11 @@ final class EventProcessor {
         var changed = false
         for i in pending {
             do {
-                _ = try await APIClient.shared.createEvent(
+                _ = try await eventSender.createEvent(
                     category: events[i].category,
                     severity: events[i].severity,
-                    summary: events[i].summary
+                    summary: events[i].summary,
+                    timestamp: nil
                 )
                 events[i].processed = true
                 changed = true

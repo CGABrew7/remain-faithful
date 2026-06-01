@@ -2,9 +2,9 @@ import Security
 import Foundation
 
 final class KeychainHelper {
-    static let shared = KeychainHelper()
-    private let service = "com.remainfaithful.app"
-    private init() {}
+    static let shared = KeychainHelper(service: "com.remainfaithful.app")
+    let service: String
+    init(service: String) { self.service = service }
 
     func set(_ value: String, for key: String) {
         guard let data = value.data(using: .utf8) else { return }

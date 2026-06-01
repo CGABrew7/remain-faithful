@@ -73,6 +73,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        #if DEBUG
+        if CommandLine.arguments.contains("-UITestReset") {
+            UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+            KeychainHelper.shared.delete("authToken")
+            KeychainHelper.shared.delete("currentUser")
+        }
+        #endif
         UNUserNotificationCenter.current().delegate = self
         configureGoogleSignIn()
         BGTaskScheduler.shared.register(

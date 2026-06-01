@@ -13,26 +13,29 @@ struct StoredUser: Codable {
 /// Singleton observable that owns the session token stored in Keychain.
 /// SwiftUI views observe `isAuthenticated`; all token reads/writes go through here.
 final class AuthState: ObservableObject {
-    static let shared = AuthState()
+    static let shared = AuthState(keychain: .shared)
 
     @Published private(set) var isAuthenticated: Bool
     @Published private(set) var currentUser: StoredUser?
 
-    private init() {
-        isAuthenticated = KeychainHelper.shared.get("authToken") != nil
-        if let data = KeychainHelper.shared.getData("currentUser"),
+    let keychain: KeychainHelper
+
+    init(keychain: KeychainHelper = .shared) {
+        self.keychain = keychain
+        isAuthenticated = keychain.get("authToken") != nil
+        if let data = keychain.getData("currentUser"),
            let user = try? JSONDecoder().decode(StoredUser.self, from: data) {
             currentUser = user
         }
     }
 
-    var token: String? { KeychainHelper.shared.get("authToken") }
+    var token: String? { keychain.get("authToken") }
 
     func setSession(token: String, user: RemoteUser) {
-        KeychainHelper.shared.set(token, for: "authToken")
+        keychain.set(token, for: "authToken")
         let stored = StoredUser(id: user.id, name: user.name, email: user.email)
         if let data = try? JSONEncoder().encode(stored) {
-            KeychainHelper.shared.setData(data, for: "currentUser")
+            keychain.setData(data, for: "currentUser")
         }
         DispatchQueue.main.async {
             self.currentUser = stored
@@ -41,8 +44,8 @@ final class AuthState: ObservableObject {
     }
 
     func clearSession() {
-        KeychainHelper.shared.delete("authToken")
-        KeychainHelper.shared.delete("currentUser")
+        keychain.delete("authToken")
+        keychain.delete("currentUser")
         DispatchQueue.main.async {
             self.currentUser = nil
             self.isAuthenticated = false
@@ -51,7 +54,7 @@ final class AuthState: ObservableObject {
 
     /// Decode the JWT expiry without a dependency — used for auto-refresh.
     var tokenExpiresAt: Date? {
-        guard let t = token else { return nil }
+        guard let t = keychain.get("authToken") else { return nil }
         let parts = t.components(separatedBy: ".")
         guard parts.count == 3 else { return nil }
         var b64 = parts[1]
