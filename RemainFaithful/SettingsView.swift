@@ -751,8 +751,9 @@ private struct ManagePartnersView: View {
                 // Reload partner list to include the new connection if they had an account.
                 await loadPartners()
             } catch {
+                print("sendInvitation error: \(error)")
                 await MainActor.run {
-                    errorMsg = "Failed to send invitation — check your connection"
+                    errorMsg = error.localizedDescription
                     isSending = false
                 }
             }
@@ -953,8 +954,9 @@ private struct ManageGroupsView: View {
                     isCreating = false
                 }
             } catch {
+                print("createGroup error: \(error)")
                 await MainActor.run {
-                    createError = "Couldn't create group — check your connection"
+                    createError = error.localizedDescription
                     isCreating = false
                 }
             }

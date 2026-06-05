@@ -222,7 +222,8 @@ struct GroupView: View {
                 GroupMember(name: m.user.name, streak: 0, health: .strong)
             }
         } catch {
-            loadError = "Couldn't load group — check your connection"
+            print("loadGroup error: \(error)")
+            loadError = error.localizedDescription
         }
     }
 
@@ -1117,8 +1118,9 @@ private struct InviteSheet: View {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { isSent = true }
                 }
             } catch {
+                print("sendInvite error: \(error)")
                 await MainActor.run {
-                    inviteError = "Failed to send invite — check your connection"
+                    inviteError = error.localizedDescription
                 }
             }
         }
@@ -1421,7 +1423,8 @@ private struct CreateGroupSheet: View {
             onCreate(group.name)
             dismiss()
         } catch {
-            createError = "Couldn't create group — check your connection"
+            print("createGroup error: \(error)")
+            createError = error.localizedDescription
         }
         isCreating = false
     }
