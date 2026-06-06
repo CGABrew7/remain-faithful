@@ -813,10 +813,10 @@ private struct ManageGroupsView: View {
             Text("You will be removed from this group and all members will be notified.")
         }
         .task {
-            guard primaryGroupID > 0 else { return }
-            if let group = try? await APIClient.shared.getGroup(id: primaryGroupID) {
-                groups = [group.name]
-            }
+            guard let remoteGroups = try? await APIClient.shared.listMyGroups(),
+                  !remoteGroups.isEmpty else { return }
+            if primaryGroupID == 0 { primaryGroupID = remoteGroups[0].id }
+            groups = remoteGroups.map(\.name)
         }
     }
 
