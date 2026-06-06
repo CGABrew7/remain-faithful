@@ -364,7 +364,6 @@ final class APIClient {
     }
 
     private func attachToken(_ req: inout URLRequest) throws {
-        print("DEBUG attachToken: token is \(AuthState.shared.token ?? "NIL")")
         guard let t = token else { throw APIError.unauthenticated }
         req.setValue("Bearer \(t)", forHTTPHeaderField: "Authorization")
     }

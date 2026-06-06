@@ -222,7 +222,6 @@ struct GroupView: View {
                 GroupMember(name: m.user.name, streak: 0, health: .strong)
             }
         } catch {
-            print("loadGroup error: \(error)")
             loadError = error.localizedDescription
         }
     }
@@ -1118,7 +1117,6 @@ private struct InviteSheet: View {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { isSent = true }
                 }
             } catch {
-                print("sendInvite error: \(error)")
                 await MainActor.run {
                     inviteError = error.localizedDescription
                 }
@@ -1423,10 +1421,7 @@ private struct CreateGroupSheet: View {
             onCreate(group.name)
             dismiss()
         } catch {
-            print("createGroup error: \(error)")
-            let t = AuthState.shared.token
-            let info = t != nil ? "TOKEN: \(t!.prefix(20))..." : "TOKEN: nil"
-            createError = "\(info) | ERROR: \(error)"
+            createError = error.localizedDescription
         }
         isCreating = false
     }
