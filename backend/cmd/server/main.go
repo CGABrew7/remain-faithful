@@ -51,6 +51,7 @@ func main() {
 	stripeClient  := payment.New()
 
 	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Claude: claudeClient, Stripe: stripeClient}
+
 	srv := &http.Server{
 		Addr:         ":" + port(),
 		Handler:      routes(h),
@@ -61,6 +62,8 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	go h.StartHeartbeatWatcher(ctx)
 
 	go func() {
 		log.Printf("listening on %s", srv.Addr)
@@ -165,6 +168,7 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/alerts",               h.ListAlerts).Methods(http.MethodGet)
 	api.HandleFunc("/alerts/count",         h.AlertUnreadCount).Methods(http.MethodGet)
 	api.HandleFunc("/alerts/mark-seen",     h.MarkAlertsSeen).Methods(http.MethodPost)
+	api.HandleFunc("/heartbeat",                           h.Heartbeat).Methods(http.MethodPost)
 	api.HandleFunc("/users/device-token",                  h.RegisterDeviceToken).Methods(http.MethodPost)
 	api.HandleFunc("/panic",                               h.SendPanicAlert).Methods(http.MethodPost)
 	api.HandleFunc("/auth/refresh",                        h.RefreshToken).Methods(http.MethodPost)
@@ -343,6 +347,10 @@ func migrate(db *sql.DB) error {
 	ALTER TABLE groups ADD COLUMN IF NOT EXISTS covenant TEXT NOT NULL DEFAULT '';
 
 	ALTER TABLE relationships ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE;
+
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS last_heartbeat_at    TIMESTAMPTZ;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS heartbeat_screen_state TEXT;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS heartbeat_notified_at TIMESTAMPTZ;
 	`)
 	return err
 }

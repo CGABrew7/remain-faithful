@@ -381,6 +381,9 @@ struct DashboardView: View {
                 try? await Task.sleep(for: .seconds(5))
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            isBroadcasting = EventProcessor.shared.isBroadcasting()
+        }
     }
 
     @MainActor

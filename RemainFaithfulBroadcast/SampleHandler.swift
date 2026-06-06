@@ -266,6 +266,15 @@ class SampleHandler: RPBroadcastSampleHandler {
     // A user cannot meaningfully view and dismiss problematic content faster than this interval.
     private var lastAnalysisTime: Date = Date()
 
+    // Heartbeat: track last frame to report active vs idle every 2 minutes.
+    private var _lastFrameTime: Date = .distantPast
+    private let frameTimeLock = NSLock()
+    private var lastFrameTime: Date {
+        get { frameTimeLock.withLock { _lastFrameTime } }
+        set { frameTimeLock.withLock { _lastFrameTime = newValue } }
+    }
+    private var heartbeatTask: Task<Void, Never>?
+
     // Hash blocklist — populated from server-side list at broadcast start
     private var hashBlocklist: Set<UInt64> = []
 
@@ -277,6 +286,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         loadHashBlocklist()
         let policy = scaAnalyzer.analysisPolicy
         logger.info("Broadcast started — SCA policy: \(String(describing: policy))")
+        startHeartbeatLoop()
     }
 
     override func broadcastPaused() {
@@ -289,6 +299,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     override func broadcastFinished() {
         sharedDefaults?.set(false, forKey: "isBroadcasting")
+        heartbeatTask?.cancel()
         logger.info("Broadcast finished")
     }
 
@@ -300,6 +311,7 @@ class SampleHandler: RPBroadcastSampleHandler {
               let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        lastFrameTime = Date()
 
         // — Tier 1a: perceptual hash check (every frame, ~0.1 ms) —
         let hash = dHash(from: ciImage, context: ciContext)
@@ -502,6 +514,31 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     private func cgImageToJPEG(_ cgImage: CGImage) -> Data? {
         UIImage(cgImage: cgImage).jpegData(compressionQuality: 0.70)
+    }
+
+    // MARK: - Heartbeat
+
+    private func startHeartbeatLoop() {
+        heartbeatTask = Task.detached(priority: .utility) { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 2 * 60 * 1_000_000_000)
+                guard !Task.isCancelled else { break }
+                await self?.sendHeartbeat()
+            }
+        }
+    }
+
+    private func sendHeartbeat() async {
+        let screen = Date().timeIntervalSince(lastFrameTime) < 120 ? "active" : "idle"
+        guard let apiBase = sharedDefaults?.string(forKey: "apiBaseURL"),
+              let token   = sharedDefaults?.string(forKey: "authToken"),
+              let url     = URL(string: apiBase + "/heartbeat") else { return }
+        var req = URLRequest(url: url, timeoutInterval: 10)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": screen])
+        _ = try? await URLSession.shared.data(for: req)
     }
 
     private func loadHashBlocklist() {

@@ -20,6 +20,7 @@ final class AuthState: ObservableObject {
 
     let keychain: KeychainHelper
     private var inMemoryToken: String?
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.remainfaithful.app")
 
     init(keychain: KeychainHelper = .shared) {
         self.keychain = keychain
@@ -36,6 +37,7 @@ final class AuthState: ObservableObject {
     func setSession(token: String, user: RemoteUser) {
         inMemoryToken = token
         keychain.set(token, for: "authToken")
+        sharedDefaults?.set(token, forKey: "authToken")
         let stored = StoredUser(id: user.id, name: user.name, email: user.email)
         if let data = try? JSONEncoder().encode(stored) {
             keychain.setData(data, for: "currentUser")
@@ -50,6 +52,7 @@ final class AuthState: ObservableObject {
         inMemoryToken = nil
         keychain.delete("authToken")
         keychain.delete("currentUser")
+        sharedDefaults?.removeObject(forKey: "authToken")
         DispatchQueue.main.async {
             self.currentUser = nil
             self.isAuthenticated = false
