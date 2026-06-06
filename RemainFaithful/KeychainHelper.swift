@@ -25,12 +25,14 @@ final class KeychainHelper {
         ]
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         if status == errSecSuccess {
-            SecItemUpdate(query as CFDictionary,
-                          [kSecValueData: data] as CFDictionary)
+            let updateStatus = SecItemUpdate(query as CFDictionary,
+                                            [kSecValueData: data] as CFDictionary)
+            print("KeychainHelper update '\(key)': \(updateStatus)")
         } else {
             var attrs = query
             attrs[kSecValueData] = data
-            SecItemAdd(attrs as CFDictionary, nil)
+            let addStatus = SecItemAdd(attrs as CFDictionary, nil)
+            print("KeychainHelper add '\(key)': \(addStatus) (lookup was: \(status))")
         }
     }
 

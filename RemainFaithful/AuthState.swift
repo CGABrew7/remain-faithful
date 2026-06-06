@@ -19,19 +19,22 @@ final class AuthState: ObservableObject {
     @Published private(set) var currentUser: StoredUser?
 
     let keychain: KeychainHelper
+    private var inMemoryToken: String?
 
     init(keychain: KeychainHelper = .shared) {
         self.keychain = keychain
-        isAuthenticated = keychain.get("authToken") != nil
+        inMemoryToken = keychain.get("authToken")
+        isAuthenticated = inMemoryToken != nil
         if let data = keychain.getData("currentUser"),
            let user = try? JSONDecoder().decode(StoredUser.self, from: data) {
             currentUser = user
         }
     }
 
-    var token: String? { keychain.get("authToken") }
+    var token: String? { inMemoryToken ?? keychain.get("authToken") }
 
     func setSession(token: String, user: RemoteUser) {
+        inMemoryToken = token
         keychain.set(token, for: "authToken")
         let stored = StoredUser(id: user.id, name: user.name, email: user.email)
         if let data = try? JSONEncoder().encode(stored) {
@@ -44,6 +47,7 @@ final class AuthState: ObservableObject {
     }
 
     func clearSession() {
+        inMemoryToken = nil
         keychain.delete("authToken")
         keychain.delete("currentUser")
         DispatchQueue.main.async {
@@ -54,7 +58,7 @@ final class AuthState: ObservableObject {
 
     /// Decode the JWT expiry without a dependency — used for auto-refresh.
     var tokenExpiresAt: Date? {
-        guard let t = keychain.get("authToken") else { return nil }
+        guard let t = token else { return nil }
         let parts = t.components(separatedBy: ".")
         guard parts.count == 3 else { return nil }
         var b64 = parts[1]

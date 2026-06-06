@@ -1424,7 +1424,9 @@ private struct CreateGroupSheet: View {
             dismiss()
         } catch {
             print("createGroup error: \(error)")
-            createError = error.localizedDescription
+            let t = AuthState.shared.token
+            let info = t != nil ? "TOKEN: \(t!.prefix(20))..." : "TOKEN: nil"
+            createError = "\(info) | ERROR: \(error)"
         }
         isCreating = false
     }
