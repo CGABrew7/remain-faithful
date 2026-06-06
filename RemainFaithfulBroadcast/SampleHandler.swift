@@ -208,6 +208,8 @@ private func hammingDistance(_ a: UInt64, _ b: UInt64) -> Int {
 
 private func writeEvent(_ event: DetectedEvent, to defaults: UserDefaults?) {
     guard let defaults else { return }
+    let log = Logger(subsystem: "com.remainfaithful.app.broadcast", category: "events")
+    log.warning("Writing event: \(event.category) severity=\(event.severity) confidence=\(event.confidence) tier=\(event.tier) — \(event.summary)")
     var events: [DetectedEvent] = []
     if let data = defaults.data(forKey: "pendingEvents"),
        let existing = try? JSONDecoder().decode([DetectedEvent].self, from: data) {
@@ -314,6 +316,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         lastFrameTime = Date()
 
         // — Tier 1a: perceptual hash check (every frame, ~0.1 ms) —
+        logger.debug("Frame received")
         let hash = dHash(from: ciImage, context: ciContext)
         if hashBlocklist.contains(where: { hammingDistance($0, hash) < 10 }) {
             logger.warning("Tier 1 hash match")
@@ -328,6 +331,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         let now = Date()
         guard now.timeIntervalSince(lastAnalysisTime) >= 3.0 else { return }
         lastAnalysisTime = now
+        logger.info("Tier 2 analysis triggered")
 
         // Render CGImage once; reused by OCR, SCA, and hash update
         guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else { return }
@@ -530,15 +534,23 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     private func sendHeartbeat() async {
         let screen = Date().timeIntervalSince(lastFrameTime) < 120 ? "active" : "idle"
+        let hasToken = sharedDefaults?.string(forKey: "authToken") != nil
+        logger.info("Heartbeat: screen=\(screen) hasToken=\(hasToken)")
         guard let apiBase = sharedDefaults?.string(forKey: "apiBaseURL"),
               let token   = sharedDefaults?.string(forKey: "authToken"),
-              let url     = URL(string: apiBase + "/heartbeat") else { return }
+              let url     = URL(string: apiBase + "/heartbeat") else {
+            logger.error("Heartbeat skipped — missing apiBaseURL or authToken in sharedDefaults")
+            return
+        }
         var req = URLRequest(url: url, timeoutInterval: 10)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": screen])
-        _ = try? await URLSession.shared.data(for: req)
+        if let (_, resp) = try? await URLSession.shared.data(for: req),
+           let http = resp as? HTTPURLResponse {
+            logger.info("Heartbeat response: \(http.statusCode)")
+        }
     }
 
     private func loadHashBlocklist() {

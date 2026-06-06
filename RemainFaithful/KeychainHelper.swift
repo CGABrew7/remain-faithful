@@ -22,6 +22,7 @@ final class KeychainHelper {
             kSecAttrService: service,
             kSecAttrAccount: key,
             kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
+            kSecAttrAccessGroup: "group.com.remainfaithful.app",
         ]
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         if status == errSecSuccess {
@@ -40,6 +41,7 @@ final class KeychainHelper {
             kSecAttrService: service,
             kSecAttrAccount: key,
             kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
+            kSecAttrAccessGroup: "group.com.remainfaithful.app",
             kSecReturnData: true,
             kSecMatchLimit: kSecMatchLimitOne,
         ]
@@ -55,6 +57,7 @@ final class KeychainHelper {
             kSecAttrService: service,
             kSecAttrAccount: key,
             kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
+            kSecAttrAccessGroup: "group.com.remainfaithful.app",
         ]
         SecItemDelete(query as CFDictionary)
     }

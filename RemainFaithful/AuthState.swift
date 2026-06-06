@@ -24,7 +24,7 @@ final class AuthState: ObservableObject {
 
     init(keychain: KeychainHelper = .shared) {
         self.keychain = keychain
-        inMemoryToken = keychain.get("authToken")
+        inMemoryToken = keychain.get("authToken") ?? sharedDefaults?.string(forKey: "authToken")
         isAuthenticated = inMemoryToken != nil
         if let data = keychain.getData("currentUser"),
            let user = try? JSONDecoder().decode(StoredUser.self, from: data) {
@@ -32,7 +32,7 @@ final class AuthState: ObservableObject {
         }
     }
 
-    var token: String? { inMemoryToken ?? keychain.get("authToken") }
+    var token: String? { inMemoryToken ?? keychain.get("authToken") ?? sharedDefaults?.string(forKey: "authToken") }
 
     func setSession(token: String, user: RemoteUser) {
         inMemoryToken = token
