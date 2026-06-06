@@ -11,7 +11,7 @@ import (
 )
 
 // CreateEvent records a flagged monitoring event from a device and fans out
-// alerts to all accepted accountability partners.
+// alerts to all accountability partners (via relationships AND group membership).
 // POST /events
 // Body: { "category": "...", "severity": "low|medium|high", "summary": "...", "timestamp": "..." }
 func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
@@ -77,23 +77,43 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fan out: create one alert per accepted relationship for this user.
-	relRows, err := tx.QueryContext(r.Context(),
-		`SELECT id FROM relationships WHERE user_id = $1 AND status = 'accepted'`,
-		userID,
-	)
-	if err == nil {
-		defer relRows.Close()
-		for relRows.Next() {
-			var relID int64
-			if relRows.Scan(&relID) == nil {
-				_, _ = tx.ExecContext(r.Context(),
-					`INSERT INTO alerts (event_id, relationship_id) VALUES ($1, $2)`,
-					eventID, relID,
-				)
-			}
+	// Collect unique partner user IDs from both relationships and group membership.
+	partnerRows, err := tx.QueryContext(r.Context(), `
+		SELECT DISTINCT partner_id
+		FROM   relationships
+		WHERE  user_id = $1 AND status = 'accepted'
+		UNION
+		SELECT DISTINCT gm2.user_id
+		FROM   group_members gm1
+		JOIN   group_members gm2
+		       ON gm2.group_id = gm1.group_id AND gm2.user_id != $1
+		WHERE  gm1.user_id = $1
+	`, userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to query partners")
+		return
+	}
+
+	type partnerAlert struct {
+		partnerID int64
+		alertID   int64
+	}
+	var partnerAlerts []partnerAlert
+
+	for partnerRows.Next() {
+		var pid int64
+		if partnerRows.Scan(&pid) != nil {
+			continue
+		}
+		var alertID int64
+		if scanErr := tx.QueryRowContext(r.Context(),
+			`INSERT INTO alerts (event_id, recipient_user_id) VALUES ($1, $2) RETURNING id`,
+			eventID, pid,
+		).Scan(&alertID); scanErr == nil {
+			partnerAlerts = append(partnerAlerts, partnerAlert{pid, alertID})
 		}
 	}
+	partnerRows.Close()
 
 	if err := tx.Commit(); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to commit transaction")
@@ -106,20 +126,21 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		`SELECT name FROM users WHERE id = $1`, userID,
 	).Scan(&callerName)
 
-	// Fan out push notifications to partners in the background so the HTTP
-	// response is not delayed.
+	capturedPartnerAlerts := partnerAlerts
 	capturedEventID := eventID
 	capturedCategory := req.Category
 	capturedSeverity := req.Severity
 	capturedSummary := req.Summary
 	capturedTimestamp := timestamp
 	capturedCaller := callerName
+
 	go func() {
-		pushPayload := map[string]any{
+		ctx := context.Background()
+		payload := map[string]any{
 			"aps": map[string]any{
 				"alert": map[string]string{
-					"title": "Monitoring Alert",
-					"body":  fmt.Sprintf("%s's device flagged %s", capturedCaller, capturedCategory),
+					"title": alertTitle(capturedSeverity),
+					"body":  alertBody(capturedCaller, capturedCategory, capturedSeverity),
 				},
 				"sound": "default",
 			},
@@ -135,9 +156,23 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 			PushType:   "alert",
 			Priority:   10,
 			CollapseID: fmt.Sprintf("event-%d", capturedEventID),
-			Payload:    pushPayload,
+			Payload:    payload,
 		}
-		h.notifyPartners(context.Background(), userID, capturedCaller, n)
+
+		for _, pa := range capturedPartnerAlerts {
+			// Throttle: skip push if this partner already got one in the last 5 minutes.
+			var recentCount int
+			_ = h.DB.QueryRowContext(ctx, `
+				SELECT COUNT(*) FROM alerts
+				WHERE  recipient_user_id = $1
+				  AND  created_at > NOW() - INTERVAL '5 minutes'
+				  AND  id < $2
+			`, pa.partnerID, pa.alertID).Scan(&recentCount)
+			if recentCount > 0 {
+				continue
+			}
+			h.notifyPartnerByID(ctx, pa.partnerID, capturedCaller, n)
+		}
 	}()
 
 	writeJSON(w, http.StatusCreated, map[string]any{
@@ -148,6 +183,38 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		"summary":   req.Summary,
 		"timestamp": timestamp,
 	})
+}
+
+// alertTitle returns a push notification title based on severity.
+func alertTitle(severity string) string {
+	switch severity {
+	case "severe":
+		return "Accountability Alert"
+	case "concerning":
+		return "Check In With Your Partner"
+	default:
+		return "Partner Activity"
+	}
+}
+
+// alertBody returns a conversation-starter notification body.
+func alertBody(name, category, severity string) string {
+	if severity == "severe" {
+		switch category {
+		case "self_harm":
+			return fmt.Sprintf("%s needs you right now — their device flagged self-harm content. Reach out immediately.", name)
+		case "adult_content":
+			return fmt.Sprintf("%s needs accountability — their device flagged explicit content. Be present and non-judgmental.", name)
+		case "gambling":
+			return fmt.Sprintf("%s may be struggling — their device flagged gambling content. A quick check-in goes a long way.", name)
+		default:
+			return fmt.Sprintf("%s needs accountability right now. Open the app to see what was flagged.", name)
+		}
+	}
+	if severity == "concerning" {
+		return fmt.Sprintf("%s may need support — their device flagged %s content. Consider checking in today.", name, category)
+	}
+	return fmt.Sprintf("%s's device flagged activity worth noting. Keep them in your prayers.", name)
 }
 
 // ListEvents returns the authenticated user's flagged events, newest first.

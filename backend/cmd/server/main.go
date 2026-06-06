@@ -351,6 +351,9 @@ func migrate(db *sql.DB) error {
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS last_heartbeat_at    TIMESTAMPTZ;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS heartbeat_screen_state TEXT;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS heartbeat_notified_at TIMESTAMPTZ;
+
+	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS recipient_user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
+	CREATE INDEX IF NOT EXISTS idx_alerts_recipient ON alerts(recipient_user_id);
 	`)
 	return err
 }

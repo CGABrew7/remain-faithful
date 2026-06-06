@@ -13,9 +13,8 @@ func (h *H) AlertUnreadCount(w http.ResponseWriter, r *http.Request) {
 	var count int
 	err := h.DB.QueryRowContext(r.Context(), `
 		SELECT COUNT(*)
-		FROM   alerts        a
-		JOIN   relationships r ON r.id = a.relationship_id
-		WHERE  r.partner_id = $1 AND a.seen = FALSE
+		FROM   alerts
+		WHERE  recipient_user_id = $1 AND seen = FALSE
 	`, userID).Scan(&count)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to count alerts")
@@ -29,12 +28,9 @@ func (h *H) AlertUnreadCount(w http.ResponseWriter, r *http.Request) {
 func (h *H) MarkAlertsSeen(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 	_, err := h.DB.ExecContext(r.Context(), `
-		UPDATE alerts a
+		UPDATE alerts
 		SET    seen = TRUE
-		FROM   relationships rel
-		WHERE  a.relationship_id = rel.id
-		  AND  rel.partner_id    = $1
-		  AND  a.seen            = FALSE
+		WHERE  recipient_user_id = $1 AND seen = FALSE
 	`, userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to mark alerts seen")
@@ -43,10 +39,7 @@ func (h *H) MarkAlertsSeen(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
-// ListAlerts returns all alerts sent to the authenticated user by their partners.
-// An alert is created when an accountability partner (someone the user monitors)
-// submits a flagged event. The query returns alerts where the current user is the
-// partner_id in the relationship — i.e., they are the one being notified.
+// ListAlerts returns all alerts sent to the authenticated user.
 // GET /alerts
 func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
@@ -54,7 +47,6 @@ func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.DB.QueryContext(r.Context(), `
 		SELECT a.id,
 		       a.event_id,
-		       a.relationship_id,
 		       a.seen,
 		       a.created_at,
 		       e.user_id,
@@ -62,10 +54,9 @@ func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {
 		       e.severity,
 		       e.summary,
 		       e.timestamp
-		FROM   alerts        a
-		JOIN   events        e ON e.id  = a.event_id
-		JOIN   relationships r ON r.id  = a.relationship_id
-		WHERE  r.partner_id = $1
+		FROM   alerts a
+		JOIN   events e ON e.id = a.event_id
+		WHERE  a.recipient_user_id = $1
 		ORDER  BY a.created_at DESC
 		LIMIT  100
 	`, userID)
@@ -84,19 +75,18 @@ func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {
 		Timestamp string `json:"timestamp"`
 	}
 	type alert struct {
-		ID             int64     `json:"id"`
-		EventID        int64     `json:"event_id"`
-		RelationshipID int64     `json:"relationship_id"`
-		Seen           bool      `json:"seen"`
-		CreatedAt      string    `json:"created_at"`
-		Event          eventInfo `json:"event"`
+		ID        int64     `json:"id"`
+		EventID   int64     `json:"event_id"`
+		Seen      bool      `json:"seen"`
+		CreatedAt string    `json:"created_at"`
+		Event     eventInfo `json:"event"`
 	}
 
 	result := []alert{}
 	for rows.Next() {
 		var a alert
 		if err := rows.Scan(
-			&a.ID, &a.EventID, &a.RelationshipID, &a.Seen, &a.CreatedAt,
+			&a.ID, &a.EventID, &a.Seen, &a.CreatedAt,
 			&a.Event.UserID, &a.Event.Category, &a.Event.Severity,
 			&a.Event.Summary, &a.Event.Timestamp,
 		); err != nil {
