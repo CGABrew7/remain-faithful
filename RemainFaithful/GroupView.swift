@@ -169,6 +169,7 @@ struct GroupView: View {
         } message: {
             Text("All members have been notified that the group covenant has been updated and will be prompted to re-accept it.")
         }
+        .task { await discoverGroup() }
         .task(id: primaryGroupID) { await loadGroup() }
     }
 
@@ -206,6 +207,13 @@ struct GroupView: View {
             .padding(.horizontal, 40)
             Spacer()
         }
+    }
+
+    @MainActor
+    private func discoverGroup() async {
+        guard !appState.isDemoMode, primaryGroupID == 0, APIClient.shared.isAuthenticated else { return }
+        guard let groups = try? await APIClient.shared.listMyGroups(), let first = groups.first else { return }
+        primaryGroupID = first.id
     }
 
     @MainActor

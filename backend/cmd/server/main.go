@@ -155,6 +155,7 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/relationships/invite",             h.InvitePartner).Methods(http.MethodPost)
 	api.HandleFunc("/relationships/accept-invite",      h.AcceptPartnerInvite).Methods(http.MethodPost)
 	api.HandleFunc("/relationships/{id}/primary",       h.SetPrimaryPartner).Methods(http.MethodPut)
+	api.HandleFunc("/groups",                    h.ListMyGroups).Methods(http.MethodGet)
 	api.HandleFunc("/groups",                    h.CreateGroup).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}",               h.GetGroup).Methods(http.MethodGet)
 	api.HandleFunc("/groups/{id}/invite",        h.InviteMember).Methods(http.MethodPost)

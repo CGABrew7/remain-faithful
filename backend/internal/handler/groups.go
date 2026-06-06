@@ -13,6 +13,42 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ListMyGroups returns all groups the authenticated user belongs to.
+// GET /groups
+func (h *H) ListMyGroups(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	rows, err := h.DB.QueryContext(r.Context(), `
+		SELECT g.id, g.name, g.created_at
+		FROM   groups g
+		JOIN   group_members gm ON gm.group_id = g.id
+		WHERE  gm.user_id = $1
+		ORDER  BY gm.joined_at ASC
+	`, userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to fetch groups")
+		return
+	}
+	defer rows.Close()
+
+	type group struct {
+		ID        int64  `json:"id"`
+		Name      string `json:"name"`
+		CreatedAt string `json:"created_at"`
+	}
+
+	groups := []group{}
+	for rows.Next() {
+		var g group
+		if err := rows.Scan(&g.ID, &g.Name, &g.CreatedAt); err != nil {
+			continue
+		}
+		groups = append(groups, g)
+	}
+
+	writeJSON(w, http.StatusOK, groups)
+}
+
 // CreateGroup creates a new accountability group and adds the creator as admin.
 // POST /groups
 // Body: { "name": "...", "covenant": "..." }

@@ -225,6 +225,10 @@ final class APIClient {
 
     // MARK: - Groups
 
+    func listMyGroups() async throws -> [RemoteGroup] {
+        try await get("/groups")
+    }
+
     func getGroup(id: Int) async throws -> RemoteGroup {
         try await get("/groups/\(id)")
     }
