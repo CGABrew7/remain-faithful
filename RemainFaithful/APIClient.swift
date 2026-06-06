@@ -223,6 +223,12 @@ final class APIClient {
         return url
     }
 
+    // MARK: - Heartbeat
+
+    func heartbeat(screen: String) async throws {
+        try await postVoid("/heartbeat", body: ["screen": screen])
+    }
+
     // MARK: - Groups
 
     func listMyGroups() async throws -> [RemoteGroup] {
