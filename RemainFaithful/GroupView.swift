@@ -26,10 +26,19 @@ enum AccountabilityHealth {
 
 struct GroupMember: Identifiable {
     let id = UUID()
+    let userId: Int
     let name: String
     let streak: Int
     let health: AccountabilityHealth
     var phone: String? = nil
+
+    init(userId: Int = 0, name: String, streak: Int, health: AccountabilityHealth, phone: String? = nil) {
+        self.userId = userId
+        self.name   = name
+        self.streak = streak
+        self.health = health
+        self.phone  = phone
+    }
 }
 
 // MARK: - Placeholder data
@@ -44,11 +53,6 @@ private let sampleMembers: [GroupMember] = [
     .init(name: "Chris Hammond", streak: 0,  health: .struggling),
 ]
 
-private let memberSampleEvents: [ActivityEvent] = [
-    .init(category: .adultContent, severity: .high,   description: "Flagged during browsing session",  minutesAgo: 23),
-    .init(category: .socialMedia,  severity: .low,    description: "Extended social media usage",      minutesAgo: 145),
-    .init(category: .gambling,     severity: .medium, description: "Sports betting site visited",      minutesAgo: 360),
-]
 
 private let covenantText = """
 We, the members of this accountability group, covenant together before God and one another to:
@@ -227,7 +231,7 @@ struct GroupView: View {
             let group = try await APIClient.shared.getGroup(id: primaryGroupID)
             liveGroupName = group.name
             liveMembers = (group.members ?? []).map { m in
-                GroupMember(name: m.user.name, streak: 0, health: .strong)
+                GroupMember(userId: m.userId, name: m.user.name, streak: 0, health: .strong)
             }
         } catch {
             loadError = error.localizedDescription
@@ -508,6 +512,8 @@ private struct MemberDetailView: View {
     @Environment(\.dismiss)  private var dismiss
     @Environment(\.openURL)  private var openURL
     @State private var encouragementSent = false
+    @State private var memberAlerts: [ActivityEvent] = []
+    @State private var alertsLoading = true
 
     private var firstName: String {
         member.name.components(separatedBy: " ").first ?? member.name
@@ -516,10 +522,6 @@ private struct MemberDetailView: View {
     private var initials: String {
         member.name.components(separatedBy: " ")
             .compactMap(\.first).prefix(2).map(String.init).joined().uppercased()
-    }
-
-    private var memberEvents: [ActivityEvent] {
-        Array(memberSampleEvents.prefix(3))
     }
 
     var body: some View {
@@ -590,9 +592,24 @@ private struct MemberDetailView: View {
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.white)
 
-                            VStack(spacing: 10) {
-                                ForEach(memberEvents) { event in
-                                    memberEventRow(event)
+                            if alertsLoading {
+                                HStack {
+                                    Spacer()
+                                    ProgressView().tint(Color.rfGold)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 12)
+                            } else if memberAlerts.isEmpty {
+                                Text("No recent flags")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(Color.white.opacity(0.35))
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding(.vertical, 12)
+                            } else {
+                                VStack(spacing: 10) {
+                                    ForEach(memberAlerts) { event in
+                                        memberEventRow(event)
+                                    }
                                 }
                             }
                         }
@@ -666,6 +683,16 @@ private struct MemberDetailView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
                 }
+            }
+        }
+        .task {
+            defer { alertsLoading = false }
+            guard member.userId != 0 else { return }
+            if let alerts = try? await APIClient.shared.listAlerts() {
+                memberAlerts = alerts
+                    .filter { $0.event.userId == member.userId }
+                    .prefix(10)
+                    .compactMap { ActivityEvent.from(remote: $0.event) }
             }
         }
     }

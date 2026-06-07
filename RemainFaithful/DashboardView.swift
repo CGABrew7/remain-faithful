@@ -79,6 +79,16 @@ enum FlagSeverity: String {
     case medium = "Medium"
     case high   = "High"
 
+    // Maps backend severity strings (informational/concerning/severe) to UI cases.
+    init?(apiString: String) {
+        switch apiString.lowercased() {
+        case "informational": self = .low
+        case "concerning":    self = .medium
+        case "severe":        self = .high
+        default:              return nil
+        }
+    }
+
     var color: Color {
         switch self {
         case .low:    Color(red: 0.20, green: 0.78, blue: 0.45)
@@ -145,8 +155,8 @@ extension ActivityEvent {
         let cat = EventCategory(rawValue: r.category) ?? EventCategory(apiString: r.category)
         guard let category = cat else { return nil }
 
-        // Severity: API stores lowercase ("low"), enum rawValues are title-cased ("Low")
-        let severity = FlagSeverity(rawValue: r.severity.capitalized) ?? .low
+        // Severity: try title-cased rawValue ("Low"), then backend strings ("concerning" → .medium)
+        let severity = FlagSeverity(rawValue: r.severity.capitalized) ?? FlagSeverity(apiString: r.severity) ?? .low
 
         // Parse ISO-8601 timestamp; try with and without fractional seconds
         let fmt = ISO8601DateFormatter()
@@ -174,7 +184,7 @@ extension ActivityEvent {
         guard let category else { return nil }
 
         let severityStr = p["severity"] as? String ?? "low"
-        let severity    = FlagSeverity(rawValue: severityStr.capitalized) ?? .low
+        let severity    = FlagSeverity(rawValue: severityStr.capitalized) ?? FlagSeverity(apiString: severityStr) ?? .low
         let description = p["summary"]  as? String ?? category.rawValue
 
         var minutesAgo = 0

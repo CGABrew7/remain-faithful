@@ -373,7 +373,7 @@ class SampleHandler: RPBroadcastSampleHandler {
             logger.warning("Tier 1 URL match: \(domain)")
             let event = makeEvent(
                 category: .explicitSexual, tier: 1, confidence: 1.0,
-                summary: "Blocked domain detected: \(domain)"
+                summary: "Blocked domain detected"
             )
             writeEvent(event, to: defaults)
             tier1Triggered = true
@@ -446,9 +446,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                     category: finalCategory,
                     tier: tier,
                     confidence: finalConfidence,
-                    summary: buildSummary(category: finalCategory,
-                                         confidence: finalConfidence,
-                                         textSnippet: ocrText)
+                    summary: buildSummary(category: finalCategory, confidence: finalConfidence)
                 )
                 writeEvent(event, to: defaults)
             }
@@ -498,21 +496,13 @@ class SampleHandler: RPBroadcastSampleHandler {
         )
     }
 
-    private func buildSummary(category: ContentCategory, confidence: Float,
-                              textSnippet: String) -> String {
-        let pct = Int(confidence * 100)
-        let snippet = textSnippet.prefix(60).trimmingCharacters(in: .whitespacesAndNewlines)
+    private func buildSummary(category: ContentCategory, confidence: Float) -> String {
         switch category {
-        case .explicitSexual:
-            return "Explicit content detected (\(pct)% confidence)\(snippet.isEmpty ? "" : ": \"\(snippet)\"")"
-        case .gambling:
-            return "Gambling content detected (\(pct)% confidence)\(snippet.isEmpty ? "" : ": \"\(snippet)\"")"
-        case .violence:
-            return "Violent content detected (\(pct)% confidence)\(snippet.isEmpty ? "" : ": \"\(snippet)\"")"
-        case .selfHarm:
-            return "Self-harm content detected (\(pct)% confidence) — support resources available"
-        case .clean:
-            return "Content reviewed — no concerns"
+        case .explicitSexual: return "Explicit content detected"
+        case .gambling:       return "Gambling content detected"
+        case .violence:       return "Violent content detected"
+        case .selfHarm:       return "Self-harm content detected"
+        case .clean:          return "Content reviewed — no concerns"
         }
     }
 
