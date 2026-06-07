@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	rfauth "remain-faithful/backend/internal/auth"
@@ -47,25 +48,19 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, err := h.DB.BeginTx(r.Context(), nil)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to begin transaction")
-		return
-	}
-	defer tx.Rollback()
-
+	// Step 1: insert the event — single auto-committed statement, independent of alert creation.
 	var eventID int64
 	var timestamp string
-
+	var err error
 	if req.Timestamp != "" {
-		err = tx.QueryRowContext(r.Context(),
+		err = h.DB.QueryRowContext(r.Context(),
 			`INSERT INTO events (user_id, category, severity, summary, timestamp)
 			 VALUES ($1, $2, $3, $4, $5::timestamptz)
 			 RETURNING id, timestamp`,
 			userID, req.Category, req.Severity, req.Summary, req.Timestamp,
 		).Scan(&eventID, &timestamp)
 	} else {
-		err = tx.QueryRowContext(r.Context(),
+		err = h.DB.QueryRowContext(r.Context(),
 			`INSERT INTO events (user_id, category, severity, summary)
 			 VALUES ($1, $2, $3, $4)
 			 RETURNING id, timestamp`,
@@ -77,8 +72,16 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Collect unique partner user IDs from both relationships and group membership.
-	partnerRows, err := tx.QueryContext(r.Context(), `
+	// Step 2: fan out alerts to partners — best-effort after the event is committed.
+	// Collect all partner IDs first (fully drain the rows before any INSERT so we
+	// never attempt two queries concurrently on the same connection).
+	type partnerAlert struct {
+		partnerID int64
+		alertID   int64
+	}
+	var partnerAlerts []partnerAlert
+
+	partnerRows, partnerErr := h.DB.QueryContext(r.Context(), `
 		SELECT DISTINCT partner_id
 		FROM   relationships
 		WHERE  user_id = $1 AND status = 'accepted'
@@ -89,35 +92,32 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		       ON gm2.group_id = gm1.group_id AND gm2.user_id != $1
 		WHERE  gm1.user_id = $1
 	`, userID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to query partners")
-		return
-	}
-
-	type partnerAlert struct {
-		partnerID int64
-		alertID   int64
-	}
-	var partnerAlerts []partnerAlert
-
-	for partnerRows.Next() {
-		var pid int64
-		if partnerRows.Scan(&pid) != nil {
-			continue
+	if partnerErr != nil {
+		log.Printf("CreateEvent %d: query partners: %v", eventID, partnerErr)
+	} else {
+		var partnerIDs []int64
+		for partnerRows.Next() {
+			var pid int64
+			if partnerRows.Scan(&pid) == nil {
+				partnerIDs = append(partnerIDs, pid)
+			}
 		}
-		var alertID int64
-		if scanErr := tx.QueryRowContext(r.Context(),
-			`INSERT INTO alerts (event_id, recipient_user_id) VALUES ($1, $2) RETURNING id`,
-			eventID, pid,
-		).Scan(&alertID); scanErr == nil {
-			partnerAlerts = append(partnerAlerts, partnerAlert{pid, alertID})
+		if rowErr := partnerRows.Err(); rowErr != nil {
+			log.Printf("CreateEvent %d: iterate partners: %v", eventID, rowErr)
 		}
-	}
-	partnerRows.Close()
+		partnerRows.Close()
 
-	if err := tx.Commit(); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to commit transaction")
-		return
+		for _, pid := range partnerIDs {
+			var alertID int64
+			if scanErr := h.DB.QueryRowContext(r.Context(),
+				`INSERT INTO alerts (event_id, recipient_user_id) VALUES ($1, $2) RETURNING id`,
+				eventID, pid,
+			).Scan(&alertID); scanErr != nil {
+				log.Printf("CreateEvent %d: insert alert for partner %d: %v", eventID, pid, scanErr)
+			} else {
+				partnerAlerts = append(partnerAlerts, partnerAlert{pid, alertID})
+			}
+		}
 	}
 
 	// Look up the caller's display name for the push payload.

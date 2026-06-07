@@ -83,6 +83,26 @@ func main() {
 	log.Println("server stopped")
 }
 
+// loggingMiddleware logs method, path, status code, and duration for every request.
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		lw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(lw, r)
+		log.Printf("%s %s %d %s", r.Method, r.URL.Path, lw.status, time.Since(start).Round(time.Millisecond))
+	})
+}
+
+type statusWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (sw *statusWriter) WriteHeader(code int) {
+	sw.status = code
+	sw.ResponseWriter.WriteHeader(code)
+}
+
 // classifyMiddleware guards the /classify endpoint with an optional shared secret.
 // If CLASSIFY_SECRET is empty the endpoint remains open (backward compatible).
 func classifyMiddleware(secret string) mux.MiddlewareFunc {
@@ -127,6 +147,7 @@ func corsMiddleware(allowedOrigins []string) mux.MiddlewareFunc {
 func routes(h *handler.H) http.Handler {
 	r := mux.NewRouter()
 
+	r.Use(loggingMiddleware)
 	origins := strings.Split(getenv("ALLOWED_ORIGINS", "https://remainfaithful.com"), ",")
 	r.Use(corsMiddleware(origins))
 
