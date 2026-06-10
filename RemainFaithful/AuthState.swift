@@ -6,6 +6,7 @@ struct StoredUser: Codable {
     let id: Int
     let name: String
     let email: String
+    let createdAt: String?
 }
 
 // MARK: - AuthState
@@ -38,7 +39,7 @@ final class AuthState: ObservableObject {
         inMemoryToken = token
         keychain.set(token, for: "authToken")
         sharedDefaults?.set(token, forKey: "authToken")
-        let stored = StoredUser(id: user.id, name: user.name, email: user.email)
+        let stored = StoredUser(id: user.id, name: user.name, email: user.email, createdAt: user.createdAt)
         if let data = try? JSONEncoder().encode(stored) {
             keychain.setData(data, for: "currentUser")
         }

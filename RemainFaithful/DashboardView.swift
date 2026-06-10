@@ -2,8 +2,6 @@ import SwiftUI
 
 // MARK: - Models
 
-enum MonitoringStatus { case active, paused }
-
 enum EventCategory: String {
     case adultContent = "Adult Content"
     case gambling     = "Gambling"
@@ -217,7 +215,8 @@ private let weekClean = [true, true, false, true, true, true, false]
 
 // MARK: - Streak computation
 
-private func computeStreak(from remoteEvents: [RemoteEvent]) -> (days: Int, best: Int, week: [Bool]) {
+private func computeStreak(from remoteEvents: [RemoteEvent],
+                            accountCreated: Date?) -> (days: Int, best: Int, week: [Bool]) {
     let cal = Calendar.current
     let fmt = DateFormatter()
     fmt.dateFormat = "yyyy-MM-dd"
@@ -228,37 +227,56 @@ private func computeStreak(from remoteEvents: [RemoteEvent]) -> (days: Int, best
     let isoShort = ISO8601DateFormatter()
     isoShort.formatOptions = [.withInternetDateTime]
 
+    // Normalize account creation to midnight so date-string comparisons work.
+    let sinceDay: Date?    = accountCreated.map { cal.startOfDay(for: $0) }
+    let sinceDateStr: String? = sinceDay.map { fmt.string(from: $0) }
+
     // Build set of date strings that have at least one flagged event.
     let flaggedDates = Set(remoteEvents.compactMap { evt -> String? in
         let date = isoFull.date(from: evt.timestamp) ?? isoShort.date(from: evt.timestamp)
         return date.map { fmt.string(from: $0) }
     })
 
-    // Current streak: count consecutive clean days from today backward.
+    // Current streak: count consecutive clean days from today backward,
+    // stopping at the account creation date.
     var streak = 0
-    var checkDate = Date()
-    while !flaggedDates.contains(fmt.string(from: checkDate)) {
+    var checkDate = cal.startOfDay(for: Date())
+    while true {
+        let dateStr = fmt.string(from: checkDate)
+        if let since = sinceDateStr, dateStr < since { break }  // before account existed
+        if flaggedDates.contains(dateStr) { break }
         streak += 1
         guard let prev = cal.date(byAdding: .day, value: -1, to: checkDate) else { break }
         checkDate = prev
-        if streak > 365 { break }
+        if streak > 365 { break }  // hard cap
     }
+    // Brand-new account (created today): no completed clean day yet.
+    if let created = accountCreated, cal.isDateInToday(created) { streak = 0 }
 
     // 7-day view: last 7 days ordered oldest → newest.
+    // Days before account creation show as not-clean (no spurious gold checkmarks).
+    let today = cal.startOfDay(for: Date())
     var week = Array(repeating: true, count: 7)
     for i in 0..<7 {
-        if let day = cal.date(byAdding: .day, value: -(6 - i), to: Date()),
-           flaggedDates.contains(fmt.string(from: day)) {
-            week[i] = false
+        guard let day = cal.date(byAdding: .day, value: -(6 - i), to: today) else { continue }
+        let dayStr = fmt.string(from: day)
+        if let since = sinceDateStr, dayStr < since {
+            week[i] = false     // before account existed
+        } else if flaggedDates.contains(dayStr) {
+            week[i] = false     // flagged day
         }
     }
 
-    // Best streak: longest consecutive clean run within the events window.
+    // Best streak: longest consecutive clean run back to account creation.
+    // Window must be at least as wide as the current streak so best >= streak.
+    let windowDays = max(90, streak + 1)
     let allDates: [String] = {
         var dates: [String] = []
-        var d = Date()
-        for _ in 0..<90 {
-            dates.append(fmt.string(from: d))
+        var d = today
+        for _ in 0..<windowDays {
+            let dateStr = fmt.string(from: d)
+            if let since = sinceDateStr, dateStr < since { break }
+            dates.append(dateStr)
             guard let prev = cal.date(byAdding: .day, value: -1, to: d) else { break }
             d = prev
         }
@@ -275,6 +293,7 @@ private func computeStreak(from remoteEvents: [RemoteEvent]) -> (days: Int, best
         }
     }
     best = max(best, run)
+    best = max(best, streak)    // invariant: best can never be less than current streak
 
     return (streak, best, week)
 }
@@ -288,7 +307,6 @@ struct DashboardView: View {
     @EnvironmentObject private var appState: AppState
     @Binding var showPanic: Bool
 
-    @State private var status:           MonitoringStatus = .active
     @State private var events:           [ActivityEvent]  = []
     @State private var streakDays:       Int              = 0
     @State private var streakBest:       Int              = 0
@@ -328,7 +346,7 @@ struct DashboardView: View {
                         BroadcastPausedBanner()
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
-                    StatusCard(status: $status)
+                    StatusCard(isBroadcasting: isBroadcasting)
                     VerseCard()
                     StreakCard(days: streakDays, best: streakBest, week: streakWeek)
                     ActivitySection(events: events,
@@ -412,7 +430,15 @@ struct DashboardView: View {
         do {
             let remote = try await APIClient.shared.listEvents()
             events = remote.compactMap { ActivityEvent.from(remote: $0) }
-            let (days, best, week) = computeStreak(from: remote)
+            let accountCreated: Date? = {
+                guard let str = AuthState.shared.currentUser?.createdAt else { return nil }
+                let f1 = ISO8601DateFormatter()
+                f1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                let f2 = ISO8601DateFormatter()
+                f2.formatOptions = [.withInternetDateTime]
+                return f1.date(from: str) ?? f2.date(from: str)
+            }()
+            let (days, best, week) = computeStreak(from: remote, accountCreated: accountCreated)
             streakDays = days
             streakBest = best
             streakWeek = week
@@ -477,12 +503,15 @@ struct DashboardView: View {
 }
 
 // MARK: - Status card
+//
+// Driven solely by isBroadcasting (the real broadcast state from EventProcessor).
+// The former MonitoringStatus toggle has been removed — it was a local-only state
+// that never affected the broadcast extension, which caused the card and the
+// BroadcastPausedBanner to display contradictory states simultaneously.
 
 private struct StatusCard: View {
-    @Binding var status: MonitoringStatus
+    let isBroadcasting: Bool
     @State private var pulse: CGFloat = 1.0
-
-    private var isActive: Bool { status == .active }
 
     private static let green   = Color(red: 0.18, green: 0.82, blue: 0.48)
     private static let bgOn    = LinearGradient(colors: [Color(red: 0.07, green: 0.40, blue: 0.26), Color(red: 0.05, green: 0.26, blue: 0.18)], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -494,29 +523,29 @@ private struct StatusCard: View {
             HStack(alignment: .top, spacing: 14) {
                 // Pulse ring + dot
                 ZStack {
-                    if isActive {
+                    if isBroadcasting {
                         Circle()
                             .fill(Self.green.opacity(0.22))
                             .frame(width: 44, height: 44)
                             .scaleEffect(pulse)
                     }
                     Circle()
-                        .fill(isActive ? Self.green : Color(.systemGray3))
+                        .fill(isBroadcasting ? Self.green : Color(.systemGray3))
                         .frame(width: 11, height: 11)
                 }
                 .frame(width: 44, height: 44)
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(isActive ? "Monitoring Active" : "Monitoring Paused")
+                    Text(isBroadcasting ? "Monitoring Active" : "Monitoring Paused")
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
-                    Text(isActive
+                    Text(isBroadcasting
                          ? "Your screen activity is being monitored"
                          : "Activity recording is paused")
                         .font(.system(size: 13))
                         .foregroundStyle(Color.white.opacity(0.6))
                         .fixedSize(horizontal: false, vertical: true)
-                    if isActive {
+                    if isBroadcasting {
                         Text("Pausing will notify your accountability group")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Color(red: 0.95, green: 0.72, blue: 0.22))
@@ -531,48 +560,30 @@ private struct StatusCard: View {
             Divider().overlay(Color.white.opacity(0.10))
                 .padding(.bottom, 14)
 
-            // Bottom row
-            HStack {
-                HStack(spacing: 7) {
-                    Image(systemName: isActive ? "shield.fill" : "shield.slash.fill")
-                        .font(.system(size: 12))
-                        .foregroundStyle(isActive ? Self.green : Color(.systemGray3))
-                    Text(isActive ? "Active session" : "Session ended")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.45))
-                }
-
-                Spacer()
-
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                        status = isActive ? .paused : .active
-                    }
-                } label: {
-                    Text(isActive ? "Pause" : "Resume")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(isActive ? Self.green : Color.rfGold)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 7)
-                        .background(Capsule().fill(
-                            isActive ? Self.green.opacity(0.15) : Color.rfGold.opacity(0.15)
-                        ))
-                }
+            // Bottom row — display only; broadcast is started/stopped via Control Center.
+            HStack(spacing: 7) {
+                Image(systemName: isBroadcasting ? "shield.fill" : "shield.slash.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(isBroadcasting ? Self.green : Color(.systemGray3))
+                Text(isBroadcasting ? "Active session" : "Session ended")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.45))
+                Spacer(minLength: 0)
             }
         }
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(isActive ? Self.bgOn : Self.bgOff)
+                .fill(isBroadcasting ? Self.bgOn : Self.bgOff)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(
-                            isActive ? Self.green.opacity(0.25) : Color.white.opacity(0.07),
+                            isBroadcasting ? Self.green.opacity(0.25) : Color.white.opacity(0.07),
                             lineWidth: 1
                         )
                 )
         )
-        .animation(.easeInOut(duration: 0.28), value: isActive)
+        .animation(.easeInOut(duration: 0.28), value: isBroadcasting)
         .onAppear {
             withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
                 pulse = 1.55
