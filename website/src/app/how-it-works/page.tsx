@@ -112,17 +112,15 @@ export default function HowItWorksPage() {
                 'Deep, focused relationship built on mutual trust',
                 'Ideal for close friends, mentors, or spouses',
                 'Each partner can monitor the other (reciprocal) or one direction',
-                'Private message thread for following up on alerts',
               ]}
             />
             <ModeCard
               title="Small Group"
               points={[
                 'Up to 12 members in a single group',
-                'Group leader (pastor or facilitator) can view aggregate dashboards',
-                'Members can choose to share with all group members or leader only',
                 'Ideal for men\'s ministry, discipleship cohorts, or Bible study groups',
-                'Weekly group digest sent to all members',
+                'All members receive alerts when any member is flagged',
+                'Group admin manages membership and invite codes',
               ]}
             />
           </div>
