@@ -150,15 +150,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         print("[APNs] registration failed: \(error)")
     }
 
-    // MARK: - Background fetch
-
-    func application(
-        _ application: UIApplication,
-        performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
-    ) {
-        NotificationService.shared.performBackgroundFetch(completionHandler: completionHandler)
-    }
-
     // MARK: - UNUserNotificationCenterDelegate
 
     /// Intercept foreground notifications.
