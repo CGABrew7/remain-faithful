@@ -12,5 +12,7 @@
 	<array>
 		<string>group.com.remainfaithful.app</string>
 	</array>
+	<key>com.apple.developer.family-controls</key>
+	<true/>
 </dict>
 </plist>

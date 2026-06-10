@@ -7,15 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */; };
+		369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */; };
+		B9FBE0AAE00A1EEF84DD985F /* ScreenTimeMonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */; };
 		CF1000000000000000000010 /* RemainFaithfulApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000B /* RemainFaithfulApp.swift */; };
 		CF1000000000000000000011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000C /* ContentView.swift */; };
 		CF1000000000000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000D /* Assets.xcassets */; };
 		CF1000000000000000000013 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000E /* Preview Assets.xcassets */; };
+		CF100000000000000000001F /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000001B /* SampleHandler.swift */; };
+		CF1000000000000000000028 /* RemainFaithfulBroadcast.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CF1000000000000000000030 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000002F /* OnboardingView.swift */; };
 		CF1000000000000000000032 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000031 /* DashboardView.swift */; };
 		CF1000000000000000000034 /* GroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000033 /* GroupView.swift */; };
-		CF100000000000000000001F /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000001B /* SampleHandler.swift */; };
-		CF1000000000000000000028 /* RemainFaithfulBroadcast.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CF1000000000000000000036 /* SensitiveContentAnalysis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000035 /* SensitiveContentAnalysis.framework */; };
 		CF1000000000000000000038 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1000000000000000000037 /* SettingsView.swift */; };
 		CF1000000000000000000039 /* PanicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003A /* PanicView.swift */; };
@@ -30,7 +33,6 @@
 		CF2000000000000000000031 /* EventProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000030 /* EventProcessor.swift */; };
 		CF3000000000000000000002 /* DonationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3000000000000000000001 /* DonationView.swift */; };
 		CF3000000000000000000004 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3000000000000000000003 /* SafariView.swift */; };
-
 		CF5000000000000000000030 /* AuthStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000010 /* AuthStateTests.swift */; };
 		CF5000000000000000000031 /* EventProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000011 /* EventProcessorTests.swift */; };
 		CF5000000000000000000032 /* FallbackTextClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000012 /* FallbackTextClassifierTests.swift */; };
@@ -46,7 +48,6 @@
 			remoteGlobalIDString = CF1000000000000000000023;
 			remoteInfo = RemainFaithfulBroadcast;
 		};
-
 		CF5000000000000000000070 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CF1000000000000000000009 /* Project object */;
@@ -77,23 +78,23 @@
 		};
 /* End PBXCopyFilesBuildPhase section */
 
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXFileReference section */
+		4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivitySelectionManager.swift; sourceTree = "<group>"; };
+		80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenTimeMonitoringView.swift; sourceTree = "<group>"; };
+		8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FamilyControlsManager.swift; sourceTree = "<group>"; };
 		CF100000000000000000000B /* RemainFaithfulApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainFaithfulApp.swift; sourceTree = "<group>"; };
 		CF100000000000000000000C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CF100000000000000000000D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CF100000000000000000000E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CF100000000000000000000F /* RemainFaithful.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RemainFaithful.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF100000000000000000001D /* RemainFaithful.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithful.entitlements; sourceTree = "<group>"; };
-		CF4000000000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CF100000000000000000002F /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
-		CF1000000000000000000031 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
-		CF1000000000000000000033 /* GroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupView.swift; sourceTree = "<group>"; };
 		CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulBroadcast.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF100000000000000000001B /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
 		CF100000000000000000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CF100000000000000000001D /* RemainFaithful.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithful.entitlements; sourceTree = "<group>"; };
 		CF100000000000000000001E /* RemainFaithfulBroadcast.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulBroadcast.entitlements; sourceTree = "<group>"; };
+		CF100000000000000000002F /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		CF1000000000000000000031 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		CF1000000000000000000033 /* GroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupView.swift; sourceTree = "<group>"; };
 		CF1000000000000000000035 /* SensitiveContentAnalysis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SensitiveContentAnalysis.framework; path = System/Library/Frameworks/SensitiveContentAnalysis.framework; sourceTree = SDKROOT; };
 		CF1000000000000000000037 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CF100000000000000000003A /* PanicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanicView.swift; sourceTree = "<group>"; };
@@ -107,7 +108,7 @@
 		CF2000000000000000000030 /* EventProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventProcessor.swift; sourceTree = "<group>"; };
 		CF3000000000000000000001 /* DonationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonationView.swift; sourceTree = "<group>"; };
 		CF3000000000000000000003 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
-
+		CF4000000000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF5000000000000000000010 /* AuthStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthStateTests.swift; sourceTree = "<group>"; };
 		CF5000000000000000000011 /* EventProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventProcessorTests.swift; sourceTree = "<group>"; };
 		CF5000000000000000000012 /* FallbackTextClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackTextClassifierTests.swift; sourceTree = "<group>"; };
@@ -183,6 +184,9 @@
 				CF100000000000000000001D /* RemainFaithful.entitlements */,
 				CF4000000000000000000001 /* Info.plist */,
 				CF1000000000000000000018 /* Preview Content */,
+				8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */,
+				4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */,
+				80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */,
 			);
 			path = RemainFaithful;
 			sourceTree = "<group>";
@@ -205,7 +209,6 @@
 			path = RemainFaithfulBroadcast;
 			sourceTree = "<group>";
 		};
-
 		CF5000000000000000000001 /* RemainFaithfulTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -267,7 +270,6 @@
 			productReference = CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-
 		CF5000000000000000000051 /* RemainFaithfulTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CF5000000000000000000054 /* Build configuration list for PBXNativeTarget "RemainFaithfulTests" */;
@@ -361,7 +363,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-
 		CF5000000000000000000053 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -400,6 +401,9 @@
 				CF2000000000000000000031 /* EventProcessor.swift in Sources */,
 				CF3000000000000000000002 /* DonationView.swift in Sources */,
 				CF3000000000000000000004 /* SafariView.swift in Sources */,
+				239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */,
+				369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */,
+				B9FBE0AAE00A1EEF84DD985F /* ScreenTimeMonitoringView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -411,7 +415,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-
 		CF5000000000000000000052 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -439,7 +442,6 @@
 			target = CF1000000000000000000023 /* RemainFaithfulBroadcast */;
 			targetProxy = CF100000000000000000002A /* PBXContainerItemProxy */;
 		};
-
 		CF5000000000000000000072 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CF100000000000000000000A /* RemainFaithful */;
@@ -574,7 +576,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "RemainFaithful/RemainFaithful.entitlements";
+				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
@@ -599,7 +601,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "RemainFaithful/RemainFaithful.entitlements";
+				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
@@ -622,7 +624,7 @@
 		CF1000000000000000000025 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements";
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
@@ -645,7 +647,7 @@
 		CF1000000000000000000026 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements";
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
@@ -665,7 +667,6 @@
 			};
 			name = Release;
 		};
-
 		CF5000000000000000000055 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -730,25 +731,6 @@
 		};
 /* End XCBuildConfiguration section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		CF2000000000000000000022 /* GoogleSignIn */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
-			productName = GoogleSignIn;
-		};
-/* End XCSwiftPackageProductDependency section */
-
 /* Begin XCConfigurationList section */
 		CF1000000000000000000001 /* Build configuration list for PBXProject "RemainFaithful" */ = {
 			isa = XCConfigurationList;
@@ -777,7 +759,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-
 		CF5000000000000000000054 /* Build configuration list for PBXNativeTarget "RemainFaithfulTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -797,6 +778,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CF2000000000000000000022 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CF1000000000000000000009 /* Project object */;
 }

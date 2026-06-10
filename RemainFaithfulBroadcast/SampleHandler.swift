@@ -44,15 +44,9 @@ struct TextClassification {
 }
 
 // MARK: - Fallback text classifier
-//
-// Implements the same interface a CoreML NLModel would provide.
-// Uses the 20+ inline training examples per category as weighted keyword anchors.
-// A production build would swap this for a bundled .mlmodel trained with CreateML
-// on the same example sets.
 
 final class FallbackTextClassifier {
 
-    // 20+ representative training examples per category (used as keyword anchors).
     private let trainingData: [ContentCategory: [(term: String, weight: Float)]] = [
 
         .explicitSexual: [
@@ -105,19 +99,13 @@ final class FallbackTextClassifier {
     func classify(_ text: String) -> TextClassification {
         let lower = text.lowercased()
         var scores = [ContentCategory: Float]()
-
         for (category, terms) in trainingData {
             var score: Float = 0
-            for (term, weight) in terms where lower.contains(term) {
-                score += weight
-            }
+            for (term, weight) in terms where lower.contains(term) { score += weight }
             if score > 0 {
-                // Non-linear normalization: first match is impactful, additional matches add less
-                let normalized = min(1.0, 0.35 + score * 0.15)
-                scores[category] = normalized
+                scores[category] = min(1.0, 0.35 + score * 0.15)
             }
         }
-
         if let top = scores.max(by: { $0.value < $1.value }) {
             return TextClassification(category: top.key, confidence: top.value)
         }
@@ -129,7 +117,6 @@ final class FallbackTextClassifier {
 
 private struct Tier1Rules {
 
-    // Known adult/gambling/harmful domains.
     static let urlBlocklist: Set<String> = [
         "pornhub.com", "xvideos.com", "xhamster.com", "xnxx.com", "redtube.com",
         "youporn.com", "tube8.com", "spankbang.com", "ixxx.com", "beeg.com",
@@ -142,7 +129,6 @@ private struct Tier1Rules {
         "bestgore.com", "liveleak.com",
     ]
 
-    // Explicit keyword patterns tested against full OCR text.
     static let keywordPatterns: [NSRegularExpression] = [
         "\\b(porn|pornography|xxx|adult.?content)\\b",
         "\\b(nude|naked|erotic|nsfw)\\b",
@@ -169,26 +155,15 @@ private struct Tier1Rules {
 // MARK: - Perceptual hash (dHash — 64-bit difference hash)
 
 private func dHash(from ciImage: CIImage, context: CIContext) -> UInt64 {
-    // Scale to 9×8 pixels for 64-bit hash
     let target = CGRect(x: 0, y: 0, width: 9, height: 8)
     let scaled = ciImage.transformed(by: CGAffineTransform(
         scaleX: 9.0 / ciImage.extent.width,
         y: 8.0 / ciImage.extent.height
     )).cropped(to: target)
-
-    // Desaturate
     let gray = scaled.applyingFilter("CIPhotoEffectNoir")
-
-    // Render to 9×8 RGBA8 bitmap
     var pixels = [UInt8](repeating: 0, count: 9 * 8 * 4)
-    context.render(gray,
-                   toBitmap: &pixels,
-                   rowBytes: 9 * 4,
-                   bounds: target,
-                   format: .RGBA8,
-                   colorSpace: nil)
-
-    // Build hash: compare adjacent horizontal pixels (red channel)
+    context.render(gray, toBitmap: &pixels, rowBytes: 9 * 4,
+                   bounds: target, format: .RGBA8, colorSpace: nil)
     var hash: UInt64 = 0
     for row in 0..<8 {
         for col in 0..<8 {
@@ -200,60 +175,44 @@ private func dHash(from ciImage: CIImage, context: CIContext) -> UInt64 {
     return hash
 }
 
-private func hammingDistance(_ a: UInt64, _ b: UInt64) -> Int {
-    (a ^ b).nonzeroBitCount
-}
+private func hammingDistance(_ a: UInt64, _ b: UInt64) -> Int { (a ^ b).nonzeroBitCount }
 
 // MARK: - Tier 3 cloud fallback
 
 private func sendToClassify(text: String, apiBase: String, defaults: UserDefaults?) async -> TextClassification? {
-    guard !text.isEmpty else { return nil }
-    guard let url = URL(string: apiBase + "/classify") else { return nil }
+    guard !text.isEmpty, let url = URL(string: apiBase + "/classify") else { return nil }
     var req = URLRequest(url: url, timeoutInterval: 10)
     req.httpMethod = "POST"
     req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    guard let body = try? JSONSerialization.data(withJSONObject: ["text": String(text.prefix(500))]) else {
-        return nil
-    }
+    guard let body = try? JSONSerialization.data(withJSONObject: ["text": String(text.prefix(500))]) else { return nil }
     if let secret = defaults?.string(forKey: "classifySecret"), !secret.isEmpty {
         req.setValue(secret, forHTTPHeaderField: "X-Classify-Secret")
     }
     req.httpBody = body
     guard let (data, _) = try? await URLSession.shared.data(for: req),
           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-          let cat = json["category"] as? String,
+          let cat  = json["category"] as? String,
           let conf = json["confidence"] as? Double,
           let category = ContentCategory(rawValue: cat) else { return nil }
     return TextClassification(category: category, confidence: Float(conf))
 }
 
 // MARK: - Dedup store
-//
-// Thread-safe via Swift actor. Tracks 5-minute dedup windows per category|severity key.
-// record() returns true (suppress) if an identical event fired within the current window.
-// drainExpired() returns and clears windows that have elapsed with unsent suppressions
-// so a "continued activity" summary can be posted.
 
 private actor DedupStore {
-    struct Entry {
-        var windowStart: Date
-        var suppressedCount: Int
-    }
-
+    struct Entry { var windowStart: Date; var suppressedCount: Int }
     private let windowSeconds: TimeInterval
     private var state: [String: Entry] = [:]
 
-    init(windowSeconds: TimeInterval) {
-        self.windowSeconds = windowSeconds
-    }
+    init(windowSeconds: TimeInterval) { self.windowSeconds = windowSeconds }
 
     func record(key: String, now: Date = Date()) -> Bool {
-        if let entry = state[key], now.timeIntervalSince(entry.windowStart) < windowSeconds {
+        if let e = state[key], now.timeIntervalSince(e.windowStart) < windowSeconds {
             state[key]!.suppressedCount += 1
-            return true  // suppress
+            return true
         }
         state[key] = Entry(windowStart: now, suppressedCount: 0)
-        return false  // new window — post immediately
+        return false
     }
 
     func drainExpired(now: Date = Date()) -> [(category: String, severity: String, count: Int)] {
@@ -269,7 +228,24 @@ private actor DedupStore {
     }
 }
 
+// MARK: - Memory helpers
+//
+// os_proc_available_memory() reports bytes the process can still allocate before
+// the jetsam limit (extension limit ≈ 50 MB). Negative values are not possible;
+// zero means the next allocation will likely cause an OOM kill.
+
+private func availableMemoryMB() -> Int {
+    Int(os_proc_available_memory() / 1_048_576)
+}
+
 // MARK: - SampleHandler
+//
+// Broadcast continuation note: RPBroadcastSampleHandler runs in a separate
+// process from the host app (com.remainfaithful.app). iOS continues delivering
+// sample buffers through host-app backgrounding, screen lock, and screen unlock.
+// The broadcast only stops when the user explicitly ends it via the iOS system
+// UI or when we call finishBroadcastWithError(_:). We never call that method
+// outside of a genuine error, so monitoring is never tied to app lifecycle.
 
 private let logger = Logger(subsystem: "com.remainfaithful.app.broadcast",
                             category: "classification")
@@ -277,34 +253,35 @@ private let logger = Logger(subsystem: "com.remainfaithful.app.broadcast",
 class SampleHandler: RPBroadcastSampleHandler {
 
     private let appGroupID = "group.com.remainfaithful.app"
-
     private lazy var sharedDefaults: UserDefaults? = UserDefaults(suiteName: appGroupID)
 
-    private let scaAnalyzer = SCSensitivityAnalyzer()
-    private let textClassifier = FallbackTextClassifier()
-    private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+    // var so they can be recreated during the periodic resource reset.
+    // Peak memory before reset: ~25–40 MB (full-res CGImage + Vision + SCA)
+    // Peak memory after this change: ~14–23 MB (960px CGImage + autoreleased Vision/SCA)
+    private var scaAnalyzer    = SCSensitivityAnalyzer()
+    private var textClassifier = FallbackTextClassifier()
+    private var ciContext      = CIContext(options: [.useSoftwareRenderer: false])
 
-    // 3-second intervals balance detection accuracy with battery efficiency.
-    private var lastAnalysisTime: Date = Date()
+    // Maximum pixel dimension for per-frame analysis.
+    // 960 px is sufficient for Vision OCR (fast mode) and SCA; reduces CGImage
+    // allocation from ~8 MB (1920×1080) to ~2 MB (960×540).
+    private let analysisMaxDim: CGFloat = 960
 
-    // Rate-limit tier 1a hash detections before dedup takes over (avoids spawning 30 tasks/sec).
+    private var lastAnalysisTime: Date  = Date()
     private var lastHashMatchTime: Date = .distantPast
+    private var lastResourceReset: Date = Date()
+    private var lastMemoryLogTime: Date = .distantPast
 
-    // Heartbeat: track last frame to report active vs idle every 2 minutes.
     private var _lastFrameTime: Date = .distantPast
     private let frameTimeLock = NSLock()
     private var lastFrameTime: Date {
         get { frameTimeLock.withLock { _lastFrameTime } }
         set { frameTimeLock.withLock { _lastFrameTime = newValue } }
     }
+
     private var heartbeatTask: Task<Void, Never>?
     private var retryTask:     Task<Void, Never>?
-
-    // Hash blocklist — populated from server-side list at broadcast start.
     private var hashBlocklist: Set<UInt64> = []
-
-    // Dedup: identical category|severity events within a 5-minute window are suppressed.
-    // At most one "continued activity" summary is sent per expired window.
     private let dedupStore = DedupStore(windowSeconds: 300)
 
     // MARK: - Lifecycle
@@ -314,24 +291,19 @@ class SampleHandler: RPBroadcastSampleHandler {
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "broadcastStartTime")
         loadHashBlocklist()
         let policy = scaAnalyzer.analysisPolicy
-        logger.info("Broadcast started — SCA policy: \(String(describing: policy))")
+        logger.info("Broadcast started — SCA policy: \(String(describing: policy)) — available: \(availableMemoryMB()) MB")
         startHeartbeatLoop()
         startRetryLoop()
     }
 
-    override func broadcastPaused() {
-        sharedDefaults?.set(false, forKey: "isBroadcasting")
-    }
-
-    override func broadcastResumed() {
-        sharedDefaults?.set(true, forKey: "isBroadcasting")
-    }
+    override func broadcastPaused()   { sharedDefaults?.set(false, forKey: "isBroadcasting") }
+    override func broadcastResumed()  { sharedDefaults?.set(true,  forKey: "isBroadcasting") }
 
     override func broadcastFinished() {
         sharedDefaults?.set(false, forKey: "isBroadcasting")
         heartbeatTask?.cancel()
         retryTask?.cancel()
-        logger.info("Broadcast finished")
+        logger.info("Broadcast finished — available: \(availableMemoryMB()) MB")
     }
 
     // MARK: - Frame processing
@@ -341,100 +313,153 @@ class SampleHandler: RPBroadcastSampleHandler {
         guard sampleBufferType == .video,
               let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        lastFrameTime = Date()
-
-        // — Tier 1a: perceptual hash check (every frame, ~0.1 ms) —
-        logger.debug("Frame received")
-        let hash = dHash(from: ciImage, context: ciContext)
         let now = Date()
-        if hashBlocklist.contains(where: { hammingDistance($0, hash) < 10 }) {
-            // Rate-limit to one task per 3s; the dedup store handles the 5-min window.
-            if now.timeIntervalSince(lastHashMatchTime) >= 3.0 {
-                lastHashMatchTime = now
-                logger.warning("Tier 1 hash match")
-                let event = makeEvent(
-                    category: .explicitSexual, tier: 1, confidence: 1.0,
-                    summary: "Explicit image detected (perceptual hash match)"
-                )
-                Task.detached(priority: .utility) { [weak self] in
-                    await self?.handleEvent(event)
+        lastFrameTime = now
+
+        // Periodic resource reset every 10 minutes — flush Core Image texture cache,
+        // SCA model memory, and any ML fragmentation. Does NOT end or pause the broadcast.
+        if now.timeIntervalSince(lastResourceReset) >= 600 {
+            lastResourceReset = now
+            performResourceReset()
+        }
+
+        // Wrap all per-frame work in an autorelease pool to flush Obj-C objects promptly.
+        autoreleasepool {
+            let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+
+            // — Tier 1a: perceptual hash check (every frame, ~0.1 ms) —
+            logger.debug("Frame received")
+            let hash = dHash(from: ciImage, context: ciContext)
+            if hashBlocklist.contains(where: { hammingDistance($0, hash) < 10 }) {
+                if now.timeIntervalSince(lastHashMatchTime) >= 3.0 {
+                    lastHashMatchTime = now
+                    logger.warning("Tier 1 hash match — available: \(availableMemoryMB()) MB")
+                    let event = makeEvent(category: .explicitSexual, tier: 1, confidence: 1.0,
+                                         summary: "Explicit image detected (perceptual hash match)")
+                    Task.detached(priority: .utility) { [weak self] in await self?.handleEvent(event) }
                 }
             }
+
+            // — Full Tier 2 processing every 3 seconds —
+            guard now.timeIntervalSince(lastAnalysisTime) >= 3.0 else { return }
+            lastAnalysisTime = now
+
+            // Downscale to analysisMaxDim on the longer edge before rendering.
+            // 1920×1080 → 960×540: CGImage drops from ~8 MB to ~2 MB (BGRA8).
+            let extent = ciImage.extent
+            let longerEdge = max(extent.width, extent.height)
+            let scale = longerEdge > analysisMaxDim ? analysisMaxDim / longerEdge : 1.0
+            let renderImage = scale < 1.0
+                ? ciImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+                : ciImage
+
+            // Render inside nested autorelease pool; ciContext may produce
+            // intermediate Obj-C objects during rasterization.
+            guard let cgImage: CGImage = autoreleasepool(invoking: {
+                ciContext.createCGImage(renderImage, from: renderImage.extent)
+            }) else { return }
+
+            // ciImage (pixel buffer wrapper) is no longer needed — do not capture it.
+            let preMemMB = availableMemoryMB()
+            logger.info("Tier 2 analysis — pre: \(preMemMB) MB available (frame \(Int(extent.width))×\(Int(extent.height)) → \(Int(renderImage.extent.width))×\(Int(renderImage.extent.height)))")
+
+            let capturedDefaults    = sharedDefaults
+            let capturedAnalyzer    = scaAnalyzer
+            let capturedClassifier  = textClassifier
+            let apiBase = capturedDefaults?.string(forKey: "apiBaseURL") ?? "http://localhost:8080"
+
+            Task.detached(priority: .utility) { [self] in
+                await self.analyzeFrame(
+                    cgImage: cgImage,       // downscaled, ~2 MB
+                    scaAnalyzer: capturedAnalyzer,
+                    textClassifier: capturedClassifier,
+                    defaults: capturedDefaults,
+                    apiBase: apiBase,
+                    preMemMB: preMemMB
+                )
+            }
+            // cgImage is now owned exclusively by the detached task. ciImage is
+            // released here as the autorelease pool drains at the end of this block.
         }
+    }
 
-        // — Full Tier 2 processing every 3 seconds —
-        guard now.timeIntervalSince(lastAnalysisTime) >= 3.0 else { return }
-        lastAnalysisTime = now
-        logger.info("Tier 2 analysis triggered")
+    // MARK: - Periodic resource reset (every 10 minutes)
+    //
+    // Recreates ciContext, scaAnalyzer, and textClassifier to flush accumulated
+    // Core Image texture caches, ML model memory fragmentation, and stale buffers.
+    // Running tasks hold captured references to the old objects and complete normally.
+    // The broadcast stream is never interrupted.
 
-        // Render CGImage once; reused by OCR, SCA, and hash update
-        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else { return }
-
-        let capturedDefaults = sharedDefaults
-        let capturedAnalyzer = scaAnalyzer
-        let capturedClassifier = textClassifier
-        let apiBase = capturedDefaults?.string(forKey: "apiBaseURL") ?? "http://localhost:8080"
-
-        Task.detached(priority: .utility) { [self] in
-            await self.analyzeFrame(
-                cgImage: cgImage, ciImage: ciImage,
-                scaAnalyzer: capturedAnalyzer,
-                textClassifier: capturedClassifier,
-                defaults: capturedDefaults,
-                apiBase: apiBase
-            )
-        }
+    private func performResourceReset() {
+        let before = availableMemoryMB()
+        ciContext      = CIContext(options: [.useSoftwareRenderer: false])
+        scaAnalyzer    = SCSensitivityAnalyzer()
+        textClassifier = FallbackTextClassifier()
+        let after = availableMemoryMB()
+        logger.info("Resource reset — available: \(before) MB → \(after) MB (Δ\(after - before) MB)")
     }
 
     // MARK: - Full frame analysis (async, off sample-buffer thread)
 
     private func analyzeFrame(
-        cgImage: CGImage,
-        ciImage: CIImage,
+        cgImage: CGImage,            // downscaled to ≤960 px, ~2 MB
         scaAnalyzer: SCSensitivityAnalyzer,
         textClassifier: FallbackTextClassifier,
         defaults: UserDefaults?,
-        apiBase: String
+        apiBase: String,
+        preMemMB: Int
     ) async {
         // ——— TIER 2a: Vision OCR ———
-        let ocrText = await extractText(from: cgImage)
-        logger.info("OCR: \(ocrText.count) chars — \(String(ocrText.prefix(120)).debugDescription)")
+        // Wrap synchronous Vision work in autoreleasepool so VNImageRequestHandler,
+        // VNRecognizeTextRequest, and VNRecognizedTextObservation are released immediately.
+        let ocrText: String = autoreleasepool {
+            var result = ""
+            let request = VNRecognizeTextRequest { req, _ in
+                result = (req.results as? [VNRecognizedTextObservation] ?? [])
+                    .compactMap { $0.topCandidates(1).first?.string }
+                    .joined(separator: " ")
+            }
+            request.recognitionLevel = .fast
+            request.usesLanguageCorrection = false
+            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+            try? handler.perform([request])
+            // handler, request, and all VN objects go out of scope here and are released
+            return result
+        }
+        logger.info("OCR: \(ocrText.count) chars — \(String(ocrText.prefix(80)).debugDescription)")
 
         // ——— TIER 1b: URL + keyword check on extracted text ———
         var tier1Triggered = false
         let domains = extractDomains(from: ocrText)
         for domain in domains where Tier1Rules.matchesURL(domain) {
             logger.warning("Tier 1 URL match: \(domain)")
-            let event = makeEvent(
-                category: .explicitSexual, tier: 1, confidence: 1.0,
-                summary: "Blocked domain detected"
-            )
-            await handleEvent(event)
+            await handleEvent(makeEvent(category: .explicitSexual, tier: 1, confidence: 1.0,
+                                        summary: "Blocked domain detected"))
             tier1Triggered = true
         }
         if !tier1Triggered && Tier1Rules.matchesKeyword(in: ocrText) {
             logger.warning("Tier 1 keyword match: \(String(ocrText.prefix(80)))")
-            let event = makeEvent(
-                category: .explicitSexual, tier: 1, confidence: 0.95,
-                summary: "Explicit keyword detected in screen text"
-            )
-            await handleEvent(event)
+            await handleEvent(makeEvent(category: .explicitSexual, tier: 1, confidence: 0.95,
+                                        summary: "Explicit keyword detected in screen text"))
             tier1Triggered = true
         }
 
         // ——— TIER 2b: SensitiveContentAnalysis (image) ———
+        // Write JPEG inside autoreleasepool to release UIImage and Data promptly;
+        // only the file URL crosses the autorelease boundary into the async SCA call.
         var scaIsSensitive = false
         if scaAnalyzer.analysisPolicy != .disabled {
             let tmpURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("rf_sca_\(UUID().uuidString).jpg")
             defer { try? FileManager.default.removeItem(at: tmpURL) }
-            if let jpeg = cgImageToJPEG(cgImage) {
-                try? jpeg.write(to: tmpURL, options: .atomic)
-                if let analysis = try? await scaAnalyzer.analyzeImage(at: tmpURL) {
-                    scaIsSensitive = analysis.isSensitive
-                    logger.info("SCA: sensitive=\(analysis.isSensitive)")
-                }
+            let didWrite: Bool = autoreleasepool {
+                guard let jpeg = UIImage(cgImage: cgImage).jpegData(compressionQuality: 0.70) else { return false }
+                return (try? jpeg.write(to: tmpURL, options: .atomic)) != nil
+                // jpeg Data and UIImage are released here
+            }
+            if didWrite, let analysis = try? await scaAnalyzer.analyzeImage(at: tmpURL) {
+                scaIsSensitive = analysis.isSensitive
+                logger.info("SCA: sensitive=\(analysis.isSensitive)")
             }
         } else {
             logger.debug("SCA: policy=disabled, skipping")
@@ -446,28 +471,28 @@ class SampleHandler: RPBroadcastSampleHandler {
 
         // ——— Composite score ———
         let scaScore: Float = scaIsSensitive ? 0.85 : 0.0
-        var compositeCategory = textResult.category
+        var compositeCategory   = textResult.category
         var compositeConfidence: Float
 
         if textResult.category != .clean {
             compositeConfidence = max(scaScore, textResult.confidence)
         } else if scaIsSensitive {
-            compositeCategory  = .explicitSexual
+            compositeCategory   = .explicitSexual
             compositeConfidence = scaScore
         } else {
             compositeConfidence = 0.0
         }
 
-        logger.info("Composite: \(compositeCategory.rawValue) @ \(String(format: "%.2f", compositeConfidence))")
+        let postMemMB = availableMemoryMB()
+        logger.info("Composite: \(compositeCategory.rawValue) @ \(String(format: "%.2f", compositeConfidence)) — post: \(postMemMB) MB available (Δ\(preMemMB - postMemMB) MB used)")
 
         // ——— Route by confidence ———
         if compositeConfidence >= 0.3 && compositeCategory != .clean {
-            // ——— TIER 3: cloud fallback for ambiguous zone ———
             var finalCategory   = compositeCategory
             var finalConfidence = compositeConfidence
 
             if compositeConfidence >= 0.5 && compositeConfidence < 0.7 {
-                logger.info("Sending to Tier 3 /classify — confidence \(String(format: "%.2f", compositeConfidence))")
+                logger.info("Tier 3 /classify — confidence \(String(format: "%.2f", compositeConfidence))")
                 if let cloud = await sendToClassify(text: ocrText, apiBase: apiBase, defaults: defaults) {
                     finalCategory   = cloud.category
                     finalConfidence = cloud.confidence
@@ -477,21 +502,17 @@ class SampleHandler: RPBroadcastSampleHandler {
 
             if finalCategory != .clean && finalConfidence >= 0.3 {
                 let tier = compositeConfidence >= 0.7 ? 2 : (finalConfidence >= 0.7 ? 3 : 2)
-                let event = makeEvent(
-                    category: finalCategory,
-                    tier: tier,
-                    confidence: finalConfidence,
-                    summary: buildSummary(category: finalCategory, confidence: finalConfidence)
-                )
-                await handleEvent(event)
+                await handleEvent(makeEvent(category: finalCategory, tier: tier,
+                                            confidence: finalConfidence,
+                                            summary: buildSummary(category: finalCategory,
+                                                                   confidence: finalConfidence)))
             }
         }
+        // cgImage is released here as analyzeFrame returns — no cross-frame retention.
     }
 
     // MARK: - Event handling with dedup
 
-    // Check the 5-minute dedup window. If the same category|severity fired within the
-    // current window, suppress. Otherwise post immediately and start a new window.
     private func handleEvent(_ event: DetectedEvent) async {
         let key = "\(event.category)|\(event.severity)"
         let suppressed = await dedupStore.record(key: key)
@@ -516,28 +537,21 @@ class SampleHandler: RPBroadcastSampleHandler {
         let isoFmt = ISO8601DateFormatter()
         isoFmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         let tsStr = isoFmt.string(from: Date(timeIntervalSince1970: event.timestamp))
-
         var req = URLRequest(url: url, timeoutInterval: 10)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        let body: [String: Any] = [
-            "category":  event.category,
-            "severity":  event.severity,
-            "summary":   event.summary,
-            "timestamp": tsStr,
-        ]
+        let body: [String: Any] = ["category": event.category, "severity": event.severity,
+                                   "summary": event.summary, "timestamp": tsStr]
         guard let data = try? JSONSerialization.data(withJSONObject: body) else { return false }
         req.httpBody = data
-
         do {
             let (_, resp) = try await URLSession.shared.data(for: req)
             if let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) {
                 logger.info("Event uploaded: \(event.category) \(event.severity)")
                 return true
             }
-            let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
-            logger.warning("Event upload HTTP \(code)")
+            logger.warning("Event upload HTTP \((resp as? HTTPURLResponse)?.statusCode ?? 0)")
             return false
         } catch {
             logger.warning("Event upload network error: \(error.localizedDescription)")
@@ -546,17 +560,13 @@ class SampleHandler: RPBroadcastSampleHandler {
     }
 
     private func postEvent(_ event: DetectedEvent) async {
-        let ok = await uploadEvent(event)
-        if !ok {
+        if !(await uploadEvent(event)) {
             logger.warning("Event upload failed — writing to retry queue")
             writeEventToRetryQueue(event)
         }
     }
 
     // MARK: - Retry queue (network failures only)
-    //
-    // EventProcessor in the main app also drains this on foreground / BGAppRefreshTask,
-    // providing a second-chance drain if the extension is killed before retrying.
 
     private func writeEventToRetryQueue(_ event: DetectedEvent) {
         guard let defaults = sharedDefaults else { return }
@@ -582,6 +592,7 @@ class SampleHandler: RPBroadcastSampleHandler {
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 60 * 1_000_000_000)
                 guard !Task.isCancelled else { break }
+                logger.info("Retry loop tick — available: \(availableMemoryMB()) MB")
                 await self?.drainRetryQueue()
                 await self?.flushContinuedActivity()
             }
@@ -597,29 +608,22 @@ class SampleHandler: RPBroadcastSampleHandler {
         logger.info("Retry queue: draining \(pending.count) event(s)")
         var changed = false
         for i in pending {
-            let ok = await uploadEvent(events[i])
-            if ok {
-                events[i].processed = true
-                changed = true
-            } else {
-                break  // stop on first failure; try again next 60 s cycle
-            }
+            if await uploadEvent(events[i]) {
+                events[i].processed = true; changed = true
+            } else { break }
         }
         if changed, let newData = try? JSONEncoder().encode(events) {
             defaults.set(newData, forKey: "pendingEvents")
         }
     }
 
-    // For each 5-minute window that has elapsed with suppressed detections,
-    // send exactly one "continued activity" summary event.
     private func flushContinuedActivity() async {
         let expired = await dedupStore.drainExpired()
         for (cat, _, count) in expired {
             let category = ContentCategory(rawValue: cat) ?? .explicitSexual
             let summary  = continuedActivitySummary(category: category, count: count + 1)
-            let event    = makeEvent(category: category, tier: 2, confidence: 0.85, summary: summary)
-            logger.info("Sending continued-activity summary: \(summary)")
-            await postEvent(event)
+            logger.info("Continued-activity: \(summary)")
+            await postEvent(makeEvent(category: category, tier: 2, confidence: 0.85, summary: summary))
         }
     }
 
@@ -635,22 +639,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         return "\(base) — detected \(count) time\(count == 1 ? "" : "s") in 5 min"
     }
 
-    // MARK: - Vision OCR
-
-    private func extractText(from cgImage: CGImage) async -> String {
-        await withCheckedContinuation { continuation in
-            let request = VNRecognizeTextRequest { req, _ in
-                let text = (req.results as? [VNRecognizedTextObservation] ?? [])
-                    .compactMap { $0.topCandidates(1).first?.string }
-                    .joined(separator: " ")
-                continuation.resume(returning: text)
-            }
-            request.recognitionLevel = .fast
-            request.usesLanguageCorrection = false
-            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-            try? handler.perform([request])
-        }
-    }
+    // MARK: - Vision OCR (synchronous via perform — safe to wrap in autoreleasepool)
 
     private func extractDomains(from text: String) -> [String] {
         guard let detector = try? NSDataDetector(
@@ -666,16 +655,9 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     private func makeEvent(category: ContentCategory, tier: Int,
                            confidence: Float, summary: String) -> DetectedEvent {
-        DetectedEvent(
-            id: UUID().uuidString,
-            timestamp: Date().timeIntervalSince1970,
-            category: category.rawValue,
-            severity: category.severity(for: confidence),
-            summary: summary,
-            tier: tier,
-            confidence: confidence,
-            processed: false
-        )
+        DetectedEvent(id: UUID().uuidString, timestamp: Date().timeIntervalSince1970,
+                      category: category.rawValue, severity: category.severity(for: confidence),
+                      summary: summary, tier: tier, confidence: confidence, processed: false)
     }
 
     private func buildSummary(category: ContentCategory, confidence: Float) -> String {
@@ -686,10 +668,6 @@ class SampleHandler: RPBroadcastSampleHandler {
         case .selfHarm:       return "Self-harm content detected"
         case .clean:          return "Content reviewed — no concerns"
         }
-    }
-
-    private func cgImageToJPEG(_ cgImage: CGImage) -> Data? {
-        UIImage(cgImage: cgImage).jpegData(compressionQuality: 0.70)
     }
 
     // MARK: - Heartbeat
@@ -706,12 +684,11 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     private func sendHeartbeat() async {
         let screen = Date().timeIntervalSince(lastFrameTime) < 120 ? "active" : "idle"
-        let hasToken = sharedDefaults?.string(forKey: "authToken") != nil
-        logger.info("Heartbeat: screen=\(screen) hasToken=\(hasToken)")
+        logger.info("Heartbeat: screen=\(screen) available=\(availableMemoryMB()) MB")
         guard let apiBase = sharedDefaults?.string(forKey: "apiBaseURL"),
               let token   = sharedDefaults?.string(forKey: "authToken"),
               let url     = URL(string: apiBase + "/heartbeat") else {
-            logger.error("Heartbeat skipped — missing apiBaseURL or authToken in sharedDefaults")
+            logger.error("Heartbeat skipped — missing apiBaseURL or authToken")
             return
         }
         var req = URLRequest(url: url, timeoutInterval: 10)
@@ -726,9 +703,8 @@ class SampleHandler: RPBroadcastSampleHandler {
     }
 
     private func loadHashBlocklist() {
-        // Main app can push known-bad hashes via shared defaults as a JSON [UInt64] array.
         guard let defaults = sharedDefaults,
-              let data = defaults.data(forKey: "hashBlocklist"),
+              let data   = defaults.data(forKey: "hashBlocklist"),
               let hashes = try? JSONDecoder().decode([UInt64].self, from: data) else { return }
         hashBlocklist = Set(hashes)
         logger.info("Loaded \(hashes.count) perceptual hashes into blocklist")

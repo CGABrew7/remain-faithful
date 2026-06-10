@@ -1,5 +1,6 @@
 import SwiftUI
 import StoreKit
+import FamilyControls
 
 // MARK: - SettingsView
 
@@ -14,6 +15,9 @@ struct SettingsView: View {
     @Environment(\.openURL)       private var openURL
     @Environment(\.requestReview) private var requestReview
 
+    @ObservedObject private var fcManager = FamilyControlsManager.shared
+
+    @State private var showScreenTime       = false
     @State private var showRetentionPicker  = false
     @State private var showCovenant         = false
     @State private var showActivityLog      = false
@@ -41,6 +45,7 @@ struct SettingsView: View {
                     profileCard
                     accountabilitySection
                     monitoringSection
+                    screenTimeSection
                     privacySection
                     supportUsSection
                     supportSection
@@ -56,6 +61,9 @@ struct SettingsView: View {
             RetentionPickerSheet(days: $dataRetentionDays)
                 .presentationDetents([.height(320)])
                 .presentationDragIndicator(.hidden)
+        }
+        .sheet(isPresented: $showScreenTime) {
+            NavigationStack { ScreenTimeMonitoringView() }
         }
         .sheet(isPresented: $showDonation)        { DonationView() }
         .sheet(isPresented: $showCovenant)        { SettingsCovenantSheet() }
@@ -159,6 +167,51 @@ struct SettingsView: View {
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "Notifications",
                  isOn: $notificationsEnabled)
+        }
+    }
+
+    // MARK: - Screen Time
+
+    private var screenTimeSection: some View {
+        SettingsSection(title: "SCREEN TIME") {
+            Button { showScreenTime = true } label: {
+                HStack(spacing: 14) {
+                    iconBadge("hand.raised.fill",
+                              tint: Color(red: 0.52, green: 0.36, blue: 0.92))
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("App Restrictions")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.white)
+                        Text(screenTimeStatusLabel)
+                            .font(.system(size: 12))
+                            .foregroundStyle(screenTimeStatusColor)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.20))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+        }
+    }
+
+    private var screenTimeStatusLabel: String {
+        switch fcManager.authorizationStatus {
+        case .approved:      return "Authorized"
+        case .denied:        return "Denied — tap to review"
+        case .notDetermined: return "Tap to set up"
+        @unknown default:    return "Unknown"
+        }
+    }
+
+    private var screenTimeStatusColor: Color {
+        switch fcManager.authorizationStatus {
+        case .approved:      return Color(red: 0.20, green: 0.78, blue: 0.45)
+        case .denied:        return Color(red: 0.90, green: 0.30, blue: 0.30)
+        case .notDetermined: return Color.rfGold.opacity(0.75)
+        @unknown default:    return Color.white.opacity(0.40)
         }
     }
 
