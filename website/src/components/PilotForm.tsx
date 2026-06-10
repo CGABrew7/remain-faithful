@@ -42,9 +42,9 @@ export default function PilotForm() {
     return (
       <div className="text-center py-12 rounded-2xl border border-[#C9A84C]/20 bg-[#162235]">
         <div className="text-4xl mb-4">✅</div>
-        <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-3">Request Received</h3>
+        <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-3">You&apos;re Registered</h3>
         <p className="text-[#8A9BB0] text-sm max-w-sm mx-auto">
-          We&apos;ll be in touch within 3 business days to discuss your church pilot program.
+          We&apos;ll reach out personally when Remain Faithful is ready to onboard your church.
         </p>
       </div>
     )
@@ -132,10 +132,10 @@ export default function PilotForm() {
         disabled={loading}
         className="w-full py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        {loading ? 'Submitting...' : 'Request Church Pilot'}
+        {loading ? 'Submitting...' : 'Register Your Church'}
       </button>
       <p className="text-center text-xs text-[#8A9BB0]">
-        We respond within 3 business days. No spam, ever.
+        We&apos;ll be in touch before launch. No spam, ever.
       </p>
     </form>
   )

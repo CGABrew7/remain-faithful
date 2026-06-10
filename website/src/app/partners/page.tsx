@@ -31,7 +31,7 @@ export default function PartnersPage() {
               href="#pilot"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200"
             >
-              Request a Church Pilot
+              Register for Early Access
             </a>
             <a
               href="/group-setup-guide"
@@ -446,16 +446,16 @@ export default function PartnersPage() {
         </div>
       </section>
 
-      {/* Church Pilot Form */}
+      {/* Church Early Access Form */}
       <section id="pilot" className="py-20 bg-[#0A1420] border-t border-[#1E3050]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Get Started</p>
+            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Early Access</p>
             <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
-              Request a Church Pilot
+              Register Your Church for Launch
             </h2>
             <p className="text-[#8A9BB0]">
-              Want hands-on support setting up Remain Faithful for your ministry? We offer guided pilot programs with direct leader support, customized rollout plans, and follow-up check-ins.
+              Remain Faithful is in pre-launch. Register now and we&apos;ll reach out personally when the app is ready — your church will be among the first ministries onboarded, with direct support from the founder during your initial setup.
             </p>
           </div>
           <PilotForm />
