@@ -186,9 +186,10 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/groups/{id}/email-invite",  h.GroupEmailInvite).Methods(http.MethodPost)
 	api.HandleFunc("/events",               h.CreateEvent).Methods(http.MethodPost)
 	api.HandleFunc("/events",               h.ListEvents).Methods(http.MethodGet)
-	api.HandleFunc("/alerts",               h.ListAlerts).Methods(http.MethodGet)
-	api.HandleFunc("/alerts/count",         h.AlertUnreadCount).Methods(http.MethodGet)
-	api.HandleFunc("/alerts/mark-seen",     h.MarkAlertsSeen).Methods(http.MethodPost)
+	api.HandleFunc("/alerts",                    h.ListAlerts).Methods(http.MethodGet)
+	api.HandleFunc("/alerts/count",              h.AlertUnreadCount).Methods(http.MethodGet)
+	api.HandleFunc("/alerts/mark-seen",          h.MarkAlertsSeen).Methods(http.MethodPost)
+	api.HandleFunc("/alerts/{id}/discussed",     h.MarkAlertDiscussed).Methods(http.MethodPatch)
 	api.HandleFunc("/heartbeat",                           h.Heartbeat).Methods(http.MethodPost)
 	api.HandleFunc("/users/device-token",                  h.RegisterDeviceToken).Methods(http.MethodPost)
 	api.HandleFunc("/panic",                               h.SendPanicAlert).Methods(http.MethodPost)
@@ -375,6 +376,8 @@ func migrate(db *sql.DB) error {
 
 	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS recipient_user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
 	CREATE INDEX IF NOT EXISTS idx_alerts_recipient ON alerts(recipient_user_id);
+
+	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS discussed BOOLEAN NOT NULL DEFAULT FALSE;
 	`)
 	return err
 }

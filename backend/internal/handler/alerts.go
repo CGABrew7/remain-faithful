@@ -2,7 +2,9 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	rfauth "remain-faithful/backend/internal/auth"
 )
 
@@ -34,6 +36,32 @@ func (h *H) MarkAlertsSeen(w http.ResponseWriter, r *http.Request) {
 	`, userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to mark alerts seen")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// MarkAlertDiscussed marks a single alert as discussed.
+// PATCH /alerts/{id}/discussed
+func (h *H) MarkAlertDiscussed(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	alertIDStr := mux.Vars(r)["id"]
+	alertID, err := strconv.ParseInt(alertIDStr, 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid alert id")
+		return
+	}
+	res, err := h.DB.ExecContext(r.Context(), `
+		UPDATE alerts
+		SET    discussed = TRUE
+		WHERE  id = $1 AND recipient_user_id = $2
+	`, alertID, userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to mark alert discussed")
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		writeError(w, http.StatusNotFound, "alert not found")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})

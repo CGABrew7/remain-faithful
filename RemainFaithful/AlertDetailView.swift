@@ -4,7 +4,14 @@ struct AlertDetailView: View {
     let event: ActivityEvent
 
     @Environment(\.dismiss) private var dismiss
-    @State private var isDiscussed = false
+    @State private var isDiscussed: Bool
+    @State private var isLoading = false
+    @State private var discussedError: String?
+
+    init(event: ActivityEvent) {
+        self.event = event
+        _isDiscussed = State(initialValue: event.discussed)
+    }
 
     var body: some View {
         ZStack {
@@ -24,10 +31,18 @@ struct AlertDetailView: View {
                     .padding(.bottom, 32)
                 }
 
-                markDiscussedButton
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                    .padding(.bottom, 40)
+                VStack(spacing: 6) {
+                    markDiscussedButton
+                    if let err = discussedError {
+                        Text(err)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.red.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 40)
             }
         }
         .navigationBarHidden(true)
@@ -168,13 +183,34 @@ struct AlertDetailView: View {
         let tint  = isDiscussed ? green : Color.rfGold
 
         return Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                isDiscussed = true
+            guard !isLoading else { return }
+            Task {
+                isLoading = true
+                discussedError = nil
+                if let alertID = event.alertID {
+                    do {
+                        try await APIClient.shared.markAlertDiscussed(alertID: alertID)
+                    } catch {
+                        discussedError = "Couldn't save — try again"
+                        isLoading = false
+                        return
+                    }
+                }
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                    isDiscussed = true
+                }
+                isLoading = false
             }
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: isDiscussed ? "checkmark.circle.fill" : "checkmark.circle")
-                    .font(.system(size: 18))
+                if isLoading {
+                    ProgressView()
+                        .tint(tint)
+                        .scaleEffect(0.85)
+                } else {
+                    Image(systemName: isDiscussed ? "checkmark.circle.fill" : "checkmark.circle")
+                        .font(.system(size: 18))
+                }
                 Text(isDiscussed ? "Marked as Discussed" : "Mark as Discussed")
                     .font(.system(size: 16, weight: .semibold))
             }
@@ -188,7 +224,7 @@ struct AlertDetailView: View {
                         .stroke(tint.opacity(0.32), lineWidth: 1.5))
             )
         }
-        .disabled(isDiscussed)
+        .disabled(isDiscussed || isLoading)
         .animation(.easeInOut(duration: 0.25), value: isDiscussed)
     }
 

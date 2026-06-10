@@ -136,29 +136,6 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		ctx := context.Background()
-		payload := map[string]any{
-			"aps": map[string]any{
-				"alert": map[string]string{
-					"title": alertTitle(capturedSeverity),
-					"body":  alertBody(capturedCaller, capturedCategory, capturedSeverity),
-				},
-				"sound": "default",
-			},
-			"notification_type": "CONTENT_FLAGGED",
-			"sender_name":       capturedCaller,
-			"event_id":          capturedEventID,
-			"category":          capturedCategory,
-			"severity":          capturedSeverity,
-			"summary":           capturedSummary,
-			"timestamp":         capturedTimestamp,
-		}
-		n := &apns.Notification{
-			PushType:   "alert",
-			Priority:   10,
-			CollapseID: fmt.Sprintf("event-%d", capturedEventID),
-			Payload:    payload,
-		}
-
 		for _, pa := range capturedPartnerAlerts {
 			// Throttle: skip push if this partner already got one in the last 5 minutes.
 			var recentCount int
@@ -170,6 +147,30 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 			`, pa.partnerID, pa.alertID).Scan(&recentCount)
 			if recentCount > 0 {
 				continue
+			}
+			// Build a per-partner payload so alert_id is specific to this recipient.
+			payload := map[string]any{
+				"aps": map[string]any{
+					"alert": map[string]string{
+						"title": alertTitle(capturedSeverity),
+						"body":  alertBody(capturedCaller, capturedCategory, capturedSeverity),
+					},
+					"sound": "default",
+				},
+				"notification_type": "CONTENT_FLAGGED",
+				"sender_name":       capturedCaller,
+				"alert_id":          pa.alertID,
+				"event_id":          capturedEventID,
+				"category":          capturedCategory,
+				"severity":          capturedSeverity,
+				"summary":           capturedSummary,
+				"timestamp":         capturedTimestamp,
+			}
+			n := &apns.Notification{
+				PushType:   "alert",
+				Priority:   10,
+				CollapseID: fmt.Sprintf("event-%d", capturedEventID),
+				Payload:    payload,
 			}
 			h.notifyPartnerByID(ctx, pa.partnerID, capturedCaller, n)
 		}

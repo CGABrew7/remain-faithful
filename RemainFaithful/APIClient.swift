@@ -211,6 +211,10 @@ final class APIClient {
         try await postVoid("/alerts/mark-seen", body: [String: String]())
     }
 
+    func markAlertDiscussed(alertID: Int) async throws {
+        try await patchVoid("/alerts/\(alertID)/discussed")
+    }
+
     // MARK: - Donations
 
     func createCheckoutSession(amountDollars: Int, monthly: Bool) async throws -> URL {
@@ -335,6 +339,17 @@ final class APIClient {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)
         if auth { try attachToken(&req) }
+        let (data, resp) = try await session.data(for: req)
+        if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
+            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+        }
+    }
+
+    /// Fire-and-forget PATCH for endpoints with no request body.
+    private func patchVoid(_ path: String) async throws {
+        var req = try makeRequest(path, method: "PATCH")
+        try attachToken(&req)
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
             let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]

@@ -98,10 +98,22 @@ enum FlagSeverity: String {
 
 struct ActivityEvent: Identifiable, Hashable {
     let id = UUID()
+    let alertID:     Int?        // backend alert ID; nil for the user's own events
     let category:    EventCategory
     let severity:    FlagSeverity
     let description: String
     let minutesAgo:  Int
+    var discussed:   Bool        // initial state loaded from API; toggled locally after PATCH
+
+    init(alertID: Int? = nil, category: EventCategory, severity: FlagSeverity,
+         description: String, minutesAgo: Int, discussed: Bool = false) {
+        self.alertID     = alertID
+        self.category    = category
+        self.severity    = severity
+        self.description = description
+        self.minutesAgo  = minutesAgo
+        self.discussed   = discussed
+    }
 
     static func == (lhs: ActivityEvent, rhs: ActivityEvent) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
@@ -196,7 +208,8 @@ extension ActivityEvent {
             }()
             minutesAgo = max(0, Int(Date().timeIntervalSince(date) / 60))
         }
-        return ActivityEvent(category: category, severity: severity,
+        let alertID = p["alert_id"] as? Int
+        return ActivityEvent(alertID: alertID, category: category, severity: severity,
                              description: description, minutesAgo: minutesAgo)
     }
 }
