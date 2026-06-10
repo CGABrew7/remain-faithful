@@ -22,7 +22,7 @@ struct ScreenTimeMonitoringView: View {
                     if fcManager.authorizationStatus == .approved {
                         selectionCard
                         blockingCard
-                        if selManager.isShieldingEnabled {
+                        if selManager.isMonitoringEnabled || selManager.isShieldingEnabled {
                             shieldingNoteCard
                         }
                     }
@@ -147,20 +147,52 @@ struct ScreenTimeMonitoringView: View {
         }
     }
 
-    // MARK: - Blocking toggle card
+    // MARK: - Monitoring + blocking card
 
     private var blockingCard: some View {
-        STSection(title: "BLOCKING") {
+        STSection(title: "ACTIONS") {
+            // Monitor toggle — DeviceActivity fires after 1 min of app usage per day
+            HStack(spacing: 14) {
+                stBadge("chart.bar.fill",
+                        tint: selManager.isMonitoringEnabled
+                            ? Color(red: 0.28, green: 0.56, blue: 0.95)
+                            : Color.white.opacity(0.35))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Monitor App Usage")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                    Text("Alert partner after 1 min of daily use")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.45))
+                }
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { selManager.isMonitoringEnabled },
+                    set: { selManager.setMonitoringEnabled($0) }
+                ))
+                .labelsHidden()
+                .tint(Color(red: 0.28, green: 0.56, blue: 0.95))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider().overlay(Color.white.opacity(0.07)).padding(.leading, 64)
+
+            // Shield toggle — ManagedSettings blocks the app immediately
             HStack(spacing: 14) {
                 stBadge("hand.raised.fill",
                         tint: selManager.isShieldingEnabled
                             ? Color(red: 0.90, green: 0.30, blue: 0.30)
                             : Color.white.opacity(0.35))
 
-                Text("Block Selected Apps")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(.white)
-
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Block Selected Apps")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                    Text("Shows iOS Screen Time shield on launch")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.45))
+                }
                 Spacer()
 
                 Toggle("", isOn: Binding(
@@ -184,7 +216,7 @@ struct ScreenTimeMonitoringView: View {
                 .foregroundStyle(Color.rfGold.opacity(0.75))
                 .padding(.top, 1)
 
-            Text("Selected apps will show an iOS Screen Time block when opened. The user can request override from within the blocked app.")
+            Text("Monitoring alerts your partner after 1 minute of daily use. Blocking shows an iOS Screen Time shield — the user can request an override from within the blocked app.")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.white.opacity(0.45))
                 .fixedSize(horizontal: false, vertical: true)

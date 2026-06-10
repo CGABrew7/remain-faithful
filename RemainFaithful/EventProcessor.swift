@@ -87,6 +87,10 @@ final class EventProcessor {
         if changed, let newData = try? JSONEncoder().encode(events) {
             defaults.set(newData, forKey: "pendingEvents")
         }
+
+        // Drain events queued by the DeviceActivityMonitor extension (raw JSON dicts,
+        // separate key because the extension can't encode DetectedEvent directly).
+        await ActivitySelectionManager.shared.drainPendingRawEvents()
     }
 
     // MARK: - Debugging helpers

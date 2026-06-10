@@ -9,7 +9,9 @@
 /* Begin PBXBuildFile section */
 		239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */; };
 		369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */; };
+		A64B8771DC269E569F540247 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */; };
 		B9FBE0AAE00A1EEF84DD985F /* ScreenTimeMonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */; };
+		CE769AD83ECF543F758EDAE1 /* DeviceActivityMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D2CBE57E1E412B8583786C0 /* DeviceActivityMonitorExtension.swift */; };
 		CF1000000000000000000010 /* RemainFaithfulApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000B /* RemainFaithfulApp.swift */; };
 		CF1000000000000000000011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000C /* ContentView.swift */; };
 		CF1000000000000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000D /* Assets.xcassets */; };
@@ -38,6 +40,7 @@
 		CF5000000000000000000032 /* FallbackTextClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000012 /* FallbackTextClassifierTests.swift */; };
 		CF5000000000000000000033 /* NotificationRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000013 /* NotificationRoutingTests.swift */; };
 		CF5000000000000000000040 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000020 /* OnboardingUITests.swift */; };
+		D39FA2F5F3CCBF2E9238DFA3 /* RemainFaithfulDeviceActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +50,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = CF1000000000000000000023;
 			remoteInfo = RemainFaithfulBroadcast;
+		};
+		CF1454429B9464075FDC4AA6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CF1000000000000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C25024C7EBA6191BE43312B4;
+			remoteInfo = RemainFaithfulDeviceActivity;
 		};
 		CF5000000000000000000070 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -72,6 +82,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				CF1000000000000000000028 /* RemainFaithfulBroadcast.appex in Embed Foundation Extensions */,
+				D39FA2F5F3CCBF2E9238DFA3 /* RemainFaithfulDeviceActivity.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -79,6 +90,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulDeviceActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		32BAB7718C4E46EE355F0F39 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3D2CBE57E1E412B8583786C0 /* DeviceActivityMonitorExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeviceActivityMonitorExtension.swift; sourceTree = "<group>"; };
+		490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivitySelectionManager.swift; sourceTree = "<group>"; };
 		80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenTimeMonitoringView.swift; sourceTree = "<group>"; };
 		8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FamilyControlsManager.swift; sourceTree = "<group>"; };
@@ -116,9 +131,18 @@
 		CF5000000000000000000020 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		CF5000000000000000000050 /* RemainFaithfulTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RemainFaithfulTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF5000000000000000000060 /* RemainFaithfulUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RemainFaithfulUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DED744307DF9984BECD3B5EA /* RemainFaithfulDeviceActivity.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulDeviceActivity.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3E4EADFAC00ED4211F3AF1D6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A64B8771DC269E569F540247 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CF1000000000000000000016 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -138,6 +162,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8AD013D8FC5B8AFFC531AD8E /* RemainFaithfulDeviceActivity */ = {
+			isa = PBXGroup;
+			children = (
+				3D2CBE57E1E412B8583786C0 /* DeviceActivityMonitorExtension.swift */,
+				32BAB7718C4E46EE355F0F39 /* Info.plist */,
+				DED744307DF9984BECD3B5EA /* RemainFaithfulDeviceActivity.entitlements */,
+			);
+			name = RemainFaithfulDeviceActivity;
+			path = RemainFaithfulDeviceActivity;
+			sourceTree = SOURCE_ROOT;
+		};
+		984C3679981C78BB4D533B4A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F06171CD1099A845DDBB234D /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CF1000000000000000000007 = {
 			isa = PBXGroup;
 			children = (
@@ -146,6 +189,8 @@
 				CF5000000000000000000001 /* RemainFaithfulTests */,
 				CF5000000000000000000002 /* RemainFaithfulUITests */,
 				CF1000000000000000000008 /* Products */,
+				984C3679981C78BB4D533B4A /* Frameworks */,
+				8AD013D8FC5B8AFFC531AD8E /* RemainFaithfulDeviceActivity */,
 			);
 			sourceTree = "<group>";
 		};
@@ -156,6 +201,7 @@
 				CF1000000000000000000019 /* RemainFaithfulBroadcast.appex */,
 				CF5000000000000000000050 /* RemainFaithfulTests.xctest */,
 				CF5000000000000000000060 /* RemainFaithfulUITests.xctest */,
+				062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -228,9 +274,34 @@
 			path = RemainFaithfulUITests;
 			sourceTree = "<group>";
 		};
+		F06171CD1099A845DDBB234D /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		C25024C7EBA6191BE43312B4 /* RemainFaithfulDeviceActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 14C193CBBD7DDFA7989E24E3 /* Build configuration list for PBXNativeTarget "RemainFaithfulDeviceActivity" */;
+			buildPhases = (
+				8245D93002C041DD13331E13 /* Sources */,
+				3E4EADFAC00ED4211F3AF1D6 /* Frameworks */,
+				5B2C3BC738E3C44DA525EAC8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RemainFaithfulDeviceActivity;
+			productName = RemainFaithfulDeviceActivity;
+			productReference = 062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		CF100000000000000000000A /* RemainFaithful */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CF1000000000000000000002 /* Build configuration list for PBXNativeTarget "RemainFaithful" */;
@@ -244,6 +315,7 @@
 			);
 			dependencies = (
 				CF1000000000000000000029 /* PBXTargetDependency */,
+				C015F24860D6CCCB02B71522 /* PBXTargetDependency */,
 			);
 			name = RemainFaithful;
 			packageProductDependencies = (
@@ -342,11 +414,19 @@
 				CF1000000000000000000023 /* RemainFaithfulBroadcast */,
 				CF5000000000000000000051 /* RemainFaithfulTests */,
 				CF5000000000000000000061 /* RemainFaithfulUITests */,
+				C25024C7EBA6191BE43312B4 /* RemainFaithfulDeviceActivity */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5B2C3BC738E3C44DA525EAC8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CF1000000000000000000015 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -380,6 +460,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		8245D93002C041DD13331E13 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE769AD83ECF543F758EDAE1 /* DeviceActivityMonitorExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CF1000000000000000000014 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -437,6 +525,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		C015F24860D6CCCB02B71522 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RemainFaithfulDeviceActivity;
+			target = C25024C7EBA6191BE43312B4 /* RemainFaithfulDeviceActivity */;
+			targetProxy = CF1454429B9464075FDC4AA6 /* PBXContainerItemProxy */;
+		};
 		CF1000000000000000000029 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CF1000000000000000000023 /* RemainFaithfulBroadcast */;
@@ -455,6 +549,57 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		44D7AE31AE5C978141C1D060 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.DeviceActivityMonitor;
+				PRODUCT_NAME = RemainFaithfulDeviceActivity;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Release;
+		};
+		A20E4080A486FBE273CB7179 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.DeviceActivityMonitor;
+				PRODUCT_NAME = RemainFaithfulDeviceActivity;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Debug;
+		};
 		CF1000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -732,6 +877,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		14C193CBBD7DDFA7989E24E3 /* Build configuration list for PBXNativeTarget "RemainFaithfulDeviceActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44D7AE31AE5C978141C1D060 /* Release */,
+				A20E4080A486FBE273CB7179 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		CF1000000000000000000001 /* Build configuration list for PBXProject "RemainFaithful" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
