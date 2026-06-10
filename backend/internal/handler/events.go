@@ -152,7 +152,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 			payload := map[string]any{
 				"aps": map[string]any{
 					"alert": map[string]string{
-						"title": alertTitle(capturedSeverity),
+						"title": alertTitle(capturedSeverity, capturedCategory),
 						"body":  alertBody(capturedCaller, capturedCategory, capturedSeverity),
 					},
 					"sound": "default",
@@ -186,8 +186,11 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// alertTitle returns a push notification title based on severity.
-func alertTitle(severity string) string {
+// alertTitle returns a push notification title based on category and severity.
+func alertTitle(severity, category string) string {
+	if category == "app_usage" {
+		return "App Usage Alert"
+	}
 	switch severity {
 	case "severe":
 		return "Accountability Alert"
@@ -200,6 +203,9 @@ func alertTitle(severity string) string {
 
 // alertBody returns a conversation-starter notification body.
 func alertBody(name, category, severity string) string {
+	if category == "app_usage" {
+		return fmt.Sprintf("%s spent 1+ minute today in an app they're monitoring. A quick check-in shows you care.", name)
+	}
 	if severity == "severe" {
 		switch category {
 		case "self_harm":
