@@ -127,9 +127,20 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.DB.QueryContext(r.Context(), `
-		SELECT gm.user_id, gm.role, gm.joined_at, u.name, u.email
+		SELECT gm.user_id, gm.role, gm.joined_at, u.name, u.email,
+		       stats.flags_last_30, stats.streak_days
 		FROM   group_members gm
 		JOIN   users u ON u.id = gm.user_id
+		JOIN   LATERAL (
+		    SELECT
+		        COUNT(*) FILTER (WHERE e.timestamp > NOW() - INTERVAL '30 days') AS flags_last_30,
+		        COALESCE(
+		            (NOW()::date - MAX(e.timestamp)::date),
+		            (NOW()::date - gm.joined_at::date)
+		        )                                                                  AS streak_days
+		    FROM events e
+		    WHERE e.user_id = gm.user_id
+		) stats ON TRUE
 		WHERE  gm.group_id = $1
 		ORDER  BY gm.joined_at ASC
 	`, groupID)
@@ -145,16 +156,19 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 		Email string `json:"email"`
 	}
 	type member struct {
-		UserID   int64    `json:"user_id"`
-		Role     string   `json:"role"`
-		JoinedAt string   `json:"joined_at"`
-		User     userInfo `json:"user"`
+		UserID      int64    `json:"user_id"`
+		Role        string   `json:"role"`
+		JoinedAt    string   `json:"joined_at"`
+		User        userInfo `json:"user"`
+		FlagsLast30 int      `json:"flags_last_30"`
+		StreakDays  int      `json:"streak_days"`
 	}
 
 	members := []member{}
 	for rows.Next() {
 		var m member
-		if err := rows.Scan(&m.UserID, &m.Role, &m.JoinedAt, &m.User.Name, &m.User.Email); err != nil {
+		if err := rows.Scan(&m.UserID, &m.Role, &m.JoinedAt, &m.User.Name, &m.User.Email,
+			&m.FlagsLast30, &m.StreakDays); err != nil {
 			continue
 		}
 		m.User.ID = m.UserID

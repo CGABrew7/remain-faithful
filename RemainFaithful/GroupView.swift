@@ -231,7 +231,14 @@ struct GroupView: View {
             let group = try await APIClient.shared.getGroup(id: primaryGroupID)
             liveGroupName = group.name
             liveMembers = (group.members ?? []).map { m in
-                GroupMember(userId: m.userId, name: m.user.name, streak: 0, health: .strong)
+                let health: AccountabilityHealth
+                switch m.flagsLast30 {
+                case 0:    health = .strong
+                case 1, 2: health = .watchful
+                default:   health = .struggling
+                }
+                return GroupMember(userId: m.userId, name: m.user.name,
+                                   streak: m.streakDays, health: health)
             }
         } catch {
             loadError = error.localizedDescription

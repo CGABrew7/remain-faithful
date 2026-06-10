@@ -102,10 +102,14 @@ struct RemoteGroupMember: Decodable {
     let role: String
     let joinedAt: String
     let user: RemoteUser
+    let flagsLast30: Int
+    let streakDays: Int
     enum CodingKeys: String, CodingKey {
         case role, user
-        case userId = "user_id"
-        case joinedAt = "joined_at"
+        case userId      = "user_id"
+        case joinedAt    = "joined_at"
+        case flagsLast30 = "flags_last_30"
+        case streakDays  = "streak_days"
     }
 }
 
