@@ -60,6 +60,18 @@ final class AuthState: ObservableObject {
         DispatchQueue.main.async { self.currentUser = updated }
     }
 
+    func refreshFromAPI() async {
+        guard isAuthenticated else { return }
+        guard let user = try? await APIClient.shared.me() else { return }
+        let updated = StoredUser(id: user.id, name: user.name, email: user.email, createdAt: user.createdAt)
+        if let data = try? JSONEncoder().encode(updated) {
+            keychain.setData(data, for: "currentUser")
+        }
+        UserDefaults.standard.set(user.name,  forKey: "userName")
+        UserDefaults.standard.set(user.email, forKey: "userEmail")
+        DispatchQueue.main.async { self.currentUser = updated }
+    }
+
     func clearSession() {
         inMemoryToken = nil
         keychain.delete("authToken")

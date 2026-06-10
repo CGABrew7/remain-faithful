@@ -230,6 +230,7 @@ private let weekClean = [true, true, false, true, true, true, false]
 
 private func computeStreak(from remoteEvents: [RemoteEvent],
                             accountCreated: Date?) -> (days: Int, best: Int, week: [Bool]) {
+    if accountCreated == nil { return (0, 0, Array(repeating: false, count: 7)) }
     let cal = Calendar.current
     let fmt = DateFormatter()
     fmt.dateFormat = "yyyy-MM-dd"
@@ -323,11 +324,11 @@ struct DashboardView: View {
     @State private var events:           [ActivityEvent]  = []
     @State private var streakDays:       Int              = 0
     @State private var streakBest:       Int              = 0
-    @State private var streakWeek:       [Bool]           = Array(repeating: true, count: 7)
+    @State private var streakWeek:       [Bool]           = Array(repeating: false, count: 7)
     @State private var showDonation:     Bool             = false
     @State private var isLoadingEvents   = false
     @State private var eventsLoadError:  String?
-    @State private var isBroadcasting   = true
+    @State private var isBroadcasting   = false
 
     private var shouldShowDonateBanner: Bool {
         guard !hasDonated else { return false }
@@ -355,11 +356,12 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     headerRow
-                    if !isBroadcasting {
+                    if isBroadcasting {
+                        StatusCard(isBroadcasting: true)
+                    } else {
                         BroadcastPausedBanner()
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
-                    StatusCard(isBroadcasting: isBroadcasting)
                     VerseCard()
                     StreakCard(days: streakDays, best: streakBest, week: streakWeek)
                     ActivitySection(events: events,

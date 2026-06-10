@@ -67,8 +67,10 @@ struct RemainFaithfulApp: App {
                 try? await APIClient.shared.refreshTokenIfNeeded()
                 // Drain any events queued by the broadcast extension while the app was closed.
                 await EventProcessor.shared.processPendingEvents()
-                // Refresh APNs device token on every authenticated launch.
                 if AuthState.shared.isAuthenticated {
+                    // Refresh stored user from API so createdAt is always current
+                    // (stale Keychain snapshots may predate the createdAt field).
+                    await AuthState.shared.refreshFromAPI()
                     NotificationService.shared.ensureRegisteredIfAuthorized()
                 }
             }
