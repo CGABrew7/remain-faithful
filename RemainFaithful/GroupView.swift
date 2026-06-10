@@ -967,7 +967,7 @@ private struct InviteSheet: View {
     @State private var copied       = false
     @State private var inviteError: String?
 
-    private let inviteCode = "remainfaithful.app/join/ib-4x9k"
+    private var inviteCode: String { "remainfaithful.app/join/\(groupID)" }
     private var inviteURL: URL { URL(string: "https://\(inviteCode)") ?? URL(string: "https://remainfaithful.app")! }
     private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
 
