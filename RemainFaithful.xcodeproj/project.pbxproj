@@ -8,8 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */; };
+		2665C2D9BF6D50BC7D667208 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53205080DD5CB66E93B07EAD /* UIKit.framework */; };
 		369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */; };
+		650ED6E8E1562A9E6F7B8DFD /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBFB79EBC8DDF4F495AF80B /* ShieldConfigurationExtension.swift */; };
+		7CBF6CD5000785890E729A86 /* RemainFaithfulShieldConfig.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E5EE199CFE102F01D9039E99 /* RemainFaithfulShieldConfig.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A64B8771DC269E569F540247 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */; };
+		ADAEDC95E7DD3992B9F68BA6 /* AppIcon-1024.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CDFD98843615C529873A74F /* AppIcon-1024.png */; };
+		B9E3FBF755AC25C73096F8A5 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA9CF2E3CCF78F4066943E08 /* ManagedSettings.framework */; };
 		B9FBE0AAE00A1EEF84DD985F /* ScreenTimeMonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */; };
 		CE769AD83ECF543F758EDAE1 /* DeviceActivityMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D2CBE57E1E412B8583786C0 /* DeviceActivityMonitorExtension.swift */; };
 		CF1000000000000000000010 /* RemainFaithfulApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000000B /* RemainFaithfulApp.swift */; };
@@ -41,9 +46,17 @@
 		CF5000000000000000000033 /* NotificationRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000013 /* NotificationRoutingTests.swift */; };
 		CF5000000000000000000040 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5000000000000000000020 /* OnboardingUITests.swift */; };
 		D39FA2F5F3CCBF2E9238DFA3 /* RemainFaithfulDeviceActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DFC0FBC053BAE487D457D125 /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1449106D2018917FAF7D08EE /* ManagedSettingsUI.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		7150E91E7155C236154AB813 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CF1000000000000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 79AC8D8C1087C0A223C54B67;
+			remoteInfo = RemainFaithfulShieldConfig;
+		};
 		CF100000000000000000002A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CF1000000000000000000009 /* Project object */;
@@ -83,6 +96,7 @@
 			files = (
 				CF1000000000000000000028 /* RemainFaithfulBroadcast.appex in Embed Foundation Extensions */,
 				D39FA2F5F3CCBF2E9238DFA3 /* RemainFaithfulDeviceActivity.appex in Embed Foundation Extensions */,
+				7CBF6CD5000785890E729A86 /* RemainFaithfulShieldConfig.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -91,11 +105,18 @@
 
 /* Begin PBXFileReference section */
 		062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulDeviceActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1449106D2018917FAF7D08EE /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
+		2CDFD98843615C529873A74F /* AppIcon-1024.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "AppIcon-1024.png"; sourceTree = "<group>"; };
 		32BAB7718C4E46EE355F0F39 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		38C8BA6B71076BB00F097166 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
 		3D2CBE57E1E412B8583786C0 /* DeviceActivityMonitorExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeviceActivityMonitorExtension.swift; sourceTree = "<group>"; };
 		490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivitySelectionManager.swift; sourceTree = "<group>"; };
+		53205080DD5CB66E93B07EAD /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		5F794A6955CDF454D6EA4322 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenTimeMonitoringView.swift; sourceTree = "<group>"; };
+		88F737CD62838DCD85A5F50D /* RemainFaithfulShieldConfig.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulShieldConfig.entitlements; sourceTree = "<group>"; };
+		8A8CF741CEB65744CAA53BCF /* ShieldConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShieldConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ShieldConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FamilyControlsManager.swift; sourceTree = "<group>"; };
 		CF100000000000000000000B /* RemainFaithfulApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainFaithfulApp.swift; sourceTree = "<group>"; };
 		CF100000000000000000000C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -131,7 +152,13 @@
 		CF5000000000000000000020 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		CF5000000000000000000050 /* RemainFaithfulTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RemainFaithfulTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF5000000000000000000060 /* RemainFaithfulUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RemainFaithfulUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBBFB79EBC8DDF4F495AF80B /* ShieldConfigurationExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldConfigurationExtension.swift; sourceTree = "<group>"; };
+		DED3765637B74844B7025274 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DED744307DF9984BECD3B5EA /* RemainFaithfulDeviceActivity.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulDeviceActivity.entitlements; sourceTree = "<group>"; };
+		E4AA42329718A13C17172E68 /* ShieldConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShieldConfiguration.framework; path = System/Library/Frameworks/ShieldConfiguration.framework; sourceTree = SDKROOT; };
+		E5EE199CFE102F01D9039E99 /* RemainFaithfulShieldConfig.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = RemainFaithfulShieldConfig.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA9CF2E3CCF78F4066943E08 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ManagedSettings.framework; sourceTree = DEVELOPER_DIR; };
+		F6A655C8ECB765BDBE5CD24C /* RemainFaithfulShieldConfig.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulShieldConfig.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +167,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				A64B8771DC269E569F540247 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		88CBFA0B875BC651541871A3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9E3FBF755AC25C73096F8A5 /* ManagedSettings.framework in Frameworks */,
+				DFC0FBC053BAE487D457D125 /* ManagedSettingsUI.framework in Frameworks */,
+				2665C2D9BF6D50BC7D667208 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,6 +199,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7A4F9E2F05AAC1283F30A60D /* RemainFaithfulShieldConfig */ = {
+			isa = PBXGroup;
+			children = (
+				DBBFB79EBC8DDF4F495AF80B /* ShieldConfigurationExtension.swift */,
+				5F794A6955CDF454D6EA4322 /* Info.plist */,
+				88F737CD62838DCD85A5F50D /* RemainFaithfulShieldConfig.entitlements */,
+				2CDFD98843615C529873A74F /* AppIcon-1024.png */,
+			);
+			name = RemainFaithfulShieldConfig;
+			path = RemainFaithfulShieldConfig;
+			sourceTree = "<group>";
+		};
 		8AD013D8FC5B8AFFC531AD8E /* RemainFaithfulDeviceActivity */ = {
 			isa = PBXGroup;
 			children = (
@@ -177,6 +226,9 @@
 			isa = PBXGroup;
 			children = (
 				F06171CD1099A845DDBB234D /* iOS */,
+				E4AA42329718A13C17172E68 /* ShieldConfiguration.framework */,
+				38C8BA6B71076BB00F097166 /* ManagedSettings.framework */,
+				DED3765637B74844B7025274 /* UIKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -191,6 +243,7 @@
 				CF1000000000000000000008 /* Products */,
 				984C3679981C78BB4D533B4A /* Frameworks */,
 				8AD013D8FC5B8AFFC531AD8E /* RemainFaithfulDeviceActivity */,
+				7A4F9E2F05AAC1283F30A60D /* RemainFaithfulShieldConfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -202,6 +255,8 @@
 				CF5000000000000000000050 /* RemainFaithfulTests.xctest */,
 				CF5000000000000000000060 /* RemainFaithfulUITests.xctest */,
 				062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */,
+				F6A655C8ECB765BDBE5CD24C /* RemainFaithfulShieldConfig.appex */,
+				E5EE199CFE102F01D9039E99 /* RemainFaithfulShieldConfig.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -278,6 +333,10 @@
 			isa = PBXGroup;
 			children = (
 				490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */,
+				8A8CF741CEB65744CAA53BCF /* ShieldConfiguration.framework */,
+				EA9CF2E3CCF78F4066943E08 /* ManagedSettings.framework */,
+				53205080DD5CB66E93B07EAD /* UIKit.framework */,
+				1449106D2018917FAF7D08EE /* ManagedSettingsUI.framework */,
 			);
 			name = iOS;
 			sourceTree = "<group>";
@@ -285,6 +344,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		79AC8D8C1087C0A223C54B67 /* RemainFaithfulShieldConfig */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 96F769D8A5D79234235546C6 /* Build configuration list for PBXNativeTarget "RemainFaithfulShieldConfig" */;
+			buildPhases = (
+				41864BA568D6A0C41B17C097 /* Sources */,
+				88CBFA0B875BC651541871A3 /* Frameworks */,
+				8CB3B0FD7E1E095C0F5F736F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RemainFaithfulShieldConfig;
+			productName = RemainFaithfulShieldConfig;
+			productReference = F6A655C8ECB765BDBE5CD24C /* RemainFaithfulShieldConfig.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		C25024C7EBA6191BE43312B4 /* RemainFaithfulDeviceActivity */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 14C193CBBD7DDFA7989E24E3 /* Build configuration list for PBXNativeTarget "RemainFaithfulDeviceActivity" */;
@@ -316,6 +392,7 @@
 			dependencies = (
 				CF1000000000000000000029 /* PBXTargetDependency */,
 				C015F24860D6CCCB02B71522 /* PBXTargetDependency */,
+				13B607C752CEB682198F02DE /* PBXTargetDependency */,
 			);
 			name = RemainFaithful;
 			packageProductDependencies = (
@@ -415,6 +492,7 @@
 				CF5000000000000000000051 /* RemainFaithfulTests */,
 				CF5000000000000000000061 /* RemainFaithfulUITests */,
 				C25024C7EBA6191BE43312B4 /* RemainFaithfulDeviceActivity */,
+				79AC8D8C1087C0A223C54B67 /* RemainFaithfulShieldConfig */,
 			);
 		};
 /* End PBXProject section */
@@ -424,6 +502,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8CB3B0FD7E1E095C0F5F736F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ADAEDC95E7DD3992B9F68BA6 /* AppIcon-1024.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,6 +546,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		41864BA568D6A0C41B17C097 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				650ED6E8E1562A9E6F7B8DFD /* ShieldConfigurationExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8245D93002C041DD13331E13 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -525,6 +619,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		13B607C752CEB682198F02DE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 79AC8D8C1087C0A223C54B67 /* RemainFaithfulShieldConfig */;
+			targetProxy = 7150E91E7155C236154AB813 /* PBXContainerItemProxy */;
+		};
 		C015F24860D6CCCB02B71522 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = RemainFaithfulDeviceActivity;
@@ -549,6 +648,24 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		04122C5355F9D10DDAAB501A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.ShieldConfig;
+				PRODUCT_NAME = RemainFaithfulShieldConfig;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		44D7AE31AE5C978141C1D060 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -572,6 +689,25 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				WRAPPER_EXTENSION = appex;
+			};
+			name = Release;
+		};
+		778F5EEEDBCCB86E1C36AA9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.ShieldConfig;
+				PRODUCT_NAME = RemainFaithfulShieldConfig;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -882,6 +1018,15 @@
 			buildConfigurations = (
 				44D7AE31AE5C978141C1D060 /* Release */,
 				A20E4080A486FBE273CB7179 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		96F769D8A5D79234235546C6 /* Build configuration list for PBXNativeTarget "RemainFaithfulShieldConfig" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				778F5EEEDBCCB86E1C36AA9A /* Release */,
+				04122C5355F9D10DDAAB501A /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
