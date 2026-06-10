@@ -677,20 +677,89 @@ private struct StreakCard: View {
 // MARK: - Verse card
 
 private struct VerseCard: View {
+    private static let verses: [(text: String, ref: String)] = [
+        ("Watch, stand fast in the faith, be brave, be strong.",
+         "1 Corinthians 16:13"),
+        ("Flee from sexual immorality. Every other sin a person commits is outside the body, but the sexually immoral person sins against his own body.",
+         "1 Corinthians 6:18"),
+        ("Submit yourselves therefore to God. Resist the devil, and he will flee from you.",
+         "James 4:7"),
+        ("No temptation has overtaken you that is not common to man. God is faithful, and he will not let you be tempted beyond your ability.",
+         "1 Corinthians 10:13"),
+        ("I have stored up your word in my heart, that I might not sin against you.",
+         "Psalm 119:11"),
+        ("Blessed is the man who remains steadfast under trial, for when he has stood the test he will receive the crown of life.",
+         "James 1:12"),
+        ("Iron sharpens iron, and one man sharpens another.",
+         "Proverbs 27:17"),
+        ("Create in me a clean heart, O God, and renew a right spirit within me.",
+         "Psalm 51:10"),
+        ("Walk by the Spirit, and you will not gratify the desires of the flesh.",
+         "Galatians 5:16"),
+        ("Put on the whole armor of God, that you may be able to stand against the schemes of the devil.",
+         "Ephesians 6:11"),
+        ("I can do all things through him who strengthens me.",
+         "Philippians 4:13"),
+        ("For everyone who has been born of God overcomes the world. And this is the victory that has overcome the world — our faith.",
+         "1 John 5:4"),
+        ("Do you not know that your body is a temple of the Holy Spirit within you, whom you have from God? You are not your own.",
+         "1 Corinthians 6:19"),
+        ("Set your minds on things that are above, not on things that are on earth.",
+         "Colossians 3:2"),
+        ("Finally, brothers, whatever is true, whatever is honorable, whatever is just, whatever is pure — think about these things.",
+         "Philippians 4:8"),
+        ("If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness.",
+         "1 John 1:9"),
+        ("How can a young man keep his way pure? By guarding it according to your word.",
+         "Psalm 119:9"),
+        ("For the grace of God has appeared, bringing salvation for all people, training us to renounce ungodliness and worldly passions.",
+         "Titus 2:11–12"),
+        ("Confess your sins to one another and pray for one another, that you may be healed.",
+         "James 5:16"),
+        ("He who conceals his transgressions will not prosper, but he who confesses and forsakes them will obtain mercy.",
+         "Proverbs 28:13"),
+        ("Be sober-minded; be watchful. Your adversary the devil prowls around like a roaring lion, seeking someone to devour.",
+         "1 Peter 5:8"),
+        ("Therefore, since we are surrounded by so great a cloud of witnesses, let us lay aside every weight, and sin which clings so closely.",
+         "Hebrews 12:1"),
+        ("The Lord will fight for you; you need only to be still.",
+         "Exodus 14:14"),
+        ("For we do not have a high priest who is unable to sympathize with our weaknesses, but one who in every respect has been tempted as we are, yet without sin.",
+         "Hebrews 4:15"),
+        ("But I say, walk by the Spirit, and you will not gratify the desires of the flesh.",
+         "Galatians 5:16"),
+        ("Or do you not know that the unrighteous will not inherit the kingdom of God? Do not be deceived.",
+         "1 Corinthians 6:9"),
+        ("The name of the Lord is a strong tower; the righteous man runs into it and is safe.",
+         "Proverbs 18:10"),
+        ("So flee youthful passions and pursue righteousness, faith, love, and peace, along with those who call on the Lord from a pure heart.",
+         "2 Timothy 2:22"),
+        ("For the weapons of our warfare are not of the flesh but have divine power to destroy strongholds.",
+         "2 Corinthians 10:4"),
+        ("And we all, with unveiled face, beholding the glory of the Lord, are being transformed into the same image from one degree of glory to another.",
+         "2 Corinthians 3:18"),
+    ]
+
+    private static var todaysVerse: (text: String, ref: String) {
+        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        return verses[(dayOfYear - 1) % verses.count]
+    }
+
     var body: some View {
+        let verse = Self.todaysVerse
         VStack(alignment: .leading, spacing: 10) {
             Text("VERSE OF THE DAY")
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(Color.rfGold.opacity(0.75))
                 .kerning(1.4)
 
-            Text("\"Watch, stand fast in the faith, be brave, be strong.\"")
+            Text("\u{201C}\(verse.text)\u{201D}")
                 .font(.system(size: 14, weight: .medium, design: .serif))
                 .foregroundStyle(.white)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("— 1 Corinthians 16:13")
+            Text("— \(verse.ref)")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.white.opacity(0.45))
         }
