@@ -118,7 +118,7 @@ export default function HowItWorksPage() {
             <ModeCard
               title="Small Group"
               points={[
-                'Up to 20 members in a single group',
+                'Up to 12 members in a single group',
                 'Group leader (pastor or facilitator) can view aggregate dashboards',
                 'Members can choose to share with all group members or leader only',
                 'Ideal for men\'s ministry, discipleship cohorts, or Bible study groups',
@@ -240,14 +240,12 @@ export default function HowItWorksPage() {
       <section className="py-16 border-t border-[#1E3050]">
         <div className="max-w-xl mx-auto px-4 text-center">
           <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">Ready to start?</h2>
-          <p className="text-[#8A9BB0] mb-8">Download Remain Faithful and invite your first partner today.</p>
+          <p className="text-[#8A9BB0] mb-8">Join the waitlist and be among the first to use Remain Faithful when it launches.</p>
           <a
-            href="https://apps.apple.com"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/#waitlist"
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200"
           >
-            Download for iPhone
+            Join the Waitlist
           </a>
         </div>
       </section>
