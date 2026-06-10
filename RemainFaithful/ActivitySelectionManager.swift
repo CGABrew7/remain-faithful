@@ -184,6 +184,23 @@ final class ActivitySelectionManager: ObservableObject {
         defaults?.set(updated, forKey: "pendingRawEvents")
     }
 
+    // MARK: - App usage prompt
+
+    // Returns the timestamp of the most recent DeviceActivity threshold crossing
+    // if it occurred within the last 4 hours, nil otherwise.
+    var recentAppUsageDate: Date? {
+        let ts = defaults?.double(forKey: "lastAppUsageTimestamp") ?? 0
+        guard ts > 0 else { return nil }
+        let date = Date(timeIntervalSince1970: ts)
+        return Date().timeIntervalSince(date) < 4 * 3600 ? date : nil
+    }
+
+    // Called after the user acts on the prompt (dismisses or taps Start Monitoring)
+    // so it doesn't reappear until the next DeviceActivity threshold crossing.
+    func clearAppUsagePrompt() {
+        defaults?.removeObject(forKey: "lastAppUsageTimestamp")
+    }
+
     // MARK: - Selection summary
 
     var selectionSummary: String {

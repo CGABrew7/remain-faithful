@@ -45,6 +45,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // guaranteeing delivery even if the direct POST below fails.
         enqueue(id: id, timestamp: timestamp, summary: summary)
 
+        // Stamp the alert time so the main app can surface a broadcast prompt on foreground.
+        defaults?.set(timestamp, forKey: "lastAppUsageTimestamp")
+
         // Attempt direct backend POST — same pattern as the broadcast extension.
         Task { await post(id: id, timestamp: timestamp, summary: summary) }
     }

@@ -328,7 +328,8 @@ struct DashboardView: View {
     @State private var showDonation:     Bool             = false
     @State private var isLoadingEvents   = false
     @State private var eventsLoadError:  String?
-    @State private var isBroadcasting   = false
+    @State private var isBroadcasting       = false
+    @State private var showAppUsagePrompt   = false
 
     private var shouldShowDonateBanner: Bool {
         guard !hasDonated else { return false }
@@ -361,6 +362,19 @@ struct DashboardView: View {
                     } else {
                         BroadcastPausedBanner()
                             .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    if showAppUsagePrompt && !isBroadcasting {
+                        AppUsagePromptBanner(
+                            onStart:   {
+                                ActivitySelectionManager.shared.clearAppUsagePrompt()
+                                showAppUsagePrompt = false
+                            },
+                            onDismiss: {
+                                ActivitySelectionManager.shared.clearAppUsagePrompt()
+                                withAnimation(.easeOut(duration: 0.2)) { showAppUsagePrompt = false }
+                            }
+                        )
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
                     VerseCard()
                     StreakCard(days: streakDays, best: streakBest, week: streakWeek)
@@ -426,6 +440,11 @@ struct DashboardView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             isBroadcasting = EventProcessor.shared.isBroadcasting()
+            if ActivitySelectionManager.shared.recentAppUsageDate != nil && !isBroadcasting {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    showAppUsagePrompt = true
+                }
+            }
         }
     }
 
@@ -958,6 +977,73 @@ private struct DonateBanner: View {
 }
 
 // MARK: - Broadcast Paused Banner
+
+private struct AppUsagePromptBanner: View {
+    let onStart:   () -> Void
+    let onDismiss: () -> Void
+
+    @State private var showInstructions = false
+
+    private let blue   = Color(red: 0.28, green: 0.56, blue: 0.95)
+    private let bgFill = Color(red: 0.07, green: 0.13, blue: 0.28)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(blue.opacity(0.18))
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "apps.iphone")
+                        .font(.system(size: 16))
+                        .foregroundStyle(blue)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Monitored app used today")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                    Text("Start a broadcast scan to deepen accountability")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.55))
+                }
+                Spacer()
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.35))
+                        .padding(6)
+                        .background(Circle().fill(Color.white.opacity(0.08)))
+                }
+            }
+
+            Button {
+                onStart()
+                showInstructions = true
+            } label: {
+                Text("Start Broadcast Scan")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(blue))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(bgFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(blue.opacity(0.35), lineWidth: 1.5)
+                )
+        )
+        .sheet(isPresented: $showInstructions) {
+            BroadcastInstructionsSheet()
+        }
+    }
+}
 
 private struct BroadcastPausedBanner: View {
     @State private var showInstructions = false
