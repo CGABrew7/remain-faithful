@@ -22,9 +22,11 @@ struct OnboardingView: View {
     @State private var email    = ""
     @State private var password = ""
 
+    // Total visible steps (step 0 = welcome, hidden from dots)
+    private let totalSteps = 4
+
     var body: some View {
         ZStack {
-            // Background gradient — shared across all steps
             LinearGradient(
                 colors: [Color.rfNavy, Color.rfNavyMid],
                 startPoint: .topLeading,
@@ -37,17 +39,25 @@ struct OnboardingView: View {
                     .padding(.top, 16)
                     .opacity(step == 0 ? 0 : 1)
 
-                // Swap step views with a push transition
                 ZStack {
-                    if step == 0 {
+                    switch step {
+                    case 0:
                         WelcomeStep(onContinue: advance, onSignIn: { showLogin = true })
                             .transition(.push(from: .trailing))
-                    } else {
+                    case 1:
                         CreateAccountStep(name: $name, email: $email, password: $password) {
                             storedName  = name
                             storedEmail = email
-                            hasCompletedOnboarding = true
                             NotificationService.shared.requestPermission()
+                            advance()
+                        }
+                        .transition(.push(from: .trailing))
+                    case 2:
+                        InvitePartnerStep(onContinue: advance, onSkip: advance)
+                            .transition(.push(from: .trailing))
+                    default:
+                        MonitoringSetupStep {
+                            hasCompletedOnboarding = true
                         }
                         .transition(.push(from: .trailing))
                     }
@@ -72,7 +82,7 @@ struct OnboardingView: View {
 
     private var stepDots: some View {
         HStack(spacing: 7) {
-            ForEach(0..<2) { i in
+            ForEach(1..<totalSteps) { i in
                 Capsule()
                     .fill(i == step ? Color.rfGold : Color.white.opacity(0.25))
                     .frame(width: i == step ? 20 : 7, height: 7)
@@ -310,6 +320,221 @@ private struct CreateAccountStep: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Step 3: Invite Partner
+
+private struct InvitePartnerStep: View {
+    let onContinue: () -> Void
+    let onSkip:     () -> Void
+
+    @FocusState private var emailFocused: Bool
+    @State private var partnerEmail = ""
+    @State private var isSending    = false
+    @State private var didSend      = false
+    @State private var errorMsg: String?
+
+    private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
+
+    private var canSend: Bool {
+        partnerEmail.contains("@") && partnerEmail.contains(".") && !isSending && !didSend
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            // Icon
+            ZStack {
+                Circle().fill(Color.rfGold.opacity(0.08)).frame(width: 130, height: 130)
+                Circle().fill(Color.rfGold.opacity(0.13)).frame(width: 90, height: 90)
+                Image(systemName: "person.2.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Color.rfGold)
+            }
+            .padding(.bottom, 36)
+
+            stepHeader(
+                title: "Invite your\naccountability partner",
+                subtitle: "Accountability works best with a trusted friend"
+            )
+            .padding(.bottom, 32)
+
+            VStack(spacing: 14) {
+                HStack(spacing: 12) {
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: 15))
+                        .foregroundStyle(emailFocused ? Color.rfGold : Color.white.opacity(0.45))
+                        .frame(width: 22)
+                    TextField("", text: $partnerEmail,
+                              prompt: Text("Partner's email address")
+                                  .foregroundColor(Color.white.opacity(0.38)))
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .foregroundStyle(.white)
+                        .focused($emailFocused)
+                        .submitLabel(.send)
+                        .onSubmit { sendInvite() }
+                }
+                .fieldStyle(isFocused: emailFocused)
+
+                if let err = errorMsg {
+                    Text(err)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                        .transition(.opacity)
+                }
+
+                RFButton(
+                    title: didSend ? "Invitation Sent!" : (isSending ? "Sending…" : "Send Invitation"),
+                    isEnabled: didSend || canSend
+                ) {
+                    didSend ? onContinue() : sendInvite()
+                }
+                .animation(.easeInOut(duration: 0.2), value: didSend)
+            }
+
+            Spacer()
+
+            Button(action: onSkip) {
+                Text("Skip for now")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.white.opacity(0.40))
+            }
+            .padding(.bottom, 48)
+        }
+        .padding(.horizontal, 24)
+        .animation(.easeInOut(duration: 0.2), value: errorMsg)
+    }
+
+    private func sendInvite() {
+        guard canSend else { return }
+        emailFocused = false
+        isSending = true
+        errorMsg  = nil
+        let addr = partnerEmail.trimmingCharacters(in: .whitespaces).lowercased()
+        Task {
+            do {
+                try await APIClient.shared.invitePartner(email: addr)
+                await MainActor.run {
+                    isSending = false
+                    didSend   = true
+                }
+            } catch {
+                await MainActor.run {
+                    isSending = false
+                    errorMsg  = "Couldn't send invite. Check the email and try again."
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Step 4: Monitoring setup
+
+private struct MonitoringSetupStep: View {
+    let onComplete: () -> Void
+
+    @ObservedObject private var fcManager = FamilyControlsManager.shared
+    @State private var didRequestScreenTime = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            ZStack {
+                Circle().fill(Color.rfGold.opacity(0.08)).frame(width: 130, height: 130)
+                Circle().fill(Color.rfGold.opacity(0.13)).frame(width: 90, height: 90)
+                Image(systemName: "shield.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Color.rfGold)
+            }
+            .padding(.bottom, 36)
+
+            stepHeader(
+                title: "Turn on\nmonitoring",
+                subtitle: "Two layers work together to keep you accountable"
+            )
+            .padding(.bottom, 32)
+
+            VStack(spacing: 12) {
+                tierRow(
+                    icon: "apps.iphone",
+                    tint: Color(red: 0.28, green: 0.56, blue: 0.95),
+                    title: "App Monitoring",
+                    detail: "Alerts your partner after 1 minute of use in any app you choose."
+                )
+                tierRow(
+                    icon: "eye.fill",
+                    tint: Color.rfGold,
+                    title: "Deep Scan",
+                    detail: "Visual monitoring during screen broadcasts detects sensitive content in real time."
+                )
+            }
+            .padding(.horizontal, 4)
+            .padding(.bottom, 28)
+
+            if fcManager.authorizationStatus != .approved {
+                RFButton(
+                    title: didRequestScreenTime ? "Waiting for permission…" : "Enable App Monitoring",
+                    isEnabled: !didRequestScreenTime
+                ) {
+                    didRequestScreenTime = true
+                    Task { await fcManager.requestAuthorization() }
+                }
+                .padding(.bottom, 12)
+            }
+
+            RFButton(
+                title: fcManager.authorizationStatus == .approved ? "Get Started" : "Continue Without Monitoring",
+                isEnabled: true,
+                action: onComplete
+            )
+
+            Text("Deep Scan starts from Control Center → Screen Recording → Remain Faithful")
+                .font(.system(size: 11))
+                .foregroundStyle(Color.white.opacity(0.30))
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.top, 14)
+
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
+    }
+
+    private func tierRow(icon: String, tint: Color, title: String, detail: String) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(tint.opacity(0.14))
+                    .frame(width: 44, height: 44)
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(tint)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
+                Text(detail)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.50))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.055))
+                .overlay(RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1))
+        )
     }
 }
 
