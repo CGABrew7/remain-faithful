@@ -204,28 +204,6 @@ private func hammingDistance(_ a: UInt64, _ b: UInt64) -> Int {
     (a ^ b).nonzeroBitCount
 }
 
-// MARK: - Event persistence (App Group shared container)
-
-private func writeEvent(_ event: DetectedEvent, to defaults: UserDefaults?) {
-    guard let defaults else { return }
-    let log = Logger(subsystem: "com.remainfaithful.app.broadcast", category: "events")
-    log.warning("Writing event: \(event.category) severity=\(event.severity) confidence=\(event.confidence) tier=\(event.tier) — \(event.summary)")
-    var events: [DetectedEvent] = []
-    if let data = defaults.data(forKey: "pendingEvents"),
-       let existing = try? JSONDecoder().decode([DetectedEvent].self, from: data) {
-        events = existing
-    }
-    events.append(event)
-    // Cap at 200 events; drop oldest unprocessed first
-    if events.count > 200 { events = Array(events.suffix(200)) }
-    if let data = try? JSONEncoder().encode(events) {
-        defaults.set(data, forKey: "pendingEvents")
-        defaults.set(event.severity, forKey: "lastEventSeverity")
-        defaults.set(event.summary, forKey: "lastEventSummary")
-        defaults.set(event.timestamp, forKey: "lastEventTimestamp")
-    }
-}
-
 // MARK: - Tier 3 cloud fallback
 
 private func sendToClassify(text: String, apiBase: String, defaults: UserDefaults?) async -> TextClassification? {
@@ -249,6 +227,48 @@ private func sendToClassify(text: String, apiBase: String, defaults: UserDefault
     return TextClassification(category: category, confidence: Float(conf))
 }
 
+// MARK: - Dedup store
+//
+// Thread-safe via Swift actor. Tracks 5-minute dedup windows per category|severity key.
+// record() returns true (suppress) if an identical event fired within the current window.
+// drainExpired() returns and clears windows that have elapsed with unsent suppressions
+// so a "continued activity" summary can be posted.
+
+private actor DedupStore {
+    struct Entry {
+        var windowStart: Date
+        var suppressedCount: Int
+    }
+
+    private let windowSeconds: TimeInterval
+    private var state: [String: Entry] = [:]
+
+    init(windowSeconds: TimeInterval) {
+        self.windowSeconds = windowSeconds
+    }
+
+    func record(key: String, now: Date = Date()) -> Bool {
+        if let entry = state[key], now.timeIntervalSince(entry.windowStart) < windowSeconds {
+            state[key]!.suppressedCount += 1
+            return true  // suppress
+        }
+        state[key] = Entry(windowStart: now, suppressedCount: 0)
+        return false  // new window — post immediately
+    }
+
+    func drainExpired(now: Date = Date()) -> [(category: String, severity: String, count: Int)] {
+        var result: [(String, String, Int)] = []
+        for (key, entry) in state where
+                now.timeIntervalSince(entry.windowStart) >= windowSeconds &&
+                entry.suppressedCount > 0 {
+            let parts = key.components(separatedBy: "|")
+            result.append((parts[0], parts.count > 1 ? parts[1] : "concerning", entry.suppressedCount))
+            state.removeValue(forKey: key)
+        }
+        return result
+    }
+}
+
 // MARK: - SampleHandler
 
 private let logger = Logger(subsystem: "com.remainfaithful.app.broadcast",
@@ -265,8 +285,10 @@ class SampleHandler: RPBroadcastSampleHandler {
     private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 
     // 3-second intervals balance detection accuracy with battery efficiency.
-    // A user cannot meaningfully view and dismiss problematic content faster than this interval.
     private var lastAnalysisTime: Date = Date()
+
+    // Rate-limit tier 1a hash detections before dedup takes over (avoids spawning 30 tasks/sec).
+    private var lastHashMatchTime: Date = .distantPast
 
     // Heartbeat: track last frame to report active vs idle every 2 minutes.
     private var _lastFrameTime: Date = .distantPast
@@ -276,9 +298,14 @@ class SampleHandler: RPBroadcastSampleHandler {
         set { frameTimeLock.withLock { _lastFrameTime = newValue } }
     }
     private var heartbeatTask: Task<Void, Never>?
+    private var retryTask:     Task<Void, Never>?
 
-    // Hash blocklist — populated from server-side list at broadcast start
+    // Hash blocklist — populated from server-side list at broadcast start.
     private var hashBlocklist: Set<UInt64> = []
+
+    // Dedup: identical category|severity events within a 5-minute window are suppressed.
+    // At most one "continued activity" summary is sent per expired window.
+    private let dedupStore = DedupStore(windowSeconds: 300)
 
     // MARK: - Lifecycle
 
@@ -289,6 +316,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         let policy = scaAnalyzer.analysisPolicy
         logger.info("Broadcast started — SCA policy: \(String(describing: policy))")
         startHeartbeatLoop()
+        startRetryLoop()
     }
 
     override func broadcastPaused() {
@@ -302,6 +330,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     override func broadcastFinished() {
         sharedDefaults?.set(false, forKey: "isBroadcasting")
         heartbeatTask?.cancel()
+        retryTask?.cancel()
         logger.info("Broadcast finished")
     }
 
@@ -318,17 +347,23 @@ class SampleHandler: RPBroadcastSampleHandler {
         // — Tier 1a: perceptual hash check (every frame, ~0.1 ms) —
         logger.debug("Frame received")
         let hash = dHash(from: ciImage, context: ciContext)
+        let now = Date()
         if hashBlocklist.contains(where: { hammingDistance($0, hash) < 10 }) {
-            logger.warning("Tier 1 hash match")
-            let event = makeEvent(
-                category: .explicitSexual, tier: 1, confidence: 1.0,
-                summary: "Explicit image detected (perceptual hash match)"
-            )
-            writeEvent(event, to: sharedDefaults)
+            // Rate-limit to one task per 3s; the dedup store handles the 5-min window.
+            if now.timeIntervalSince(lastHashMatchTime) >= 3.0 {
+                lastHashMatchTime = now
+                logger.warning("Tier 1 hash match")
+                let event = makeEvent(
+                    category: .explicitSexual, tier: 1, confidence: 1.0,
+                    summary: "Explicit image detected (perceptual hash match)"
+                )
+                Task.detached(priority: .utility) { [weak self] in
+                    await self?.handleEvent(event)
+                }
+            }
         }
 
         // — Full Tier 2 processing every 3 seconds —
-        let now = Date()
         guard now.timeIntervalSince(lastAnalysisTime) >= 3.0 else { return }
         lastAnalysisTime = now
         logger.info("Tier 2 analysis triggered")
@@ -375,7 +410,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                 category: .explicitSexual, tier: 1, confidence: 1.0,
                 summary: "Blocked domain detected"
             )
-            writeEvent(event, to: defaults)
+            await handleEvent(event)
             tier1Triggered = true
         }
         if !tier1Triggered && Tier1Rules.matchesKeyword(in: ocrText) {
@@ -384,7 +419,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                 category: .explicitSexual, tier: 1, confidence: 0.95,
                 summary: "Explicit keyword detected in screen text"
             )
-            writeEvent(event, to: defaults)
+            await handleEvent(event)
             tier1Triggered = true
         }
 
@@ -448,9 +483,156 @@ class SampleHandler: RPBroadcastSampleHandler {
                     confidence: finalConfidence,
                     summary: buildSummary(category: finalCategory, confidence: finalConfidence)
                 )
-                writeEvent(event, to: defaults)
+                await handleEvent(event)
             }
         }
+    }
+
+    // MARK: - Event handling with dedup
+
+    // Check the 5-minute dedup window. If the same category|severity fired within the
+    // current window, suppress. Otherwise post immediately and start a new window.
+    private func handleEvent(_ event: DetectedEvent) async {
+        let key = "\(event.category)|\(event.severity)"
+        let suppressed = await dedupStore.record(key: key)
+        if suppressed {
+            logger.info("Dedup suppressed \(key) within 5-min window")
+            return
+        }
+        logger.info("Dedup new window for \(key) — posting to backend")
+        await postEvent(event)
+    }
+
+    // MARK: - Direct upload to backend
+
+    private func uploadEvent(_ event: DetectedEvent) async -> Bool {
+        guard let defaults = sharedDefaults,
+              let apiBase  = defaults.string(forKey: "apiBaseURL"),
+              let token    = defaults.string(forKey: "authToken"),
+              let url      = URL(string: apiBase + "/events") else {
+            logger.warning("uploadEvent: missing apiBaseURL or authToken")
+            return false
+        }
+        let isoFmt = ISO8601DateFormatter()
+        isoFmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let tsStr = isoFmt.string(from: Date(timeIntervalSince1970: event.timestamp))
+
+        var req = URLRequest(url: url, timeoutInterval: 10)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let body: [String: Any] = [
+            "category":  event.category,
+            "severity":  event.severity,
+            "summary":   event.summary,
+            "timestamp": tsStr,
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: body) else { return false }
+        req.httpBody = data
+
+        do {
+            let (_, resp) = try await URLSession.shared.data(for: req)
+            if let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) {
+                logger.info("Event uploaded: \(event.category) \(event.severity)")
+                return true
+            }
+            let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
+            logger.warning("Event upload HTTP \(code)")
+            return false
+        } catch {
+            logger.warning("Event upload network error: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    private func postEvent(_ event: DetectedEvent) async {
+        let ok = await uploadEvent(event)
+        if !ok {
+            logger.warning("Event upload failed — writing to retry queue")
+            writeEventToRetryQueue(event)
+        }
+    }
+
+    // MARK: - Retry queue (network failures only)
+    //
+    // EventProcessor in the main app also drains this on foreground / BGAppRefreshTask,
+    // providing a second-chance drain if the extension is killed before retrying.
+
+    private func writeEventToRetryQueue(_ event: DetectedEvent) {
+        guard let defaults = sharedDefaults else { return }
+        var events: [DetectedEvent] = []
+        if let data = defaults.data(forKey: "pendingEvents"),
+           let existing = try? JSONDecoder().decode([DetectedEvent].self, from: data) {
+            events = existing.filter { !$0.processed }
+        }
+        events.append(event)
+        if events.count > 50 { events = Array(events.suffix(50)) }
+        if let data = try? JSONEncoder().encode(events) {
+            defaults.set(data, forKey: "pendingEvents")
+            defaults.set(event.severity,  forKey: "lastEventSeverity")
+            defaults.set(event.summary,   forKey: "lastEventSummary")
+            defaults.set(event.timestamp, forKey: "lastEventTimestamp")
+        }
+    }
+
+    // MARK: - Retry + continued-activity loop (60 s)
+
+    private func startRetryLoop() {
+        retryTask = Task.detached(priority: .utility) { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 60 * 1_000_000_000)
+                guard !Task.isCancelled else { break }
+                await self?.drainRetryQueue()
+                await self?.flushContinuedActivity()
+            }
+        }
+    }
+
+    private func drainRetryQueue() async {
+        guard let defaults = sharedDefaults,
+              let data   = defaults.data(forKey: "pendingEvents"),
+              var events = try? JSONDecoder().decode([DetectedEvent].self, from: data) else { return }
+        let pending = events.indices.filter { !events[$0].processed }
+        guard !pending.isEmpty else { return }
+        logger.info("Retry queue: draining \(pending.count) event(s)")
+        var changed = false
+        for i in pending {
+            let ok = await uploadEvent(events[i])
+            if ok {
+                events[i].processed = true
+                changed = true
+            } else {
+                break  // stop on first failure; try again next 60 s cycle
+            }
+        }
+        if changed, let newData = try? JSONEncoder().encode(events) {
+            defaults.set(newData, forKey: "pendingEvents")
+        }
+    }
+
+    // For each 5-minute window that has elapsed with suppressed detections,
+    // send exactly one "continued activity" summary event.
+    private func flushContinuedActivity() async {
+        let expired = await dedupStore.drainExpired()
+        for (cat, _, count) in expired {
+            let category = ContentCategory(rawValue: cat) ?? .explicitSexual
+            let summary  = continuedActivitySummary(category: category, count: count + 1)
+            let event    = makeEvent(category: category, tier: 2, confidence: 0.85, summary: summary)
+            logger.info("Sending continued-activity summary: \(summary)")
+            await postEvent(event)
+        }
+    }
+
+    private func continuedActivitySummary(category: ContentCategory, count: Int) -> String {
+        let base: String
+        switch category {
+        case .explicitSexual: base = "Explicit content"
+        case .gambling:       base = "Gambling content"
+        case .violence:       base = "Violent content"
+        case .selfHarm:       base = "Self-harm content"
+        case .clean:          base = "Activity"
+        }
+        return "\(base) — detected \(count) time\(count == 1 ? "" : "s") in 5 min"
     }
 
     // MARK: - Vision OCR
