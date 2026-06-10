@@ -238,3 +238,43 @@ func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
 		"joined_at": joinedAt,
 	})
 }
+
+// LeaveGroup removes the authenticated user from a specific group.
+// DELETE /groups/{id}/members/me
+func (h *H) LeaveGroup(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	groupID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid group id")
+		return
+	}
+
+	res, err := h.DB.ExecContext(r.Context(),
+		`DELETE FROM group_members WHERE group_id = $1 AND user_id = $2`,
+		groupID, userID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to leave group")
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		writeError(w, http.StatusNotFound, "not a member of this group")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// LeaveAllGroups removes the authenticated user from every group they belong to.
+// POST /groups/leave-all
+func (h *H) LeaveAllGroups(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	if _, err := h.DB.ExecContext(r.Context(),
+		`DELETE FROM group_members WHERE user_id = $1`, userID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to leave groups")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}

@@ -172,3 +172,29 @@ func (h *H) SetPrimaryPartner(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
+
+// DeleteRelationship removes an accountability partnership.
+// DELETE /relationships/{id}
+func (h *H) DeleteRelationship(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid relationship id")
+		return
+	}
+
+	res, err := h.DB.ExecContext(r.Context(),
+		`DELETE FROM relationships WHERE id = $1 AND user_id = $2`,
+		id, userID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to remove partner")
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		writeError(w, http.StatusNotFound, "relationship not found")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}

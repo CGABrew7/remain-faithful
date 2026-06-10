@@ -179,6 +179,10 @@ final class APIClient {
         try await get("/users/me")
     }
 
+    func updateMe(name: String, email: String) async throws -> RemoteUser {
+        try await put("/users/me", body: ["name": name, "email": email])
+    }
+
     // MARK: - Events
 
     func listEvents() async throws -> [RemoteEvent] {
@@ -215,6 +219,12 @@ final class APIClient {
         try await patchVoid("/alerts/\(alertID)/discussed")
     }
 
+    // MARK: - Relationships
+
+    func deleteRelationship(id: Int) async throws {
+        try await deleteVoid("/relationships/\(id)")
+    }
+
     // MARK: - Donations
 
     func createCheckoutSession(amountDollars: Int, monthly: Bool) async throws -> URL {
@@ -237,6 +247,14 @@ final class APIClient {
 
     func listMyGroups() async throws -> [RemoteGroup] {
         try await get("/groups")
+    }
+
+    func leaveGroup(groupID: Int) async throws {
+        try await deleteVoid("/groups/\(groupID)/members/me")
+    }
+
+    func leaveAllGroups() async throws {
+        try await postVoid("/groups/leave-all", body: [String: String]())
     }
 
     func getGroup(id: Int) async throws -> RemoteGroup {
@@ -339,6 +357,28 @@ final class APIClient {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)
         if auth { try attachToken(&req) }
+        let (data, resp) = try await session.data(for: req)
+        if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
+            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+        }
+    }
+
+    /// PUT that returns a decoded response body.
+    private func put<Body: Encodable, T: Decodable>(_ path: String,
+                                                     body: Body) async throws -> T {
+        try? await refreshTokenIfNeeded()
+        var req = try makeRequest(path, method: "PUT")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONEncoder().encode(body)
+        try attachToken(&req)
+        return try await send(req)
+    }
+
+    /// Fire-and-forget DELETE with no request body.
+    private func deleteVoid(_ path: String) async throws {
+        var req = try makeRequest(path, method: "DELETE")
+        try attachToken(&req)
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
             let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]

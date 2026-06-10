@@ -49,6 +49,17 @@ final class AuthState: ObservableObject {
         }
     }
 
+    func updateProfile(name: String, email: String) {
+        guard let user = currentUser else { return }
+        let updated = StoredUser(id: user.id, name: name, email: email, createdAt: user.createdAt)
+        if let data = try? JSONEncoder().encode(updated) {
+            keychain.setData(data, for: "currentUser")
+        }
+        UserDefaults.standard.set(name,  forKey: "userName")
+        UserDefaults.standard.set(email, forKey: "userEmail")
+        DispatchQueue.main.async { self.currentUser = updated }
+    }
+
     func clearSession() {
         inMemoryToken = nil
         keychain.delete("authToken")

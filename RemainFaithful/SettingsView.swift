@@ -9,7 +9,6 @@ struct SettingsView: View {
     @AppStorage("userEmail")            private var userEmail            = ""
     @AppStorage("monitoringActive")     private var monitoringActive     = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
-    @AppStorage("weeklyDigestEnabled")  private var weeklyDigestEnabled  = false
     @AppStorage("dataRetentionDays")    private var dataRetentionDays    = 30
 
     @Environment(\.openURL)       private var openURL
@@ -24,6 +23,7 @@ struct SettingsView: View {
     @State private var showManagePartners   = false
     @State private var showManageGroups     = false
     @State private var showHowItWorks       = false
+    @State private var showEditProfile      = false
 
     private var initials: String {
         let parts = userName.components(separatedBy: " ").filter { !$0.isEmpty }
@@ -63,6 +63,7 @@ struct SettingsView: View {
         .sheet(isPresented: $showManagePartners)  { ManagePartnersView() }
         .sheet(isPresented: $showManageGroups)    { ManageGroupsView() }
         .sheet(isPresented: $showHowItWorks)      { HowItWorksView() }
+        .sheet(isPresented: $showEditProfile)    { EditProfileSheet() }
         .sheet(isPresented: $showLeaveConfirm) {
             DestructiveConfirmSheet(
                 title: "Leave All Groups",
@@ -70,7 +71,10 @@ struct SettingsView: View {
                 warning: "All members of your accountability groups will be notified that you are leaving.",
                 confirmLabel: "Leave All Groups"
             ) {
-                UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                Task {
+                    try? await APIClient.shared.leaveAllGroups()
+                    UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                }
             }
         }
         .sheet(isPresented: $showDeleteConfirm) {
@@ -112,7 +116,7 @@ struct SettingsView: View {
 
             Spacer()
 
-            Button { } label: {
+            Button { showEditProfile = true } label: {
                 Text("Edit")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Color.rfGold)
@@ -155,11 +159,6 @@ struct SettingsView: View {
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "Notifications",
                  isOn: $notificationsEnabled)
-            rowDivider
-            TRow(icon: "envelope.fill",
-                 tint: Color(red: 0.65, green: 0.45, blue: 0.90),
-                 label: "Weekly Digest Email",
-                 isOn: $weeklyDigestEnabled)
         }
     }
 
@@ -550,8 +549,10 @@ private struct ManagePartnersView: View {
         .task { await loadPartners() }
         .alert("Remove Partner", isPresented: $showRemoveConfirm) {
             Button("Remove", role: .destructive) {
-                if let p = partnerToRemove {
-                    partners.removeAll { $0.id == p.id }
+                guard let p = partnerToRemove else { return }
+                Task {
+                    try? await APIClient.shared.deleteRelationship(id: p.relationshipID)
+                    await MainActor.run { partners.removeAll { $0.id == p.id } }
                 }
             }
             Button("Cancel", role: .cancel) { }
@@ -760,6 +761,247 @@ private struct ManagePartnersView: View {
     }
 }
 
+private struct GroupItem: Identifiable {
+    let id:   Int
+    let name: String
+}
+
+// MARK: - Group Invite Sheet
+
+private struct GroupInviteSheet: View {
+    let group: GroupItem
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var emailFocused: Bool
+    @State private var inviteEmail  = ""
+    @State private var isSending    = false
+    @State private var sentSuccess  = false
+    @State private var errorMsg: String?
+
+    private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
+            VStack(spacing: 0) {
+                dragIndicator()
+                sheetHeader(title: "Invite Member", subtitle: "Add someone to \(group.name)")
+                Divider().overlay(Color.white.opacity(0.08))
+                VStack(spacing: 16) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "envelope.fill")
+                            .font(.system(size: 15))
+                            .foregroundStyle(emailFocused ? Color.rfGold : Color.white.opacity(0.45))
+                            .frame(width: 22)
+                        TextField("", text: $inviteEmail,
+                                  prompt: Text("Member's email address").foregroundColor(Color.white.opacity(0.38)))
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .foregroundStyle(.white)
+                            .focused($emailFocused)
+                            .submitLabel(.send)
+                            .onSubmit { sendInvite() }
+                    }
+                    .padding(.horizontal, 18)
+                    .frame(height: 54)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white.opacity(emailFocused ? 0.11 : 0.07))
+                            .overlay(RoundedRectangle(cornerRadius: 14)
+                                .stroke(emailFocused ? Color.rfGold : Color.white.opacity(0.10), lineWidth: 1.5))
+                    )
+                    .animation(.easeInOut(duration: 0.18), value: emailFocused)
+
+                    if let err = errorMsg {
+                        Text(err).font(.system(size: 13)).foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                    }
+
+                    Button(action: sendInvite) {
+                        HStack(spacing: 10) {
+                            Image(systemName: sentSuccess ? "checkmark.circle.fill" : "paperplane.fill")
+                                .font(.system(size: 16))
+                            Text(sentSuccess ? "Invitation Sent!" : "Send Invitation")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundStyle(sentSuccess ? green : Color.rfNavy)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(RoundedRectangle(cornerRadius: 14)
+                            .fill(sentSuccess ? green.opacity(0.15) : (canSend ? Color.rfGold : Color.rfGold.opacity(0.35))))
+                    }
+                    .disabled(!canSend)
+                    .animation(.easeInOut(duration: 0.2), value: sentSuccess)
+                }
+                .padding(24)
+                Spacer()
+            }
+        }
+    }
+
+    private var canSend: Bool {
+        inviteEmail.contains("@") && inviteEmail.contains(".") && !sentSuccess && !isSending
+    }
+
+    private func sendInvite() {
+        guard canSend else { return }
+        emailFocused = false
+        errorMsg = nil
+        isSending = true
+        let email = inviteEmail
+        Task {
+            do {
+                try await APIClient.shared.groupEmailInvite(groupID: group.id, email: email)
+                await MainActor.run {
+                    withAnimation { sentSuccess = true }
+                    isSending = false
+                    inviteEmail = ""
+                }
+            } catch {
+                await MainActor.run {
+                    errorMsg = error.localizedDescription
+                    isSending = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Edit Profile Sheet
+
+private struct EditProfileSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var nameFocused:  Bool
+    @FocusState private var emailFocused: Bool
+    @State private var name:      String
+    @State private var email:     String
+    @State private var isSaving   = false
+    @State private var saveError: String?
+
+    init() {
+        let user = AuthState.shared.currentUser
+        _name  = State(initialValue: user?.name  ?? UserDefaults.standard.string(forKey: "userName")  ?? "")
+        _email = State(initialValue: user?.email ?? UserDefaults.standard.string(forKey: "userEmail") ?? "")
+    }
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
+            VStack(spacing: 0) {
+                dragIndicator()
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Edit Profile")
+                            .font(.system(size: 20, weight: .bold, design: .serif))
+                            .foregroundStyle(.white)
+                        Text("Update your name or email")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                    }
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.55))
+                            .padding(10)
+                            .background(Circle().fill(Color.white.opacity(0.09)))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+
+                Divider().overlay(Color.white.opacity(0.08))
+
+                VStack(spacing: 14) {
+                    inputField(icon: "person.fill", placeholder: "Full name",
+                               text: $name, focused: $nameFocused,
+                               keyboardType: .default, caps: .words)
+                    inputField(icon: "envelope.fill", placeholder: "Email address",
+                               text: $email, focused: $emailFocused,
+                               keyboardType: .emailAddress, caps: .never)
+
+                    if let err = saveError {
+                        Text(err).font(.system(size: 13)).foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                    }
+
+                    Button(action: save) {
+                        HStack(spacing: 10) {
+                            if isSaving { ProgressView().tint(Color.rfNavy).scaleEffect(0.9) }
+                            Text(isSaving ? "Saving…" : "Save Changes")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundStyle(canSave ? Color.rfNavy : Color.white.opacity(0.35))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(RoundedRectangle(cornerRadius: 14)
+                            .fill(canSave ? Color.rfGold : Color.white.opacity(0.08)))
+                    }
+                    .disabled(!canSave)
+                }
+                .padding(24)
+                Spacer()
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private var canSave: Bool {
+        !name.trimmingCharacters(in: .whitespaces).isEmpty &&
+        email.contains("@") && email.contains(".") && !isSaving
+    }
+
+    private func save() {
+        guard canSave else { return }
+        nameFocused  = false
+        emailFocused = false
+        saveError = nil
+        isSaving = true
+        let n = name.trimmingCharacters(in: .whitespaces)
+        let e = email.trimmingCharacters(in: .whitespaces).lowercased()
+        Task {
+            do {
+                _ = try await APIClient.shared.updateMe(name: n, email: e)
+                AuthState.shared.updateProfile(name: n, email: e)
+                await MainActor.run { isSaving = false }
+                dismiss()
+            } catch {
+                await MainActor.run {
+                    saveError = error.localizedDescription
+                    isSaving = false
+                }
+            }
+        }
+    }
+
+    private func inputField(icon: String, placeholder: String,
+                            text: Binding<String>,
+                            focused: FocusState<Bool>.Binding,
+                            keyboardType: UIKeyboardType,
+                            caps: TextInputAutocapitalization) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 15))
+                .foregroundStyle(focused.wrappedValue ? Color.rfGold : Color.white.opacity(0.45))
+                .frame(width: 22)
+            TextField("", text: text,
+                      prompt: Text(placeholder).foregroundColor(Color.white.opacity(0.38)))
+                .keyboardType(keyboardType)
+                .textInputAutocapitalization(caps)
+                .autocorrectionDisabled()
+                .foregroundStyle(.white)
+                .focused(focused)
+        }
+        .padding(.horizontal, 18)
+        .frame(height: 54)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(focused.wrappedValue ? 0.11 : 0.07))
+                .overlay(RoundedRectangle(cornerRadius: 14)
+                    .stroke(focused.wrappedValue ? Color.rfGold : Color.white.opacity(0.10), lineWidth: 1.5))
+        )
+        .animation(.easeInOut(duration: 0.18), value: focused.wrappedValue)
+    }
+}
+
 private struct PartnerItem: Identifiable {
     let id             = UUID()
     let relationshipID: Int
@@ -778,12 +1020,14 @@ private struct PartnerItem: Identifiable {
 private struct ManageGroupsView: View {
     @AppStorage("primaryGroupID") private var primaryGroupID = 0
     @Environment(\.dismiss) private var dismiss
-    @State private var showCreateGroup  = false
-    @State private var newGroupName     = ""
-    @State private var isCreating       = false
+    @State private var newGroupName      = ""
+    @State private var isCreating        = false
     @State private var createError: String?
-    @State private var showLeaveConfirm = false
-    @State private var groups: [String] = []
+    @State private var groupToLeave: GroupItem?
+    @State private var showLeaveConfirm  = false
+    @State private var groupForInvite: GroupItem?
+    @State private var showInviteSheet   = false
+    @State private var groups: [GroupItem] = []
     @FocusState private var groupNameFocused: Bool
 
     var body: some View {
@@ -805,18 +1049,32 @@ private struct ManageGroupsView: View {
         }
         .alert("Leave Group", isPresented: $showLeaveConfirm) {
             Button("Leave", role: .destructive) {
-                UserDefaults.standard.removeObject(forKey: "primaryGroupID")
-                groups = []
+                guard let g = groupToLeave else { return }
+                Task {
+                    try? await APIClient.shared.leaveGroup(groupID: g.id)
+                    await MainActor.run {
+                        groups.removeAll { $0.id == g.id }
+                        if primaryGroupID == g.id {
+                            UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                        }
+                    }
+                }
             }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("You will be removed from this group and all members will be notified.")
+            Text("You will be removed from \(groupToLeave?.name ?? "this group") and all members will be notified.")
+        }
+        .sheet(isPresented: $showInviteSheet) {
+            if let g = groupForInvite {
+                GroupInviteSheet(group: g)
+                    .presentationDetents([.medium])
+            }
         }
         .task {
             guard let remoteGroups = try? await APIClient.shared.listMyGroups(),
                   !remoteGroups.isEmpty else { return }
-            if primaryGroupID == 0 { primaryGroupID = remoteGroups[0].id }
-            groups = remoteGroups.map(\.name)
+            groups = remoteGroups.map { GroupItem(id: $0.id, name: $0.name) }
+            if primaryGroupID == 0 { primaryGroupID = groups[0].id }
         }
     }
 
@@ -834,7 +1092,7 @@ private struct ManageGroupsView: View {
                     .padding(.vertical, 12)
             } else {
                 VStack(spacing: 0) {
-                    ForEach(groups, id: \.self) { groupName in
+                    ForEach(groups) { group in
                         VStack(spacing: 0) {
                             HStack(spacing: 14) {
                                 ZStack {
@@ -845,7 +1103,7 @@ private struct ManageGroupsView: View {
                                         .font(.system(size: 16))
                                         .foregroundStyle(Color.rfGold)
                                 }
-                                Text(groupName)
+                                Text(group.name)
                                     .font(.system(size: 15, weight: .semibold))
                                     .foregroundStyle(.white)
                                 Spacer()
@@ -854,8 +1112,12 @@ private struct ManageGroupsView: View {
                             .padding(.horizontal, 16)
 
                             HStack(spacing: 10) {
-                                actionChip(label: "Invite Member", icon: "person.badge.plus") { }
+                                actionChip(label: "Invite Member", icon: "person.badge.plus") {
+                                    groupForInvite = group
+                                    showInviteSheet = true
+                                }
                                 actionChip(label: "Leave Group", icon: "rectangle.portrait.and.arrow.right", isDestructive: true) {
+                                    groupToLeave = group
                                     showLeaveConfirm = true
                                 }
                             }
@@ -949,6 +1211,7 @@ private struct ManageGroupsView: View {
                 let group = try await APIClient.shared.createGroup(name: name)
                 await MainActor.run {
                     primaryGroupID = group.id
+                    groups.append(GroupItem(id: group.id, name: group.name))
                     newGroupName = ""
                     isCreating = false
                 }
