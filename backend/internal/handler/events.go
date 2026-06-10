@@ -35,6 +35,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	validCategories := map[string]bool{
 		"adult_content": true, "gambling": true,
 		"violence": true, "self_harm": true, "clean": true,
+		"app_usage": true,
 	}
 	validSeverities := map[string]bool{
 		"informational": true, "concerning": true, "severe": true,

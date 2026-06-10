@@ -42,6 +42,17 @@ struct RemoteEvent: Decodable {
     }
 }
 
+struct UserStats: Decodable {
+    let streakDays: Int
+    let bestStreak: Int
+    let week: [Bool]
+    enum CodingKeys: String, CodingKey {
+        case streakDays = "streak_days"
+        case bestStreak = "best_streak"
+        case week
+    }
+}
+
 struct RemoteAlert: Decodable, Identifiable {
     let id: Int
     let eventId: Int
@@ -188,6 +199,10 @@ final class APIClient {
     }
 
     // MARK: - Events
+
+    func getUserStats() async throws -> UserStats {
+        try await get("/users/me/stats")
+    }
 
     func listEvents() async throws -> [RemoteEvent] {
         try await get("/events")

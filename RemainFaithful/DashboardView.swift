@@ -443,20 +443,13 @@ struct DashboardView: View {
         eventsLoadError = nil
         defer { isLoadingEvents = false }
         do {
-            let remote = try await APIClient.shared.listEvents()
-            events = remote.compactMap { ActivityEvent.from(remote: $0) }
-            let accountCreated: Date? = {
-                guard let str = AuthState.shared.currentUser?.createdAt else { return nil }
-                let f1 = ISO8601DateFormatter()
-                f1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                let f2 = ISO8601DateFormatter()
-                f2.formatOptions = [.withInternetDateTime]
-                return f1.date(from: str) ?? f2.date(from: str)
-            }()
-            let (days, best, week) = computeStreak(from: remote, accountCreated: accountCreated)
-            streakDays = days
-            streakBest = best
-            streakWeek = week
+            async let remoteEvents = APIClient.shared.listEvents()
+            async let stats        = APIClient.shared.getUserStats()
+            let (remote, userStats) = try await (remoteEvents, stats)
+            events     = remote.compactMap { ActivityEvent.from(remote: $0) }
+            streakDays = userStats.streakDays
+            streakBest = userStats.bestStreak
+            streakWeek = userStats.week.count == 7 ? userStats.week : Array(repeating: false, count: 7)
         } catch {
             eventsLoadError = "Couldn't load activity. Tap to retry."
         }
