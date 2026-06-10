@@ -22,37 +22,50 @@ final class NotificationService: NSObject {
 
     // MARK: - Permission
 
-    /// Call once after onboarding completes. Requests authorisation then
-    /// registers with APNs if granted.
+    /// Call once to request notification permission and register with APNs.
+    /// Safe to call multiple times — iOS only shows the system dialog once.
     func requestPermission() {
+        print("[APNs] requestPermission: requesting authorization")
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .badge, .sound]
         ) { granted, error in
-            if let error { print("[APNs] permission error: \(error)") }
+            if let error {
+                print("[APNs] requestPermission: authorization error: \(error)")
+                return
+            }
+            print("[APNs] requestPermission: granted=\(granted)")
             guard granted else { return }
             DispatchQueue.main.async {
+                print("[APNs] calling registerForRemoteNotifications")
                 UIApplication.shared.registerForRemoteNotifications()
             }
         }
     }
 
-    /// Call on every authenticated app launch to refresh the device token with APNs.
-    /// If permission has already been granted, this re-registers and updates the
-    /// token on the backend. If permission is not determined, it does nothing
-    /// (the onboarding flow will call requestPermission() for new users).
+    /// Call on every authenticated app launch. Re-registers if already authorized,
+    /// or requests permission if never asked.
     func ensureRegisteredIfAuthorized() {
         Task {
             let center   = UNUserNotificationCenter.current()
             let settings = await center.notificationSettings()
-            guard settings.authorizationStatus == .authorized else { return }
-            await MainActor.run {
-                UIApplication.shared.registerForRemoteNotifications()
+            let status   = settings.authorizationStatus
+            print("[APNs] ensureRegisteredIfAuthorized: status=\(status.rawValue)")
+            switch status {
+            case .authorized, .provisional:
+                print("[APNs] authorized — calling registerForRemoteNotifications")
+                await MainActor.run { UIApplication.shared.registerForRemoteNotifications() }
+            case .notDetermined:
+                print("[APNs] not determined — requesting permission now")
+                requestPermission()
+            case .denied:
+                print("[APNs] permission denied — push notifications are off")
+            default:
+                break
             }
         }
     }
 
-    /// Publish whether the user has denied notification permission.
-    /// Used to show an in-app prompt explaining why notifications matter.
+    /// Returns the current notification authorization status.
     func checkNotificationPermission() async -> UNAuthorizationStatus {
         await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
     }
@@ -62,9 +75,15 @@ final class NotificationService: NSObject {
     /// Convert the raw token data to a hex string and upload it to the backend.
     func handleDeviceToken(_ data: Data) {
         let token = data.map { String(format: "%02x", $0) }.joined()
+        print("[APNs] got device token: \(token.prefix(16))...")
         UserDefaults.standard.set(token, forKey: "apnsDeviceToken")
         Task {
-            try? await APIClient.shared.registerDeviceToken(token)
+            do {
+                try await APIClient.shared.registerDeviceToken(token)
+                print("[APNs] token registered with backend ✓")
+            } catch {
+                print("[APNs] failed to register token with backend: \(error)")
+            }
         }
     }
 

@@ -185,13 +185,23 @@ func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify caller is a group admin.
+	// Verify caller is a member (any role).
 	var callerRole string
 	if err := h.DB.QueryRowContext(r.Context(),
 		`SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2`,
 		groupID, userID,
-	).Scan(&callerRole); err != nil || callerRole != "admin" {
-		writeError(w, http.StatusForbidden, "only group admins can invite members")
+	).Scan(&callerRole); err != nil {
+		writeError(w, http.StatusForbidden, "you must be a member of this group to invite others")
+		return
+	}
+
+	// Enforce group size cap.
+	var memberCount int
+	_ = h.DB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM group_members WHERE group_id = $1`, groupID,
+	).Scan(&memberCount)
+	if memberCount >= 12 {
+		writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
 		return
 	}
 

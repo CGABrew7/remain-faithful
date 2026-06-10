@@ -48,7 +48,6 @@ struct OnboardingView: View {
                         CreateAccountStep(name: $name, email: $email, password: $password) {
                             storedName  = name
                             storedEmail = email
-                            NotificationService.shared.requestPermission()
                             advance()
                         }
                         .transition(.push(from: .trailing))
@@ -489,9 +488,11 @@ private struct MonitoringSetupStep: View {
 
             RFButton(
                 title: fcManager.authorizationStatus == .approved ? "Get Started" : "Continue Without Monitoring",
-                isEnabled: true,
-                action: onComplete
-            )
+                isEnabled: true
+            ) {
+                NotificationService.shared.requestPermission()
+                onComplete()
+            }
 
             Text("Deep Scan starts from Control Center → Screen Recording → Remain Faithful")
                 .font(.system(size: 11))

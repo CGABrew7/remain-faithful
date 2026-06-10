@@ -316,7 +316,12 @@ final class APIClient {
     // MARK: - Push notifications
 
     func registerDeviceToken(_ token: String) async throws {
-        try await postVoid("/users/device-token", body: ["token": token, "platform": "ios"])
+        #if DEBUG
+        let env = "sandbox"
+        #else
+        let env = "production"
+        #endif
+        try await postVoid("/users/device-token", body: ["token": token, "platform": "ios", "environment": env])
     }
 
     func sendPanicAlert() async throws {

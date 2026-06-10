@@ -60,12 +60,13 @@ type Notification struct {
 type Client struct {
 	noop bool
 
-	keyID    string
-	teamID   string
-	bundleID string
-	key      *ecdsa.PrivateKey
-	host     string
-	http     *http.Client
+	keyID      string
+	teamID     string
+	bundleID   string
+	production bool
+	key        *ecdsa.PrivateKey
+	host       string
+	http       *http.Client
 
 	mu         sync.Mutex
 	token      string
@@ -78,6 +79,7 @@ type Client struct {
 // when APNs credentials are not configured in a given environment.
 func New(keyID, teamID, bundleID, keyPEM string, production bool) (*Client, error) {
 	if keyPEM == "" {
+		fmt.Println("[apns] WARNING: APNS_PRIVATE_KEY is not set — push notifications are disabled (no-op client)")
 		return &Client{noop: true}, nil
 	}
 
@@ -100,14 +102,34 @@ func New(keyID, teamID, bundleID, keyPEM string, production bool) (*Client, erro
 		host = hostProduction
 	}
 
+	env := "sandbox"
+	if production {
+		env = "production"
+	}
+	fmt.Printf("[apns] client ready: env=%s keyID=%s teamID=%s bundleID=%s\n", env, keyID, teamID, bundleID)
+
 	return &Client{
-		keyID:    keyID,
-		teamID:   teamID,
-		bundleID: bundleID,
-		key:      ecKey,
-		host:     host,
-		http:     &http.Client{Timeout: 10 * time.Second},
+		keyID:      keyID,
+		teamID:     teamID,
+		bundleID:   bundleID,
+		production: production,
+		key:        ecKey,
+		host:       host,
+		http:       &http.Client{Timeout: 10 * time.Second},
 	}, nil
+}
+
+// IsNoop returns true when the client was constructed without credentials and
+// all Send calls are silent no-ops.
+func (c *Client) IsNoop() bool { return c.noop }
+
+// Environment returns "production" or "sandbox" depending on configuration.
+// A no-op client returns "sandbox".
+func (c *Client) Environment() string {
+	if c.production {
+		return "production"
+	}
+	return "sandbox"
 }
 
 // Send delivers n to APNs. It is safe to call from multiple goroutines.
@@ -116,6 +138,7 @@ func New(keyID, teamID, bundleID, keyPEM string, production bool) (*Client, erro
 // valid (HTTP 410).
 func (c *Client) Send(ctx context.Context, n *Notification) error {
 	if c.noop {
+		fmt.Printf("[apns] noop: would send to token %.8s... (APNs not configured)\n", n.DeviceToken)
 		return nil
 	}
 
@@ -164,6 +187,7 @@ func (c *Client) Send(ctx context.Context, n *Notification) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
+		fmt.Printf("[apns] ✓ delivered to token %.8s... (env:%s)\n", n.DeviceToken, c.Environment())
 		return nil
 	}
 
@@ -175,8 +199,10 @@ func (c *Client) Send(ctx context.Context, n *Notification) error {
 	_ = json.NewDecoder(resp.Body).Decode(&apnsErr)
 
 	if resp.StatusCode == http.StatusGone {
+		fmt.Printf("[apns] ✗ invalid token %.8s... reason=%s\n", n.DeviceToken, apnsErr.Reason)
 		return &ErrInvalidToken{Reason: apnsErr.Reason}
 	}
+	fmt.Printf("[apns] ✗ status=%d token=%.8s... reason=%s\n", resp.StatusCode, n.DeviceToken, apnsErr.Reason)
 	return fmt.Errorf("apns: unexpected status %d: %s", resp.StatusCode, apnsErr.Reason)
 }
 

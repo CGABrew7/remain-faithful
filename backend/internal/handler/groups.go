@@ -183,7 +183,7 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// InviteMember adds a user to an existing group. Caller must be a group admin.
+// InviteMember adds a user to an existing group. Any group member may invite.
 // POST /groups/:id/invite
 // Body: { "user_email": "..." }
 func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
@@ -195,13 +195,23 @@ func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Verify caller is a member (any role).
 	var callerRole string
-	err = h.DB.QueryRowContext(r.Context(),
+	if err = h.DB.QueryRowContext(r.Context(),
 		`SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2`,
 		groupID, userID,
-	).Scan(&callerRole)
-	if err != nil || callerRole != "admin" {
-		writeError(w, http.StatusForbidden, "only group admins can invite members")
+	).Scan(&callerRole); err != nil {
+		writeError(w, http.StatusForbidden, "you must be a member of this group to invite others")
+		return
+	}
+
+	// Enforce group size cap.
+	var memberCount int
+	_ = h.DB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM group_members WHERE group_id = $1`, groupID,
+	).Scan(&memberCount)
+	if memberCount >= 12 {
+		writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
 		return
 	}
 

@@ -15,6 +15,8 @@ import (
 // *apns.Client satisfies this interface.
 type APNSSender interface {
 	Send(ctx context.Context, n *apns.Notification) error
+	IsNoop() bool
+	Environment() string
 }
 
 // EmailSender is the interface used by handlers to send transactional email.

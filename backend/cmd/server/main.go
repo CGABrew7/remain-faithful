@@ -45,6 +45,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("apns: %v", err)
 	}
+	if apnsClient.IsNoop() {
+		log.Println("apns: WARNING — running as no-op, push notifications will not be delivered. Set APNS_KEY_ID, APNS_TEAM_ID, APNS_BUNDLE_ID, APNS_PRIVATE_KEY.")
+	} else {
+		log.Printf("apns: configured for %s", apnsClient.Environment())
+	}
 
 	emailClient   := email.New()
 	claudeClient  := anthropic.New()
@@ -198,6 +203,7 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/heartbeat",                           h.Heartbeat).Methods(http.MethodPost)
 	api.HandleFunc("/users/device-token",                  h.RegisterDeviceToken).Methods(http.MethodPost)
 	api.HandleFunc("/panic",                               h.SendPanicAlert).Methods(http.MethodPost)
+	api.HandleFunc("/debug/test-push",                     h.SendTestPush).Methods(http.MethodPost)
 	api.HandleFunc("/auth/refresh",                        h.RefreshToken).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session",   h.CreateCheckoutSession).Methods(http.MethodPost)
 
@@ -312,15 +318,17 @@ func migrate(db *sql.DB) error {
 	CREATE INDEX IF NOT EXISTS idx_relationships_partner ON relationships(partner_id);
 
 	CREATE TABLE IF NOT EXISTS device_tokens (
-		id         BIGSERIAL   PRIMARY KEY,
-		user_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-		token      TEXT        NOT NULL,
-		platform   TEXT        NOT NULL DEFAULT 'ios',
-		is_active  BOOLEAN     NOT NULL DEFAULT TRUE,
-		created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-		updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		id          BIGSERIAL   PRIMARY KEY,
+		user_id     BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		token       TEXT        NOT NULL,
+		platform    TEXT        NOT NULL DEFAULT 'ios',
+		environment TEXT        NOT NULL DEFAULT 'sandbox',
+		is_active   BOOLEAN     NOT NULL DEFAULT TRUE,
+		created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 		UNIQUE (user_id, token)
 	);
+	ALTER TABLE device_tokens ADD COLUMN IF NOT EXISTS environment TEXT NOT NULL DEFAULT 'sandbox';
 	CREATE INDEX IF NOT EXISTS idx_device_tokens_user ON device_tokens(user_id);
 
 	CREATE TABLE IF NOT EXISTS password_reset_tokens (
