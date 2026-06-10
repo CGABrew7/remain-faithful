@@ -1577,6 +1577,9 @@ private struct SettingsCovenantSheet: View {
 
 private struct ActivityLogSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var events:    [ActivityEvent] = []
+    @State private var isLoading = false
+    @State private var loadError: String?
 
     var body: some View {
         ZStack {
@@ -1610,24 +1613,119 @@ private struct ActivityLogSheet: View {
                 .padding(.bottom, 24)
 
                 Divider().overlay(Color.white.opacity(0.08))
-                    .padding(.bottom, 24)
 
-                Spacer()
-                VStack(spacing: 14) {
-                    Image(systemName: "list.bullet.rectangle")
-                        .font(.system(size: 38))
-                        .foregroundStyle(Color.rfGold.opacity(0.45))
-                    Text("Full history coming soon")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
-                    Text("Your complete activity log will be\navailable in a future update.")
-                        .font(.system(size: 14))
-                        .foregroundStyle(Color.white.opacity(0.45))
-                        .multilineTextAlignment(.center)
+                if isLoading {
+                    Spacer()
+                    ProgressView().tint(Color.rfGold).scaleEffect(1.2)
+                    Spacer()
+                } else if let err = loadError {
+                    Spacer()
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 32))
+                            .foregroundStyle(Color.rfGold.opacity(0.55))
+                        Text(err)
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                        Button("Try Again") { Task { await load() } }
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.rfGold)
+                    }
+                    .padding(.horizontal, 40)
+                    Spacer()
+                } else if events.isEmpty {
+                    Spacer()
+                    VStack(spacing: 12) {
+                        Image(systemName: "checkmark.shield.fill")
+                            .font(.system(size: 38))
+                            .foregroundStyle(Color(red: 0.20, green: 0.78, blue: 0.45).opacity(0.55))
+                        Text("No flagged activity")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white)
+                        Text("Your monitoring history will appear here.")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                            .multilineTextAlignment(.center)
+                    }
+                    Spacer()
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        LazyVStack(spacing: 8) {
+                            ForEach(events) { event in
+                                LogRow(event: event)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+                    }
                 }
-                Spacer()
             }
         }
+        .task { await load() }
+    }
+
+    @MainActor
+    private func load() async {
+        guard APIClient.shared.isAuthenticated else { return }
+        isLoading = true
+        loadError = nil
+        defer { isLoading = false }
+        do {
+            let remote = try await APIClient.shared.listEvents()
+            events = remote.compactMap { ActivityEvent.from(remote: $0) }
+        } catch {
+            loadError = "Couldn't load history. Tap to retry."
+        }
+    }
+}
+
+private struct LogRow: View {
+    let event: ActivityEvent
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(event.category.tint.opacity(0.14))
+                    .frame(width: 42, height: 42)
+                Image(systemName: event.category.icon)
+                    .font(.system(size: 16))
+                    .foregroundStyle(event.category.tint)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(event.category.rawValue)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                Text(event.description)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.48))
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 5) {
+                Text(event.severity.rawValue.uppercased())
+                    .font(.system(size: 10, weight: .bold))
+                    .kerning(0.5)
+                    .foregroundStyle(event.severity.color)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(event.severity.color.opacity(0.14)))
+                Text(event.fullTimestamp)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.32))
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.055))
+                .overlay(RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.white.opacity(0.07), lineWidth: 1))
+        )
     }
 }
 

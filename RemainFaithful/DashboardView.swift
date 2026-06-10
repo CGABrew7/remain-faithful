@@ -224,94 +224,6 @@ private let sampleEvents: [ActivityEvent] = [
     .init(category: .gaming,       severity: .low,    description: "Late-night gaming session",        minutesAgo: 2160),
 ]
 
-private let weekClean = [true, true, false, true, true, true, false]
-
-// MARK: - Streak computation
-
-private func computeStreak(from remoteEvents: [RemoteEvent],
-                            accountCreated: Date?) -> (days: Int, best: Int, week: [Bool]) {
-    if accountCreated == nil { return (0, 0, Array(repeating: false, count: 7)) }
-    let cal = Calendar.current
-    let fmt = DateFormatter()
-    fmt.dateFormat = "yyyy-MM-dd"
-    fmt.locale = Locale(identifier: "en_US_POSIX")
-
-    let isoFull = ISO8601DateFormatter()
-    isoFull.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    let isoShort = ISO8601DateFormatter()
-    isoShort.formatOptions = [.withInternetDateTime]
-
-    // Normalize account creation to midnight so date-string comparisons work.
-    let sinceDay: Date?    = accountCreated.map { cal.startOfDay(for: $0) }
-    let sinceDateStr: String? = sinceDay.map { fmt.string(from: $0) }
-
-    // Build set of date strings that have at least one flagged event.
-    let flaggedDates = Set(remoteEvents.compactMap { evt -> String? in
-        let date = isoFull.date(from: evt.timestamp) ?? isoShort.date(from: evt.timestamp)
-        return date.map { fmt.string(from: $0) }
-    })
-
-    // Current streak: count consecutive clean days from today backward,
-    // stopping at the account creation date.
-    var streak = 0
-    var checkDate = cal.startOfDay(for: Date())
-    while true {
-        let dateStr = fmt.string(from: checkDate)
-        if let since = sinceDateStr, dateStr < since { break }  // before account existed
-        if flaggedDates.contains(dateStr) { break }
-        streak += 1
-        guard let prev = cal.date(byAdding: .day, value: -1, to: checkDate) else { break }
-        checkDate = prev
-        if streak > 365 { break }  // hard cap
-    }
-    // Brand-new account (created today): no completed clean day yet.
-    if let created = accountCreated, cal.isDateInToday(created) { streak = 0 }
-
-    // 7-day view: last 7 days ordered oldest → newest.
-    // Days before account creation show as not-clean (no spurious gold checkmarks).
-    let today = cal.startOfDay(for: Date())
-    var week = Array(repeating: true, count: 7)
-    for i in 0..<7 {
-        guard let day = cal.date(byAdding: .day, value: -(6 - i), to: today) else { continue }
-        let dayStr = fmt.string(from: day)
-        if let since = sinceDateStr, dayStr < since {
-            week[i] = false     // before account existed
-        } else if flaggedDates.contains(dayStr) {
-            week[i] = false     // flagged day
-        }
-    }
-
-    // Best streak: longest consecutive clean run back to account creation.
-    // Window must be at least as wide as the current streak so best >= streak.
-    let windowDays = max(90, streak + 1)
-    let allDates: [String] = {
-        var dates: [String] = []
-        var d = today
-        for _ in 0..<windowDays {
-            let dateStr = fmt.string(from: d)
-            if let since = sinceDateStr, dateStr < since { break }
-            dates.append(dateStr)
-            guard let prev = cal.date(byAdding: .day, value: -1, to: d) else { break }
-            d = prev
-        }
-        return dates
-    }()
-    var best = 0
-    var run  = 0
-    for dateStr in allDates {
-        if flaggedDates.contains(dateStr) {
-            best = max(best, run)
-            run  = 0
-        } else {
-            run += 1
-        }
-    }
-    best = max(best, run)
-    best = max(best, streak)    // invariant: best can never be less than current streak
-
-    return (streak, best, week)
-}
-
 // MARK: - Dashboard root
 
 struct DashboardView: View {
@@ -454,7 +366,7 @@ struct DashboardView: View {
             events     = sampleEvents
             streakDays = 14
             streakBest = 21
-            streakWeek = weekClean
+            streakWeek = [true, true, false, true, true, true, false]
             return
         }
         guard APIClient.shared.isAuthenticated else { return }
