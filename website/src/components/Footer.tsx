@@ -134,7 +134,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
           <p className="text-sm text-[#8A9BB0]">
-            © 2025 Remain Faithful. Free forever. Open source.
+            © 2026 Remain Faithful. Free forever. Open source.
           </p>
           <p className="text-xs text-[#8A9BB0]/60">
             Built with integrity, for all who need it.

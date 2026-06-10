@@ -97,22 +97,6 @@ export default function AppMockup() {
             </div>
           </div>
 
-          {/* Weekly digest */}
-          <div
-            className="rounded-xl p-2.5 flex items-center justify-between"
-            style={{ background: '#1A2535', border: '1px solid #1E3050' }}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-base">📊</span>
-              <div>
-                <p className="text-[10px] font-medium text-[#F0EDE8]">Weekly Digest</p>
-                <p className="text-[9px] text-[#8A9BB0]">Sent to partners</p>
-              </div>
-            </div>
-            <div className="w-8 h-4 rounded-full bg-[#C9A84C] flex items-center justify-end pr-0.5">
-              <div className="w-3 h-3 rounded-full bg-white"/>
-            </div>
-          </div>
         </div>
 
         {/* Bottom nav */}

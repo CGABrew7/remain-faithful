@@ -155,7 +155,7 @@ export default function HomePage() {
                 <TrustItem>100% Free, Forever</TrustItem>
                 <TrustItem>Donation Funded</TrustItem>
                 <TrustItem>On-Device AI &amp; Security</TrustItem>
-                <TrustItem>Zero Data Shared Off Your Device</TrustItem>
+                <TrustItem>No Screen Content Ever Leaves Your Device</TrustItem>
               </div>
             </div>
 
@@ -406,31 +406,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
+      {/* ── Beta Starting Soon ── */}
       <section className="py-24 border-t border-[#1E3050]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Beta Users</p>
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8]">
-              What People Are Saying
+          <div className="text-center">
+            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+              Beta Starting Soon
             </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            <Testimonial
-              quote="RF changed our group. We went from vague commitments to real accountability. The alerts make the invisible visible, without the shame spiral."
-              author="Beta User"
-              role="Kansas City, Missouri"
-            />
-            <Testimonial
-              quote="I finally have partners who actually know the struggle. The app makes it real, not just talk. And knowing they'll get an alert... that changes the moment."
-              author="Beta User"
-              role="Austin, Texas"
-            />
-            <Testimonial
-              quote="Set it up in five minutes. My accountability partner got the hang of it immediately. Simple, honest, and it actually works."
-              author="Beta User"
-              role="Columbus, Ohio"
-            />
+            <p className="text-[#8A9BB0]">
+              We&apos;re inviting our first beta testers now.{' '}
+              <a href="#waitlist" className="text-[#C9A84C] hover:underline underline-offset-4">
+                Join the waitlist to be part of it.
+              </a>
+            </p>
           </div>
         </div>
       </section>
@@ -589,26 +577,3 @@ function PrivacyPoint({ title, body }: { title: string; body: string }) {
   )
 }
 
-function Testimonial({ quote, author, role }: { quote: string; author: string; role: string }) {
-  return (
-    <div
-      className="rounded-2xl p-7 border border-[#1E3050]"
-      style={{ background: '#162235' }}
-    >
-      <div className="flex gap-0.5 mb-4">
-        {[...Array(5)].map((_, i) => (
-          <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#C9A84C">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-        ))}
-      </div>
-      <p className="text-[#F0EDE8] leading-relaxed mb-5 text-sm">
-        &ldquo;{quote}&rdquo;
-      </p>
-      <div>
-        <p className="font-semibold text-[#F0EDE8] text-sm">{author}</p>
-        <p className="text-xs text-[#8A9BB0]">{role}</p>
-      </div>
-    </div>
-  )
-}
