@@ -69,7 +69,7 @@ export default function PartnersPage() {
               },
               {
                 title: 'Pastoral Oversight',
-                desc: 'As group leader, you receive a weekly aggregate digest. Members control whether you see individual alerts.',
+                desc: 'As group leader, you stay informed about group activity. Members control whether you see individual alerts.',
               },
               {
                 title: 'Privacy by Design',
@@ -171,7 +171,6 @@ export default function PartnersPage() {
               <ul className="space-y-3">
                 {[
                   'Begin every meeting with a brief accountability check: "Did anything come up this week?"',
-                  'Use the weekly digest as a group check-in tool, not a report card.',
                   'When an alert fires, respond within 24 hours — a short text asking "How are you doing?" is enough.',
                   'After 90 days, revisit the covenant. Adjust based on what you\'ve learned.',
                 ].map((item, i) => (
@@ -310,7 +309,6 @@ export default function PartnersPage() {
                 phase: 'First 30 Days',
                 color: '#C9A84C',
                 items: [
-                  'Leader has checked the weekly digest at least twice',
                   'At least one alert has been responded to with grace',
                   'Group has had at least one conversation that started with an alert',
                   '30-day check-in meeting has occurred',
@@ -418,7 +416,7 @@ export default function PartnersPage() {
               { n: '2', title: 'Create a Group', desc: 'Tap Group tab → New Group. Give it a name (e.g., "Tuesday Accountability Group"), set your covenant expectations, and choose your leader visibility settings.' },
               { n: '3', title: 'Share the Invite Code', desc: 'Your group generates a 6-character invite code. Share it in your group chat, bulletin, or Sunday handout. Members join with that code.' },
               { n: '4', title: 'Members Enable Monitoring', desc: 'Each member enables monitoring in the app and grants screen recording permission. The setup walkthrough guides them through it step by step.' },
-              { n: '5', title: 'Stay Connected', desc: 'You receive a weekly digest every Monday morning. Members can alert you directly. Use RF as the backbone of your regular accountability conversations.' },
+              { n: '5', title: 'Stay Connected', desc: 'Members can alert you directly. Use RF as the backbone of your regular accountability conversations.' },
             ].map((step) => (
               <div key={step.n} className="flex gap-5 p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-bold text-sm flex items-center justify-center flex-shrink-0">
@@ -444,39 +442,6 @@ export default function PartnersPage() {
               </svg>
               Download Group Setup Guide (PDF)
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">From Ministry Leaders</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {[
-              {
-                quote: 'Our group had been meeting for two years without any real accountability mechanism. RF gave us that mechanism without making it weird. The alerts happen automatically. Conversations happen naturally.',
-                author: 'Senior Pastor',
-                role: 'Mountain West Region',
-              },
-              {
-                quote: 'I was skeptical of any tech solution to a spiritual problem. But RF doesn\'t replace relationship. It undergirds it. My group says the app makes them feel like someone actually notices when they struggle.',
-                author: 'Ministry Director',
-                role: 'Southeast Region',
-              },
-            ].map((t, i) => (
-              <div key={i} className="rounded-2xl p-7 border border-[#1E3050] bg-[#162235]">
-                <p className="text-[#F0EDE8] leading-relaxed mb-5 text-sm italic">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div>
-                  <p className="font-semibold text-[#F0EDE8] text-sm">{t.author}</p>
-                  <p className="text-xs text-[#8A9BB0]">{t.role}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
