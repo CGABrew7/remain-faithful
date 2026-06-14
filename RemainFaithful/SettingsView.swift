@@ -86,17 +86,7 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showDeleteConfirm) {
-            DestructiveConfirmSheet(
-                title: "Delete Account",
-                message: "All your data will be permanently deleted. This cannot be undone.",
-                warning: "All members of your accountability groups will be notified that your account has been deleted.",
-                confirmLabel: "Delete Account"
-            ) {
-                AuthState.shared.clearSession()
-                userName  = ""
-                userEmail = ""
-                hasCompletedOnboarding = false
-            }
+            DeleteAccountSheet()
         }
     }
 
@@ -467,6 +457,148 @@ private func iconBadge(_ name: String, tint: Color) -> some View {
         Image(systemName: name)
             .font(.system(size: 15))
             .foregroundStyle(tint)
+    }
+}
+
+// MARK: - Delete Account Sheet
+
+private struct DeleteAccountSheet: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("userName")               private var userName                = ""
+    @AppStorage("userEmail")             private var userEmail               = ""
+    @Environment(\.dismiss)              private var dismiss
+
+    @State private var confirmText = ""
+    @State private var isLoading   = false
+    @State private var errorMsg: String?
+
+    private let red = Color(red: 0.90, green: 0.30, blue: 0.30)
+    private var canConfirm: Bool { confirmText == "DELETE" && !isLoading }
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 12)
+                    .padding(.bottom, 28)
+
+                ZStack {
+                    Circle()
+                        .fill(red.opacity(0.12))
+                        .frame(width: 64, height: 64)
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(red)
+                }
+                .padding(.bottom, 20)
+
+                Text("Delete Account")
+                    .font(.system(size: 20, weight: .bold, design: .serif))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 12)
+
+                Text("This will permanently delete your account, all your data, and notify your accountability partners that you've left. This cannot be undone.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.white.opacity(0.65))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .lineSpacing(3)
+                    .padding(.bottom, 20)
+
+                TextField("Type DELETE to confirm", text: $confirmText)
+                    .textInputAutocapitalization(.characters)
+                    .autocorrectionDisabled()
+                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 13)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.07))
+                            .overlay(RoundedRectangle(cornerRadius: 12)
+                                .stroke(confirmText == "DELETE" ? red : Color.white.opacity(0.15),
+                                        lineWidth: 1))
+                    )
+                    .padding(.horizontal, 24)
+
+                if let error = errorMsg {
+                    Text(error)
+                        .font(.system(size: 12))
+                        .foregroundStyle(red)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 8)
+                }
+
+                Spacer()
+
+                Divider().overlay(Color.white.opacity(0.08))
+                    .padding(.bottom, 20)
+
+                VStack(spacing: 12) {
+                    Button {
+                        Task { await performDelete() }
+                    } label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(canConfirm ? red : red.opacity(0.30))
+                                .frame(height: 52)
+                            if isLoading {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text("Delete Account")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .disabled(!canConfirm)
+
+                    Button { dismiss() } label: {
+                        Text("Cancel")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.70))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(Color.white.opacity(0.08))
+                                    .overlay(RoundedRectangle(cornerRadius: 14)
+                                        .stroke(Color.white.opacity(0.12), lineWidth: 1))
+                            )
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 36)
+            }
+        }
+        .presentationDetents([.large])
+    }
+
+    private func performDelete() async {
+        isLoading = true
+        errorMsg  = nil
+        do {
+            try await APIClient.shared.deleteAccount()
+            await MainActor.run {
+                AuthState.shared.clearSession()
+                userName               = ""
+                userEmail              = ""
+                hasCompletedOnboarding = false
+                dismiss()
+            }
+        } catch {
+            await MainActor.run {
+                isLoading = false
+                errorMsg  = error.localizedDescription
+            }
+        }
     }
 }
 

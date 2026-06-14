@@ -276,6 +276,10 @@ final class APIClient {
         try await postVoid("/groups/leave-all", body: [String: String]())
     }
 
+    func deleteAccount() async throws {
+        try await deleteVoid("/users/me")
+    }
+
     func getGroup(id: Int) async throws -> RemoteGroup {
         try await get("/groups/\(id)")
     }

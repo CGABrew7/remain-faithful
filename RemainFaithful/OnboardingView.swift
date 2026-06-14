@@ -490,8 +490,11 @@ private struct MonitoringSetupStep: View {
                 title: fcManager.authorizationStatus == .approved ? "Get Started" : "Continue Without Monitoring",
                 isEnabled: true
             ) {
-                NotificationService.shared.requestPermission()
-                onComplete()
+                // Pass onComplete as completion so the root-view swap only
+                // happens after the permission dialog fully resolves. Calling
+                // onComplete() synchronously before the dialog dismisses causes
+                // iOS to drop the dialog (the presenting view hierarchy is gone).
+                NotificationService.shared.requestPermission(then: onComplete)
             }
 
             Text("Deep Scan starts from Control Center → Screen Recording → Remain Faithful")

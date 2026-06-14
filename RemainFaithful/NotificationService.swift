@@ -22,22 +22,29 @@ final class NotificationService: NSObject {
 
     // MARK: - Permission
 
-    /// Call once to request notification permission and register with APNs.
-    /// Safe to call multiple times — iOS only shows the system dialog once.
-    func requestPermission() {
-        print("[APNs] requestPermission: requesting authorization")
+    /// Request notification permission, then call `completion` on the main thread
+    /// once the dialog is resolved (whether granted or denied). Pass a completion
+    /// when navigation should wait for the dialog — e.g. the onboarding "Get Started"
+    /// button must not swap the root view until after the system dialog dismisses,
+    /// otherwise iOS drops the dialog before it can appear.
+    func requestPermission(then completion: (() -> Void)? = nil) {
+        print("[APNs] requestPermission: calling requestAuthorization")
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .badge, .sound]
         ) { granted, error in
             if let error {
-                print("[APNs] requestPermission: authorization error: \(error)")
-                return
+                print("[APNs] requestPermission: error=\(error)")
+            } else {
+                print("[APNs] requestPermission: granted=\(granted)")
             }
-            print("[APNs] requestPermission: granted=\(granted)")
-            guard granted else { return }
+            if granted {
+                DispatchQueue.main.async {
+                    print("[APNs] calling registerForRemoteNotifications")
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            }
             DispatchQueue.main.async {
-                print("[APNs] calling registerForRemoteNotifications")
-                UIApplication.shared.registerForRemoteNotifications()
+                completion?()
             }
         }
     }
@@ -56,6 +63,10 @@ final class NotificationService: NSObject {
                 await MainActor.run { UIApplication.shared.registerForRemoteNotifications() }
             case .notDetermined:
                 print("[APNs] not determined — requesting permission now")
+                // Brief delay so the window is fully stable before the system
+                // tries to present the authorization dialog (avoids silent drops
+                // when called very early at launch, e.g. from .task or scenePhase).
+                try? await Task.sleep(nanoseconds: 500_000_000)
                 requestPermission()
             case .denied:
                 print("[APNs] permission denied — push notifications are off")

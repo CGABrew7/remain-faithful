@@ -180,6 +180,7 @@ func routes(h *handler.H) http.Handler {
 
 	api.HandleFunc("/users/me",             h.GetMe).Methods(http.MethodGet)
 	api.HandleFunc("/users/me",             h.UpdateMe).Methods(http.MethodPut)
+	api.HandleFunc("/users/me",             h.DeleteMe).Methods(http.MethodDelete)
 	api.HandleFunc("/users/me/stats",       h.GetUserStats).Methods(http.MethodGet)
 	api.HandleFunc("/relationships",                    h.CreateRelationship).Methods(http.MethodPost)
 	api.HandleFunc("/relationships",                    h.ListRelationships).Methods(http.MethodGet)
