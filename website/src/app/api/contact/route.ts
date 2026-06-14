@@ -2,17 +2,15 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
 
-    if (!body.email || !body.name) {
+    if (!body.email || !body.name || !body.message) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const backendUrl = process.env.BACKEND_URL
     if (!backendUrl) {
-      // Log submission locally and return success so the form UX always works
-      console.log('[contact] Received submission (no BACKEND_URL configured):', {
+      console.log('[contact] BACKEND_URL not set — logging submission:', {
         name: body.name,
         email: body.email,
-        type: body.type,
         subject: body.subject,
       })
       return Response.json({ success: true })
@@ -25,13 +23,18 @@ export async function POST(request: Request) {
     })
 
     if (!res.ok) {
-      console.error('Backend contact error:', res.status)
-      return Response.json({ error: 'Failed to submit contact form' }, { status: 502 })
+      let errorMsg = `Backend returned ${res.status}`
+      try {
+        const errBody = await res.json()
+        if (errBody?.error) errorMsg = errBody.error
+      } catch {}
+      console.error('[contact] backend error:', res.status, errorMsg)
+      return Response.json({ error: errorMsg }, { status: 502 })
     }
 
     return Response.json({ success: true })
   } catch (err) {
-    console.error('Contact route error:', err)
+    console.error('[contact] route error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

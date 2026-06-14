@@ -22,10 +22,18 @@ export default function ContactForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, type: 'general' }),
       })
-      if (!res.ok) throw new Error('failed')
+      if (!res.ok) {
+        let msg = `Error ${res.status}`
+        try {
+          const body = await res.json()
+          if (body?.error) msg = body.error
+        } catch {}
+        throw new Error(msg)
+      }
       setSubmitted(true)
-    } catch {
-      setError('Something went wrong. Please try again or email us directly.')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setError(msg + ' — or email us directly at jeff@hanokventures.co')
     } finally {
       setLoading(false)
     }

@@ -72,6 +72,17 @@ func (c *Client) SendGroupInvite(toEmail, inviterName, groupName, acceptURL stri
 }
 
 // SendPasswordReset sends a reset-link email to the given address.
+// SendContact forwards a contact-form submission to the app's support inbox.
+func (c *Client) SendContact(fromEmail, fromName, subject, message, toEmail string) error {
+	subjectLine := "[Remain Faithful Contact] " + subject
+	plain := fmt.Sprintf("From: %s <%s>\n\n%s", fromName, fromEmail, message)
+	html := fmt.Sprintf(
+		`<p><strong>From:</strong> %s &lt;%s&gt;</p><p>%s</p>`,
+		fromName, fromEmail, message,
+	)
+	return c.send(toEmail, "", subjectLine, plain, html)
+}
+
 func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 	subject := "Reset your Remain Faithful password"
 	plain := fmt.Sprintf(

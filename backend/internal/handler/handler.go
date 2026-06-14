@@ -24,6 +24,7 @@ type EmailSender interface {
 	SendPasswordReset(toEmail, toName, resetURL string) error
 	SendPartnerInvite(toEmail, inviterName, acceptURL string) error
 	SendGroupInvite(toEmail, inviterName, groupName, acceptURL string) error
+	SendContact(fromEmail, fromName, subject, message, toEmail string) error
 }
 
 // Classifier is the interface used by handlers to classify content via Claude.

@@ -208,6 +208,9 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/auth/refresh",                        h.RefreshToken).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session",   h.CreateCheckoutSession).Methods(http.MethodPost)
 
+	// Contact form — unauthenticated
+	r.HandleFunc("/contact", h.Contact).Methods(http.MethodPost)
+
 	// Stripe webhook — unauthenticated, verified by Stripe-Signature header
 	r.HandleFunc("/donations/webhook", h.DonationWebhook).Methods(http.MethodPost)
 
