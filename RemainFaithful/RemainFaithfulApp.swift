@@ -48,6 +48,8 @@ struct RemainFaithfulApp: App {
         #endif
     }
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some Scene {
         WindowGroup {
             Group {
@@ -73,6 +75,10 @@ struct RemainFaithfulApp: App {
                     await AuthState.shared.refreshFromAPI()
                     NotificationService.shared.ensureRegisteredIfAuthorized()
                 }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active, AuthState.shared.isAuthenticated else { return }
+                NotificationService.shared.ensureRegisteredIfAuthorized()
             }
         }
     }
