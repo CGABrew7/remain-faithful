@@ -37,7 +37,7 @@ const faqs = [
   },
   {
     q: 'How is this different from other accountability apps?',
-    a: 'Remain Faithful is different in three key ways: it is 100% free forever, all content analysis happens on your device (not in the cloud), and the entire codebase is open source so anyone can verify exactly what it does.',
+    a: 'Remain Faithful is different in three key ways: it is 100% free forever, nearly all content analysis happens on your device — a text-only cloud fallback handles under 5% of edge cases and never includes screenshots or raw content, and the entire codebase is open source so anyone can verify exactly what it does.',
   },
   {
     q: 'Does this work on Android?',
@@ -271,7 +271,7 @@ export default function HomePage() {
                 </svg>
               }
               title="Enable Monitoring"
-              body="Grant screen broadcast permission. The app runs quietly in the background, using on-device AI to classify content according to your agreed standards."
+              body="Always-on Screen Time monitoring activates automatically — it tracks app usage and web categories, survives device restarts, and never needs manual re-enabling. For high-risk periods you can also start an optional Deep Scan session for on-device AI screen analysis."
             />
             <Step
               number="03"
@@ -352,8 +352,7 @@ export default function HomePage() {
                 <ul className="space-y-2.5">
                   {[
                     'Screenshots & raw screen content',
-                    'Browsing history',
-                    'App usage details',
+                    'Browsing history & page content',
                     'Passwords & financial data',
                     'Message content',
                     'Photos & videos',
@@ -382,6 +381,7 @@ export default function HomePage() {
                     'Alert category (e.g. "Adult Content")',
                     'Severity level (Low / Medium / High)',
                     'Timestamp',
+                    'Which app triggered the alert',
                     'Brief system-generated description',
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-[#8A9BB0]">

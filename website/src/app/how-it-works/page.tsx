@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: 'What exactly gets monitored?',
-    a: 'When you enable monitoring and grant screen broadcast permission, the app analyzes frames from your screen using Apple\'s built-in Vision OCR and SensitiveContentAnalysis frameworks. It looks for concerning content across all apps. The analysis is performed entirely on-device. Nothing is sent to a server for classification (unless the on-device classifiers are uncertain, in which case a category-only query (no content) may reach our cloud classifier).',
+    a: 'Remain Faithful uses two monitoring layers. Layer A — always-on Screen Time monitoring — watches which apps you open and which web categories you visit. It runs persistently in the background, requires no screen broadcast permission, and survives device restarts. Layer B — Deep Scan — is started intentionally for high-risk periods and uses Apple\'s ReplayKit to run on-device AI (Vision OCR, SensitiveContentAnalysis) on screen frames. Deep Scan cannot analyze DRM-protected streaming video such as Netflix or Disney+; it covers browsers, photos, social media, and most non-DRM apps. In fewer than 5% of Deep Scan events, a text-only category query (never screen content) is sent to our cloud classifier.',
   },
   {
     q: 'How do I leave a group?',
@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'iOS\'s ReplayKit framework allows apps to record the screen via a separate extension process. This extension runs in isolation from the main app. It cannot access the internet or your personal data directly. It captures frames, runs AI analysis locally, and only sends a structured alert event (not the frame) to the main app if something is flagged.',
+    a: 'The broadcast extension is part of Deep Scan (Layer B) — the optional, user-initiated mode. iOS\'s ReplayKit allows a sandboxed extension process to capture screen frames. This extension runs in complete isolation from the main app, has no network access, and never stores or transmits frames. It runs AI analysis locally and only sends a structured alert event (never the frame) to the main app if something is flagged. The always-on Layer A monitoring does not use a broadcast extension — it uses Apple\'s Screen Time framework instead.',
   },
 ]
 
@@ -135,37 +135,71 @@ export default function HowItWorksPage() {
               How Monitoring Works
             </h2>
             <p className="text-[#8A9BB0] max-w-xl mx-auto">
-              A three-tier pipeline that prioritizes on-device privacy above all else.
+              Two complementary layers — always-on app and web monitoring, plus optional deep screen analysis — each sending discreet alerts to your partners.
             </p>
           </div>
 
-          <div className="space-y-4 relative">
-            <div className="absolute left-7 top-8 bottom-8 w-px bg-gradient-to-b from-[#C9A84C]/60 via-[#C9A84C]/20 to-transparent" />
+          <div className="space-y-3 relative">
+            <div className="absolute left-7 top-10 bottom-10 w-px bg-gradient-to-b from-[#C9A84C]/60 via-[#C9A84C]/20 to-transparent" />
+
+            {/* Layer A label */}
+            <div className="ml-4 pb-1 pt-2">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                Layer A — Always-On Monitoring
+              </span>
+            </div>
+
             {[
               {
                 step: '1',
-                title: 'Broadcast Extension Captures Frames',
-                body: 'When you enable monitoring, iOS activates a ReplayKit broadcast extension, a sandboxed process separate from the main app. It captures screen frames at intervals without access to the network or your personal data.',
+                title: 'Screen Time Framework Runs Persistently',
+                body: "Apple's Screen Time and DeviceActivity APIs watch app usage and web categories continuously in the background. This layer requires no screen broadcast permission, survives device restarts without any manual re-enabling, and cannot be bypassed by force-quitting the app.",
+                note: undefined as string | undefined,
               },
               {
                 step: '2',
-                title: 'Tier 1: Blocklist + Pattern Matching',
-                body: 'The frame URL (if a browser) and visible text are checked against a local blocklist and regex patterns. Known adult domains and explicit keywords trigger an immediate flag. This is fast and 100% local.',
+                title: 'App & Web Category Alert Generated',
+                body: 'When a problematic app is opened or an adult-category site is visited, an alert is created immediately. The only data captured is which app, the category, and the timestamp — no screen content, no page content, ever.',
+                note: undefined as string | undefined,
               },
+            ].map((item) => (
+              <div key={item.step} className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-400 flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+                  {item.step}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#F0EDE8] mb-1">{item.title}</h3>
+                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.body}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Layer B label */}
+            <div className="ml-4 pb-1 pt-4">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/25 text-[#C9A84C] text-xs font-bold uppercase tracking-widest">
+                Layer B — Deep Scan (User-Initiated)
+              </span>
+            </div>
+
+            {[
               {
                 step: '3',
-                title: 'Tier 2: On-Device AI Classification',
-                body: 'If Tier 1 doesn\'t catch it, the frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple\'s nudity/explicit content detector), and a local keyword-weighted text classifier. All of this runs on your device\'s Neural Engine.',
+                title: 'You Start the Session',
+                body: 'Deep Scan is never automatic. You start it intentionally when you want stronger scrutiny — a high-risk period, a travel trip, or a season of struggle. iOS asks for explicit screen broadcast permission each time. You are always in control.',
+                note: undefined as string | undefined,
               },
               {
                 step: '4',
-                title: 'Tier 3: Cloud Classifier (Category Only)',
-                body: 'If the on-device classifiers are uncertain and the content appears borderline, a category query (containing only the text category, never the image) is sent to our Claude-based classifier at /classify. No screenshot. No personal content.',
+                title: 'On-Device AI Analyzes Screen Frames',
+                body: "A sandboxed ReplayKit broadcast extension captures screen frames without network access. Each frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple's nudity detector), and a local keyword classifier — all running on your device's Neural Engine. Frames are never stored or transmitted.",
+                note: 'Deep Scan cannot analyze DRM-protected streaming video (Netflix, Disney+, etc.). It monitors browsers, photos, social media, and most non-DRM apps.',
               },
               {
                 step: '5',
-                title: 'Alert Delivered to Partners',
-                body: 'If any tier flags the content: you receive a notification first. Then a push notification goes to each partner containing only: timestamp, app category, and severity level. Partners see nothing beyond those three data points.',
+                title: 'Cloud Fallback for Uncertain Cases (<5%)',
+                body: 'If the on-device classifiers are uncertain and content appears borderline, a text-only category query — never the screen content — is sent to our secure Claude-based classifier. This affects fewer than 5% of Deep Scan events.',
+                note: undefined as string | undefined,
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
@@ -175,9 +209,30 @@ export default function HowItWorksPage() {
                 <div>
                   <h3 className="font-semibold text-[#F0EDE8] mb-1">{item.title}</h3>
                   <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.body}</p>
+                  {item.note && (
+                    <p className="text-sm text-[#C9A84C]/80 leading-relaxed mt-2 flex items-start gap-1.5">
+                      <svg className="flex-shrink-0 mt-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {item.note}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
+
+            {/* Alert delivery — both layers */}
+            <div className="flex gap-6 p-5 rounded-xl border border-[#C9A84C]/25 bg-[#162235] ml-4 mt-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+                6
+              </div>
+              <div>
+                <h3 className="font-semibold text-[#F0EDE8] mb-1">Alert Delivered to Partners (Both Layers)</h3>
+                <p className="text-sm text-[#8A9BB0] leading-relaxed">
+                  When either layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: which app, category, severity, and timestamp. Partners see nothing beyond those four data points — no screenshots, no raw content, ever.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
