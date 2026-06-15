@@ -10,9 +10,11 @@
 		239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */; };
 		2665C2D9BF6D50BC7D667208 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53205080DD5CB66E93B07EAD /* UIKit.framework */; };
 		369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */; };
+		534D9731F84FDAD9FB698DCD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1EA28F59B5D27D9AABFBD64F /* PrivacyInfo.xcprivacy */; };
 		5E1899B507B078B91C892FA9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9D59EBDC38D57F89A7BE3696 /* PrivacyInfo.xcprivacy */; };
 		650ED6E8E1562A9E6F7B8DFD /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBFB79EBC8DDF4F495AF80B /* ShieldConfigurationExtension.swift */; };
 		768AAE90E9757B328F1ADFEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */; };
+		7B43EB9F1413A9A877F5328D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6BE1418C33B2462B16F63B5A /* PrivacyInfo.xcprivacy */; };
 		7CBF6CD5000785890E729A86 /* RemainFaithfulShieldConfig.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E5EE199CFE102F01D9039E99 /* RemainFaithfulShieldConfig.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A64B8771DC269E569F540247 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */; };
 		ADAEDC95E7DD3992B9F68BA6 /* AppIcon-1024.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CDFD98843615C529873A74F /* AppIcon-1024.png */; };
@@ -108,6 +110,7 @@
 /* Begin PBXFileReference section */
 		062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulDeviceActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1449106D2018917FAF7D08EE /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
+		1EA28F59B5D27D9AABFBD64F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2CDFD98843615C529873A74F /* AppIcon-1024.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "AppIcon-1024.png"; sourceTree = "<group>"; };
 		32BAB7718C4E46EE355F0F39 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		38C8BA6B71076BB00F097166 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
@@ -116,6 +119,7 @@
 		4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivitySelectionManager.swift; sourceTree = "<group>"; };
 		53205080DD5CB66E93B07EAD /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		5F794A6955CDF454D6EA4322 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6BE1418C33B2462B16F63B5A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenTimeMonitoringView.swift; sourceTree = "<group>"; };
 		88F737CD62838DCD85A5F50D /* RemainFaithfulShieldConfig.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulShieldConfig.entitlements; sourceTree = "<group>"; };
 		8A8CF741CEB65744CAA53BCF /* ShieldConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShieldConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ShieldConfiguration.framework; sourceTree = DEVELOPER_DIR; };
@@ -210,6 +214,7 @@
 				5F794A6955CDF454D6EA4322 /* Info.plist */,
 				88F737CD62838DCD85A5F50D /* RemainFaithfulShieldConfig.entitlements */,
 				2CDFD98843615C529873A74F /* AppIcon-1024.png */,
+				6BE1418C33B2462B16F63B5A /* PrivacyInfo.xcprivacy */,
 			);
 			name = RemainFaithfulShieldConfig;
 			path = RemainFaithfulShieldConfig;
@@ -221,6 +226,7 @@
 				3D2CBE57E1E412B8583786C0 /* DeviceActivityMonitorExtension.swift */,
 				32BAB7718C4E46EE355F0F39 /* Info.plist */,
 				DED744307DF9984BECD3B5EA /* RemainFaithfulDeviceActivity.entitlements */,
+				1EA28F59B5D27D9AABFBD64F /* PrivacyInfo.xcprivacy */,
 			);
 			name = RemainFaithfulDeviceActivity;
 			path = RemainFaithfulDeviceActivity;
@@ -508,6 +514,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				534D9731F84FDAD9FB698DCD /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -516,6 +523,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ADAEDC95E7DD3992B9F68BA6 /* AppIcon-1024.png in Resources */,
+				7B43EB9F1413A9A877F5328D /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

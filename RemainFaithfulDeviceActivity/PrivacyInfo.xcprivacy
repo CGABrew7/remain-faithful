@@ -2,7 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- Broadcast extension: no tracking -->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
@@ -10,7 +9,8 @@
 
 	<!--
 	  UserDefaults (App Group): reads apiBaseURL and authToken written by the host app;
-	  writes pending events for retry. Reason CA92.1: own preferences, no third-party sharing.
+	  writes pendingRawEvents for retry and lastAppUsageTimestamp for foreground prompt.
+	  Reason CA92.1: own preferences and shared container, no third-party sharing.
 	-->
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
@@ -25,9 +25,10 @@
 	</array>
 
 	<!--
-	  The broadcast extension generates and uploads content-detection events
-	  (category, severity, static summary, timestamp) linked to the user's account.
-	  Raw screen content is never transmitted — only structured metadata.
+	  App-usage threshold events: fired when monitored app sets exceed a 1-minute
+	  usage threshold. Payload contains category ("app_usage"), severity, a static
+	  summary string, and timestamp. Specific app names or bundle IDs are never
+	  transmitted — only that a monitored threshold was crossed.
 	-->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
