@@ -2,7 +2,9 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,7 +26,7 @@ func (h *H) CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		AmountDollars int  `json:"amount_dollars"`
 		Monthly       bool `json:"monthly"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.AmountDollars < 1 {
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.AmountDollars < 1 || body.AmountDollars > 10000 {
 		writeError(w, http.StatusBadRequest, "invalid amount")
 		return
 	}
@@ -122,11 +124,18 @@ func (h *H) handleCompletedCheckout(r *http.Request, s *stripe.CheckoutSession) 
 		if rows.Scan(&token) != nil {
 			continue
 		}
-		_ = h.APNS.Send(r.Context(), &apns.Notification{
+		if err := h.APNS.Send(r.Context(), &apns.Notification{
 			DeviceToken: token,
 			PushType:    "alert",
 			Priority:    10,
 			Payload:     payload,
-		})
+		}); err != nil {
+			var inv *apns.ErrInvalidToken
+			if errors.As(err, &inv) {
+				h.markTokenInactive(r.Context(), token)
+				continue
+			}
+			log.Printf("handleCompletedCheckout send %d: %v", userID, err)
+		}
 	}
 }

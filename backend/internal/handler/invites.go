@@ -67,7 +67,9 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 		}
 		token, _ := inviteToken()
 		acceptURL := siteBase() + "/accept-invite?token=" + token + "&type=partner"
-		_ = h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL)
+		if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
+			fmt.Printf("[invite] email error (existing user): %v\n", sendErr)
+		}
 		writeJSON(w, http.StatusCreated, map[string]any{
 			"status":          "connected",
 			"relationship_id": relID,
@@ -233,7 +235,9 @@ func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
 			groupID, inviteeID,
 		).Scan(&joinedAt); err == nil {
 			acceptURL := fmt.Sprintf("%s/groups/%d", siteBase(), groupID)
-			_ = h.Email.SendGroupInvite(req.Email, inviterName, groupName, acceptURL)
+			if sendErr := h.Email.SendGroupInvite(req.Email, inviterName, groupName, acceptURL); sendErr != nil {
+				fmt.Printf("[invite] group email error (existing user): %v\n", sendErr)
+			}
 			writeJSON(w, http.StatusCreated, map[string]any{
 				"status":  "added",
 				"user_id": inviteeID,

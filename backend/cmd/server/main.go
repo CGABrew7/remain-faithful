@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -106,6 +107,75 @@ func (sw *statusWriter) WriteHeader(code int) {
 	sw.ResponseWriter.WriteHeader(code)
 }
 
+// authRateLimiter limits unauthenticated auth endpoints to 10 requests per
+// minute per IP (fixed window). Uses only stdlib; no external dependency.
+func authRateLimiter() mux.MiddlewareFunc {
+	type window struct {
+		count int
+		start time.Time
+	}
+	var mu sync.Mutex
+	windows := make(map[string]*window)
+
+	// Prune windows older than 2 minutes every 5 minutes.
+	go func() {
+		t := time.NewTicker(5 * time.Minute)
+		defer t.Stop()
+		for range t.C {
+			mu.Lock()
+			cutoff := time.Now().Add(-2 * time.Minute)
+			for ip, w := range windows {
+				if w.start.Before(cutoff) {
+					delete(windows, ip)
+				}
+			}
+			mu.Unlock()
+		}
+	}()
+
+	allow := func(ip string) bool {
+		mu.Lock()
+		defer mu.Unlock()
+		now := time.Now()
+		w, ok := windows[ip]
+		if !ok || now.Sub(w.start) >= time.Minute {
+			windows[ip] = &window{count: 1, start: now}
+			return true
+		}
+		w.count++
+		return w.count <= 10
+	}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !allow(clientIP(r)) {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Retry-After", "60")
+				w.WriteHeader(http.StatusTooManyRequests)
+				fmt.Fprint(w, `{"error":"too many requests — try again in a minute"}`)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// clientIP extracts the real client IP, preferring the Fly-Client-IP header
+// set by Fly.io's edge proxy (which cannot be spoofed by the client).
+func clientIP(r *http.Request) string {
+	if ip := r.Header.Get("Fly-Client-IP"); ip != "" {
+		return ip
+	}
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		return strings.SplitN(xff, ",", 2)[0]
+	}
+	host := r.RemoteAddr
+	if i := strings.LastIndex(host, ":"); i != -1 {
+		return host[:i]
+	}
+	return host
+}
+
 // corsMiddleware sets CORS headers. Only origins listed in ALLOWED_ORIGINS (comma-separated) receive
 // the Allow-Origin echo; preflight OPTIONS requests are short-circuited with 204.
 func corsMiddleware(allowedOrigins []string) mux.MiddlewareFunc {
@@ -145,13 +215,15 @@ func routes(h *handler.H) http.Handler {
 		fmt.Fprint(w, `{"status":"ok"}`)
 	}).Methods(http.MethodGet)
 
-	// Public auth routes
-	r.HandleFunc("/auth/register",       h.Register).Methods(http.MethodPost)
-	r.HandleFunc("/auth/login",          h.Login).Methods(http.MethodPost)
-	r.HandleFunc("/auth/apple",          h.AppleSignIn).Methods(http.MethodPost)
-	r.HandleFunc("/auth/google",         h.GoogleSignIn).Methods(http.MethodPost)
-	r.HandleFunc("/auth/forgot-password", h.ForgotPassword).Methods(http.MethodPost)
-	r.HandleFunc("/auth/reset-password", h.ResetPassword).Methods(http.MethodPost)
+	// Public auth routes — rate-limited to 10 requests/minute per IP.
+	auth := r.PathPrefix("/auth").Subrouter()
+	auth.Use(authRateLimiter())
+	auth.HandleFunc("/register",        h.Register).Methods(http.MethodPost)
+	auth.HandleFunc("/login",           h.Login).Methods(http.MethodPost)
+	auth.HandleFunc("/apple",           h.AppleSignIn).Methods(http.MethodPost)
+	auth.HandleFunc("/google",          h.GoogleSignIn).Methods(http.MethodPost)
+	auth.HandleFunc("/forgot-password", h.ForgotPassword).Methods(http.MethodPost)
+	auth.HandleFunc("/reset-password",  h.ResetPassword).Methods(http.MethodPost)
 
 	// Protected routes — JWT required
 	api := r.NewRoute().Subrouter()

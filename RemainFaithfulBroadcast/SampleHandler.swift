@@ -338,7 +338,10 @@ class SampleHandler: RPBroadcastSampleHandler {
             // intermediate Obj-C objects during rasterization.
             guard let cgImage: CGImage = autoreleasepool(invoking: {
                 ciContext.createCGImage(renderImage, from: renderImage.extent)
-            }) else { return }
+            }) else {
+                logger.warning("analyzeFrame: createCGImage returned nil — memory pressure \(availableMemoryMB()) MB")
+                return
+            }
 
             // ciImage (pixel buffer wrapper) is no longer needed — do not capture it.
             let preMemMB = availableMemoryMB()

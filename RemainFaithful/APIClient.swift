@@ -361,7 +361,7 @@ final class APIClient {
     // MARK: - Primitives
 
     private func get<T: Decodable>(_ path: String) async throws -> T {
-        try? await refreshTokenIfNeeded()
+        do { try await refreshTokenIfNeeded() } catch { print("[APIClient] token refresh: \(error)") }
         var req = try makeRequest(path)
         try attachToken(&req)
         return try await send(req)
@@ -370,7 +370,7 @@ final class APIClient {
     private func post<Body: Encodable, T: Decodable>(_ path: String,
                                                       body: Body,
                                                       auth: Bool = true) async throws -> T {
-        try? await refreshTokenIfNeeded()
+        do { try await refreshTokenIfNeeded() } catch { print("[APIClient] token refresh: \(error)") }
         var req = try makeRequest(path, method: "POST")
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)
@@ -395,7 +395,7 @@ final class APIClient {
     /// PUT that returns a decoded response body.
     private func put<Body: Encodable, T: Decodable>(_ path: String,
                                                      body: Body) async throws -> T {
-        try? await refreshTokenIfNeeded()
+        do { try await refreshTokenIfNeeded() } catch { print("[APIClient] token refresh: \(error)") }
         var req = try makeRequest(path, method: "PUT")
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)

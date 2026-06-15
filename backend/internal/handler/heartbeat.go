@@ -99,7 +99,6 @@ func (h *H) checkHeartbeats(ctx context.Context) {
 			screen: screenState.String,
 		})
 	}
-	rows.Close()
 
 	for _, u := range users {
 		// Skip idle users under 30 min — expected inactivity.
