@@ -184,30 +184,25 @@ RF is built for both. The mechanism is behavioral. The foundation is covenantal.
     body: `
 The centerpiece of Remain Faithful's privacy model is on-device AI classification. Here's what that means in practice, and why it matters.
 
-## The ReplayKit Sandbox
+## The ReplayKit Extension
 
-iOS's ReplayKit framework creates a separate extension process for screen recording. This process is sandboxed: it cannot make network requests, cannot access your files, and cannot communicate with the outside world. Its only channel is a shared app group container that connects it to the main RF app.
+iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads only alert metadata when a frame is flagged. That metadata contains the alert category, severity level, a brief static description, and a timestamp. No screen content, OCR text, or screenshots ever leave your device.
 
-This architectural constraint means your screen content is physically incapable of being transmitted over the network from the broadcast extension. That's not a policy commitment. It's a technical guarantee built into how iOS works.
+That's not a policy commitment. Anyone can verify it by reading the open-source code.
 
-## Three Layers of On-Device Classification
+## Two Tiers of On-Device Classification
 
-**Layer 1: URL Blocklist + Regex**
+**Tier 1: URL Blocklist + Keyword Matching**
 When a browser is detected, visible URLs are checked against a local blocklist of known adult domains. Visible text is pattern-matched against regex rules for explicit content categories. This is fast, deterministic, and 100% local.
 
-**Layer 2: Apple Vision + SensitiveContentAnalysis**
-Apple provides two relevant frameworks: Vision OCR (which extracts text from screen frames) and SensitiveContentAnalysis (which detects nudity and explicit images). Both run on the device's Neural Engine, the dedicated AI chip in modern iPhones. No server involved.
-
-**Layer 3: Local Keyword Classifier**
-Our open-source keyword classifier assigns weighted scores across content categories based on the OCR output. The weights are tuned for common explicit content patterns without requiring image analysis.
-
-Only if all three layers are uncertain does an anonymized category query reach our cloud classifier. That query contains no screen content.
+**Tier 2: Apple Vision + SensitiveContentAnalysis + Local Classifier**
+Apple provides two relevant frameworks: Vision OCR (which extracts text from screen frames) and SensitiveContentAnalysis (which detects nudity and explicit images). A local keyword classifier then scores the OCR output across content categories. All three run on the device's Neural Engine, the dedicated AI chip in modern iPhones. No server involved at any stage.
 
 ## Why This Architecture Matters
 
 A lot of accountability tools say they're "private." What that usually means is that they've made a policy commitment not to look at your data.
 
-Policy commitments can change. Architectures are harder to change. By building on the ReplayKit sandbox and running classification on-device, we've created a system where the privacy isn't dependent on us being trustworthy. It's dependent on the physics of how iOS processes information.
+Policy commitments can change. Code is harder to change unnoticed. By running classification entirely on-device and making the codebase open source, we've created a system where the privacy guarantee doesn't depend on trusting us — it depends on reading the code.
 
 We think that's a more honest form of privacy.
     `.trim(),

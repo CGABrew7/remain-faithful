@@ -82,7 +82,7 @@ export default function PrivacyPage() {
               <li>Any visual content from your screen</li>
             </ul>
             <p>
-              The broadcast extension runs in a sandboxed process that cannot access the internet. It can only communicate with the main Remain Faithful app process via a shared app group container, ensuring that no screen content can be exfiltrated.
+              The broadcast extension uploads only alert metadata — category, severity, a static summary, and timestamp — when a frame is flagged. It never transmits screen content, OCR text, screenshots, or any visual representation of what was on screen. The open-source code makes this verifiable by anyone.
             </p>
           </Section>
 
@@ -113,9 +113,6 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong className="text-[#F0EDE8]">Stripe:</strong> Donation payment processing. Stripe is PCI-compliant. We do not store card data. See Stripe&apos;s privacy policy for details.
-              </li>
-              <li>
-                <strong className="text-[#F0EDE8]">Anthropic:</strong> In limited cases where on-device classification is uncertain, a text category query (never image content) may be sent to Anthropic&apos;s API for classification. No personally identifiable information is included in these requests.
               </li>
               <li>
                 <strong className="text-[#F0EDE8]">Google Analytics:</strong> Website analytics only. Not present in the iOS app.

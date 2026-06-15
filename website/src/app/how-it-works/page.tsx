@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: 'What exactly gets monitored?',
-    a: 'Remain Faithful uses two monitoring layers. Layer A — always-on Screen Time monitoring — watches which apps you open and which web categories you visit. It runs persistently in the background, requires no screen broadcast permission, and survives device restarts. Layer B — Deep Scan — is started intentionally for high-risk periods and uses Apple\'s ReplayKit to run on-device AI (Vision OCR, SensitiveContentAnalysis) on screen frames. Deep Scan cannot analyze DRM-protected streaming video such as Netflix or Disney+; it covers browsers, photos, social media, and most non-DRM apps. In fewer than 5% of Deep Scan events, a text-only category query (never screen content) is sent to our cloud classifier.',
+    a: 'Remain Faithful uses two monitoring layers. Layer A — always-on Screen Time monitoring — watches which apps you open and which web categories you visit. It runs persistently in the background, requires no screen broadcast permission, and survives device restarts. Layer B — Deep Scan — is started intentionally for high-risk periods and uses Apple\'s ReplayKit to run on-device AI (Vision OCR, SensitiveContentAnalysis) on screen frames. All classification is on-device. Deep Scan cannot analyze DRM-protected streaming video such as Netflix or Disney+; it covers browsers, photos, social media, and most non-DRM apps.',
   },
   {
     q: 'How do I leave a group?',
@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'The broadcast extension is part of Deep Scan (Layer B) — the optional, user-initiated mode. iOS\'s ReplayKit allows a sandboxed extension process to capture screen frames. This extension runs in complete isolation from the main app, has no network access, and never stores or transmits frames. It runs AI analysis locally and only sends a structured alert event (never the frame) to the main app if something is flagged. The always-on Layer A monitoring does not use a broadcast extension — it uses Apple\'s Screen Time framework instead.',
+    a: 'The broadcast extension is part of Deep Scan (Layer B) — the optional, user-initiated mode. iOS\'s ReplayKit allows a sandboxed extension process to capture screen frames. The extension runs AI analysis entirely on-device and, when something is flagged, uploads only alert metadata (category, severity, summary, and timestamp) — never the screen frame itself. Screen content, OCR text, and screenshots are never transmitted. The always-on Layer A monitoring does not use a broadcast extension — it uses Apple\'s Screen Time framework instead.',
   },
 ]
 
@@ -192,14 +192,8 @@ export default function HowItWorksPage() {
               {
                 step: '4',
                 title: 'On-Device AI Analyzes Screen Frames',
-                body: "A sandboxed ReplayKit broadcast extension captures screen frames without network access. Each frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple's nudity detector), and a local keyword classifier — all running on your device's Neural Engine. Frames are never stored or transmitted.",
+                body: "A sandboxed ReplayKit broadcast extension captures screen frames. Each frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple's nudity detector), and a local keyword classifier — all running on your device's Neural Engine. Classification is entirely on-device. Frames are never stored or transmitted.",
                 note: 'Deep Scan cannot analyze DRM-protected streaming video (Netflix, Disney+, etc.). It monitors browsers, photos, social media, and most non-DRM apps.',
-              },
-              {
-                step: '5',
-                title: 'Cloud Fallback for Uncertain Cases (<5%)',
-                body: 'If the on-device classifiers are uncertain and content appears borderline, a text-only category query — never the screen content — is sent to our secure Claude-based classifier. This affects fewer than 5% of Deep Scan events.',
-                note: undefined as string | undefined,
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
@@ -224,12 +218,12 @@ export default function HowItWorksPage() {
             {/* Alert delivery — both layers */}
             <div className="flex gap-6 p-5 rounded-xl border border-[#C9A84C]/25 bg-[#162235] ml-4 mt-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
-                6
+                5
               </div>
               <div>
                 <h3 className="font-semibold text-[#F0EDE8] mb-1">Alert Delivered to Partners (Both Layers)</h3>
                 <p className="text-sm text-[#8A9BB0] leading-relaxed">
-                  When either layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: which app, category, severity, and timestamp. Partners see nothing beyond those four data points — no screenshots, no raw content, ever.
+                  When either layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: the alert category, severity level, a brief system-generated description, and timestamp. Partners see nothing beyond those data points — no screenshots, no raw content, ever.
                 </p>
               </div>
             </div>

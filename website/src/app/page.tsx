@@ -37,7 +37,7 @@ const faqs = [
   },
   {
     q: 'How is this different from other accountability apps?',
-    a: 'Remain Faithful is different in three key ways: it is 100% free forever, nearly all content analysis happens on your device — a text-only cloud fallback handles under 5% of edge cases and never includes screenshots or raw content, and the entire codebase is open source so anyone can verify exactly what it does.',
+    a: 'Remain Faithful is different in three key ways: it is 100% free forever, all content classification happens entirely on your device — no screen content ever leaves your device for classification — and the entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
   },
   {
     q: 'Does this work on Android?',
@@ -198,7 +198,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <FeatureCard
               icon={
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
@@ -219,6 +219,18 @@ export default function HomePage() {
               }
               title="On-Device Privacy"
               body="All AI classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see metadata, not your screen."
+            />
+            <FeatureCard
+              icon={
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+                  <line x1="12" y1="2" x2="12" y2="2.01"/>
+                  <path d="M12 2v0"/>
+                  <rect x="9" y="3" width="6" height="4" rx="1"/>
+                </svg>
+              }
+              title="Always-On Blocking"
+              body="Select the apps and categories you want blocked. They stay shielded continuously — through lock screen, reboot, and app restarts. Your partners are notified when a blocked app is attempted."
             />
             <FeatureCard
               icon={
@@ -381,7 +393,6 @@ export default function HomePage() {
                     'Alert category (e.g. "Adult Content")',
                     'Severity level (Low / Medium / High)',
                     'Timestamp',
-                    'Which app triggered the alert',
                     'Brief system-generated description',
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-[#8A9BB0]">
@@ -396,7 +407,7 @@ export default function HomePage() {
             </div>
             <div className="bg-[#162235]/60 px-6 py-4 border-t border-[#1E3050]">
               <p className="text-xs text-[#8A9BB0]/80 leading-relaxed">
-                In rare cases where our on-device AI is uncertain (&lt;5% of events), a text-only category query — never screenshots or raw content — may be sent to our secure classification server. No identifying information is included.{' '}
+                Classification is fully on-device. Only alert metadata (category, severity, summary, and timestamp) is ever uploaded — no screen content, no OCR text, no screenshots.{' '}
                 <Link href="/privacy-architecture" className="text-[#C9A84C] hover:underline">
                   Full Privacy Architecture →
                 </Link>

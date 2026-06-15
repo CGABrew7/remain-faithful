@@ -49,15 +49,15 @@ export default function PrivacyArchitecturePage() {
         </div>
       </section>
 
-      {/* Section 1: Three-Tier Pipeline */}
+      {/* Section 1: Two-Tier Pipeline */}
       <section className="py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
-              The Three-Tier Classification Pipeline
+              The Two-Tier On-Device Classification Pipeline
             </h2>
             <p className="text-[#8A9BB0] max-w-2xl mx-auto">
-              Every screen frame passes through a tiered pipeline designed to keep your content on your device in the vast majority of cases.
+              Every screen frame is classified entirely on your device. No screen content is ever sent off-device — only alert metadata (category, severity, summary, timestamp) is uploaded.
             </p>
           </div>
 
@@ -73,7 +73,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Start"
                 badgeColor="#162235"
                 title="Your Device Captures a Screen Frame"
-                desc="Apple's ReplayKit creates a sandboxed broadcast extension process. This process cannot make network requests — it is architecturally isolated from the internet."
+                desc="Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, only the alert metadata — category, severity, and a static summary — is uploaded. Screen content, OCR text, and screenshots are never transmitted."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
@@ -85,7 +85,7 @@ export default function PrivacyArchitecturePage() {
               {/* Tier 1 */}
               <PipelineStep
                 side="center"
-                badge="Tier 1 · 70% of cases"
+                badge="Tier 1 · On-Device Rules"
                 badgeColor="#C9A84C"
                 title="Rules: URL Blocklist + Keyword Matching"
                 desc="Known adult domains are checked against a local blocklist. Visible text is pattern-matched against regex rules. Fast, deterministic, 100% on-device. No AI required."
@@ -100,28 +100,14 @@ export default function PrivacyArchitecturePage() {
               {/* Tier 2 */}
               <PipelineStep
                 side="center"
-                badge="Tier 2 · 25% of cases"
+                badge="Tier 2 · On-Device AI"
                 badgeColor="#C9A84C"
-                title="On-Device AI: Apple SensitiveContentAnalysis + Text Classifier"
-                desc="Apple Vision OCR extracts text; SensitiveContentAnalysis detects explicit imagery. Both run on the device's Neural Engine — the dedicated AI chip in modern iPhones. No server involved."
+                title="On-Device AI: Apple SensitiveContentAnalysis + Vision OCR + Text Classifier"
+                desc="Apple Vision OCR extracts text; SensitiveContentAnalysis detects explicit imagery; a local keyword classifier scores the result. All three run on the device's Neural Engine — the dedicated AI chip in modern iPhones. No server involved at any stage."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
                     <circle cx="12" cy="12" r="3"/>
                     <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-                  </svg>
-                }
-              />
-
-              {/* Tier 3 */}
-              <PipelineStep
-                side="center"
-                badge="Tier 3 · <5% of cases"
-                badgeColor="#8A9BB0"
-                title="Rare Cloud Fallback: Text-Only Category Query"
-                desc="Only when both Tier 1 and Tier 2 are uncertain, an anonymized category query is sent to our secure classification server. This query contains no screenshots, no URLs, no personal information — only the anonymized text category."
-                icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
-                    <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>
                   </svg>
                 }
               />
@@ -132,7 +118,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Result"
                 badgeColor="#162235"
                 title="Discreet Alert Delivered to Partners"
-                desc="Partners receive: category label (e.g., 'Adult Content'), severity level (Low/Medium/High), and timestamp. Never a screenshot. Never your browsing history. Never raw content."
+                desc="Partners receive: category label (e.g., 'Adult Content'), severity level, and timestamp. Never a screenshot. Never your browsing history. Never raw content. The open-source code lets anyone verify exactly what is uploaded."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
                     <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
@@ -146,7 +132,7 @@ export default function PrivacyArchitecturePage() {
             className="mt-10 p-5 rounded-2xl border border-[#C9A84C]/20 text-sm text-[#8A9BB0] text-center"
             style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
           >
-            In the rare Tier 3 case, the server receives only an anonymized text category query — never screenshots, never identifying information. Full encryption in transit via TLS 1.3.
+            Classification is fully on-device. The only data that leaves your device is alert metadata — category, severity, summary, and timestamp. Screen content never leaves your device, ever.
           </div>
         </div>
       </section>
@@ -236,7 +222,7 @@ export default function PrivacyArchitecturePage() {
           </div>
 
           <p className="text-center text-sm text-[#8A9BB0] mt-8">
-            All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. The ReplayKit broadcast extension is sandboxed and cannot make any network requests directly.
+            All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. The broadcast extension uploads only alert metadata — never screen content — over an encrypted connection.
           </p>
         </div>
       </section>
@@ -259,7 +245,7 @@ export default function PrivacyArchitecturePage() {
               },
               {
                 threat: 'What if data is intercepted in transit?',
-                answer: 'All communication between the app, server, and Apple Push Notification Service uses TLS 1.3 with certificate pinning. Interception would yield only encrypted ciphertext with no practical path to decryption.',
+                answer: 'All communication between the app, server, and Apple Push Notification Service uses TLS 1.3. Interception would yield only encrypted ciphertext. All data in transit is encrypted end-to-end.',
               },
               {
                 threat: 'What if a partner is malicious?',
@@ -267,7 +253,7 @@ export default function PrivacyArchitecturePage() {
               },
               {
                 threat: 'What if the app itself is compromised?',
-                answer: 'The entire codebase is open source and auditable by anyone. We run pre-commit secret scanning on every contribution. The ReplayKit sandbox architecture means the broadcast extension physically cannot exfiltrate screen content over the network.',
+                answer: 'The entire codebase is open source and auditable by anyone. We run pre-commit secret scanning on every contribution. Anyone can read the source and confirm that classification is fully on-device and that only alert metadata — never screen content — is ever transmitted.',
               },
             ].map((t) => (
               <div key={t.threat} className="rounded-2xl p-7 border border-[#1E3050] bg-[#162235]">
@@ -296,7 +282,7 @@ export default function PrivacyArchitecturePage() {
                 The entire Remain Faithful codebase — iOS app, Go backend, and this website — is publicly available on GitHub. This is not optional for an app that handles sensitive behavioral data.
               </p>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
-                Our privacy architecture is not a policy claim. It is verifiable in the code. Anyone can confirm that the broadcast extension cannot make network requests, that classification happens on-device, and that partner alerts contain only metadata.
+                Our privacy architecture is not a policy claim. It is verifiable in the code. Anyone can confirm that classification happens entirely on-device and that only alert metadata — never screen content — is ever transmitted.
               </p>
               <p className="text-[#8A9BB0] leading-relaxed mb-6">
                 Security researchers and privacy advocates are invited to review, test, and report findings. We take responsible disclosure seriously.
@@ -357,6 +343,7 @@ export default function PrivacyArchitecturePage() {
                 <tr>
                   <th className="text-left pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Privacy Dimension</th>
                   <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Remain Faithful</th>
+                  {/* VERIFY: confirm competitor prices are current before publishing */}
                   <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider A ($16/mo)</th>
                   <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider B ($20/mo)</th>
                 </tr>
@@ -367,7 +354,7 @@ export default function PrivacyArchitecturePage() {
                   ['Open source codebase', '✓ Yes', '✗ No', '✗ No'],
                   ['Screenshots stored on server', '✗ Never', '✓ Yes', '✓ Yes'],
                   ['Partners see raw content', '✗ Never', '✓ Yes', '✓ Yes'],
-                  ['Cloud dependency for classification', '< 5% of events', 'Always', 'Always'],
+                  ['Cloud dependency for classification', 'Zero — fully on-device', 'Always', 'Always'],
                   ['Cost', '100% Free', 'Paid subscription', 'Paid subscription'],
                   ['Auditable by security researchers', '✓ Yes', '✗ No', '✗ No'],
                 ].map(([dim, rf, ce, ea]) => (
