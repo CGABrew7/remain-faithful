@@ -138,6 +138,7 @@ private struct Tier1Rules {
         "\\b(casino|sports.?betting|place.?a.?bet|draftkings|fanduel|betmgm|sportsbook)\\b",
         "\\b(gore|beheading|snuff|bestgore|liveleak|graphic.?violence|execution.?video)\\b",
         "\\b(suicide.?method|how.?to.?kill.?myself|self.?harm|end.?my.?life|suicidal)\\b",
+        "\\b(gambling|wager|bovada|pokerstars|blackjack|roulette|murder.?video)\\b",
     ].compactMap { try? NSRegularExpression(pattern: $0, options: .caseInsensitive) }
 
     static func matchesURL(_ domain: String) -> Bool {
@@ -176,26 +177,6 @@ private func dHash(from ciImage: CIImage, context: CIContext) -> UInt64 {
 }
 
 private func hammingDistance(_ a: UInt64, _ b: UInt64) -> Int { (a ^ b).nonzeroBitCount }
-
-// MARK: - Tier 3 cloud fallback
-
-private func sendToClassify(text: String, apiBase: String, defaults: UserDefaults?) async -> TextClassification? {
-    guard !text.isEmpty, let url = URL(string: apiBase + "/classify") else { return nil }
-    var req = URLRequest(url: url, timeoutInterval: 10)
-    req.httpMethod = "POST"
-    req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    guard let body = try? JSONSerialization.data(withJSONObject: ["text": String(text.prefix(500))]) else { return nil }
-    if let secret = defaults?.string(forKey: "classifySecret"), !secret.isEmpty {
-        req.setValue(secret, forHTTPHeaderField: "X-Classify-Secret")
-    }
-    req.httpBody = body
-    guard let (data, _) = try? await URLSession.shared.data(for: req),
-          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-          let cat  = json["category"] as? String,
-          let conf = json["confidence"] as? Double,
-          let category = ContentCategory(rawValue: cat) else { return nil }
-    return TextClassification(category: category, confidence: Float(conf))
-}
 
 // MARK: - Dedup store
 
@@ -363,18 +344,14 @@ class SampleHandler: RPBroadcastSampleHandler {
             let preMemMB = availableMemoryMB()
             logger.info("Tier 2 analysis — pre: \(preMemMB) MB available (frame \(Int(extent.width))×\(Int(extent.height)) → \(Int(renderImage.extent.width))×\(Int(renderImage.extent.height)))")
 
-            let capturedDefaults    = sharedDefaults
             let capturedAnalyzer    = scaAnalyzer
             let capturedClassifier  = textClassifier
-            let apiBase = capturedDefaults?.string(forKey: "apiBaseURL") ?? "http://localhost:8080"
 
             Task.detached(priority: .utility) { [self] in
                 await self.analyzeFrame(
                     cgImage: cgImage,       // downscaled, ~2 MB
                     scaAnalyzer: capturedAnalyzer,
                     textClassifier: capturedClassifier,
-                    defaults: capturedDefaults,
-                    apiBase: apiBase,
                     preMemMB: preMemMB
                 )
             }
@@ -405,8 +382,6 @@ class SampleHandler: RPBroadcastSampleHandler {
         cgImage: CGImage,            // downscaled to ≤960 px, ~2 MB
         scaAnalyzer: SCSensitivityAnalyzer,
         textClassifier: FallbackTextClassifier,
-        defaults: UserDefaults?,
-        apiBase: String,
         preMemMB: Int
     ) async {
         // ——— TIER 2a: Vision OCR ———
@@ -487,26 +462,14 @@ class SampleHandler: RPBroadcastSampleHandler {
         logger.info("Composite: \(compositeCategory.rawValue) @ \(String(format: "%.2f", compositeConfidence)) — post: \(postMemMB) MB available (Δ\(preMemMB - postMemMB) MB used)")
 
         // ——— Route by confidence ———
-        if compositeConfidence >= 0.3 && compositeCategory != .clean {
-            var finalCategory   = compositeCategory
-            var finalConfidence = compositeConfidence
-
-            if compositeConfidence >= 0.5 && compositeConfidence < 0.7 {
-                logger.info("Tier 3 /classify — confidence \(String(format: "%.2f", compositeConfidence))")
-                if let cloud = await sendToClassify(text: ocrText, apiBase: apiBase, defaults: defaults) {
-                    finalCategory   = cloud.category
-                    finalConfidence = cloud.confidence
-                    logger.info("Tier 3 result: \(cloud.category.rawValue) @ \(String(format: "%.2f", cloud.confidence))")
-                }
-            }
-
-            if finalCategory != .clean && finalConfidence >= 0.3 {
-                let tier = compositeConfidence >= 0.7 ? 2 : (finalConfidence >= 0.7 ? 3 : 2)
-                await handleEvent(makeEvent(category: finalCategory, tier: tier,
-                                            confidence: finalConfidence,
-                                            summary: buildSummary(category: finalCategory,
-                                                                   confidence: finalConfidence)))
-            }
+        // SCA is high-precision (Apple on-device model); allow its 0.85 signal at 0.3.
+        // Text-only composites require >= 0.5 to avoid false positives without cloud verify.
+        let eventThreshold: Float = scaIsSensitive ? 0.3 : 0.5
+        if compositeConfidence >= eventThreshold && compositeCategory != .clean {
+            await handleEvent(makeEvent(category: compositeCategory, tier: 2,
+                                        confidence: compositeConfidence,
+                                        summary: buildSummary(category: compositeCategory,
+                                                              confidence: compositeConfidence)))
         }
         // cgImage is released here as analyzeFrame returns — no cross-frame retention.
     }

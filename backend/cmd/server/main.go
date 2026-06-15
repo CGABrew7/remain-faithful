@@ -13,7 +13,6 @@ import (
 	"time"
 
 	rfauth "remain-faithful/backend/internal/auth"
-	"remain-faithful/backend/internal/anthropic"
 	"remain-faithful/backend/internal/apns"
 	"remain-faithful/backend/internal/email"
 	"remain-faithful/backend/internal/handler"
@@ -51,11 +50,10 @@ func main() {
 		log.Printf("apns: configured for %s", apnsClient.Environment())
 	}
 
-	emailClient   := email.New()
-	claudeClient  := anthropic.New()
-	stripeClient  := payment.New()
+	emailClient  := email.New()
+	stripeClient := payment.New()
 
-	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Claude: claudeClient, Stripe: stripeClient}
+	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Stripe: stripeClient}
 
 	srv := &http.Server{
 		Addr:         ":" + port(),
@@ -108,21 +106,6 @@ func (sw *statusWriter) WriteHeader(code int) {
 	sw.ResponseWriter.WriteHeader(code)
 }
 
-// classifyMiddleware guards the /classify endpoint with an optional shared secret.
-// If CLASSIFY_SECRET is empty the endpoint remains open (backward compatible).
-func classifyMiddleware(secret string) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if secret != "" && r.Header.Get("X-Classify-Secret") != secret {
-				http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-				return
-			}
-			http.MaxBytesReader(w, r.Body, 4096)
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
 // corsMiddleware sets CORS headers. Only origins listed in ALLOWED_ORIGINS (comma-separated) receive
 // the Allow-Origin echo; preflight OPTIONS requests are short-circuited with 204.
 func corsMiddleware(allowedOrigins []string) mux.MiddlewareFunc {
@@ -161,10 +144,6 @@ func routes(h *handler.H) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"status":"ok"}`)
 	}).Methods(http.MethodGet)
-
-	// Tier 3 classification — optional shared-secret auth
-	classifySecret := getenv("CLASSIFY_SECRET", "")
-	r.Handle("/classify", classifyMiddleware(classifySecret)(http.HandlerFunc(h.Classify))).Methods(http.MethodPost)
 
 	// Public auth routes
 	r.HandleFunc("/auth/register",       h.Register).Methods(http.MethodPost)

@@ -31,7 +31,6 @@ services:
       DB_NAME:     remainfaithful
       JWT_SECRET:        change-me-in-production   # override in .env for real deployments
       PORT:              "8080"
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}    # Tier 3 classification via Claude
       SENDGRID_API_KEY:  ${SENDGRID_API_KEY:-}     # password reset emails
       APNS_KEY_ID:       ${APNS_KEY_ID:-}
       APNS_TEAM_ID:      ${APNS_TEAM_ID:-}

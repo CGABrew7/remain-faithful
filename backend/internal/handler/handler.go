@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"remain-faithful/backend/internal/anthropic"
 	"remain-faithful/backend/internal/apns"
 	"remain-faithful/backend/internal/payment"
 )
@@ -27,17 +26,11 @@ type EmailSender interface {
 	SendContact(fromEmail, fromName, subject, message, toEmail string) error
 }
 
-// Classifier is the interface used by handlers to classify content via Claude.
-type Classifier interface {
-	Classify(ctx context.Context, text string) (*anthropic.ClassificationResult, error)
-}
-
 // H holds shared dependencies for all HTTP handlers.
 type H struct {
 	DB     *sql.DB
 	APNS   APNSSender
 	Email  EmailSender
-	Claude Classifier
 	Stripe *payment.Client
 }
 
