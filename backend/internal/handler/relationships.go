@@ -71,18 +71,29 @@ func (h *H) CreateRelationship(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ListRelationships returns all relationships the authenticated user has.
+// ListRelationships returns all relationships the authenticated user has,
+// from both directions: rows where the user is the monitored party (user_id)
+// AND rows where the user is the accountability partner (partner_id).
+// Includes pin_set so the iOS client can render partner-side PIN management.
 // GET /relationships
 func (h *H) ListRelationships(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
+	// Direction 1: caller is the monitored user — partner field = partner_id person.
+	// Direction 2: caller is the accountability partner — partner field = user_id person.
 	rows, err := h.DB.QueryContext(r.Context(), `
 		SELECT r.id, r.user_id, r.partner_id, r.type, r.status, r.created_at,
-		       r.is_primary, u.name, u.email
+		       r.is_primary, r.pin_hash IS NOT NULL, u.name, u.email
 		FROM   relationships r
 		JOIN   users u ON u.id = r.partner_id
 		WHERE  r.user_id = $1
-		ORDER  BY r.created_at DESC
+		UNION ALL
+		SELECT r.id, r.user_id, r.partner_id, r.type, r.status, r.created_at,
+		       r.is_primary, r.pin_hash IS NOT NULL, u.name, u.email
+		FROM   relationships r
+		JOIN   users u ON u.id = r.user_id
+		WHERE  r.partner_id = $1
+		ORDER  BY created_at DESC
 	`, userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to list relationships")
@@ -103,6 +114,7 @@ func (h *H) ListRelationships(w http.ResponseWriter, r *http.Request) {
 		Status    string      `json:"status"`
 		CreatedAt string      `json:"created_at"`
 		IsPrimary bool        `json:"is_primary"`
+		PinSet    bool        `json:"pin_set"`
 		Partner   partnerInfo `json:"partner"`
 	}
 
@@ -112,12 +124,17 @@ func (h *H) ListRelationships(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(
 			&item.ID, &item.UserID, &item.PartnerID,
 			&item.Type, &item.Status, &item.CreatedAt,
-			&item.IsPrimary,
+			&item.IsPrimary, &item.PinSet,
 			&item.Partner.Name, &item.Partner.Email,
 		); err != nil {
 			continue
 		}
-		item.Partner.ID = item.PartnerID
+		// Partner.ID is the "other person" regardless of direction.
+		if item.UserID == userID {
+			item.Partner.ID = item.PartnerID
+		} else {
+			item.Partner.ID = item.UserID
+		}
 		result = append(result, item)
 	}
 	writeJSON(w, http.StatusOK, result)

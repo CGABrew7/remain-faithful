@@ -60,7 +60,18 @@ final class ActivitySelectionManager: ObservableObject {
     func setShieldingEnabled(_ enabled: Bool) {
         isShieldingEnabled = enabled
         defaults?.set(enabled, forKey: "screenTimeShieldingEnabled")
-        enabled ? applyShielding() : clearShielding()
+        if enabled {
+            applyShielding()
+        } else {
+            clearShielding()
+            // Notify accountability partner that app blocking was turned off.
+            Task {
+                try? await APIClient.shared.sendProtectionAlert(
+                    type: "shielding_disabled",
+                    detail: "App blocking was turned off."
+                )
+            }
+        }
     }
 
     func applyShielding() {

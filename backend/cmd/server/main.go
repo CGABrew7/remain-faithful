@@ -238,7 +238,12 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/relationships/invite",             h.InvitePartner).Methods(http.MethodPost)
 	api.HandleFunc("/relationships/accept-invite",      h.AcceptPartnerInvite).Methods(http.MethodPost)
 	api.HandleFunc("/relationships/{id}/primary",       h.SetPrimaryPartner).Methods(http.MethodPut)
+	api.HandleFunc("/relationships/{id}/pin",           h.SetRelationshipPIN).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/{id}/pin",           h.DeleteRelationshipPIN).Methods(http.MethodDelete)
 	api.HandleFunc("/relationships/{id}",               h.DeleteRelationship).Methods(http.MethodDelete)
+	api.HandleFunc("/protection/alerts",                h.SendProtectionAlert).Methods(http.MethodPost)
+	api.HandleFunc("/protection/pin",                   h.GetPINStatus).Methods(http.MethodGet)
+	api.HandleFunc("/protection/pin/verify",            h.VerifyPIN).Methods(http.MethodPost)
 	api.HandleFunc("/groups/leave-all",          h.LeaveAllGroups).Methods(http.MethodPost)
 	api.HandleFunc("/groups",                    h.ListMyGroups).Methods(http.MethodGet)
 	api.HandleFunc("/groups",                    h.CreateGroup).Methods(http.MethodPost)
@@ -446,6 +451,9 @@ func migrate(db *sql.DB) error {
 	CREATE INDEX IF NOT EXISTS idx_alerts_recipient ON alerts(recipient_user_id);
 
 	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS discussed BOOLEAN NOT NULL DEFAULT FALSE;
+
+	-- Protection features: partner PIN stored as bcrypt hash, never plaintext.
+	ALTER TABLE relationships ADD COLUMN IF NOT EXISTS pin_hash TEXT;
 	`)
 	return err
 }

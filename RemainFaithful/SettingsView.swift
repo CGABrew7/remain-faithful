@@ -15,7 +15,9 @@ struct SettingsView: View {
     @Environment(\.openURL)       private var openURL
     @Environment(\.requestReview) private var requestReview
 
-    @ObservedObject private var fcManager = FamilyControlsManager.shared
+    @ObservedObject private var fcManager      = FamilyControlsManager.shared
+    @ObservedObject private var lockoutManager = AppLockoutManager.shared
+    @ObservedObject private var pinManager     = PartnerPINManager.shared
 
     @State private var showScreenTime       = false
     @State private var showRetentionPicker  = false
@@ -28,6 +30,9 @@ struct SettingsView: View {
     @State private var showManageGroups     = false
     @State private var showHowItWorks       = false
     @State private var showEditProfile      = false
+    // PIN gate — shared across all gated actions in this view.
+    @State private var showPINGate          = false
+    @State private var pendingGatedAction:  (() -> Void)? = nil
 
     private var initials: String {
         let parts = userName.components(separatedBy: " ").filter { !$0.isEmpty }
@@ -46,6 +51,7 @@ struct SettingsView: View {
                     accountabilitySection
                     monitoringSection
                     screenTimeSection
+                    protectionSection
                     privacySection
                     supportUsSection
                     supportSection
@@ -57,6 +63,31 @@ struct SettingsView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .task { await pinManager.refreshStatus() }
+        .sheet(isPresented: $showPINGate) {
+            PINEntryView(
+                title: "Partner PIN Required",
+                subtitle: "Your accountability partner has secured this action with a PIN."
+            ) { pin in
+                let success = await PartnerPINManager.shared.verifyPIN(pin)
+                if success {
+                    await MainActor.run {
+                        pendingGatedAction?()
+                        pendingGatedAction = nil
+                        showPINGate = false
+                    }
+                } else {
+                    let name = UserDefaults.standard.string(forKey: "userName") ?? "User"
+                    await PartnerPINManager.shared.notifyWrongAttempt(userName: name)
+                }
+                return success
+            } onCancel: {
+                pendingGatedAction = nil
+                showPINGate = false
+            }
+            .presentationDetents([.fraction(0.78), .large])
+            .presentationDragIndicator(.hidden)
+        }
         .sheet(isPresented: $showRetentionPicker) {
             RetentionPickerSheet(days: $dataRetentionDays)
                 .presentationDetents([.height(320)])
@@ -151,7 +182,7 @@ struct SettingsView: View {
             TRow(icon: "shield.fill",
                  tint: Color(red: 0.20, green: 0.78, blue: 0.45),
                  label: "Monitoring Active",
-                 isOn: $monitoringActive)
+                 isOn: gatedMonitoringBinding)
             rowDivider
             TRow(icon: "bell.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
@@ -164,7 +195,7 @@ struct SettingsView: View {
 
     private var screenTimeSection: some View {
         SettingsSection(title: "SCREEN TIME") {
-            Button { showScreenTime = true } label: {
+            Button { withPINGate { showScreenTime = true } } label: {
                 HStack(spacing: 14) {
                     iconBadge("hand.raised.fill",
                               tint: Color(red: 0.52, green: 0.36, blue: 0.92))
@@ -202,6 +233,111 @@ struct SettingsView: View {
         case .denied:        return Color(red: 0.90, green: 0.30, blue: 0.30)
         case .notDetermined: return Color.rfGold.opacity(0.75)
         @unknown default:    return Color.white.opacity(0.40)
+        }
+    }
+
+    // MARK: - Protection (Feature 1 & 2)
+
+    private var protectionSection: some View {
+        SettingsSection(title: "PROTECTION") {
+            // Feature 1 — App Lockout tied to Deep Scan
+            HStack(spacing: 14) {
+                iconBadge("lock.shield.fill", tint: Color(red: 0.52, green: 0.36, blue: 0.92))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("App Lockout (Deep Scan)")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                    Text(lockoutManager.isEnabled
+                         ? "Shields lift only while Deep Scan is active"
+                         : "Off — optional hardening")
+                        .font(.system(size: 12))
+                        .foregroundStyle(lockoutManager.isEnabled
+                                         ? Color(red: 0.52, green: 0.36, blue: 0.92).opacity(0.80)
+                                         : Color.white.opacity(0.38))
+                }
+                Spacer()
+                Toggle("", isOn: lockoutToggleBinding)
+                    .labelsHidden()
+                    .tint(Color.rfGold)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            rowDivider
+            // Feature 2 — Partner PIN status (read-only for the monitored user)
+            HStack(spacing: 14) {
+                iconBadge(pinManager.isPINSet ? "lock.fill" : "lock.open.fill",
+                          tint: pinManager.isPINSet ? Color.rfGold : Color.white.opacity(0.35))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Partner PIN")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                    Text(pinManager.isPINSet
+                         ? "Active — your partner controls gated actions"
+                         : "Not set — ask your partner to enable in Manage Partners")
+                        .font(.system(size: 12))
+                        .foregroundStyle(pinManager.isPINSet
+                                         ? Color(red: 0.20, green: 0.78, blue: 0.45).opacity(0.80)
+                                         : Color.white.opacity(0.38))
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+    }
+
+    // Binding that intercepts turning OFF the lockout (requires PIN).
+    private var lockoutToggleBinding: Binding<Bool> {
+        Binding(
+            get: { lockoutManager.isEnabled },
+            set: { newValue in
+                if newValue {
+                    lockoutManager.setEnabled(true)
+                } else {
+                    withPINGate {
+                        lockoutManager.setEnabled(false)
+                        Task {
+                            try? await APIClient.shared.sendProtectionAlert(
+                                type: "lockout_disabled",
+                                detail: "\(userName) disabled the App Lockout feature."
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    // Binding that intercepts turning OFF monitoring (requires PIN).
+    private var gatedMonitoringBinding: Binding<Bool> {
+        Binding(
+            get: { monitoringActive },
+            set: { newValue in
+                if newValue {
+                    monitoringActive = true
+                } else {
+                    withPINGate {
+                        monitoringActive = false
+                        Task {
+                            try? await APIClient.shared.sendProtectionAlert(
+                                type: "monitoring_disabled",
+                                detail: "\(userName) turned off monitoring."
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    // If a partner PIN is set, stores the action and shows the PIN sheet.
+    // If no PIN is set, executes the action immediately.
+    private func withPINGate(_ action: @escaping () -> Void) {
+        if pinManager.isPINSet {
+            pendingGatedAction = action
+            showPINGate = true
+        } else {
+            action()
         }
     }
 
@@ -706,6 +842,10 @@ private struct ManagePartnersView: View {
     @State private var errorMsg: String?
     @State private var partnerToRemove: PartnerItem? = nil
     @State private var showRemoveConfirm = false
+    // Partner PIN management
+    @State private var pinPartner:       PartnerItem? = nil
+    @State private var showSetPINSheet   = false
+    @State private var showRemovePINConfirm = false
 
     private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
     private let red   = Color(red: 0.90, green: 0.30, blue: 0.30)
@@ -743,6 +883,35 @@ private struct ManagePartnersView: View {
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("This will end your accountability partnership. \(partnerToRemove?.name ?? "") will be notified.")
+        }
+        .alert("Remove Protection PIN", isPresented: $showRemovePINConfirm) {
+            Button("Remove PIN", role: .destructive) {
+                guard let p = pinPartner else { return }
+                Task {
+                    try? await APIClient.shared.removeRelationshipPIN(relationshipID: p.relationshipID)
+                    try? await APIClient.shared.sendProtectionAlert(
+                        type: "pin_removed",
+                        detail: "Protection PIN removed by accountability partner."
+                    )
+                    await loadPartners()
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This will remove the protection PIN for \(pinPartner?.name ?? "this person"). They will be able to change protection settings without a PIN.")
+        }
+        .sheet(isPresented: $showSetPINSheet) {
+            if let p = pinPartner {
+                SetPINSheet(
+                    relationshipID: p.relationshipID,
+                    partnerName: p.name,
+                    hasExistingPIN: p.pinSet
+                ) {
+                    Task { await loadPartners() }
+                }
+                .presentationDetents([.fraction(0.82), .large])
+                .presentationDragIndicator(.hidden)
+            }
         }
     }
 
@@ -801,7 +970,25 @@ private struct ManagePartnersView: View {
                                     .font(.system(size: 15))
                                     .foregroundStyle(partner.isPrimary ? Color.rfGold : Color.white.opacity(0.30))
                             }
-                            .padding(.trailing, 4)
+                            .padding(.trailing, 2)
+                            // PIN management — only visible when the current user is monitoring this person
+                            if partner.isMonitoringThem {
+                                Button {
+                                    pinPartner = partner
+                                    if partner.pinSet {
+                                        showRemovePINConfirm = true
+                                    } else {
+                                        showSetPINSheet = true
+                                    }
+                                } label: {
+                                    Image(systemName: partner.pinSet ? "lock.fill" : "lock.open.fill")
+                                        .font(.system(size: 14))
+                                        .foregroundStyle(partner.pinSet ? Color.rfGold : Color.white.opacity(0.35))
+                                        .padding(7)
+                                        .background(Circle().fill(Color.white.opacity(0.07)))
+                                }
+                                .padding(.trailing, 2)
+                            }
                             Button {
                                 partnerToRemove = partner
                                 showRemoveConfirm = true
@@ -900,9 +1087,17 @@ private struct ManagePartnersView: View {
         isLoadingPartners = true
         defer { isLoadingPartners = false }
         if let rels = try? await APIClient.shared.listRelationships() {
+            let myID = AuthState.shared.currentUser?.id ?? 0
             partners = rels.map { r in
-                PartnerItem(relationshipID: r.id, name: r.partner.name,
-                            email: r.partner.email, status: r.status, isPrimary: r.isPrimary)
+                PartnerItem(
+                    relationshipID: r.id,
+                    name: r.partner.name,
+                    email: r.partner.email,
+                    status: r.status,
+                    isPrimary: r.isPrimary,
+                    isMonitoringThem: r.partnerId == myID,
+                    pinSet: r.pinSet
+                )
             }
         }
     }
@@ -1188,12 +1383,14 @@ private struct EditProfileSheet: View {
 }
 
 private struct PartnerItem: Identifiable {
-    let id             = UUID()
-    let relationshipID: Int
-    let name:           String
-    let email:          String
-    var status:         String = "accepted"
-    var isPrimary:      Bool   = false
+    let id              = UUID()
+    let relationshipID:  Int
+    let name:            String
+    let email:           String
+    var status:          String = "accepted"
+    var isPrimary:       Bool   = false
+    var isMonitoringThem: Bool  = false  // current user is the accountability partner
+    var pinSet:          Bool   = false  // a protection PIN exists for this relationship
     var initials: String {
         name.components(separatedBy: " ")
             .compactMap(\.first).prefix(2).map(String.init).joined().uppercased()

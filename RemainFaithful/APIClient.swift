@@ -74,6 +74,7 @@ struct RemoteRelationship: Decodable {
     let status: String
     let createdAt: String
     let isPrimary: Bool
+    let pinSet: Bool      // true if a protection PIN exists for this relationship
     let partner: RemoteUser
 
     enum CodingKeys: String, CodingKey {
@@ -82,6 +83,7 @@ struct RemoteRelationship: Decodable {
         case partnerId = "partner_id"
         case createdAt = "created_at"
         case isPrimary = "is_primary"
+        case pinSet    = "pin_set"
     }
 
     init(from decoder: Decoder) throws {
@@ -94,6 +96,7 @@ struct RemoteRelationship: Decodable {
         createdAt = try c.decode(String.self,     forKey: .createdAt)
         partner   = try c.decode(RemoteUser.self, forKey: .partner)
         isPrimary = (try? c.decode(Bool.self,     forKey: .isPrimary)) ?? false
+        pinSet    = (try? c.decode(Bool.self,     forKey: .pinSet))    ?? false
     }
 }
 
@@ -236,6 +239,45 @@ final class APIClient {
 
     func markAlertDiscussed(alertID: Int) async throws {
         try await patchVoid("/alerts/\(alertID)/discussed")
+    }
+
+    // MARK: - Protection (Feature 1 & 2)
+    //
+    // These endpoints are on the backend at /protection/* and /relationships/{id}/pin.
+    // Expected request/response shapes are documented per method below.
+
+    /// Send a protection-change alert to the accountability partner via APNs.
+    /// POST /protection/alerts  body: {"type": "...", "detail": "..."}
+    /// The server pushes this to the primary partner with notification_type: "PROTECTION_ALERT".
+    func sendProtectionAlert(type: String, detail: String) async throws {
+        guard isAuthenticated else { return }
+        try await postVoid("/protection/alerts", body: ["type": type, "detail": detail])
+    }
+
+    /// Returns true if any accountability partner has set a protection PIN for the current user.
+    /// GET /protection/pin  → {"is_set": bool}
+    func getPartnerPINStatus() async throws -> Bool {
+        let resp: [String: Bool] = try await get("/protection/pin")
+        return resp["is_set"] ?? false
+    }
+
+    /// Verify a protection PIN entered by the monitored user.
+    /// POST /protection/pin/verify  body: {"pin": "1234"}  → {"success": bool}
+    func verifyPartnerPIN(pin: String) async throws -> Bool {
+        let resp: [String: Bool] = try await post("/protection/pin/verify", body: ["pin": pin])
+        return resp["success"] ?? false
+    }
+
+    /// Set (or overwrite) the protection PIN for a monitored user — called from the partner's device.
+    /// POST /relationships/{id}/pin  body: {"pin": "1234"}
+    func setRelationshipPIN(relationshipID: Int, pin: String) async throws {
+        try await postVoid("/relationships/\(relationshipID)/pin", body: ["pin": pin])
+    }
+
+    /// Remove the protection PIN for a relationship — called from the partner's device.
+    /// DELETE /relationships/{id}/pin
+    func removeRelationshipPIN(relationshipID: Int) async throws {
+        try await deleteVoid("/relationships/\(relationshipID)/pin")
     }
 
     // MARK: - Relationships

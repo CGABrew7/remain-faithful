@@ -49,6 +49,7 @@ struct RemainFaithfulApp: App {
     }
 
     @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var fcManager = FamilyControlsManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -74,11 +75,32 @@ struct RemainFaithfulApp: App {
                     // (stale Keychain snapshots may predate the createdAt field).
                     await AuthState.shared.refreshFromAPI()
                     NotificationService.shared.ensureRegisteredIfAuthorized()
+                    await PartnerPINManager.shared.refreshStatus()
                 }
+                // Re-sync app lockout shield in case broadcast state changed while
+                // the app was closed (Darwin notification would have been missed).
+                AppLockoutManager.shared.syncShieldState()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active, AuthState.shared.isAuthenticated else { return }
                 NotificationService.shared.ensureRegisteredIfAuthorized()
+                // Re-sync lockout shield — catches the case where the broadcast ended
+                // while the app was in the background and the Darwin notification was
+                // delivered but the shield couldn't be applied (main app suspended).
+                AppLockoutManager.shared.syncShieldState()
+            }
+            // Detect FamilyControls authorization revocation and notify the partner.
+            .onChange(of: fcManager.authorizationStatus) { oldStatus, newStatus in
+                guard oldStatus == .approved, newStatus != .approved else { return }
+                guard AuthState.shared.isAuthenticated else { return }
+                // Shield can no longer be applied — also clear any lockout state.
+                ActivitySelectionManager.shared.clearShielding()
+                Task {
+                    try? await APIClient.shared.sendProtectionAlert(
+                        type: "family_controls_revoked",
+                        detail: "Screen Time authorization was revoked — monitoring shields are off."
+                    )
+                }
             }
         }
     }

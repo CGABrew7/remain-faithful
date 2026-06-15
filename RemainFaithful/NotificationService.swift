@@ -10,6 +10,8 @@ enum NotificationType {
     static let appDeleted        = "APP_DELETED"
     static let panicAlert        = "PANIC_ALERT"
     static let streakMilestone   = "STREAK_MILESTONE"
+    // Sent to the partner when a protection-reducing action occurs (Feature 1 & 2).
+    static let protectionAlert   = "PROTECTION_ALERT"
 }
 
 // MARK: - Notification Service
@@ -123,7 +125,8 @@ final class NotificationService: NSObject {
         case NotificationType.appDeleted,
              NotificationType.monitoringPaused,
              NotificationType.monitoringResumed,
-             NotificationType.streakMilestone:
+             NotificationType.streakMilestone,
+             NotificationType.protectionAlert:
             AppState.shared.navigate(to: .dashboard)
 
         default:

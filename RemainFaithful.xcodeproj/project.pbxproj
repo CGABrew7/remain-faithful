@@ -41,6 +41,9 @@
 		CF2000000000000000000013 /* AuthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000012 /* AuthState.swift */; };
 		CF2000000000000000000015 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000014 /* LoginView.swift */; };
 		CF2000000000000000000023 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = CF2000000000000000000022 /* GoogleSignIn */; };
+		AB100000000000000000001B /* AppLockoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100000000000000000001A /* AppLockoutManager.swift */; };
+		AB100000000000000000002B /* PartnerPINManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100000000000000000002A /* PartnerPINManager.swift */; };
+		AB100000000000000000003B /* PINEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB100000000000000000003A /* PINEntryView.swift */; };
 		CF2000000000000000000031 /* EventProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2000000000000000000030 /* EventProcessor.swift */; };
 		CF3000000000000000000002 /* DonationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3000000000000000000001 /* DonationView.swift */; };
 		CF3000000000000000000004 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3000000000000000000003 /* SafariView.swift */; };
@@ -117,6 +120,9 @@
 		3D2CBE57E1E412B8583786C0 /* DeviceActivityMonitorExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeviceActivityMonitorExtension.swift; sourceTree = "<group>"; };
 		490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivitySelectionManager.swift; sourceTree = "<group>"; };
+		AB100000000000000000001A /* AppLockoutManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLockoutManager.swift; sourceTree = "<group>"; };
+		AB100000000000000000002A /* PartnerPINManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PartnerPINManager.swift; sourceTree = "<group>"; };
+		AB100000000000000000003A /* PINEntryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PINEntryView.swift; sourceTree = "<group>"; };
 		53205080DD5CB66E93B07EAD /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		5F794A6955CDF454D6EA4322 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6BE1418C33B2462B16F63B5A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -297,6 +303,9 @@
 				CF1000000000000000000018 /* Preview Content */,
 				8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */,
 				4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */,
+				AB100000000000000000001A /* AppLockoutManager.swift */,
+				AB100000000000000000002A /* PartnerPINManager.swift */,
+				AB100000000000000000003A /* PINEntryView.swift */,
 				80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */,
 				EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */,
 			);
@@ -601,6 +610,9 @@
 				CF3000000000000000000004 /* SafariView.swift in Sources */,
 				239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */,
 				369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */,
+				AB100000000000000000001B /* AppLockoutManager.swift in Sources */,
+				AB100000000000000000002B /* PartnerPINManager.swift in Sources */,
+				AB100000000000000000003B /* PINEntryView.swift in Sources */,
 				B9FBE0AAE00A1EEF84DD985F /* ScreenTimeMonitoringView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

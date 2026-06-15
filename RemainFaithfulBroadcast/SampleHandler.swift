@@ -270,6 +270,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     override func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
         sharedDefaults?.set(true, forKey: "isBroadcasting")
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "broadcastStartTime")
+        postBroadcastStateChanged()
         loadHashBlocklist()
         let policy = scaAnalyzer.analysisPolicy
         logger.info("Broadcast started — SCA policy: \(String(describing: policy)) — available: \(availableMemoryMB()) MB")
@@ -277,14 +278,58 @@ class SampleHandler: RPBroadcastSampleHandler {
         startRetryLoop()
     }
 
-    override func broadcastPaused()   { sharedDefaults?.set(false, forKey: "isBroadcasting") }
-    override func broadcastResumed()  { sharedDefaults?.set(true,  forKey: "isBroadcasting") }
+    override func broadcastPaused() {
+        sharedDefaults?.set(false, forKey: "isBroadcasting")
+        postBroadcastStateChanged()
+    }
+
+    override func broadcastResumed() {
+        sharedDefaults?.set(true, forKey: "isBroadcasting")
+        postBroadcastStateChanged()
+    }
 
     override func broadcastFinished() {
+        let lockoutWasActive = sharedDefaults?.bool(forKey: "appLockoutEnabled") ?? false
         sharedDefaults?.set(false, forKey: "isBroadcasting")
+        postBroadcastStateChanged()
         heartbeatTask?.cancel()
         retryTask?.cancel()
         logger.info("Broadcast finished — available: \(availableMemoryMB()) MB")
+        // If app lockout is enabled the main app's Darwin observer handles re-shielding.
+        // Also send a partner alert from this side in case the main app is suspended.
+        if lockoutWasActive {
+            Task.detached(priority: .utility) { [weak self] in
+                await self?.sendLockoutStoppedAlert()
+            }
+        }
+    }
+
+    // MARK: - Darwin notification helpers
+
+    // Pings the main app so AppLockoutManager can sync the shield state immediately.
+    // No data is carried — the recipient reads isBroadcasting from shared UserDefaults.
+    private func postBroadcastStateChanged() {
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName("com.remainfaithful.broadcastStateChanged" as CFString),
+            nil, nil, true
+        )
+    }
+
+    private func sendLockoutStoppedAlert() async {
+        guard let apiBase = sharedDefaults?.string(forKey: "apiBaseURL"),
+              let token   = sharedDefaults?.string(forKey: "authToken"),
+              let url     = URL(string: apiBase + "/protection/alerts") else { return }
+        var req = URLRequest(url: url, timeoutInterval: 10)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: [
+            "type": "deep_scan_stopped",
+            "detail": "Deep Scan ended — app lockout shields re-applied.",
+        ])
+        _ = try? await URLSession.shared.data(for: req)
+        logger.info("Lockout stop alert posted from broadcast extension")
     }
 
     // MARK: - Frame processing
