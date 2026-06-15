@@ -10,7 +10,9 @@
 		239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */; };
 		2665C2D9BF6D50BC7D667208 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53205080DD5CB66E93B07EAD /* UIKit.framework */; };
 		369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */; };
+		5E1899B507B078B91C892FA9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9D59EBDC38D57F89A7BE3696 /* PrivacyInfo.xcprivacy */; };
 		650ED6E8E1562A9E6F7B8DFD /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBFB79EBC8DDF4F495AF80B /* ShieldConfigurationExtension.swift */; };
+		768AAE90E9757B328F1ADFEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */; };
 		7CBF6CD5000785890E729A86 /* RemainFaithfulShieldConfig.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E5EE199CFE102F01D9039E99 /* RemainFaithfulShieldConfig.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A64B8771DC269E569F540247 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E0FB6D3B8EE0DA6C4922D /* Foundation.framework */; };
 		ADAEDC95E7DD3992B9F68BA6 /* AppIcon-1024.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CDFD98843615C529873A74F /* AppIcon-1024.png */; };
@@ -118,6 +120,7 @@
 		88F737CD62838DCD85A5F50D /* RemainFaithfulShieldConfig.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulShieldConfig.entitlements; sourceTree = "<group>"; };
 		8A8CF741CEB65744CAA53BCF /* ShieldConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShieldConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ShieldConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FamilyControlsManager.swift; sourceTree = "<group>"; };
+		9D59EBDC38D57F89A7BE3696 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		CF100000000000000000000B /* RemainFaithfulApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainFaithfulApp.swift; sourceTree = "<group>"; };
 		CF100000000000000000000C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CF100000000000000000000D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -158,6 +161,7 @@
 		E4AA42329718A13C17172E68 /* ShieldConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShieldConfiguration.framework; path = System/Library/Frameworks/ShieldConfiguration.framework; sourceTree = SDKROOT; };
 		E5EE199CFE102F01D9039E99 /* RemainFaithfulShieldConfig.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = RemainFaithfulShieldConfig.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA9CF2E3CCF78F4066943E08 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ManagedSettings.framework; sourceTree = DEVELOPER_DIR; };
+		EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F6A655C8ECB765BDBE5CD24C /* RemainFaithfulShieldConfig.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulShieldConfig.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -288,6 +292,7 @@
 				8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */,
 				4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */,
 				80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */,
+				EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */,
 			);
 			path = RemainFaithful;
 			sourceTree = "<group>";
@@ -306,6 +311,7 @@
 				CF100000000000000000001B /* SampleHandler.swift */,
 				CF100000000000000000001C /* Info.plist */,
 				CF100000000000000000001E /* RemainFaithfulBroadcast.entitlements */,
+				9D59EBDC38D57F89A7BE3696 /* PrivacyInfo.xcprivacy */,
 			);
 			path = RemainFaithfulBroadcast;
 			sourceTree = "<group>";
@@ -519,6 +525,7 @@
 			files = (
 				CF1000000000000000000013 /* Preview Assets.xcassets in Resources */,
 				CF1000000000000000000012 /* Assets.xcassets in Resources */,
+				768AAE90E9757B328F1ADFEA /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +533,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E1899B507B078B91C892FA9 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -680,12 +688,12 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.DeviceActivityMonitor;
 				PRODUCT_NAME = RemainFaithfulDeviceActivity;
 				SDKROOT = iphoneos;
@@ -730,12 +738,12 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.DeviceActivityMonitor;
 				PRODUCT_NAME = RemainFaithfulDeviceActivity;
 				SDKROOT = iphoneos;

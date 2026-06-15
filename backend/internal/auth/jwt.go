@@ -15,6 +15,8 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+const issuer = "remain-faithful"
+
 // Sign creates a signed JWT for the given user. Tokens expire after 24 hours.
 func Sign(userID int64, email string) (string, error) {
 	claims := Claims{
@@ -23,6 +25,7 @@ func Sign(userID int64, email string) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    issuer,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -30,13 +33,20 @@ func Sign(userID int64, email string) (string, error) {
 }
 
 // Parse validates a token string and returns its claims.
+// Rejects tokens with wrong or missing issuer, expired tokens, and wrong signing method.
 func Parse(tokenStr string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (any, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
-		}
-		return secret(), nil
-	})
+	token, err := jwt.ParseWithClaims(
+		tokenStr,
+		&Claims{},
+		func(t *jwt.Token) (any, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, errors.New("unexpected signing method")
+			}
+			return secret(), nil
+		},
+		jwt.WithIssuer(issuer),
+		jwt.WithExpirationRequired(),
+	)
 	if err != nil {
 		return nil, err
 	}
