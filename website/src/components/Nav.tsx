@@ -40,7 +40,7 @@ export default function Nav() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ${
         scrolled
           ? 'backdrop-blur-md bg-[#0F1B2D]/90 border-b border-[#1E3050] shadow-lg shadow-black/20'
           : 'bg-transparent'
@@ -113,7 +113,7 @@ export default function Nav() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/#waitlist"
-              className="px-5 py-2 rounded-full text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-md shadow-[#C9A84C]/20"
+              className="px-5 py-2 rounded-full text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] shadow-md shadow-[#C9A84C]/20"
             >
               Get Early Access
             </Link>
@@ -127,17 +127,17 @@ export default function Nav() {
             aria-expanded={menuOpen}
           >
             <span
-              className={`block w-5 h-0.5 bg-[#F0EDE8] transition-all duration-300 ${
+              className={`block w-5 h-0.5 bg-[#F0EDE8] transition-[transform,opacity] duration-300 ${
                 menuOpen ? 'rotate-45 translate-y-2' : ''
               }`}
             />
             <span
-              className={`block w-5 h-0.5 bg-[#F0EDE8] transition-all duration-300 ${
+              className={`block w-5 h-0.5 bg-[#F0EDE8] transition-[transform,opacity] duration-300 ${
                 menuOpen ? 'opacity-0 scale-x-0' : ''
               }`}
             />
             <span
-              className={`block w-5 h-0.5 bg-[#F0EDE8] transition-all duration-300 ${
+              className={`block w-5 h-0.5 bg-[#F0EDE8] transition-[transform,opacity] duration-300 ${
                 menuOpen ? '-rotate-45 -translate-y-2' : ''
               }`}
             />
@@ -147,7 +147,7 @@ export default function Nav() {
 
       {/* Mobile menu */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`md:hidden overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
           menuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >

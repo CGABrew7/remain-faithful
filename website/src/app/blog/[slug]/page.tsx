@@ -3,9 +3,31 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { posts } from '../posts'
 import WaitlistForm from '@/components/WaitlistForm'
+import { RelatedPosts } from '@/components/RelatedPosts'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { JsonLd } from '@/components/JsonLd'
+import { blogPostSchema } from '@/lib/structured-data'
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }))
+}
+
+const blogTitles: Record<string, string> = {
+  'why-accountability-fails': 'Why Accountability Fails (And How to Fix It)',
+  'setting-up-your-first-group': 'How to Set Up Your First Accountability Group',
+  'science-of-peer-accountability': 'The Science Behind Peer Accountability',
+  'on-device-privacy-explained': 'On-Device AI: Why Your Content Never Leaves Your Phone',
+  'covenant-model': 'The Covenant Model: More Than an Agreement',
+  'mens-ministry-accountability': 'Modernizing Ministry Accountability for Churches',
+}
+
+const relatedMap: Record<string, string[]> = {
+  'why-accountability-fails': ['science-of-peer-accountability', 'covenant-model'],
+  'setting-up-your-first-group': ['mens-ministry-accountability', 'why-accountability-fails'],
+  'science-of-peer-accountability': ['why-accountability-fails', 'on-device-privacy-explained'],
+  'on-device-privacy-explained': ['covenant-model', 'science-of-peer-accountability'],
+  'covenant-model': ['why-accountability-fails', 'on-device-privacy-explained'],
+  'mens-ministry-accountability': ['setting-up-your-first-group', 'covenant-model'],
 }
 
 export async function generateMetadata({
@@ -15,11 +37,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const post = posts.find((p) => p.slug === params.slug)
   if (!post) return {}
+  const displayTitle = blogTitles[post.slug] || post.title
   return {
-    title: post.title,
+    title: `${displayTitle} | Remain Faithful`,
     description: post.excerpt,
+    alternates: { canonical: `https://remainfaithful.com/blog/${post.slug}` },
     openGraph: {
-      title: post.title,
+      title: `${displayTitle} | Remain Faithful`,
       description: post.excerpt,
       type: 'article',
     },
@@ -69,30 +93,21 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = posts.find((p) => p.slug === params.slug)
   if (!post) notFound()
 
-  const related = posts.filter((p) => p.slug !== post.slug).slice(0, 3)
-
-  const blogSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.excerpt,
-    author: { '@type': 'Person', name: 'Jeff Brewer' },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Remain Faithful',
-      url: 'https://remainfaithful.com',
-    },
-    articleSection: post.category,
-  }
+  const relatedSlugs = relatedMap[post.slug] || []
+  const relatedPosts = relatedSlugs
+    .map((slug) => posts.find((p) => p.slug === slug))
+    .filter((p): p is NonNullable<typeof p> => !!p)
+    .map((p) => ({ title: blogTitles[p.slug] || p.title, slug: p.slug, description: p.excerpt, readTime: p.readTime }))
 
   return (
-    <div className="pt-32 pb-24">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
-      />
+    <div className="pt-24 pb-24">
+      <JsonLd data={blogPostSchema({ title: blogTitles[post.slug] || post.title, description: post.excerpt, slug: post.slug, datePublished: post.date, readTime: post.readTime })} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Breadcrumbs items={[
+          { name: 'Blog', url: 'https://remainfaithful.com/blog' },
+          { name: blogTitles[post.slug] || post.title, url: `https://remainfaithful.com/blog/${post.slug}` },
+        ]} />
         <div className="grid lg:grid-cols-[1fr_300px] gap-12">
           {/* Article */}
           <article>
@@ -158,11 +173,13 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               </p>
               <Link
                 href="/#waitlist"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 text-sm"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] text-sm"
               >
                 Get Early Access
               </Link>
             </div>
+
+            {relatedPosts.length > 0 && <RelatedPosts posts={relatedPosts} />}
           </article>
 
           {/* Sidebar */}
@@ -171,7 +188,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <div className="rounded-2xl border border-[#1E3050] bg-[#162235] p-6">
               <h3 className="font-serif text-lg font-bold text-[#F0EDE8] mb-5">More From Our Blog</h3>
               <div className="space-y-4">
-                {related.map((p) => (
+                {posts.filter((p) => p.slug !== post.slug).slice(0, 3).map((p, i, arr) => (
                   <Link
                     key={p.slug}
                     href={`/blog/${p.slug}`}
@@ -182,7 +199,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                       {p.title}
                     </p>
                     <p className="text-xs text-[#8A9BB0]">{p.readTime}</p>
-                    {related.indexOf(p) < related.length - 1 && (
+                    {i < arr.length - 1 && (
                       <div className="mt-4 border-t border-[#1E3050]"/>
                     )}
                   </Link>

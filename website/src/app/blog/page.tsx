@@ -1,16 +1,19 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { posts } from './posts'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Insights on accountability, purity, ministry, and the technology behind Remain Faithful.',
+  title: 'Accountability Guides & Resources | Remain Faithful Blog',
+  description: 'Practical guides, theological reflections, and research on accountability, purity, and the technology behind Remain Faithful.',
+  alternates: { canonical: 'https://remainfaithful.com/blog' },
 }
 
 export default function BlogPage() {
   return (
-    <div className="pt-32 pb-24">
+    <div className="pt-24 pb-24">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Breadcrumbs items={[{ name: 'Blog', url: 'https://remainfaithful.com/blog' }]} />
         <div className="text-center mb-16">
           <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">The RF Blog</p>
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-4">
@@ -47,7 +50,7 @@ export default function BlogPage() {
                 </div>
               </div>
               <div className="px-6 pb-5">
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#C9A84C] group-hover:gap-2 transition-all">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#C9A84C] group-hover:gap-2 transition-[gap] duration-200">
                   Read More
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M5 12h14M12 5l7 7-7 7"/>
