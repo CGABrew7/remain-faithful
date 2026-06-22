@@ -65,7 +65,7 @@ export default function WaitlistForm({
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 rounded-lg text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] disabled:opacity-70 whitespace-nowrap"
+          className="px-4 py-2 rounded-lg text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] disabled:opacity-70 whitespace-nowrap"
         >
           {loading ? '…' : 'Join'}
         </button>
@@ -88,7 +88,7 @@ export default function WaitlistForm({
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-3 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 disabled:opacity-70 whitespace-nowrap"
+          className="px-6 py-3 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] disabled:opacity-70 whitespace-nowrap"
         >
           {loading ? 'Joining…' : buttonText}
         </button>
@@ -127,7 +127,7 @@ export default function WaitlistForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-lg shadow-[#C9A84C]/20 disabled:opacity-70"
+          className="w-full py-3.5 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] shadow-lg shadow-[#C9A84C]/20 disabled:opacity-70"
         >
           {loading ? 'Joining…' : buttonText}
         </button>

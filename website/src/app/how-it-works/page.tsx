@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import FaqAccordion from '@/components/FaqAccordion'
+import { JsonLd } from '@/components/JsonLd'
+import { howItWorksFaqSchema } from '@/lib/structured-data'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
-  title: 'How It Works',
-  description:
-    'A complete breakdown of Remain Faithful\'s accountability model, on-device monitoring pipeline, covenant system, and frequently asked questions.',
+  title: 'How Remain Faithful Works: On-Device AI Accountability for iPhone',
+  description: 'A complete breakdown of how Remain Faithful monitors your device privately using Apple Vision and SensitiveContentAnalysis. All AI runs on your phone. No screen content is ever transmitted.',
+  alternates: { canonical: 'https://remainfaithful.com/how-it-works' },
 }
 
 const faqs = [
@@ -42,8 +45,12 @@ const faqs = [
 export default function HowItWorksPage() {
   return (
     <>
+      <JsonLd data={howItWorksFaqSchema} />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <Breadcrumbs items={[{ name: 'How It Works', url: 'https://remainfaithful.com/how-it-works' }]} />
+      </div>
       {/* Hero */}
-      <section className="pt-32 pb-20 border-b border-[#1E3050]">
+      <section className="pt-8 pb-20 border-b border-[#1E3050]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">The Method</p>
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-6">
@@ -241,7 +248,10 @@ export default function HowItWorksPage() {
                 The Covenant Model
               </h2>
               <p className="text-[#8A9BB0] leading-relaxed mb-4">
-                Before any partner gains access to your account, they must agree to a covenant. This isn&apos;t a terms-of-service checkbox. It&apos;s a statement of intent that frames the entire relationship.
+                Before any partner gains access to your account, they must agree to a covenant. This isn&apos;t a terms-of-service checkbox. It&apos;s a statement of intent that frames the entire relationship.{' '}
+                <Link href="/blog/covenant-model" className="text-[#C9A84C] hover:underline underline-offset-2">
+                  Read more about the covenant model.
+                </Link>
               </p>
               <p className="text-[#8A9BB0] leading-relaxed">
                 You also agree to it on your end. Accountability is bilateral. The covenant frames both the monitoring and the response to it.
@@ -290,7 +300,7 @@ export default function HowItWorksPage() {
           <p className="text-[#8A9BB0] mb-8">Join the waitlist and be among the first to use Remain Faithful when it launches.</p>
           <a
             href="/#waitlist"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
           >
             Join the Waitlist
           </a>

@@ -118,9 +118,9 @@ func (h *H) checkHeartbeats(ctx context.Context) {
 		}
 		h.notifyUserDirect(ctx, u.userID, "monitoring_stopped", "Monitoring Stopped", body)
 
-		if u.gap >= 30*time.Minute && u.screen == "active" {
-			h.notifyPartnersOfStoppedMonitoring(ctx, u.userID, u.name)
-		}
+		// Partner silence alerts are handled by StartHeartbeatSweep in
+		// heartbeat_sweep.go, which uses the protection pipeline with the
+		// heartbeat_silence alert type. No partner push here.
 
 		// Mark notified so we don't spam until a new heartbeat resets the window.
 		_, _ = h.DB.ExecContext(ctx,
@@ -170,23 +170,3 @@ func (h *H) notifyUserDirect(ctx context.Context, userID int64, collapseID, titl
 	}
 }
 
-func (h *H) notifyPartnersOfStoppedMonitoring(ctx context.Context, userID int64, name string) {
-	payload := map[string]any{
-		"aps": map[string]any{
-			"alert": map[string]string{
-				"title": "Partner Check-In",
-				"body":  name + "'s monitoring has been inactive. Consider reaching out.",
-			},
-			"sound": "default",
-		},
-		"notification_type": "PARTNER_MONITORING_STOPPED",
-		"sender_name":       name,
-	}
-	n := &apns.Notification{
-		PushType:   "alert",
-		Priority:   10,
-		CollapseID: fmt.Sprintf("partner_monitoring-%d", userID),
-		Payload:    payload,
-	}
-	h.notifyPartners(ctx, userID, name, n)
-}

@@ -21,7 +21,7 @@ export default function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
           </button>
-          <div className={`overflow-hidden transition-all duration-300 ${open === i ? 'max-h-96' : 'max-h-0'}`}>
+          <div className={`overflow-hidden transition-[max-height] duration-300 ${open === i ? 'max-h-96' : 'max-h-0'}`}>
             <p className="px-6 pb-5 text-sm text-[#8A9BB0] leading-relaxed">{faq.a}</p>
           </div>
         </div>

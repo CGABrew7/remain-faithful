@@ -4,7 +4,7 @@ export default function PrintButton() {
   return (
     <button
       onClick={() => window.print()}
-      className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-semibold text-sm shadow-lg hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all"
+      className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-semibold text-sm shadow-lg hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <polyline points="6 9 6 2 18 2 18 9"/>

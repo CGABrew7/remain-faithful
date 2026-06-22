@@ -5,16 +5,27 @@ import AppMockup from '@/components/AppMockup'
 import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
 import WaitlistForm from '@/components/WaitlistForm'
+import { JsonLd } from '@/components/JsonLd'
+import { softwareApplicationSchema, homepageFaqSchema } from '@/lib/structured-data'
 
 export const metadata: Metadata = {
-  title: 'Remain Faithful: Accountability That Works',
-  description:
-    'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, built on trust, not surveillance. Join the waitlist.',
+  title: 'Remain Faithful | Free Christian Accountability App for iPhone',
+  description: 'Free peer accountability for Christians committed to purity. On-device AI classifies content privately. No screenshots ever leave your device. Partners get discreet alerts only. 100% free, forever.',
+  keywords: ['free accountability app', 'Christian accountability app', 'purity app', 'accountability partner app', 'church accountability', 'iPhone accountability app', 'on-device AI', 'privacy-first accountability', 'open source accountability'],
   openGraph: {
-    title: 'Remain Faithful: Accountability That Works',
-    description:
-      'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, open source.',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
+    title: 'Remain Faithful | Free Christian Accountability App',
+    description: 'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, open source.',
+    url: 'https://remainfaithful.com',
+    siteName: 'Remain Faithful',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Remain Faithful | Free Christian Accountability App',
+    description: 'Free peer accountability for Christians committed to purity. On-device AI, privacy-first.',
+  },
+  alternates: {
+    canonical: 'https://remainfaithful.com',
   },
 }
 
@@ -46,47 +57,10 @@ const faqs = [
 ]
 
 export default function HomePage() {
-  const orgSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'Remain Faithful',
-    url: 'https://remainfaithful.com',
-    logo: 'https://remainfaithful.com/opengraph-image',
-    founder: { '@type': 'Person', name: 'Jeff Brewer' },
-    sameAs: ['https://github.com/CGABrew7/remain-faithful'],
-  }
-
-  const appSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'Remain Faithful',
-    operatingSystem: 'iOS',
-    applicationCategory: 'LifestyleApplication',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
-    description:
-      'Free peer accountability app for Christians committed to purity. On-device AI ensures your content never leaves your device.',
-    author: { '@type': 'Person', name: 'Jeff Brewer' },
-  }
-
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map((f) => ({
-      '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a },
-    })),
-  }
-
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={softwareApplicationSchema} />
+      <JsonLd data={homepageFaqSchema} />
 
       <Suspense fallback={null}>
         <DonationSuccessBanner />
@@ -132,7 +106,7 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-4">
                 <a
                   href="#waitlist"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-lg shadow-[#C9A84C]/20"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] shadow-lg shadow-[#C9A84C]/20"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
@@ -142,7 +116,7 @@ export default function HomePage() {
                 </a>
                 <Link
                   href="/how-it-works"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#F0EDE8] border border-[#1E3050] hover:border-[#C9A84C]/50 hover:bg-[#162235] transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#F0EDE8] border border-[#1E3050] hover:border-[#C9A84C]/50 hover:bg-[#162235] transition-[border-color,background-color,scale] duration-200 ease-out active:scale-[0.96]"
                 >
                   Learn How It Works
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -194,7 +168,7 @@ export default function HomePage() {
               Built Different
             </h2>
             <p className="text-[#8A9BB0] max-w-xl mx-auto">
-              Most accountability tools rely on shame or surveillance. Remain Faithful is built on covenant, trust, and genuine community.
+              <Link href="/blog/why-accountability-fails" className="text-[#C9A84C] hover:underline underline-offset-2">Most accountability tools rely on shame or surveillance.</Link> Remain Faithful is built on <Link href="/blog/covenant-model" className="text-[#C9A84C] hover:underline underline-offset-2">covenant</Link>, trust, and genuine community.
             </p>
           </div>
 
@@ -209,6 +183,7 @@ export default function HomePage() {
               }
               title="One-to-One or Group"
               body="Choose a single trusted partner or set up a small group. RF works for close friendships, mentorship relationships, and accountability groups alike."
+              link="/blog/setting-up-your-first-group"
             />
             <FeatureCard
               icon={
@@ -219,6 +194,7 @@ export default function HomePage() {
               }
               title="On-Device Privacy"
               body="All AI classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see metadata, not your screen."
+              link="/blog/on-device-privacy-explained"
             />
             <FeatureCard
               icon={
@@ -449,7 +425,7 @@ export default function HomePage() {
             {/* iOS Waitlist */}
             <a
               href="#waitlist"
-              className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-lg shadow-[#C9A84C]/20 group"
+              className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] shadow-lg shadow-[#C9A84C]/20 group"
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="#0F1B2D" className="group-hover:scale-105 transition-transform">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
@@ -537,10 +513,10 @@ function TrustItem({ children }: { children: React.ReactNode }) {
   )
 }
 
-function FeatureCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
-  return (
+function FeatureCard({ icon, title, body, link }: { icon: React.ReactNode; title: string; body: string; link?: string }) {
+  const inner = (
     <div
-      className="rounded-2xl p-8 border border-[#1E3050] hover:border-[#C9A84C]/30 transition-colors duration-300 group"
+      className="rounded-2xl p-8 border border-[#1E3050] hover:border-[#C9A84C]/30 transition-colors duration-300 group h-full"
       style={{ background: 'linear-gradient(135deg, #162235 0%, #131F30 100%)' }}
     >
       <div className="w-12 h-12 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center mb-5 group-hover:bg-[#C9A84C]/15 transition-colors">
@@ -550,6 +526,8 @@ function FeatureCard({ icon, title, body }: { icon: React.ReactNode; title: stri
       <p className="text-[#8A9BB0] leading-relaxed text-sm">{body}</p>
     </div>
   )
+  if (link) return <Link href={link}>{inner}</Link>
+  return inner
 }
 
 function Step({

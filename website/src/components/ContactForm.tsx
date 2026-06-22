@@ -114,7 +114,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+        className="w-full py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:not-disabled:scale-[0.96] disabled:opacity-70 disabled:cursor-not-allowed"
       >
         {loading ? 'Sending...' : 'Send Message'}
       </button>

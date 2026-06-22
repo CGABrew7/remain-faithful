@@ -1,38 +1,24 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ContactForm from '@/components/ContactForm'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
-  title: 'About',
-  description:
-    'Meet Jeff Brewer, founder of Remain Faithful. Learn about the mission, values, and story behind free accountability software built on trust, not surveillance.',
-  openGraph: {
-    title: 'About Remain Faithful',
-    description:
-      'Meet the founder and learn the story behind Remain Faithful — free accountability software built on trust, not surveillance.',
-  },
+  title: 'About Remain Faithful | Built by Jeff Brewer',
+  description: 'Remain Faithful was built by Jeff Brewer to provide free, privacy-first accountability for Christians. Learn why we built it, how it is funded, and the team behind it.',
+  alternates: { canonical: 'https://remainfaithful.com/about' },
 }
 
 const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
 
 export default function AboutPage() {
-  const orgSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'Remain Faithful',
-    url: 'https://remainfaithful.com',
-    founder: { '@type': 'Person', name: 'Jeff Brewer' },
-  }
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
-      />
-
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <Breadcrumbs items={[{ name: 'About', url: 'https://remainfaithful.com/about' }]} />
+      </div>
       {/* Hero */}
-      <section className="pt-32 pb-20 border-b border-[#1E3050]">
+      <section className="pt-8 pb-20 border-b border-[#1E3050]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -280,7 +266,7 @@ export default function AboutPage() {
           </p>
           <Link
             href="/#donate"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
           >
             Support the Project
           </Link>

@@ -4,6 +4,8 @@ import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import Script from 'next/script'
+import { JsonLd } from '@/components/JsonLd'
+import { organizationSchema, websiteSchema } from '@/lib/structured-data'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -84,7 +86,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`scroll-smooth ${playfair.variable} ${inter.variable}`}>
       <head />
-      <body className="bg-[#0F1B2D] text-[#F0EDE8] font-sans antialiased">
+      <body className="bg-[#0F1B2D] text-[#F0EDE8] font-sans">
         {gaId && (
           <>
             <Script
@@ -101,6 +103,8 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
         <Nav />
         <main className="min-h-screen">{children}</main>
         <Footer />

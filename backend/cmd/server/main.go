@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -67,7 +68,9 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	silenceMinutes := heartbeatSilenceMinutes()
 	go h.StartHeartbeatWatcher(ctx)
+	go h.StartHeartbeatSweep(ctx, silenceMinutes)
 
 	go func() {
 		log.Printf("listening on %s", srv.Addr)
@@ -311,6 +314,20 @@ func dsn() string {
 
 func port() string { return getenv("PORT", "8080") }
 
+// heartbeatSilenceMinutes returns the number of minutes without a heartbeat
+// before a heartbeat_silence alert is sent to the user's partners.
+// Configured via HEARTBEAT_SILENCE_MINUTES (default 30).
+func heartbeatSilenceMinutes() int {
+	v := os.Getenv("HEARTBEAT_SILENCE_MINUTES")
+	if v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		}
+		log.Printf("HEARTBEAT_SILENCE_MINUTES=%q is not a positive integer, using default 30", v)
+	}
+	return 30
+}
+
 func getenv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
@@ -454,6 +471,12 @@ func migrate(db *sql.DB) error {
 
 	-- Protection features: partner PIN stored as bcrypt hash, never plaintext.
 	ALTER TABLE relationships ADD COLUMN IF NOT EXISTS pin_hash TEXT;
+
+	-- Heartbeat silence sweep: tracks the last time a silence alert was sent
+	-- for each (monitored-user, partner) pair so the sweep doesn't re-alert
+	-- within the same silence window. Reset implicitly when the user resumes
+	-- heartbeats (last_heartbeat_at advances past last_silence_alert_at).
+	ALTER TABLE relationships ADD COLUMN IF NOT EXISTS last_silence_alert_at TIMESTAMPTZ;
 	`)
 	return err
 }

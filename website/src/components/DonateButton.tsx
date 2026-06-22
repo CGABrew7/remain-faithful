@@ -45,7 +45,7 @@ export default function DonateButton() {
       <div className="flex items-center gap-1 p-1 rounded-full bg-[#162235] border border-[#1E3050]">
         <button
           onClick={() => setRecurring(false)}
-          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-[color,background-image,box-shadow,scale] duration-200 ease-out active:scale-[0.96] ${
             !recurring
               ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] shadow'
               : 'text-[#8A9BB0] hover:text-[#F0EDE8]'
@@ -55,7 +55,7 @@ export default function DonateButton() {
         </button>
         <button
           onClick={() => setRecurring(true)}
-          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-[color,background-image,box-shadow,scale] duration-200 ease-out active:scale-[0.96] ${
             recurring
               ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] shadow'
               : 'text-[#8A9BB0] hover:text-[#F0EDE8]'
@@ -71,7 +71,7 @@ export default function DonateButton() {
           <button
             key={a.value}
             onClick={() => setSelected(a.value)}
-            className={`w-16 h-10 rounded-full text-sm font-semibold border transition-all duration-200 ${
+            className={`w-16 h-10 rounded-full text-sm font-semibold tabular-nums border transition-[border-color,color,background-image,box-shadow,scale] duration-200 ease-out active:scale-[0.96] ${
               selected === a.value
                 ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] border-transparent shadow-md shadow-[#C9A84C]/30'
                 : 'bg-transparent text-[#8A9BB0] border-[#1E3050] hover:border-[#C9A84C] hover:text-[#F0EDE8]'
@@ -84,7 +84,7 @@ export default function DonateButton() {
 
       {/* Impact label */}
       {currentImpact && (
-        <p className="text-xs text-[#C9A84C]/80 text-center">
+        <p className="text-xs text-[#C9A84C]/80 text-center tabular-nums">
           ${selected} {currentImpact.toLowerCase()}
         </p>
       )}
@@ -93,7 +93,7 @@ export default function DonateButton() {
       <button
         onClick={handleDonate}
         disabled={loading}
-        className="flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 shadow-lg shadow-[#C9A84C]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:not-disabled:scale-[0.96] shadow-lg shadow-[#C9A84C]/20 disabled:opacity-70 disabled:cursor-not-allowed"
       >
         {loading ? (
           <>
@@ -108,7 +108,7 @@ export default function DonateButton() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
             </svg>
-            Give ${selected}{recurring ? '/mo' : ''}
+            Give <span className="tabular-nums">${selected}{recurring ? '/mo' : ''}</span>
           </>
         )}
       </button>

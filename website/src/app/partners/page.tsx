@@ -1,23 +1,22 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import PilotForm from '@/components/PilotForm'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
-  title: 'Partners',
-  description:
-    "Equip your church's accountability ministry with Remain Faithful. Free structured accountability for small groups, discipleship cohorts, recovery programs, and ministry-wide rollouts.",
-  openGraph: {
-    title: 'Remain Faithful for Churches & Ministries',
-    description:
-      'Free structured accountability for small groups, discipleship cohorts, and ministry-wide programs. No cost to your church.',
-  },
+  title: 'Church & Ministry Accountability Program | Remain Faithful Partners',
+  description: "Bring structured accountability to your church, small group, or men's ministry. Free tools, group setup guides, and pastoral resources for ministry leaders.",
+  alternates: { canonical: 'https://remainfaithful.com/partners' },
 }
 
 export default function PartnersPage() {
   return (
     <>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <Breadcrumbs items={[{ name: 'Partners', url: 'https://remainfaithful.com/partners' }]} />
+      </div>
       {/* Hero */}
-      <section className="pt-32 pb-20 border-b border-[#1E3050]">
+      <section className="pt-8 pb-20 border-b border-[#1E3050]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">For Pastors &amp; Ministry Leaders</p>
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-6">
@@ -29,7 +28,7 @@ export default function PartnersPage() {
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <a
               href="#pilot"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
             >
               Register for Early Access
             </a>
@@ -37,7 +36,7 @@ export default function PartnersPage() {
               href="/group-setup-guide"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#F0EDE8] border border-[#1E3050] hover:border-[#C9A84C]/50 hover:bg-[#162235] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#F0EDE8] border border-[#1E3050] hover:border-[#C9A84C]/50 hover:bg-[#162235] transition-[border-color,background-color,scale] duration-200 ease-out active:scale-[0.96]"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -111,7 +110,7 @@ export default function PartnersPage() {
               href="/group-setup-guide"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-all duration-200 whitespace-nowrap text-sm"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] whitespace-nowrap text-sm"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
