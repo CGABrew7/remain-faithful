@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
 )
@@ -101,6 +103,7 @@ func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 
 func (c *Client) send(toEmail, toName, subject, plain, html string) error {
 	if c.apiKey == "" {
+		log.Printf("[sendgrid] SENDGRID_API_KEY not set — logging email instead of sending to=%s subject=%q", toEmail, subject)
 		fmt.Printf("[email] to=%s subject=%q\n%s\n", toEmail, subject, plain)
 		return nil
 	}
@@ -117,22 +120,35 @@ func (c *Client) send(toEmail, toName, subject, plain, html string) error {
 	}
 	body, err := json.Marshal(payload)
 	if err != nil {
+		log.Printf("[sendgrid] error marshaling payload to=%s: %v", toEmail, err)
 		return fmt.Errorf("email: marshal: %w", err)
 	}
 	req, err := http.NewRequest(http.MethodPost,
 		"https://api.sendgrid.com/v3/mail/send", bytes.NewReader(body))
 	if err != nil {
+		log.Printf("[sendgrid] error building request to=%s: %v", toEmail, err)
 		return fmt.Errorf("email: build request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	req.Header.Set("Content-Type", "application/json")
+
+	log.Printf("[sendgrid] sending request to=%s from=%s subject=%q", toEmail, c.from, subject)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Printf("[sendgrid] request error to=%s: %v", toEmail, err)
 		return fmt.Errorf("email: send: %w", err)
 	}
 	defer resp.Body.Close()
+
+	respBody, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		log.Printf("[sendgrid] response status=%d to=%s but failed to read body: %v", resp.StatusCode, toEmail, readErr)
+	} else {
+		log.Printf("[sendgrid] response status=%d to=%s body=%s", resp.StatusCode, toEmail, string(respBody))
+	}
+
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("email: SendGrid returned %d", resp.StatusCode)
+		return fmt.Errorf("email: SendGrid returned %d: %s", resp.StatusCode, string(respBody))
 	}
 	return nil
 }

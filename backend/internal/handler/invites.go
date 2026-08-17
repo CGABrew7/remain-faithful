@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -68,7 +69,7 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 		token, _ := inviteToken()
 		acceptURL := siteBase() + "/accept-invite?token=" + token + "&type=partner"
 		if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
-			fmt.Printf("[invite] email error (existing user): %v\n", sendErr)
+			log.Printf("[invite] partner email error (existing user) to=%s: %v", req.Email, sendErr)
 		}
 		writeJSON(w, http.StatusCreated, map[string]any{
 			"status":          "connected",
@@ -95,7 +96,7 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 	}
 	acceptURL := siteBase() + "/invite?token=" + token + "&type=partner"
 	if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
-		fmt.Printf("[invite] email error: %v\n", sendErr)
+		log.Printf("[invite] partner email error to=%s: %v", req.Email, sendErr)
 	}
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"status": "invited",
@@ -236,7 +237,7 @@ func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
 		).Scan(&joinedAt); err == nil {
 			acceptURL := fmt.Sprintf("%s/groups/%d", siteBase(), groupID)
 			if sendErr := h.Email.SendGroupInvite(req.Email, inviterName, groupName, acceptURL); sendErr != nil {
-				fmt.Printf("[invite] group email error (existing user): %v\n", sendErr)
+				log.Printf("[invite] group email error (existing user) to=%s group=%d: %v", req.Email, groupID, sendErr)
 			}
 			writeJSON(w, http.StatusCreated, map[string]any{
 				"status":  "added",
@@ -244,6 +245,7 @@ func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
+		log.Printf("[invite] skipping email — %s is already a member of group=%d", req.Email, groupID)
 		writeJSON(w, http.StatusOK, map[string]any{"status": "already_member"})
 		return
 	}
@@ -266,7 +268,7 @@ func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
 	}
 	acceptURL := fmt.Sprintf("%s/invite?token=%s&type=group", siteBase(), token)
 	if sendErr := h.Email.SendGroupInvite(req.Email, inviterName, groupName, acceptURL); sendErr != nil {
-		fmt.Printf("[invite] group email error: %v\n", sendErr)
+		log.Printf("[invite] group email error to=%s group=%d: %v", req.Email, groupID, sendErr)
 	}
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"status": "invited",
