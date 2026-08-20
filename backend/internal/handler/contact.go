@@ -8,7 +8,7 @@ import (
 )
 
 // Contact handles website contact-form submissions.
-// POST /contact (unauthenticated)
+// POST /contact (unauthenticated; 10 req/min/IP via authRateLimiter in main.go)
 // Body: { "name": "...", "email": "...", "subject": "...", "message": "..." }
 func (h *H) Contact(w http.ResponseWriter, r *http.Request) {
 	var req struct {
