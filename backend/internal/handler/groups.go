@@ -109,10 +109,23 @@ func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 // GetGroup returns a group and its full member list.
 // GET /groups/:id
+// Caller must be in group_members; otherwise member PII is not returned.
 func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
 	groupID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid group id")
+		return
+	}
+
+	// Verify caller is a member (any role) before returning emails/names/flags/streaks.
+	var callerRole string
+	if err = h.DB.QueryRowContext(r.Context(),
+		`SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2`,
+		groupID, userID,
+	).Scan(&callerRole); err != nil {
+		writeError(w, http.StatusForbidden, "you must be a member of this group")
 		return
 	}
 

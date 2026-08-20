@@ -110,8 +110,9 @@ func (sw *statusWriter) WriteHeader(code int) {
 	sw.ResponseWriter.WriteHeader(code)
 }
 
-// authRateLimiter limits unauthenticated auth endpoints to 10 requests per
-// minute per IP (fixed window). Uses only stdlib; no external dependency.
+// authRateLimiter limits unauthenticated endpoints to 10 requests per
+// minute per IP (fixed window). Used for /auth/* and POST /contact.
+// Uses only stdlib; no external dependency.
 func authRateLimiter() mux.MiddlewareFunc {
 	type window struct {
 		count int
@@ -267,8 +268,11 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/auth/refresh",                        h.RefreshToken).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session",   h.CreateCheckoutSession).Methods(http.MethodPost)
 
-	// Contact form — unauthenticated
-	r.HandleFunc("/contact", h.Contact).Methods(http.MethodPost)
+	// Contact form — unauthenticated, rate-limited to 10 requests/minute per IP
+	// (same fixed-window limiter as /auth).
+	contact := r.NewRoute().Subrouter()
+	contact.Use(authRateLimiter())
+	contact.HandleFunc("/contact", h.Contact).Methods(http.MethodPost)
 
 	// Stripe webhook — unauthenticated, verified by Stripe-Signature header
 	r.HandleFunc("/donations/webhook", h.DonationWebhook).Methods(http.MethodPost)
