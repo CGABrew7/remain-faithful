@@ -57,11 +57,11 @@ export default function PrivacyArchitecturePage() {
               What Always Runs — and What You Opt Into
             </h2>
             <p className="text-[#8A9BB0] max-w-2xl mx-auto">
-              The credible core is always-on. Deep Scan is optional. No screen content is ever sent off-device — only alert metadata (category, severity, summary, timestamp) is uploaded.
+              The credible core is always-on. Deep Scan is optional. No screen content is ever sent off-device — only alert metadata (category, severity, and timestamp) is uploaded.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
+          <div className="grid sm:grid-cols-2 gap-6 mb-16">
             {[
               {
                 label: 'Always-on',
@@ -72,6 +72,11 @@ export default function PrivacyArchitecturePage() {
                 label: 'Always-on',
                 title: 'Usage as category events',
                 body: 'DeviceActivity monitors usage as category-level events — not screen content, not which specific app, and not page content.',
+              },
+              {
+                label: 'Always-on',
+                title: 'Time-window shielding',
+                body: 'You can restrict chosen apps to hours you set — evenings, travel, or a season of struggle. Shielding uses the same Family Controls stack. It does not see screen content.',
               },
               {
                 label: 'Opt-in',
@@ -108,7 +113,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Start"
                 badgeColor="#162235"
                 title="Deep Scan Captures a Screen Frame (Opt-In)"
-                desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, only the alert metadata — category, severity, and a static summary — is uploaded. Screen content, OCR text, and screenshots are never transmitted. DRM apps render as black frames."
+                desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, only the alert metadata — category, severity, and timestamp — is uploaded. No static summary. Screen content, OCR text, and screenshots are never transmitted. DRM apps render as black frames."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
@@ -167,7 +172,7 @@ export default function PrivacyArchitecturePage() {
             className="mt-10 p-5 rounded-2xl border border-[#C9A84C]/20 text-sm text-[#8A9BB0] text-center"
             style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
           >
-            Classification is fully on-device. The only data that leaves your device is alert metadata — category, severity, summary, and timestamp. Screen content never leaves your device, ever.
+            Classification is fully on-device. The only data that leaves your device is alert metadata — category, severity, and timestamp. Screen content never leaves your device, ever.
           </div>
         </div>
       </section>
@@ -206,7 +211,7 @@ export default function PrivacyArchitecturePage() {
                   ['Alert category (e.g. "Adult Content")', '✓ Encrypted metadata', '✓ Yes'],
                   ['Severity level (Low / Medium / High)', '✓ Encrypted metadata', '✓ Yes'],
                   ['Timestamp', '✓ Encrypted metadata', '✓ Yes'],
-                  ['System-generated description', '✓ Encrypted metadata', '✓ Yes'],
+                  ['System-generated description', '✗ Never', '✗ Never'],
                   ['Your name and email (account info)', '✓ Encrypted at rest', '✗ No'],
                 ].map(([item, server, partners]) => (
                   <tr key={item} className="hover:bg-[#162235]/50 transition-colors">
@@ -258,7 +263,7 @@ export default function PrivacyArchitecturePage() {
           </div>
 
           <p className="text-center text-sm text-[#8A9BB0] mt-8">
-            All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. The broadcast extension uploads only alert metadata — never screen content — over an encrypted connection.
+            All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. Always-on layers and optional Deep Scan upload only alert metadata — category, severity, and timestamp — never screen content.
           </p>
         </div>
       </section>

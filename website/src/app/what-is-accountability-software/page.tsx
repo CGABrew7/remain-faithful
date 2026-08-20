@@ -119,7 +119,7 @@ export default function WhatIsAccountabilitySoftware() {
             </p>
             <div className="space-y-3 mb-6">
               {[
-                { step: '1', label: 'Installation and setup', desc: 'The user installs the app and grants required permissions. Depending on the monitoring approach, this may include screen recording permission, VPN configuration, or Screen Time integration.' },
+                { step: '1', label: 'Installation and setup', desc: 'The user installs the app and grants required permissions. Approaches vary by product: some ask for screen recording, some configure a VPN, some use Screen Time or Family Controls. Remain Faithful\'s always-on path uses Family Controls; Deep Scan is optional and, if used later, asks for screen broadcast separately.' },
                 { step: '2', label: 'Partner invitation', desc: 'The user invites one or more accountability partners. Partners create accounts or receive email reports. In most products, partners must accept some form of agreement before gaining access.' },
                 { step: '3', label: 'Monitoring runs continuously', desc: 'The app monitors device activity in the background. The monitoring approach (see below) determines what data is collected and where the analysis happens.' },
                 { step: '4', label: 'Reports or alerts delivered', desc: 'When something is flagged, the partner receives a notification. Depending on the product, this may be an immediate alert, a daily email report, or a weekly summary.' },

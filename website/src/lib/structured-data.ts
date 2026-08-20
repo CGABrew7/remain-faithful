@@ -4,7 +4,7 @@ export const organizationSchema = {
   name: 'Remain Faithful',
   url: 'https://remainfaithful.com',
   logo: 'https://remainfaithful.com/logo.png',
-  description: 'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, open source.',
+  description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
   founder: {
     '@type': 'Person',
     name: 'Jeff Brewer',

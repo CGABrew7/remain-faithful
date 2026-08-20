@@ -50,7 +50,7 @@ The alert says: "Something happened." The conversation that follows determines w
 
 Remain Faithful flips three things:
 
-**Disclosure moves from opt-in to opt-out.** When you install RF and enable monitoring, disclosure is automatic. You can disable monitoring at any time, but the default is transparency.
+**Disclosure moves from opt-in to opt-out.** When you install RF and authorize always-on filtering, disclosure is automatic. You can disable filtering at any time, but the default is transparency.
 
 **The shame barrier is removed from the disclosure moment.** You don't have to choose to tell your partner. The system tells them. The conversation that follows starts from a different place than "I have to confess something."
 
@@ -100,7 +100,7 @@ You'll see a 6-character invite code. Screenshot it or write it down.
 
 Share the invite code however makes sense for your group: group chat, in person, email. Include these instructions:
 
-> *Download Remain Faithful from the App Store. Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then enable monitoring in the Settings tab.*
+> *Download Remain Faithful from the App Store. Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose.*
 
 That's it. The app walks them through the rest.
 
@@ -182,11 +182,11 @@ RF is built for both. The mechanism is behavioral. The foundation is covenantal.
     date: 'April 28, 2025',
     readTime: '7 min read',
     body: `
-The centerpiece of Remain Faithful's privacy model is on-device AI classification. Here's what that means in practice, and why it matters.
+The credible core of Remain Faithful is always-on Family Controls filtering. Optional Deep Scan adds on-device AI classification. Here's what that means in practice, and why it matters.
 
-## The ReplayKit Extension
+## Deep Scan Uses ReplayKit (Opt-In Only)
 
-iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads only alert metadata when a frame is flagged. That metadata contains the alert category, severity level, a brief static description, and a timestamp. No screen content, OCR text, or screenshots ever leave your device.
+If you start a Deep Scan session, iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads only alert metadata when a frame is flagged. That metadata contains the alert category, severity level, and a timestamp — not a static description, not which app. No screen content, OCR text, or screenshots ever leave your device. Always-on filtering does not use ReplayKit and does not see screen content.
 
 That's not a policy commitment. Anyone can verify it by reading the open-source code.
 

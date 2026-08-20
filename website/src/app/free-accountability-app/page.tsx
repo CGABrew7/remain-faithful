@@ -123,7 +123,7 @@ export default function FreeAccountabilityApp() {
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Everything Free. No Asterisk.</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {[
-                'Always-on Screen Time monitoring',
+                'Always-on Family Controls filtering',
                 'On-device AI screen analysis (Deep Scan)',
                 'One-to-one accountability partnerships',
                 'Group accountability mode (up to 12 members)',
@@ -198,7 +198,7 @@ export default function FreeAccountabilityApp() {
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">Join the Waitlist. It&apos;s Free.</h2>
             <p className="text-[#8A9BB0] mb-6">No credit card. No subscription. No catch.</p>
             <Link href="/#waitlist" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
-              Get Early Access
+              Join the Waitlist
             </Link>
             <p className="text-xs text-[#8A9BB0]/60 mt-4">
               Compare alternatives: <Link href="/compare/covenant-eyes" className="text-[#C9A84C] hover:underline">vs Covenant Eyes</Link> &middot; <Link href="/compare/ever-accountable" className="text-[#C9A84C] hover:underline">vs Ever Accountable</Link> &middot; <Link href="/compare/accountable2you" className="text-[#C9A84C] hover:underline">vs Accountable2You</Link>

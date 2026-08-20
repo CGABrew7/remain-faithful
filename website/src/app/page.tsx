@@ -10,11 +10,11 @@ import { softwareApplicationSchema, homepageFaqSchema } from '@/lib/structured-d
 
 export const metadata: Metadata = {
   title: 'Remain Faithful | Free Christian Accountability App for iPhone',
-  description: 'Free peer accountability for Christians committed to purity. On-device AI classifies content privately. No screenshots ever leave your device. Partners get discreet alerts only. 100% free, forever.',
+  description: 'Free peer accountability for Christians committed to purity. Always-on Family Controls filtering with partner notify. Optional Deep Scan. No screen content ever leaves your device. Partners get category, timestamp, and severity only. 100% free, forever.',
   keywords: ['free accountability app', 'Christian accountability app', 'purity app', 'accountability partner app', 'church accountability', 'iPhone accountability app', 'on-device AI', 'privacy-first accountability', 'open source accountability'],
   openGraph: {
     title: 'Remain Faithful | Free Christian Accountability App',
-    description: 'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, open source.',
+    description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
     url: 'https://remainfaithful.com',
     siteName: 'Remain Faithful',
     type: 'website',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Remain Faithful | Free Christian Accountability App',
-    description: 'Free peer accountability for Christians committed to purity. On-device AI, privacy-first.',
+    description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first.',
   },
   alternates: {
     canonical: 'https://remainfaithful.com',
@@ -113,7 +113,7 @@ export default function HomePage() {
                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                   </svg>
-                  Get Early Access
+                  Join the Waitlist
                 </a>
                 <Link
                   href="/how-it-works"
@@ -370,7 +370,6 @@ export default function HomePage() {
                     'Alert category (e.g. "Adult Content")',
                     'Severity level (Low / Medium / High)',
                     'Timestamp',
-                    'Brief system-generated description',
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-[#8A9BB0]">
                       <svg className="flex-shrink-0 text-[#C9A84C]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -384,7 +383,7 @@ export default function HomePage() {
             </div>
             <div className="bg-[#162235]/60 px-6 py-4 border-t border-[#1E3050]">
               <p className="text-xs text-[#8A9BB0]/80 leading-relaxed">
-                Classification is fully on-device. Only alert metadata (category, severity, summary, and timestamp) is ever uploaded — no screen content, no OCR text, no screenshots.{' '}
+                Classification is fully on-device. Only alert metadata (category, severity, and timestamp) is ever uploaded — no screen content, no OCR text, no screenshots, no system-generated description.{' '}
                 <Link href="/privacy-architecture" className="text-[#C9A84C] hover:underline">
                   Full Privacy Architecture →
                 </Link>
@@ -399,12 +398,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
-              Beta Starting Soon
+              Join the Waitlist
             </h2>
             <p className="text-[#8A9BB0]">
-              We&apos;re inviting our first beta testers now.{' '}
+              Remain Faithful is in pre-launch.{' '}
               <a href="#waitlist" className="text-[#C9A84C] hover:underline underline-offset-4">
-                Join the waitlist to be part of it.
+                Join the waitlist to be notified when it is ready.
               </a>
             </p>
           </div>

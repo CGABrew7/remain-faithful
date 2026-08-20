@@ -115,7 +115,7 @@ export default function Nav() {
               href="/#waitlist"
               className="px-5 py-2 rounded-full text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] shadow-md shadow-[#C9A84C]/20"
             >
-              Get Early Access
+              Join the Waitlist
             </Link>
           </div>
 
@@ -171,7 +171,7 @@ export default function Nav() {
                 href="/#waitlist"
                 className="flex items-center justify-center px-5 py-3 rounded-full text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A]"
               >
-                Get Early Access
+                Join the Waitlist
               </Link>
             </div>
           </nav>

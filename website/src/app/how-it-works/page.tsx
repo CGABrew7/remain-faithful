@@ -38,7 +38,7 @@ const faqs = [
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'The broadcast extension is part of opt-in Deep Scan only. iOS ReplayKit allows a sandboxed extension to capture screen frames from non-DRM apps. The extension runs AI analysis entirely on-device and, when something is flagged, uploads only alert metadata (category, severity, summary, and timestamp) — never the screen frame itself. Screen content, OCR text, and screenshots are never transmitted. Always-on filtering, usage monitoring, and time-window shielding use Apple\'s Family Controls and DeviceActivity frameworks — they do not use a broadcast extension and they do not see screen content.',
+    a: 'The broadcast extension is part of opt-in Deep Scan only. iOS ReplayKit allows a sandboxed extension to capture screen frames from non-DRM apps. The extension runs AI analysis entirely on-device and, when something is flagged, uploads only alert metadata (category, severity, and timestamp) — never the screen frame itself. Screen content, OCR text, and screenshots are never transmitted. Always-on filtering, usage monitoring, and time-window shielding use Apple\'s Family Controls and DeviceActivity frameworks — they do not use a broadcast extension and they do not see screen content.',
   },
 ]
 
@@ -263,7 +263,7 @@ export default function HowItWorksPage() {
               <div>
                 <h3 className="font-semibold text-[#F0EDE8] mb-1">Alert Delivered to Partners</h3>
                 <p className="text-sm text-[#8A9BB0] leading-relaxed">
-                  When a layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: the alert category, severity level, a brief system-generated description, and timestamp. Partners do not receive which app or a bundle ID. No screenshots. No raw content. Ever.
+                  When a layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: the alert category, severity level, and timestamp. Partners do not receive which app, a bundle ID, or a system-generated description. No screenshots. No raw content. Ever.
                 </p>
               </div>
             </div>

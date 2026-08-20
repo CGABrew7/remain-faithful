@@ -55,10 +55,10 @@ export default function GroupSetupGuidePage() {
           {/* Section 1: What is Remain Faithful */}
           <GuideSection number="1" title="What Is Remain Faithful?">
             <p className="text-[#8A9BB0] leading-relaxed mb-4">
-              Remain Faithful (RF) is a free iOS app that provides peer accountability for adults committed to purity. It uses on-device AI to monitor for concerning content and sends discreet alerts to a user&apos;s chosen accountability partners.
+              Remain Faithful (RF) is a free iOS app that provides peer accountability for adults committed to purity. Always-on Family Controls filtering blocks the apps and categories you choose and notifies partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods.
             </p>
             <p className="text-[#8A9BB0] leading-relaxed mb-6">
-              The key word is <em className="text-[#F0EDE8]">on-device</em>. All content analysis runs locally on the user&apos;s phone using Apple&apos;s built-in frameworks. No screen content is ever transmitted to anyone. Partners receive only alert metadata: when something was flagged, the general category, and a severity level.
+              Always-on filtering uses Apple Family Controls. It does not see screen content. Optional Deep Scan, if started, classifies non-DRM frames on-device. No screen content is ever transmitted to anyone. Partners receive only alert metadata: category, timestamp, and severity.
             </p>
             <div className="grid sm:grid-cols-3 gap-4">
               {[
@@ -161,7 +161,7 @@ export default function GroupSetupGuidePage() {
             </p>
             <div className="space-y-3 mb-6">
               {[
-                { label: 'What it does', text: 'The app monitors for concerning content on their device and sends alerts to the group when something is flagged.' },
+                { label: 'What it does', text: 'Always-on filtering blocks chosen apps and categories and notifies the group when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners receive category, timestamp, and severity only.' },
                 { label: 'What you see', text: 'Metadata only: timestamp, content category, and severity. No screenshots. No browsing history. No screen content.' },
                 { label: 'The covenant', text: 'Everyone in the group, including you as leader, agrees to a covenant before gaining any access. This shapes how the group responds to alerts.' },
                 { label: 'It\'s voluntary', text: 'Monitoring can be paused or disabled at any time. Joining the group is a choice, not a requirement.' },
@@ -215,7 +215,7 @@ export default function GroupSetupGuidePage() {
               </GuideTip>
 
               <GuideTip title="Regular Check-Ins (Leader)">
-                Use your group&apos;s existing meeting rhythm to pray for one another and notice who may need a personal check-in. Alerts are conversation starters as they arrive — there is no separate weekly digest.
+                Use your group&apos;s existing meeting rhythm to pray for one another and notice who may need a personal check-in. Alerts are conversation starters as they arrive.
               </GuideTip>
 
               <GuideTip title="Handling False Positives">

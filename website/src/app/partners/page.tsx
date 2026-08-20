@@ -30,7 +30,7 @@ export default function PartnersPage() {
               href="#pilot"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
             >
-              Register for Early Access
+              Join the Waitlist
             </a>
             <a
               href="/group-setup-guide"
@@ -64,11 +64,11 @@ export default function PartnersPage() {
               },
               {
                 title: 'Easy Group Setup',
-                desc: 'Create a group, generate an invite code, share it with your members. They\'re monitoring within minutes. No IT required.',
+                desc: 'Create a group, generate an invite code, share it with your members. They can authorize always-on filtering in minutes. No IT required.',
               },
               {
                 title: 'Pastoral Oversight',
-                desc: 'As group leader, you stay informed about group activity. Members control whether you see individual alerts.',
+                desc: 'As group leader, you can be a partner on alerts like any other member. Members choose whether alerts go to the whole group or the leader only.',
               },
               {
                 title: 'Privacy by Design',
@@ -139,7 +139,7 @@ export default function PartnersPage() {
                 {[
                   'The leader installs and uses RF personally before asking anyone else to join.',
                   'Review the Group Setup Guide and covenant text with co-leaders.',
-                  'Decide on leader visibility settings before launch (alert summaries vs. individual alerts).',
+                  'Decide on leader visibility settings before launch (leader-only alerts vs. group alerts).',
                   'Brief your pastor on the approach — his awareness helps normalize the conversation.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-[#8A9BB0]">
@@ -286,7 +286,7 @@ export default function PartnersPage() {
                 phase: 'Before Launch',
                 color: '#C9A84C',
                 items: [
-                  'Leader has installed RF and enabled monitoring personally',
+                  'Leader has installed RF and authorized always-on filtering personally',
                   'Leader has read the Group Setup Guide',
                   'Covenant text has been reviewed and is ready to discuss',
                   'Leader has briefed their pastor or supervisor',
@@ -300,7 +300,7 @@ export default function PartnersPage() {
                   'Covenant discussed and agreed on by all members',
                   'All members have installed RF and created accounts',
                   'Invite code shared and all members have joined the group',
-                  'All members have enabled monitoring successfully',
+                  'All members have authorized always-on filtering',
                   'Group has agreed on alert response norms',
                 ],
               },
@@ -370,7 +370,7 @@ export default function PartnersPage() {
               {
                 step: '5',
                 title: 'Maintain Pastoral Oversight',
-                desc: 'Assign one staff member or elder as the RF point person. They receive aggregate data from group leaders, address questions, and can escalate to professional care when alerts suggest deeper need.',
+                desc: 'Assign one staff member or elder as the RF point person. They help group leaders with questions and can point someone toward professional care when a conversation suggests deeper need. They do not receive a separate aggregate feed.',
               },
             ].map((step) => (
               <div key={step.step} className="flex gap-5 p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
@@ -414,7 +414,7 @@ export default function PartnersPage() {
               { n: '1', title: 'Create Your Leader Account', desc: 'Download Remain Faithful from the App Store and create an account. Your role as group leader is established at this step.' },
               { n: '2', title: 'Create a Group', desc: 'Tap Group tab → New Group. Give it a name (e.g., "Tuesday Accountability Group"), set your covenant expectations, and choose your leader visibility settings.' },
               { n: '3', title: 'Share the Invite Code', desc: 'Your group generates a 6-character invite code. Share it in your group chat, bulletin, or Sunday handout. Members join with that code.' },
-              { n: '4', title: 'Members Enable Monitoring', desc: 'Each member enables monitoring in the app and grants screen recording permission. The setup walkthrough guides them through it step by step.' },
+              { n: '4', title: 'Members Enable Filtering', desc: 'Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. Deep Scan is optional and, if used later, asks for screen broadcast permission separately.' },
               { n: '5', title: 'Stay Connected', desc: 'Members can alert you directly. Use RF as the backbone of your regular accountability conversations.' },
             ].map((step) => (
               <div key={step.n} className="flex gap-5 p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
@@ -445,13 +445,13 @@ export default function PartnersPage() {
         </div>
       </section>
 
-      {/* Church Early Access Form */}
+      {/* Church waitlist form */}
       <section id="pilot" className="py-20 bg-[#0A1420] border-t border-[#1E3050]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Early Access</p>
+            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Waitlist</p>
             <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
-              Register Your Church for Launch
+              Join the Church Waitlist
             </h2>
             <p className="text-[#8A9BB0]">
               Remain Faithful is in pre-launch. Join the waitlist and we will notify you when the app is ready for churches and ministries.

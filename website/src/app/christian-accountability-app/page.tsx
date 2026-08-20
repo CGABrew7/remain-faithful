@@ -30,7 +30,7 @@ export default function ChristianAccountabilityApp() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/#waitlist" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
-                Get Early Access (Free)
+                Join the Waitlist
               </Link>
               <Link href="/how-it-works" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#F0EDE8] border border-[#1E3050] hover:border-[#C9A84C]/50 hover:bg-[#162235] transition-colors">
                 How It Works
