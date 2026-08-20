@@ -91,7 +91,7 @@ export default function EverAccountableCompare() {
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Partner-based report sharing'],
                     ['Professional coach option', 'No', 'Yes, paid add-on'],
-                    ['App maturity', 'New (beta, 2026)', '4th-generation iOS app, 700K+ installs'],
+                    ['App maturity', 'Pre-launch (waitlist)', '4th-generation iOS app, 700K+ installs'],
                     ['DRM streaming monitoring', 'No (iOS limitation)', 'No (iOS limitation)'],
                   ].map(([feature, rf, ea], i) => (
                     <tr key={i} className={`border-b border-[#1E3050] ${i % 2 === 0 ? 'bg-[#162235]' : 'bg-[#0F1B2D]'}`}>
@@ -110,7 +110,7 @@ export default function EverAccountableCompare() {
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Where Ever Accountable Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'More mature iOS implementation', body: 'Ever Accountable is on its fourth generation of iOS development with over 700,000 installs. That level of real-world testing produces a more polished, battle-tested app. Remain Faithful is in beta.' },
+                { title: 'More mature iOS implementation', body: 'Ever Accountable is on its fourth generation of iOS development with over 700,000 installs. That level of real-world testing produces a more polished, battle-tested app. Remain Faithful is in pre-launch and has not shipped yet.' },
                 { title: 'Multi-platform coverage', body: 'Ever Accountable supports iOS, Android, Windows, and Mac. Remain Faithful is iOS only right now. If your accountability partner uses Android, Windows, or Mac, Ever Accountable serves them. Remain Faithful does not yet.' },
                 { title: 'Professional accountability coach option', body: 'Ever Accountable offers a paid add-on to connect with a professional accountability coach. Remain Faithful is peer-only; it does not offer a coached accountability option.' },
               ].map((item) => (

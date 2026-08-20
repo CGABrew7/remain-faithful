@@ -20,7 +20,7 @@ const pageFaqSchema = {
       name: 'Does Accountable2You drain the battery?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple\'s Screen Time framework for always-on monitoring, which has minimal battery impact.',
+        text: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, which has minimal battery impact.',
       },
     },
     {
@@ -85,7 +85,7 @@ export default function Accountable2YouCompare() {
                   {[
                     ['Price', 'Free forever', '$121/year Personal'],
                     ['Platform', 'iOS 17+ (Android Fall 2026)', 'iOS, Android, Windows, Mac, Kindle'],
-                    ['Monitoring technology', 'On-device AI + Screen Time framework', 'VPN-based traffic monitoring'],
+                    ['Monitoring technology', 'Family Controls + optional on-device AI', 'VPN-based traffic monitoring'],
                     ['Web page title logging', 'No. Category only.', 'Yes. Specific page titles logged.'],
                     ['Battery impact', 'Minimal', 'Higher (VPN runs continuously)'],
                     ['VPN required', 'No', 'Yes'],
@@ -114,7 +114,7 @@ export default function Accountable2YouCompare() {
               {[
                 { title: 'Cross-platform coverage', body: 'Accountable2You runs on iOS, Android, Windows, Mac, and Kindle. Remain Faithful is currently iOS only. For families with mixed devices, A2Y provides unified coverage across all of them.' },
                 { title: 'Detailed web activity reporting', body: 'Accountable2You logs specific web page titles and generates detailed activity reports. If your accountability partner or pastor wants more granular visibility into browsing behavior, A2Y provides more detail than Remain Faithful\'s category-level alerts.' },
-                { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is in beta. For users who want a proven, stable product, A2Y has an advantage in maturity.' },
+                { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is in pre-launch and has not shipped yet. For users who want a proven, stable product, A2Y has an advantage in maturity.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
                   <h3 className="font-semibold text-[#F0EDE8] mb-2">{item.title}</h3>
@@ -130,7 +130,7 @@ export default function Accountable2YouCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Price', body: 'Remain Faithful is free. Accountable2You publicly lists $121 per year for the Personal plan. For individuals or churches deploying accountability tools at scale, free is a meaningful difference. Verify current pricing on their site.' },
-                { title: 'No VPN required: better battery life', body: 'Accountable2You routes traffic through a local VPN to monitor it. This has two downsides: it drains battery more quickly, and it can conflict with corporate or school VPN configurations. Remain Faithful uses Apple\'s native Screen Time framework and on-device AI, with minimal battery impact and no VPN conflicts.' },
+                { title: 'No VPN required: better battery life', body: 'Accountable2You routes traffic through a local VPN to monitor it. This has two downsides: it drains battery more quickly, and it can conflict with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, with optional on-device AI, minimal battery impact, and no VPN conflicts.' },
                 { title: 'On-device AI when you opt in', body: 'VPN-based monitoring cannot see inside encrypted HTTPS traffic or monitor what happens inside apps. Remain Faithful\'s optional Deep Scan classifies non-DRM screen frames on-device. It cannot see DRM-protected video or banking apps (Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames). Always-on filtering and usage monitoring do not look at screen content.' },
                 { title: 'Partner privacy: category only, never page titles', body: 'Accountable2You shares specific web page titles with accountability partners, which means partners see exactly what pages were visited. Some find this level of detail helpful; others consider it overly exposing. Remain Faithful shares only the category and severity, protecting the privacy of the person being held accountable while still triggering a conversation.' },
                 { title: 'Open source', body: 'Remain Faithful\'s entire codebase is publicly available for inspection. Accountable2You is proprietary. Anyone can verify what Remain Faithful does and does not transmit.' },
@@ -188,7 +188,7 @@ export default function Accountable2YouCompare() {
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
-                { q: 'Does Accountable2You drain the battery?', a: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple\'s Screen Time framework for always-on monitoring, which has minimal battery impact.' },
+                { q: 'Does Accountable2You drain the battery?', a: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, which has minimal battery impact.' },
                 { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'Yes. Cancel your Accountable2You subscription, remove the VPN profile from your device, and download Remain Faithful. Note that Remain Faithful is currently iOS only; if your partners use Android or Windows, Accountable2You has broader platform support.' },
                 { q: 'Does Remain Faithful log specific web page titles like Accountable2You?', a: 'No. Remain Faithful does not log or transmit web page titles or browsing history. Partners receive only a category label and severity level when something is flagged. Accountable2You logs specific page titles in its reports, which can expose more detail than some users want their partners to see.' },
               ].map((faq) => (

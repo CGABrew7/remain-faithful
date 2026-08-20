@@ -95,7 +95,7 @@ export default function CovenantEyesCompare() {
                     ['Content blocking', 'Yes, always-on app blocking via Screen Time', 'Yes, customizable filtering'],
                     ['DRM streaming monitoring', 'No (iOS limitation)', 'No (iOS limitation)'],
                     ['Established since', '2026', '2000'],
-                    ['User base', 'New (beta)', '1.5M+ users'],
+                    ['User base', 'Pre-launch (waitlist)', '1.5M+ users'],
                   ].map(([feature, rf, ce], i) => (
                     <tr key={i} className={`border-b border-[#1E3050] ${i % 2 === 0 ? 'bg-[#162235]' : 'bg-[#0F1B2D]'}`}>
                       <td className="p-4 text-[#8A9BB0] font-medium">{feature}</td>
@@ -114,7 +114,7 @@ export default function CovenantEyesCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Platform coverage', body: 'Covenant Eyes supports 5 platforms: iOS, Android, Windows, Mac, and Chromebook. Remain Faithful is iOS only right now. If you or your partners use non-Apple devices, CE has the clear advantage.' },
-                { title: 'Track record', body: 'Covenant Eyes has been in operation since 2000 with over 1.5 million users. That is 25 years of proven history. Remain Faithful launched in 2026 and is still in beta. Maturity matters for trust.' },
+                { title: 'Track record', body: 'Covenant Eyes has been in operation since 2000 with over 1.5 million users. That is 25 years of proven history. Remain Faithful is in pre-launch and has not shipped yet. Maturity matters for trust.' },
                 { title: 'Content filtering', body: 'Covenant Eyes offers robust website and app blocking with granular category controls. Remain Faithful also blocks apps via Screen Time integration, but CE has a more mature filtering system overall.' },
                 { title: 'Enterprise and church administration', body: 'Covenant Eyes has mature organizational management tools designed for large-scale church or ministry deployments. For denominations or large organizations with IT requirements, CE has purpose-built infrastructure.' },
               ].map((item) => (
