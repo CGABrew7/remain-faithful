@@ -55,10 +55,10 @@ export default function GroupSetupGuidePage() {
           {/* Section 1: What is Remain Faithful */}
           <GuideSection number="1" title="What Is Remain Faithful?">
             <p className="text-[#8A9BB0] leading-relaxed mb-4">
-              Remain Faithful (RF) is a free iOS app that provides peer accountability for adults committed to purity. It uses on-device AI to monitor for concerning content and sends discreet alerts to a user&apos;s chosen accountability partners.
+              Remain Faithful (RF) is a free iOS app that provides peer accountability for adults committed to purity. Always-on Family Controls filtering blocks the apps and categories you choose and notifies partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods.
             </p>
             <p className="text-[#8A9BB0] leading-relaxed mb-6">
-              The key word is <em className="text-[#F0EDE8]">on-device</em>. All content analysis runs locally on the user&apos;s phone using Apple&apos;s built-in frameworks. No screen content is ever transmitted to anyone. Partners receive only alert metadata: when something was flagged, the general category, and a severity level.
+              Always-on filtering uses Apple Family Controls. It does not see screen content. Optional Deep Scan, if started, classifies non-DRM frames on-device. No screen content is ever transmitted to anyone. Partners receive only alert metadata: category, timestamp, and severity.
             </p>
             <div className="grid sm:grid-cols-3 gap-4">
               {[
@@ -81,11 +81,10 @@ export default function GroupSetupGuidePage() {
             </p>
             <ul className="space-y-3 mb-6">
               {[
-                'Each member installs the app and enables screen monitoring on their own device.',
-                'When the AI flags something, all group members (or the leader only, depending on settings) receive a push notification with the alert metadata.',
-                'You, as group leader, receive a weekly digest every Monday summarizing group activity.',
+                'Each member installs the app and enables always-on filtering on their own device.',
+                'When something is flagged, all group members (or the leader only, depending on settings) receive a push notification with the alert metadata.',
                 'Members can choose to share alerts with all group members or the leader only.',
-                'No one sees screenshots, browsing history, or any content from another member\'s screen.',
+                'No one sees which app was involved, screenshots, browsing history, or any content from another member\'s screen.',
               ].map((point, i) => (
                 <li key={i} className="flex gap-3 text-sm text-[#8A9BB0] leading-relaxed">
                   <span className="text-[#C9A84C] font-bold flex-shrink-0">{i + 1}.</span>
@@ -129,7 +128,7 @@ export default function GroupSetupGuidePage() {
                 {
                   n: '3',
                   title: 'Choose Visibility Settings',
-                  desc: 'You can receive weekly aggregate summaries (recommended for most groups), or choose to see individual alerts as they occur. Discuss with your group which setting fits your context before enabling.',
+                  desc: 'Members can share alerts with the whole group or with the leader only. Discuss with your group which setting fits your context before enabling. Partners receive category, timestamp, and severity — not which app.',
                 },
                 {
                   n: '4',
@@ -138,8 +137,8 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   n: '5',
-                  title: 'Members Enable Monitoring',
-                  desc: 'Each member goes to Settings → Monitoring → Enable. The app walks them through granting screen recording permission and confirms monitoring is active with a green indicator.',
+                  title: 'Members Enable Filtering',
+                  desc: 'Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. Deep Scan is optional and, if used later, asks for screen broadcast permission separately.',
                 },
               ].map((step) => (
                 <div key={step.n} className="flex gap-5 p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
@@ -162,7 +161,7 @@ export default function GroupSetupGuidePage() {
             </p>
             <div className="space-y-3 mb-6">
               {[
-                { label: 'What it does', text: 'The app monitors for concerning content on their device and sends alerts to the group when something is flagged.' },
+                { label: 'What it does', text: 'Always-on filtering blocks chosen apps and categories and notifies the group when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners receive category, timestamp, and severity only.' },
                 { label: 'What you see', text: 'Metadata only: timestamp, content category, and severity. No screenshots. No browsing history. No screen content.' },
                 { label: 'The covenant', text: 'Everyone in the group, including you as leader, agrees to a covenant before gaining any access. This shapes how the group responds to alerts.' },
                 { label: 'It\'s voluntary', text: 'Monitoring can be paused or disabled at any time. Joining the group is a choice, not a requirement.' },
@@ -215,8 +214,8 @@ export default function GroupSetupGuidePage() {
                 Respond quickly and with grace. The covenant already set the expectation. A good first response is something like: &ldquo;Hey, I got an alert. Thinking of you. Want to talk?&rdquo; Keep it simple. Keep it relational. Alerts are conversation starters, not verdicts.
               </GuideTip>
 
-              <GuideTip title="Weekly Digest (Leader)">
-                You receive a summary every Monday. Use it to pray for your group and identify men who may need a personal check-in. The digest gives you visibility into patterns without requiring you to monitor individual alerts.
+              <GuideTip title="Regular Check-Ins (Leader)">
+                Use your group&apos;s existing meeting rhythm to pray for one another and notice who may need a personal check-in. Alerts are conversation starters as they arrive.
               </GuideTip>
 
               <GuideTip title="Handling False Positives">

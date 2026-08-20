@@ -50,7 +50,7 @@ The alert says: "Something happened." The conversation that follows determines w
 
 Remain Faithful flips three things:
 
-**Disclosure moves from opt-in to opt-out.** When you install RF and enable monitoring, disclosure is automatic. You can disable monitoring at any time, but the default is transparency.
+**Disclosure moves from opt-in to opt-out.** When you install RF and authorize always-on filtering, disclosure is automatic. You can disable filtering at any time, but the default is transparency.
 
 **The shame barrier is removed from the disclosure moment.** You don't have to choose to tell your partner. The system tells them. The conversation that follows starts from a different place than "I have to confess something."
 
@@ -74,7 +74,7 @@ Getting a group up and running in Remain Faithful takes about fifteen minutes fo
 
 Don't send someone a link to an app without context. The conversation matters. Here's what to cover:
 
-- **What the app does:** It monitors for concerning content using on-device AI and notifies your accountability partners when something is flagged.
+- **What the app does:** Always-on filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners see category, timestamp, and severity — not which app.
 - **What partners see:** Metadata only: timestamp, category, severity. Not your screen, not your browsing history.
 - **The covenant:** Both parties commit to honesty, grace, and confidentiality. You'll see this in the app.
 - **It's voluntary:** Anyone can disable monitoring at any time. This is a choice, not a surveillance program.
@@ -90,8 +90,8 @@ After creating your account:
 3. Enter a group name (e.g., "Tuesday Accountability," "Iron Sharpens Iron," or whatever your group calls itself)
 4. Review the covenant text (this is what every member will agree to before joining)
 5. Choose your leader visibility settings:
-   - **Alert summaries:** receive aggregate weekly data (recommended)
-   - **Individual alerts:** see each alert as it occurs (use with care; discuss with your group first)
+   - **Leader-only alerts:** members can share alerts with you rather than the whole group
+   - **Group alerts:** all members receive category-level alerts as they occur
 6. Tap **Create Group**
 
 You'll see a 6-character invite code. Screenshot it or write it down.
@@ -100,19 +100,19 @@ You'll see a 6-character invite code. Screenshot it or write it down.
 
 Share the invite code however makes sense for your group: group chat, in person, email. Include these instructions:
 
-> *Download Remain Faithful from the App Store. Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then enable monitoring in the Settings tab.*
+> *Download Remain Faithful from the App Store. Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose.*
 
 That's it. The app walks them through the rest.
 
-## Step 3: Enable Monitoring (Each Member)
+## Step 3: Enable Filtering (Each Member)
 
-Each member goes to **Settings → Monitoring → Enable**. The app will:
+Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. The app will:
 
-1. Ask for Screen Recording permission (a standard iOS dialog)
-2. Walk through a brief explanation of what gets monitored
-3. Confirm that monitoring is active with a green indicator on the dashboard
+1. Walk through selecting apps and categories to block
+2. Confirm that filtering is active
+3. Mention that Deep Scan is optional and, if used later, asks for screen broadcast permission separately
 
-The first few days, encourage members to keep an eye on the dashboard to make sure everything is working. The green "Monitoring active" status is the confirmation.
+The first few days, encourage members to keep an eye on the dashboard to make sure everything is working.
 
 ## Step 4: First Group Meeting
 
@@ -182,11 +182,11 @@ RF is built for both. The mechanism is behavioral. The foundation is covenantal.
     date: 'April 28, 2025',
     readTime: '7 min read',
     body: `
-The centerpiece of Remain Faithful's privacy model is on-device AI classification. Here's what that means in practice, and why it matters.
+The credible core of Remain Faithful is always-on Family Controls filtering. Optional Deep Scan adds on-device AI classification. Here's what that means in practice, and why it matters.
 
-## The ReplayKit Extension
+## Deep Scan Uses ReplayKit (Opt-In Only)
 
-iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads only alert metadata when a frame is flagged. That metadata contains the alert category, severity level, a brief static description, and a timestamp. No screen content, OCR text, or screenshots ever leave your device.
+If you start a Deep Scan session, iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads only alert metadata when a frame is flagged. That metadata contains the alert category, severity level, and a timestamp — not a static description, not which app. No screen content, OCR text, or screenshots ever leave your device. Always-on filtering does not use ReplayKit and does not see screen content.
 
 That's not a policy commitment. Anyone can verify it by reading the open-source code.
 

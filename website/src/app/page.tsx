@@ -10,11 +10,11 @@ import { softwareApplicationSchema, homepageFaqSchema } from '@/lib/structured-d
 
 export const metadata: Metadata = {
   title: 'Remain Faithful | Free Christian Accountability App for iPhone',
-  description: 'Free peer accountability for Christians committed to purity. On-device AI classifies content privately. No screenshots ever leave your device. Partners get discreet alerts only. 100% free, forever.',
+  description: 'Free peer accountability for Christians committed to purity. Always-on Family Controls filtering with partner notify. Optional Deep Scan. No screen content ever leaves your device. Partners get category, timestamp, and severity only. 100% free, forever.',
   keywords: ['free accountability app', 'Christian accountability app', 'purity app', 'accountability partner app', 'church accountability', 'iPhone accountability app', 'on-device AI', 'privacy-first accountability', 'open source accountability'],
   openGraph: {
     title: 'Remain Faithful | Free Christian Accountability App',
-    description: 'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, open source.',
+    description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
     url: 'https://remainfaithful.com',
     siteName: 'Remain Faithful',
     type: 'website',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Remain Faithful | Free Christian Accountability App',
-    description: 'Free peer accountability for Christians committed to purity. On-device AI, privacy-first.',
+    description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first.',
   },
   alternates: {
     canonical: 'https://remainfaithful.com',
@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     q: 'How is this different from other accountability apps?',
-    a: 'Remain Faithful is different in three key ways: it is 100% free forever, all content classification happens entirely on your device — no screen content ever leaves your device for classification — and the entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
+    a: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
   },
   {
     q: 'Does this work on Android?',
@@ -99,8 +99,9 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg text-[#8A9BB0] leading-relaxed mb-10">
-                Free peer accountability for believers committed to purity.
-                Built on trust, not surveillance. Your content never leaves your device.
+                Always-on filtering blocks the apps and categories you choose, and notifies your partners when a blocked category is attempted.
+                Optional Deep Scan adds on-device AI for high-risk periods.
+                No screen content ever leaves your device.
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -112,7 +113,7 @@ export default function HomePage() {
                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                   </svg>
-                  Get Early Access
+                  Join the Waitlist
                 </a>
                 <Link
                   href="/how-it-works"
@@ -126,10 +127,10 @@ export default function HomePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-10 pt-8 border-t border-[#1E3050]">
+                <TrustItem>Always-On Filtering</TrustItem>
                 <TrustItem>100% Free, Forever</TrustItem>
-                <TrustItem>Donation Funded</TrustItem>
-                <TrustItem>On-Device AI &amp; Security</TrustItem>
                 <TrustItem>No Screen Content Ever Leaves Your Device</TrustItem>
+                <TrustItem>Optional Deep Scan</TrustItem>
               </div>
             </div>
 
@@ -193,7 +194,7 @@ export default function HomePage() {
                 </svg>
               }
               title="On-Device Privacy"
-              body="All AI classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see metadata, not your screen."
+              body="Optional Deep Scan classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see category, timestamp, and severity — not which app, and not your screen."
               link="/blog/on-device-privacy-explained"
             />
             <FeatureCard
@@ -205,8 +206,8 @@ export default function HomePage() {
                   <rect x="9" y="3" width="6" height="4" rx="1"/>
                 </svg>
               }
-              title="Always-On Blocking"
-              body="Select the apps and categories you want blocked. They stay shielded continuously — through lock screen, reboot, and app restarts. Your partners are notified when a blocked app is attempted."
+              title="Always-On Filtering"
+              body="Select the apps and categories you want blocked. They stay shielded continuously — through lock screen, reboot, and app restarts. Your partners are notified when a blocked category is attempted."
             />
             <FeatureCard
               icon={
@@ -258,8 +259,8 @@ export default function HomePage() {
                   <path d="M12 8v4M12 16h.01"/>
                 </svg>
               }
-              title="Enable Monitoring"
-              body="Always-on Screen Time monitoring activates automatically — it tracks app usage and web categories, survives device restarts, and never needs manual re-enabling. For high-risk periods you can also start an optional Deep Scan session for on-device AI screen analysis."
+              title="Enable Filtering"
+              body="Always-on Family Controls filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. DeviceActivity monitors usage as category events — not screen content. For high-risk periods you can start an optional Deep Scan session."
             />
             <Step
               number="03"
@@ -316,7 +317,7 @@ export default function HomePage() {
               />
               <PrivacyPoint
                 title="Alert Metadata Only"
-                body="Partners receive: timestamp, app category, and severity level. Never a screenshot. Never raw content. Never your browsing history."
+                body="Partners receive: timestamp, category, and severity level. Never which app. Never a screenshot. Never raw content. Never your browsing history."
               />
               <PrivacyPoint
                 title="You Control Access"
@@ -369,7 +370,6 @@ export default function HomePage() {
                     'Alert category (e.g. "Adult Content")',
                     'Severity level (Low / Medium / High)',
                     'Timestamp',
-                    'Brief system-generated description',
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-[#8A9BB0]">
                       <svg className="flex-shrink-0 text-[#C9A84C]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -383,7 +383,7 @@ export default function HomePage() {
             </div>
             <div className="bg-[#162235]/60 px-6 py-4 border-t border-[#1E3050]">
               <p className="text-xs text-[#8A9BB0]/80 leading-relaxed">
-                Classification is fully on-device. Only alert metadata (category, severity, summary, and timestamp) is ever uploaded — no screen content, no OCR text, no screenshots.{' '}
+                Classification is fully on-device. Only alert metadata (category, severity, and timestamp) is ever uploaded — no screen content, no OCR text, no screenshots, no system-generated description.{' '}
                 <Link href="/privacy-architecture" className="text-[#C9A84C] hover:underline">
                   Full Privacy Architecture →
                 </Link>
@@ -398,12 +398,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
-              Beta Starting Soon
+              Join the Waitlist
             </h2>
             <p className="text-[#8A9BB0]">
-              We&apos;re inviting our first beta testers now.{' '}
+              Remain Faithful is in pre-launch.{' '}
               <a href="#waitlist" className="text-[#C9A84C] hover:underline underline-offset-4">
-                Join the waitlist to be part of it.
+                Join the waitlist to be notified when it is ready.
               </a>
             </p>
           </div>

@@ -6,8 +6,8 @@ import { howItWorksFaqSchema } from '@/lib/structured-data'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
-  title: 'How Remain Faithful Works: On-Device AI Accountability for iPhone',
-  description: 'A complete breakdown of how Remain Faithful monitors your device privately using Apple Vision and SensitiveContentAnalysis. All AI runs on your phone. No screen content is ever transmitted.',
+  title: 'How Remain Faithful Works: Always-On Filtering for iPhone',
+  description: 'Always-on Family Controls filtering, DeviceActivity usage monitoring, time-window shielding, and optional Deep Scan. Partners receive category, timestamp, and severity — never screen content.',
   alternates: { canonical: 'https://remainfaithful.com/how-it-works' },
 }
 
@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: 'Who sees my data?',
-    a: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), and the severity level. They do not see screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
+    a: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), and the severity level. They do not see which app, a bundle ID, screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
   },
   {
     q: 'Can I be anonymous?',
@@ -26,7 +26,7 @@ const faqs = [
   },
   {
     q: 'What exactly gets monitored?',
-    a: 'Remain Faithful uses two monitoring layers. Layer A — always-on Screen Time monitoring — watches which apps you open and which web categories you visit. It runs persistently in the background, requires no screen broadcast permission, and survives device restarts. Layer B — Deep Scan — is started intentionally for high-risk periods and uses Apple\'s ReplayKit to run on-device AI (Vision OCR, SensitiveContentAnalysis) on screen frames. All classification is on-device. Deep Scan cannot analyze DRM-protected streaming video such as Netflix or Disney+; it covers browsers, photos, social media, and most non-DRM apps.',
+    a: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering: you choose apps and categories to block, they stay blocked through lock and reboot, and partners are notified when a blocked category is attempted. DeviceActivity monitors usage as category events — not screen content and not which specific app. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM frames. Deep Scan cannot see DRM-protected video or banking apps — Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM, not a Remain Faithful bug. Partners receive category, timestamp, and severity only.',
   },
   {
     q: 'How do I leave a group?',
@@ -38,7 +38,7 @@ const faqs = [
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'The broadcast extension is part of Deep Scan (Layer B) — the optional, user-initiated mode. iOS\'s ReplayKit allows a sandboxed extension process to capture screen frames. The extension runs AI analysis entirely on-device and, when something is flagged, uploads only alert metadata (category, severity, summary, and timestamp) — never the screen frame itself. Screen content, OCR text, and screenshots are never transmitted. The always-on Layer A monitoring does not use a broadcast extension — it uses Apple\'s Screen Time framework instead.',
+    a: 'The broadcast extension is part of opt-in Deep Scan only. iOS ReplayKit allows a sandboxed extension to capture screen frames from non-DRM apps. The extension runs AI analysis entirely on-device and, when something is flagged, uploads only alert metadata (category, severity, and timestamp) — never the screen frame itself. Screen content, OCR text, and screenshots are never transmitted. Always-on filtering, usage monitoring, and time-window shielding use Apple\'s Family Controls and DeviceActivity frameworks — they do not use a broadcast extension and they do not see screen content.',
   },
 ]
 
@@ -57,8 +57,8 @@ export default function HowItWorksPage() {
             How Remain Faithful Works
           </h1>
           <p className="text-[#8A9BB0] text-lg max-w-2xl mx-auto">
-            A complete accountability system built on peer trust, on-device privacy, and the covenant model.
-            Here is exactly what happens under the hood.
+            Always-on Family Controls filtering is the credible core. Deep Scan is optional.
+            Built on peer trust, on-device privacy, and the covenant model.
           </p>
         </div>
       </section>
@@ -142,33 +142,30 @@ export default function HowItWorksPage() {
               How Monitoring Works
             </h2>
             <p className="text-[#8A9BB0] max-w-xl mx-auto">
-              Two complementary layers — always-on app and web monitoring, plus optional deep screen analysis — each sending discreet alerts to your partners.
+              Four public layers. Always-on Family Controls filtering is the credible core. Deep Scan is optional.
             </p>
           </div>
 
           <div className="space-y-3 relative">
             <div className="absolute left-7 top-10 bottom-10 w-px bg-gradient-to-b from-[#C9A84C]/60 via-[#C9A84C]/20 to-transparent" />
 
-            {/* Layer A label */}
             <div className="ml-4 pb-1 pt-2">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                Layer A — Always-On Monitoring
+                Layer 1 — Always-On Filtering
               </span>
             </div>
 
             {[
               {
                 step: '1',
-                title: 'Screen Time Framework Runs Persistently',
-                body: "Apple's Screen Time and DeviceActivity APIs watch app usage and web categories continuously in the background. This layer requires no screen broadcast permission, survives device restarts without any manual re-enabling, and cannot be bypassed by force-quitting the app.",
-                note: undefined as string | undefined,
+                title: 'Family Controls Blocks What You Choose',
+                body: 'You select the apps and categories to block. Apple Family Controls keeps them shielded through lock screen, reboot, and app restarts. No screen broadcast permission. Force-quitting the app does not lift the block.',
               },
               {
                 step: '2',
-                title: 'App & Web Category Alert Generated',
-                body: 'When a problematic app is opened or an adult-category site is visited, an alert is created immediately. The only data captured is which app, the category, and the timestamp — no screen content, no page content, ever.',
-                note: undefined as string | undefined,
+                title: 'Partners Are Notified on a Blocked Attempt',
+                body: 'When a blocked category is attempted, an alert is created. Partners receive category, timestamp, and severity — not which app, not a bundle ID, and never screen content.',
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
@@ -182,25 +179,62 @@ export default function HowItWorksPage() {
               </div>
             ))}
 
-            {/* Layer B label */}
+            <div className="ml-4 pb-1 pt-4">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                Layer 2 — DeviceActivity Usage Monitoring
+              </span>
+            </div>
+
+            <div className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-400 flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+                3
+              </div>
+              <div>
+                <h3 className="font-semibold text-[#F0EDE8] mb-1">Category Events, Not Screen Content</h3>
+                <p className="text-sm text-[#8A9BB0] leading-relaxed">
+                  DeviceActivity watches usage as category-level events in the background. It does not capture screen frames, page content, or which specific app was opened. Partners still receive only category, timestamp, and severity.
+                </p>
+              </div>
+            </div>
+
+            <div className="ml-4 pb-1 pt-4">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                Layer 3 — Time-Window Shielding
+              </span>
+            </div>
+
+            <div className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-400 flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+                4
+              </div>
+              <div>
+                <h3 className="font-semibold text-[#F0EDE8] mb-1">Shield Chosen Apps During Hours You Set</h3>
+                <p className="text-sm text-[#8A9BB0] leading-relaxed">
+                  You can restrict chosen apps to time windows — evenings, travel, or a season of struggle. Shielding uses the same Family Controls stack as always-on filtering. It does not see screen content.
+                </p>
+              </div>
+            </div>
+
             <div className="ml-4 pb-1 pt-4">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/25 text-[#C9A84C] text-xs font-bold uppercase tracking-widest">
-                Layer B — Deep Scan (User-Initiated)
+                Layer 4 — Deep Scan (Opt-In)
               </span>
             </div>
 
             {[
               {
-                step: '3',
+                step: '5',
                 title: 'You Start the Session',
                 body: 'Deep Scan is never automatic. You start it intentionally when you want stronger scrutiny — a high-risk period, a travel trip, or a season of struggle. iOS asks for explicit screen broadcast permission each time. You are always in control.',
                 note: undefined as string | undefined,
               },
               {
-                step: '4',
-                title: 'On-Device AI Analyzes Screen Frames',
-                body: "A sandboxed ReplayKit broadcast extension captures screen frames. Each frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple's nudity detector), and a local keyword classifier — all running on your device's Neural Engine. Classification is entirely on-device. Frames are never stored or transmitted.",
-                note: 'Deep Scan cannot analyze DRM-protected streaming video (Netflix, Disney+, etc.). It monitors browsers, photos, social media, and most non-DRM apps.',
+                step: '6',
+                title: 'On-Device AI Analyzes Non-DRM Frames',
+                body: "A sandboxed ReplayKit broadcast extension captures screen frames from apps that allow it. Each frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple's nudity detector), and a local keyword classifier — all running on your device's Neural Engine. Classification is entirely on-device. Frames are never stored or transmitted.",
+                note: 'Deep Scan cannot see DRM-protected video or banking apps. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM — unbypassable, not a Remain Faithful bug. It can analyze browsers, photos, social media, and most non-DRM apps.',
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
@@ -222,15 +256,14 @@ export default function HowItWorksPage() {
               </div>
             ))}
 
-            {/* Alert delivery — both layers */}
             <div className="flex gap-6 p-5 rounded-xl border border-[#C9A84C]/25 bg-[#162235] ml-4 mt-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
-                5
+                7
               </div>
               <div>
-                <h3 className="font-semibold text-[#F0EDE8] mb-1">Alert Delivered to Partners (Both Layers)</h3>
+                <h3 className="font-semibold text-[#F0EDE8] mb-1">Alert Delivered to Partners</h3>
                 <p className="text-sm text-[#8A9BB0] leading-relaxed">
-                  When either layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: the alert category, severity level, a brief system-generated description, and timestamp. Partners see nothing beyond those data points — no screenshots, no raw content, ever.
+                  When a layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: the alert category, severity level, and timestamp. Partners do not receive which app, a bundle ID, or a system-generated description. No screenshots. No raw content. Ever.
                 </p>
               </div>
             </div>

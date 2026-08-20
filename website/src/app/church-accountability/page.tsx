@@ -59,7 +59,7 @@ export default function ChurchAccountability() {
           <div className="space-y-4">
             {[
               { problem: 'Self-disclosure problem', solution: 'Automatic alerts remove the choice to disclose. When something is flagged, partners know. Not because the struggling person chose to tell them. Because the system did. The shame barrier to disclosure is eliminated.' },
-              { problem: 'Meeting gap', solution: 'Always-on Screen Time monitoring runs continuously between meetings. Alerts reach partners in real time. The gap between meetings is covered.' },
+              { problem: 'Meeting gap', solution: 'Always-on Family Controls filtering and DeviceActivity usage monitoring run continuously between meetings. Alerts reach partners in real time. The gap between meetings is covered.' },
               { problem: 'Response problem', solution: 'The covenant is accepted before any partner gains access. It specifies: respond with grace. Partners know what is expected of them before the first alert ever arrives.' },
             ].map((item) => (
               <div key={item.problem} className="p-5 rounded-xl border border-[#C9A84C]/20 bg-[#162235]">
@@ -113,7 +113,7 @@ export default function ChurchAccountability() {
           <div className="grid sm:grid-cols-2 gap-4">
             {[
               { title: 'Group Setup Guide', desc: 'Free printable PDF for ministry leaders. Covenant text, setup steps, group norms, and first-month FAQ.', href: '/group-setup-guide', cta: 'Download PDF' },
-              { title: 'Partners Program', desc: 'Register your church for early access and receive direct support from the founder during your initial launch.', href: '/partners', cta: 'Register Your Church' },
+              { title: 'Partners Program', desc: 'Register your church on the waitlist for launch notification. No operational promises — we will email you when the app is ready.', href: '/partners', cta: 'Register Your Church' },
               { title: 'How RF Works', desc: 'A complete technical and theological breakdown of what Remain Faithful does, and how.', href: '/how-it-works', cta: 'Read the Breakdown' },
               { title: 'Ministry Accountability Guide', desc: 'An in-depth look at how churches are implementing structured accountability programs and what works.', href: '/blog/mens-ministry-accountability', cta: 'Read the Article' },
             ].map((item) => (

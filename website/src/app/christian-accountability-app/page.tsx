@@ -30,7 +30,7 @@ export default function ChristianAccountabilityApp() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/#waitlist" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
-                Get Early Access (Free)
+                Join the Waitlist
               </Link>
               <Link href="/how-it-works" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#F0EDE8] border border-[#1E3050] hover:border-[#C9A84C]/50 hover:bg-[#162235] transition-colors">
                 How It Works
@@ -141,7 +141,7 @@ export default function ChristianAccountabilityApp() {
             <div className="grid sm:grid-cols-2 gap-4 mb-6">
               {[
                 { title: 'Built-in group mode', body: 'Create a group, share an invite code, and have your entire small group monitoring and supporting each other within minutes.' },
-                { title: 'Pastoral oversight tools', body: 'Group leaders can receive weekly summaries or individual alerts, with member-controlled visibility settings.' },
+                { title: 'Member-controlled visibility', body: 'Members choose whether alerts go to the whole group or the leader only. Partners receive category, timestamp, and severity — not which app.' },
                 { title: 'No cost to your church', body: 'Remain Faithful is free for churches, small groups, and ministries of any size. No organizational license required.' },
                 { title: 'Group Setup Guide', body: 'A free printable guide for ministry leaders covers covenant discussion, setup walkthrough, and first-month expectations.' },
               ].map((item) => (

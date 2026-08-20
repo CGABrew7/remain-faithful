@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         <div className="mb-12">
           <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
           <h1 className="font-serif text-4xl font-bold text-[#F0EDE8] mb-4">Privacy Policy</h1>
-          <p className="text-[#8A9BB0] text-sm">Last updated: May 2025</p>
+          <p className="text-[#8A9BB0] text-sm">Last updated: August 2026</p>
         </div>
 
         <div className="prose-content space-y-12">
@@ -46,12 +46,11 @@ export default function PrivacyPage() {
             </Subsection>
 
             <Subsection title="Alert Metadata">
-              <p>When your device&apos;s monitoring detects concerning content, an alert is generated. We store and transmit the following alert metadata:</p>
+              <p>When always-on filtering flags a blocked category, or when optional Deep Scan flags a non-DRM frame, an alert is generated. We store and transmit the following alert metadata:</p>
               <ul>
                 <li>Timestamp of the alert</li>
                 <li>Content category (e.g., &quot;Adult Content&quot;, &quot;Explicit Text&quot;)</li>
                 <li>Severity level (Low / Medium / High)</li>
-                <li>Which app or browser was active (app bundle ID or domain category, not full URL)</li>
               </ul>
               <p>
                 <strong className="text-[#F0EDE8]">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, app content, or any representation of what was on your screen.
@@ -72,9 +71,9 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="What Stays On Your Device">
-            <p>The following data is processed entirely on your device and is never transmitted to our servers or to your partners:</p>
+            <p>Always-on Family Controls filtering and DeviceActivity usage monitoring do not capture screen frames. If you start an optional Deep Scan session, the following data is processed entirely on your device and is never transmitted to our servers or to your partners:</p>
             <ul>
-              <li>Raw screen frames captured by the broadcast extension</li>
+              <li>Raw screen frames captured by the ReplayKit broadcast extension (Deep Scan only)</li>
               <li>OCR text extracted by Apple Vision</li>
               <li>SensitiveContentAnalysis classification results</li>
               <li>Local keyword classifier scores</li>
@@ -82,7 +81,7 @@ export default function PrivacyPage() {
               <li>Any visual content from your screen</li>
             </ul>
             <p>
-              The broadcast extension uploads only alert metadata — category, severity, a static summary, and timestamp — when a frame is flagged. It never transmits screen content, OCR text, screenshots, or any visual representation of what was on screen. The open-source code makes this verifiable by anyone.
+              When Deep Scan flags a non-DRM frame, only alert metadata — category, severity, and timestamp — is uploaded. No static summary. No system-generated description. It never transmits screen content, OCR text, screenshots, or any visual representation of what was on screen. The open-source code makes this verifiable by anyone.
             </p>
           </Section>
 
@@ -90,8 +89,8 @@ export default function PrivacyPage() {
             <p>Your accountability partners have access to:</p>
             <ul>
               <li>Your display name and account email (as provided by you when you initiated the partnership)</li>
-              <li>Alert metadata as described above: timestamp, category, severity level</li>
-              <li>Your streak count and weekly digest summary (aggregate counts, not individual events)</li>
+              <li>Alert metadata as described above: timestamp, category, and severity level — not which app, and not a bundle ID</li>
+              <li>Your streak count (aggregate, not individual events)</li>
             </ul>
             <p>Partners do not have access to your screen content, browsing history, or any data beyond alert metadata and account-level statistics you have explicitly made visible.</p>
           </Section>
@@ -126,7 +125,7 @@ export default function PrivacyPage() {
               <li><strong className="text-[#F0EDE8]">Access your data:</strong> request a full export of your account data via Settings → Export My Data, or by emailing support@remainfaithful.com</li>
               <li><strong className="text-[#F0EDE8]">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
               <li><strong className="text-[#F0EDE8]">Delete your data:</strong> delete your account in Settings → Delete Account. This triggers immediate deletion of your account data and alerts, with confirmation within 30 days</li>
-              <li><strong className="text-[#F0EDE8]">Withdraw consent:</strong> disable monitoring at any time from within the app. Partners will no longer receive alerts immediately upon disabling.</li>
+              <li><strong className="text-[#F0EDE8]">Withdraw consent:</strong> disable filtering at any time from within the app. Partners will no longer receive alerts immediately upon disabling.</li>
             </ul>
             <p>
               For data requests or concerns, contact{' '}

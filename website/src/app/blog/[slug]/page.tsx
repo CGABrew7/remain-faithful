@@ -175,7 +175,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 href="/#waitlist"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] text-sm"
               >
-                Get Early Access
+                Join the Waitlist
               </Link>
             </div>
 

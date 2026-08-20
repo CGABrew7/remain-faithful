@@ -7,7 +7,7 @@ const footerLinks = {
     links: [
       { label: 'How It Works', href: '/how-it-works' },
       { label: 'Privacy Architecture', href: '/privacy-architecture' },
-      { label: 'Early Access', href: '/#waitlist' },
+      { label: 'Waitlist', href: '/#waitlist' },
       { label: 'Donate', href: '/#donate' },
     ],
   },
