@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         <div className="mb-12">
           <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
           <h1 className="font-serif text-4xl font-bold text-[#F0EDE8] mb-4">Privacy Policy</h1>
-          <p className="text-[#8A9BB0] text-sm">Last updated: May 2025</p>
+          <p className="text-[#8A9BB0] text-sm">Last updated: August 2026</p>
         </div>
 
         <div className="prose-content space-y-12">
@@ -51,7 +51,6 @@ export default function PrivacyPage() {
                 <li>Timestamp of the alert</li>
                 <li>Content category (e.g., &quot;Adult Content&quot;, &quot;Explicit Text&quot;)</li>
                 <li>Severity level (Low / Medium / High)</li>
-                <li>Which app or browser was active (app bundle ID or domain category, not full URL)</li>
               </ul>
               <p>
                 <strong className="text-[#F0EDE8]">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, app content, or any representation of what was on your screen.
@@ -90,8 +89,8 @@ export default function PrivacyPage() {
             <p>Your accountability partners have access to:</p>
             <ul>
               <li>Your display name and account email (as provided by you when you initiated the partnership)</li>
-              <li>Alert metadata as described above: timestamp, category, severity level</li>
-              <li>Your streak count and weekly digest summary (aggregate counts, not individual events)</li>
+              <li>Alert metadata as described above: timestamp, category, and severity level — not which app, and not a bundle ID</li>
+              <li>Your streak count (aggregate, not individual events)</li>
             </ul>
             <p>Partners do not have access to your screen content, browsing history, or any data beyond alert metadata and account-level statistics you have explicitly made visible.</p>
           </Section>

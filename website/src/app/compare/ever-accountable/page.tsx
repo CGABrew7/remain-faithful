@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { comparisonSchema } from '@/lib/structured-data'
+import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
@@ -27,7 +28,7 @@ const pageFaqSchema = {
       name: 'Does Ever Accountable also do on-device processing?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful. The key differences are price (Remain Faithful is free, Ever Accountable is $99/year), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.',
+        text: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $129/year), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.',
       },
     },
     {
@@ -70,7 +71,7 @@ export default function EverAccountableCompare() {
           {/* Comparison Table */}
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-6">Side-by-Side Comparison</h2>
-            <p className="text-xs text-[#8A9BB0]/60 mb-4">Pricing as of June 2026. Check each provider&apos;s website for current pricing.</p>
+            <p className="text-xs text-[#8A9BB0]/60 mb-4">{COMPETITOR_PRICING_NOTE}</p>
             <div className="overflow-x-auto rounded-2xl border border-[#1E3050]">
               <table className="w-full text-sm">
                 <thead>
@@ -82,7 +83,7 @@ export default function EverAccountableCompare() {
                 </thead>
                 <tbody>
                   {[
-                    ['Price', 'Free forever', '$99/year'],
+                    ['Price', 'Free forever', '$129/year'],
                     ['Platform', 'iOS 17+ (Android Fall 2026)', 'iOS, Android, Windows, Mac'],
                     ['Monitoring approach', 'On-device AI classification', 'On-device AI classification'],
                     ['Screenshots shared with partners?', 'Never. Category + severity only.', 'Partners see screenshot reports'],
@@ -126,7 +127,7 @@ export default function EverAccountableCompare() {
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Where Remain Faithful Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Price', body: 'Remain Faithful is completely free. Ever Accountable costs $99 per year. Over five years, that is $495 in savings. For ministries deploying accountability tools to dozens of people, free is a significant difference.' },
+                { title: 'Price', body: 'Remain Faithful is completely free. Ever Accountable publicly lists $129 per year for one reporting user. For ministries deploying accountability tools to dozens of people, free is a significant difference. Verify current pricing on their site.' },
                 { title: 'Open source transparency', body: 'Remain Faithful is fully open source. Anyone can read the code and verify that screen content is never transmitted. Ever Accountable is proprietary. Both say they protect your privacy; only one lets you verify it.' },
                 { title: 'Partner protection', body: 'Ever Accountable shares screenshot reports with accountability partners, exposing them to the content that was flagged. Remain Faithful partners receive only a category and severity label. Partners never see the material that triggered the alert.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds Remain Faithful\'s accountability in a theological understanding of relationship. Partners agree to respond with grace before gaining access. This is designed to shape how alerts are received.' },
@@ -149,7 +150,7 @@ export default function EverAccountableCompare() {
                     'Need Android, Windows, or Mac coverage today',
                     'Want a more mature, battle-tested iOS app',
                     'Interested in professional accountability coaching',
-                    'Comfortable paying $99/year for a proven solution',
+                    'Comfortable paying a yearly subscription for a proven solution',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-[#8A9BB0]">
                       <svg className="flex-shrink-0 mt-0.5 text-[#8A9BB0]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -184,7 +185,7 @@ export default function EverAccountableCompare() {
             <div className="space-y-4">
               {[
                 { q: 'Is Remain Faithful as effective as Ever Accountable?', a: 'Both apps use on-device AI, which is a meaningful shared strength. Ever Accountable has a more mature iOS implementation with four generations of development. Remain Faithful is newer but is entirely free, open source, and built on a covenant accountability model. Which is more effective depends on your specific situation.' },
-                { q: 'Does Ever Accountable also do on-device processing?', a: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful. The key differences are price (Remain Faithful is free, Ever Accountable is $99/year), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.' },
+                { q: 'Does Ever Accountable also do on-device processing?', a: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $129/year), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.' },
                 { q: 'Can I switch from Ever Accountable to Remain Faithful?', a: 'Yes. Cancel your Ever Accountable subscription and download Remain Faithful. Invite your accountability partners and walk through the covenant setup. Note that Remain Faithful is currently iOS only; if your partners use Android, Windows, or Mac, Ever Accountable has broader coverage.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-2xl border border-[#1E3050] bg-[#162235] p-6">

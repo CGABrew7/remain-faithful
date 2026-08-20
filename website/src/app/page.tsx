@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     q: 'How is this different from other accountability apps?',
-    a: 'Remain Faithful is different in three key ways: it is 100% free forever, all content classification happens entirely on your device — no screen content ever leaves your device for classification — and the entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
+    a: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
   },
   {
     q: 'Does this work on Android?',
@@ -99,8 +99,9 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg text-[#8A9BB0] leading-relaxed mb-10">
-                Free peer accountability for believers committed to purity.
-                Built on trust, not surveillance. Your content never leaves your device.
+                Always-on filtering blocks the apps and categories you choose, and notifies your partners when a blocked category is attempted.
+                Optional Deep Scan adds on-device AI for high-risk periods.
+                No screen content ever leaves your device.
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -126,10 +127,10 @@ export default function HomePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-10 pt-8 border-t border-[#1E3050]">
+                <TrustItem>Always-On Filtering</TrustItem>
                 <TrustItem>100% Free, Forever</TrustItem>
-                <TrustItem>Donation Funded</TrustItem>
-                <TrustItem>On-Device AI &amp; Security</TrustItem>
                 <TrustItem>No Screen Content Ever Leaves Your Device</TrustItem>
+                <TrustItem>Optional Deep Scan</TrustItem>
               </div>
             </div>
 
@@ -193,7 +194,7 @@ export default function HomePage() {
                 </svg>
               }
               title="On-Device Privacy"
-              body="All AI classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see metadata, not your screen."
+              body="Optional Deep Scan classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Your screen content is never transmitted. Partners see category, timestamp, and severity — not which app, and not your screen."
               link="/blog/on-device-privacy-explained"
             />
             <FeatureCard
@@ -205,8 +206,8 @@ export default function HomePage() {
                   <rect x="9" y="3" width="6" height="4" rx="1"/>
                 </svg>
               }
-              title="Always-On Blocking"
-              body="Select the apps and categories you want blocked. They stay shielded continuously — through lock screen, reboot, and app restarts. Your partners are notified when a blocked app is attempted."
+              title="Always-On Filtering"
+              body="Select the apps and categories you want blocked. They stay shielded continuously — through lock screen, reboot, and app restarts. Your partners are notified when a blocked category is attempted."
             />
             <FeatureCard
               icon={
@@ -258,8 +259,8 @@ export default function HomePage() {
                   <path d="M12 8v4M12 16h.01"/>
                 </svg>
               }
-              title="Enable Monitoring"
-              body="Always-on Screen Time monitoring activates automatically — it tracks app usage and web categories, survives device restarts, and never needs manual re-enabling. For high-risk periods you can also start an optional Deep Scan session for on-device AI screen analysis."
+              title="Enable Filtering"
+              body="Always-on Family Controls filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. DeviceActivity monitors usage as category events — not screen content. For high-risk periods you can start an optional Deep Scan session."
             />
             <Step
               number="03"
@@ -316,7 +317,7 @@ export default function HomePage() {
               />
               <PrivacyPoint
                 title="Alert Metadata Only"
-                body="Partners receive: timestamp, app category, and severity level. Never a screenshot. Never raw content. Never your browsing history."
+                body="Partners receive: timestamp, category, and severity level. Never which app. Never a screenshot. Never raw content. Never your browsing history."
               />
               <PrivacyPoint
                 title="You Control Access"

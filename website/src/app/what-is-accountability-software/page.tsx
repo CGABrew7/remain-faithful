@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { JsonLd } from '@/components/JsonLd'
+import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 
 export const metadata: Metadata = {
   title: 'What Is Accountability Software? A Complete Guide (2026)',
@@ -50,7 +51,7 @@ const faqSchema = {
       name: 'What is the best free accountability app?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is the only fully free accountability app for iPhone with no subscription tier, no premium features, and no advertising. It uses on-device AI so screen content never leaves your device. Other options like Covenant Eyes ($16.99/month), Ever Accountable ($99/year), and Accountable2You (~$80/year) all charge subscription fees.',
+        text: 'Remain Faithful is the only fully free accountability app for iPhone with no subscription tier, no premium features, and no advertising. Always-on filtering is the core; Deep Scan is optional; screen content never leaves your device. Other options charge subscriptions. Public August 2026 list prices: Covenant Eyes $18/month or $198/year (account, not per-user), Ever Accountable $129/year, Accountable2You $121/year Personal. Verify on each provider site.',
       },
     },
   ],
@@ -215,7 +216,7 @@ export default function WhatIsAccountabilitySoftware() {
                 { q: '1. Which platforms do you and your partner use?', a: 'If you need cross-platform coverage (Windows, Mac, Android), your options are Covenant Eyes, Ever Accountable, and Accountable2You. If you use iPhone exclusively, Remain Faithful is also an option.' },
                 { q: '2. What should your partner actually receive?', a: 'Screenshot tools send actual screenshots of flagged content, exposing partners to harmful material. Category-only tools (like Remain Faithful) send only a category label and severity level, protecting partners from exposure while still creating accountability.' },
                 { q: '3. What does privacy mean to you?', a: 'Screenshot tools transmit screen content to cloud servers and partner devices. VPN tools route traffic externally. On-device AI tools (Remain Faithful, Ever Accountable) keep screen content on your device. If privacy is important, on-device AI is the strongest option.' },
-                { q: '4. What is your budget?', a: 'Costs range from $0 (Remain Faithful) to $204/year (Covenant Eyes for one person). If cost is a constraint, Remain Faithful is the only option with no cost at all. Others range from $80 to $204 per year per person.' },
+                { q: '4. What is your budget?', a: 'Remain Faithful is $0. Paid tools charge subscriptions. Public August 2026 list prices we verified: Covenant Eyes $18/month or $198/year (account, not per-user; not multiplied by household size), Ever Accountable $129/year, Accountable2You $121/year Personal. Verify current amounts on each provider\'s site.' },
                 { q: '5. What kind of relationship framework do you want?', a: 'Most tools are monitoring tools. Remain Faithful adds a covenant layer in which partners explicitly agree to respond with grace before gaining access. If the relational framework matters to you, this distinction is significant.' },
               ].map((item) => (
                 <div key={item.q} className="p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
@@ -242,9 +243,9 @@ export default function WhatIsAccountabilitySoftware() {
                 <tbody>
                   {[
                     ['Remain Faithful', 'Free', 'On-device AI', 'iOS 17+'],
-                    ['Covenant Eyes', '~$17/mo', 'Screenshots + cloud AI', 'iOS, Android, Windows, Mac, Chromebook'],
-                    ['Ever Accountable', '~$99/yr', 'On-device AI', 'iOS, Android, Windows, Mac'],
-                    ['Accountable2You', '~$80/yr', 'VPN-based', 'iOS, Android, Windows, Mac, Kindle'],
+                    ['Covenant Eyes', '$18/mo or $198/yr', 'Screenshots + cloud AI', 'iOS, Android, Windows, Mac, Chromebook'],
+                    ['Ever Accountable', '$129/yr', 'On-device AI', 'iOS, Android, Windows, Mac'],
+                    ['Accountable2You', '$121/yr Personal', 'VPN-based', 'iOS, Android, Windows, Mac, Kindle'],
                   ].map(([tool, price, approach, platforms], i) => (
                     <tr key={i} className={`border-b border-[#1E3050] ${i % 2 === 0 ? 'bg-[#162235]' : 'bg-[#0F1B2D]'}`}>
                       <td className="p-4 text-[#F0EDE8] font-medium">{tool}</td>
@@ -256,7 +257,7 @@ export default function WhatIsAccountabilitySoftware() {
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-[#8A9BB0]/60 mt-2">Pricing as of June 2026. Check each provider&apos;s website for current pricing.</p>
+            <p className="text-xs text-[#8A9BB0]/60 mt-2">{COMPETITOR_PRICING_NOTE}</p>
             <div className="mt-4 flex flex-wrap gap-3 text-sm">
               <Link href="/compare/covenant-eyes" className="text-[#C9A84C] hover:underline underline-offset-2">RF vs Covenant Eyes →</Link>
               <Link href="/compare/ever-accountable" className="text-[#C9A84C] hover:underline underline-offset-2">RF vs Ever Accountable →</Link>
@@ -273,7 +274,7 @@ export default function WhatIsAccountabilitySoftware() {
                 { q: 'How does accountability software work?', a: 'Accountability software works by monitoring device activity and generating reports or alerts for a designated partner. The monitoring approach varies by product: screenshot-based tools capture images of the screen at intervals; DNS-based tools block content at the network level; VPN-based tools route traffic through a local VPN to inspect URLs; on-device AI tools classify screen content using machine learning running entirely on the device. Partners receive reports via email, app notifications, or in-app dashboards depending on the product.' },
                 { q: 'Who uses accountability software?', a: 'The primary users are individuals and families seeking to address pornography or explicit content use, often within a religious context. Christians seeking purity accountability represent a large portion of the market. Parents use accountability software to monitor children\'s device activity. Recovery programs for sexual addiction integrate accountability software as part of treatment. Church small groups and men\'s ministries use it as a structured accountability layer.' },
                 { q: 'Is accountability software legal?', a: 'Yes, on your own devices or on devices you own and provide to minors. Using accountability software on another adult\'s device without their knowledge or consent would raise serious legal and ethical concerns. All reputable accountability software requires the monitored person to install and enable the software themselves. Monitoring should always be consensual for adults.' },
-                { q: 'What is the best free accountability app?', a: 'Remain Faithful is the only fully free accountability app for iPhone with no subscription tier, no premium features, and no advertising. It uses on-device AI so screen content never leaves your device. Other options like Covenant Eyes ($16.99/month), Ever Accountable ($99/year), and Accountable2You (~$80/year) all charge subscription fees.' },
+                { q: 'What is the best free accountability app?', a: 'Remain Faithful is the only fully free accountability app for iPhone with no subscription tier, no premium features, and no advertising. Always-on filtering is the core; Deep Scan is optional; screen content never leaves your device. Other options charge subscriptions. Public August 2026 list prices: Covenant Eyes $18/month or $198/year (account, not per-user), Ever Accountable $129/year, Accountable2You $121/year Personal. Verify on each provider site.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-2xl border border-[#1E3050] bg-[#162235] p-6">
                   <h3 className="font-semibold text-[#F0EDE8] mb-3">{faq.q}</h3>

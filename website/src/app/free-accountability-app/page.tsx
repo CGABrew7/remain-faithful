@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { softwareApplicationSchema } from '@/lib/structured-data'
+import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
@@ -151,16 +152,16 @@ export default function FreeAccountabilityApp() {
                 <thead>
                   <tr className="border-b border-[#1E3050] bg-[#0A1420]">
                     <th className="text-left p-4 text-[#8A9BB0] font-semibold">App</th>
-                    <th className="text-center p-4 text-[#8A9BB0] font-semibold">Annual Cost (1 person)</th>
-                    <th className="text-center p-4 text-[#8A9BB0] font-semibold">Annual Cost (family of 4)</th>
+                    <th className="text-center p-4 text-[#8A9BB0] font-semibold">Public list price</th>
+                    <th className="text-center p-4 text-[#8A9BB0] font-semibold">Notes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    ['Remain Faithful', '$0', '$0'],
-                    ['Covenant Eyes', '~$204', '~$816'],
-                    ['Ever Accountable', '~$99', '~$396'],
-                    ['Accountable2You', '~$80', '~$320'],
+                    ['Remain Faithful', 'Free', 'No subscription'],
+                    ['Covenant Eyes', '$18/mo or $198/yr', 'Account price, not per-user'],
+                    ['Ever Accountable', '$129/yr', 'One reporting user'],
+                    ['Accountable2You', '$121/yr', 'Personal plan'],
                   ].map(([app, ind, fam], i) => (
                     <tr key={i} className={`border-b border-[#1E3050] ${i === 0 ? 'bg-[#C9A84C]/5' : i % 2 === 0 ? 'bg-[#162235]' : 'bg-[#0F1B2D]'}`}>
                       <td className={`p-4 font-medium ${i === 0 ? 'text-[#C9A84C]' : 'text-[#8A9BB0]'}`}>{app}</td>
@@ -171,7 +172,7 @@ export default function FreeAccountabilityApp() {
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-[#8A9BB0]/60 mt-2">Pricing as of June 2026. Check each provider&apos;s website for current pricing.</p>
+            <p className="text-xs text-[#8A9BB0]/60 mt-2">{COMPETITOR_PRICING_NOTE}</p>
           </section>
 
           {/* FAQ */}

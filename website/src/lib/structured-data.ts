@@ -22,18 +22,19 @@ export const softwareApplicationSchema = {
   name: 'Remain Faithful',
   operatingSystem: 'iOS 17+',
   applicationCategory: 'LifestyleApplication',
-  description: 'Free peer accountability app for Christians committed to purity. On-device AI monitors screen content privately. No screenshots ever leave your device. Partners receive discreet alerts only.',
+  description: 'Free peer accountability app for Christians committed to purity. Always-on Family Controls filtering with partner notify. Optional on-device Deep Scan. No screenshots ever leave your device. Partners receive category, timestamp, and severity only.',
   offers: {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'USD',
   },
   featureList: [
-    'On-device AI content classification',
-    'Always-on Screen Time monitoring',
+    'Always-on Family Controls filtering with partner notify',
+    'DeviceActivity usage monitoring as category events',
+    'Time-window shielding of chosen apps',
+    'Optional on-device Deep Scan',
     'One-to-one or group accountability',
     'Covenant-based partner system',
-    'Privacy-first architecture',
     'Open source codebase',
     'Free forever, donation funded',
   ],
@@ -92,7 +93,7 @@ export const homepageFaqSchema = {
       name: 'How is this different from other accountability apps?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is different in three key ways: it is 100% free forever, all content classification happens entirely on your device so no screen content ever leaves your phone, and the entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
+        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
       },
     },
     {
@@ -131,7 +132,7 @@ export const howItWorksFaqSchema = {
       name: 'Who sees my data when using Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), and the severity level. They do not see screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
+        text: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), and the severity level. They do not see which app, a bundle ID, screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
       },
     },
     {
@@ -139,7 +140,7 @@ export const howItWorksFaqSchema = {
       name: 'What exactly does Remain Faithful monitor?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful uses two monitoring layers. Layer A is always-on Screen Time monitoring that watches which apps you open and which web categories you visit. It runs persistently in the background, requires no screen broadcast permission, and survives device restarts. Layer B is Deep Scan, started intentionally for high-risk periods, using Apple ReplayKit to run on-device AI (Vision OCR, SensitiveContentAnalysis) on screen frames. All classification is on-device.',
+        text: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering of chosen apps and categories, with partner notify when a blocked category is attempted. DeviceActivity monitors usage as category events, not screen content. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM screen frames. Partners receive category, timestamp, and severity only — not which app.',
       },
     },
     {

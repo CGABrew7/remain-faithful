@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { comparisonSchema } from '@/lib/structured-data'
+import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
@@ -70,7 +71,7 @@ export default function CovenantEyesCompare() {
           {/* Comparison Table */}
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-6">Side-by-Side Comparison</h2>
-            <p className="text-xs text-[#8A9BB0]/60 mb-4">Pricing as of June 2026. Check each provider&apos;s website for current pricing.</p>
+            <p className="text-xs text-[#8A9BB0]/60 mb-4">{COMPETITOR_PRICING_NOTE}</p>
             <div className="overflow-x-auto rounded-2xl border border-[#1E3050]">
               <table className="w-full text-sm">
                 <thead>
@@ -82,9 +83,8 @@ export default function CovenantEyesCompare() {
                 </thead>
                 <tbody>
                   {[
-                    ['Price', 'Free forever', '$16.99/mo per user'],
-                    ['Annual cost (1 user)', '$0', '~$204'],
-                    ['Annual cost (family of 4)', '$0', '~$816'],
+                    ['Price', 'Free forever', '$18/mo or $198/yr (account, not per-user)'],
+                    ['Annual cost', '$0', '$198/yr (up to 10 members on one account)'],
                     ['Platform', 'iOS 17+ (Android Fall 2026)', 'iOS, Android, Windows, Mac, Chromebook'],
                     ['Monitoring approach', 'On-device AI classification', 'Screen capture + cloud AI analysis'],
                     ['Screenshots shared with partners?', 'Never. Category + severity only.', 'Yes. Screenshots sent to partner.'],
@@ -131,7 +131,7 @@ export default function CovenantEyesCompare() {
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Where Remain Faithful Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Price', body: 'Remain Faithful is free. Covenant Eyes costs approximately $204 per year for one person. For a family of four, that is $816 per year. There is no version of Covenant Eyes that is free; Remain Faithful is free without limitations.' },
+                { title: 'Price', body: 'Remain Faithful is free. Covenant Eyes publicly lists $18/month or $198/year for an account (up to 10 members) — not a per-user fee, and not multiplied by household size. There is no version of Covenant Eyes that is free; Remain Faithful is free without limitations. Verify current pricing on their site.' },
                 { title: 'Privacy: no screenshots ever leave your device', body: 'Covenant Eyes sends screenshots of your screen to cloud servers for AI analysis. Remain Faithful does all classification on your device using Apple\'s Neural Engine. No screen content, no screenshots, and no OCR text is ever transmitted. Your screen stays on your phone.' },
                 { title: 'Partner protection', body: 'Covenant Eyes partners receive actual screenshots of flagged content, which means partners are exposed to the harmful material. Remain Faithful partners receive only a category label and severity level. Partners never see the content that triggered the alert.' },
                 { title: 'Open source transparency', body: 'Anyone can read every line of Remain Faithful\'s code on GitHub and verify exactly what is and is not transmitted. Covenant Eyes is proprietary. For an app handling sensitive behavioral data, open source is a meaningful trust advantage.' },

@@ -248,7 +248,7 @@ export default function PartnersPage() {
                     'Introduce RF at Step 5 or Step 8 groups where accountability already exists.',
                     'Pair RF with existing accountability partner assignments.',
                     'Use the Group feature for CR small groups of 4–8 participants.',
-                    'CR leader receives the weekly digest as pastoral oversight.',
+                    'CR leader can be a partner on alerts, same as any other member.',
                     'Use RF alerts as a bridge topic at weekly CR meetings.',
                   ].map((step, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-[#8A9BB0]">
@@ -454,7 +454,7 @@ export default function PartnersPage() {
               Register Your Church for Launch
             </h2>
             <p className="text-[#8A9BB0]">
-              Remain Faithful is in pre-launch. Register now and we&apos;ll reach out personally when the app is ready — your church will be among the first ministries onboarded, with direct support from the founder during your initial setup.
+              Remain Faithful is in pre-launch. Join the waitlist and we will notify you when the app is ready for churches and ministries.
             </p>
           </div>
           <PilotForm />

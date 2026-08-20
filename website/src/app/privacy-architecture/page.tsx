@@ -49,15 +49,50 @@ export default function PrivacyArchitecturePage() {
         </div>
       </section>
 
-      {/* Section 1: Two-Tier Pipeline */}
+      {/* Section 1: Always-on vs opt-in */}
       <section className="py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
-              The Two-Tier On-Device Classification Pipeline
+              What Always Runs — and What You Opt Into
             </h2>
             <p className="text-[#8A9BB0] max-w-2xl mx-auto">
-              Every screen frame is classified entirely on your device. No screen content is ever sent off-device — only alert metadata (category, severity, summary, timestamp) is uploaded.
+              The credible core is always-on. Deep Scan is optional. No screen content is ever sent off-device — only alert metadata (category, severity, summary, timestamp) is uploaded.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {[
+              {
+                label: 'Always-on',
+                title: 'Family Controls filtering',
+                body: 'Selected apps and categories stay blocked through lock screen, reboot, and app restarts. Partners are notified when a blocked category is attempted.',
+              },
+              {
+                label: 'Always-on',
+                title: 'Usage as category events',
+                body: 'DeviceActivity monitors usage as category-level events — not screen content, not which specific app, and not page content.',
+              },
+              {
+                label: 'Opt-in',
+                title: 'Deep Scan cannot see DRM',
+                body: 'If you start Deep Scan, on-device AI classifies non-DRM frames only. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM — unbypassable, not a bug.',
+              },
+            ].map((card) => (
+              <div key={card.title} className="rounded-2xl p-6 border border-[#1E3050] bg-[#162235]">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C] mb-3">{card.label}</p>
+                <h3 className="font-semibold text-[#F0EDE8] mb-2">{card.title}</h3>
+                <p className="text-sm text-[#8A9BB0] leading-relaxed">{card.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mb-14">
+            <h3 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">
+              Deep Scan Classification (Opt-In Only)
+            </h3>
+            <p className="text-[#8A9BB0] max-w-2xl mx-auto">
+              When you start a Deep Scan session, frames from non-DRM apps are classified entirely on your device. This is not always-on, and it cannot see DRM-protected video or banking apps.
             </p>
           </div>
 
@@ -72,8 +107,8 @@ export default function PrivacyArchitecturePage() {
                 side="center"
                 badge="Start"
                 badgeColor="#162235"
-                title="Your Device Captures a Screen Frame"
-                desc="Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, only the alert metadata — category, severity, and a static summary — is uploaded. Screen content, OCR text, and screenshots are never transmitted."
+                title="Deep Scan Captures a Screen Frame (Opt-In)"
+                desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, only the alert metadata — category, severity, and a static summary — is uploaded. Screen content, OCR text, and screenshots are never transmitted. DRM apps render as black frames."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
@@ -118,7 +153,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Result"
                 badgeColor="#162235"
                 title="Discreet Alert Delivered to Partners"
-                desc="Partners receive: category label (e.g., 'Adult Content'), severity level, and timestamp. Never a screenshot. Never your browsing history. Never raw content. The open-source code lets anyone verify exactly what is uploaded."
+                desc="Partners receive: category label (e.g., 'Adult Content'), severity level, and timestamp. Never which app. Never a screenshot. Never your browsing history. Never raw content. The open-source code lets anyone verify exactly what is uploaded."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
                     <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
@@ -163,7 +198,8 @@ export default function PrivacyArchitecturePage() {
                   ['Screenshots / screen frames', '✗ Never', '✗ Never'],
                   ['Raw screen content or text', '✗ Never', '✗ Never'],
                   ['Browsing history or URLs', '✗ Never', '✗ Never'],
-                  ['App usage details', '✗ Never', '✗ Never'],
+                  ['Usage category events', '✓ Encrypted metadata', '✓ Category + timestamp + severity'],
+                  ['Which specific app (bundle ID)', '✗ Never', '✗ Never'],
                   ['Passwords or financial data', '✗ Never', '✗ Never'],
                   ['Message content', '✗ Never', '✗ Never'],
                   ['Photos and videos', '✗ Never', '✗ Never'],
@@ -197,7 +233,7 @@ export default function PrivacyArchitecturePage() {
 
           <div className="grid md:grid-cols-5 gap-3 items-center">
             {[
-              { label: 'Your Device', sub: 'Screen frame classified locally', icon: '📱' },
+              { label: 'Your Device', sub: 'On-device classification; no screen content uploaded', icon: '📱' },
               { label: 'Alert Metadata', sub: 'Category + severity only', icon: '📋', connector: true },
               { label: 'RF Server', sub: 'Encrypted at rest (AES-256)', icon: '🔐', connector: true },
               { label: 'APNs', sub: 'Apple Push (TLS 1.3)', icon: '📡', connector: true },
@@ -343,9 +379,8 @@ export default function PrivacyArchitecturePage() {
                 <tr>
                   <th className="text-left pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Privacy Dimension</th>
                   <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Remain Faithful</th>
-                  {/* VERIFY: confirm competitor prices are current before publishing */}
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider A ($16/mo)</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider B ($20/mo)</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider A</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider B</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1E3050]">

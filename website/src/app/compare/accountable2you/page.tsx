@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { comparisonSchema } from '@/lib/structured-data'
+import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
@@ -70,7 +71,7 @@ export default function Accountable2YouCompare() {
           {/* Comparison Table */}
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-6">Side-by-Side Comparison</h2>
-            <p className="text-xs text-[#8A9BB0]/60 mb-4">Pricing as of June 2026. Check each provider&apos;s website for current pricing.</p>
+            <p className="text-xs text-[#8A9BB0]/60 mb-4">{COMPETITOR_PRICING_NOTE}</p>
             <div className="overflow-x-auto rounded-2xl border border-[#1E3050]">
               <table className="w-full text-sm">
                 <thead>
@@ -82,7 +83,7 @@ export default function Accountable2YouCompare() {
                 </thead>
                 <tbody>
                   {[
-                    ['Price', 'Free forever', '~$80/year'],
+                    ['Price', 'Free forever', '$121/year Personal'],
                     ['Platform', 'iOS 17+ (Android Fall 2026)', 'iOS, Android, Windows, Mac, Kindle'],
                     ['Monitoring technology', 'On-device AI + Screen Time framework', 'VPN-based traffic monitoring'],
                     ['Web page title logging', 'No. Category only.', 'Yes. Specific page titles logged.'],
@@ -128,9 +129,9 @@ export default function Accountable2YouCompare() {
             <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Where Remain Faithful Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Price', body: 'Remain Faithful is free. Accountable2You costs approximately $80 per year. That savings compounds: $400 over five years, $800 over ten. For individuals or churches deploying accountability tools at scale, free is a meaningful difference.' },
+                { title: 'Price', body: 'Remain Faithful is free. Accountable2You publicly lists $121 per year for the Personal plan. For individuals or churches deploying accountability tools at scale, free is a meaningful difference. Verify current pricing on their site.' },
                 { title: 'No VPN required: better battery life', body: 'Accountable2You routes traffic through a local VPN to monitor it. This has two downsides: it drains battery more quickly, and it can conflict with corporate or school VPN configurations. Remain Faithful uses Apple\'s native Screen Time framework and on-device AI, with minimal battery impact and no VPN conflicts.' },
-                { title: 'On-device AI is more thorough', body: 'VPN-based monitoring cannot see inside encrypted HTTPS traffic or monitor what happens inside apps. Remain Faithful\'s on-device approach can classify screen content across all apps because the classification happens at the display level, not the network level.' },
+                { title: 'On-device AI when you opt in', body: 'VPN-based monitoring cannot see inside encrypted HTTPS traffic or monitor what happens inside apps. Remain Faithful\'s optional Deep Scan classifies non-DRM screen frames on-device. It cannot see DRM-protected video or banking apps (Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames). Always-on filtering and usage monitoring do not look at screen content.' },
                 { title: 'Partner privacy: category only, never page titles', body: 'Accountable2You shares specific web page titles with accountability partners, which means partners see exactly what pages were visited. Some find this level of detail helpful; others consider it overly exposing. Remain Faithful shares only the category and severity, protecting the privacy of the person being held accountable while still triggering a conversation.' },
                 { title: 'Open source', body: 'Remain Faithful\'s entire codebase is publicly available for inspection. Accountable2You is proprietary. Anyone can verify what Remain Faithful does and does not transmit.' },
               ].map((item) => (
@@ -151,7 +152,7 @@ export default function Accountable2YouCompare() {
                   {[
                     'Need Android, Windows, Mac, or Kindle coverage',
                     'Partners want detailed web page title reports',
-                    'Happy to pay ~$80/year for a proven solution',
+                    'Happy to pay a yearly subscription for a proven solution',
                     'No concerns about VPN battery drain or conflicts',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-[#8A9BB0]">

@@ -113,7 +113,7 @@ export default function ChurchAccountability() {
           <div className="grid sm:grid-cols-2 gap-4">
             {[
               { title: 'Group Setup Guide', desc: 'Free printable PDF for ministry leaders. Covenant text, setup steps, group norms, and first-month FAQ.', href: '/group-setup-guide', cta: 'Download PDF' },
-              { title: 'Partners Program', desc: 'Register your church for early access and receive direct support from the founder during your initial launch.', href: '/partners', cta: 'Register Your Church' },
+              { title: 'Partners Program', desc: 'Register your church on the waitlist for launch notification. No operational promises — we will email you when the app is ready.', href: '/partners', cta: 'Register Your Church' },
               { title: 'How RF Works', desc: 'A complete technical and theological breakdown of what Remain Faithful does, and how.', href: '/how-it-works', cta: 'Read the Breakdown' },
               { title: 'Ministry Accountability Guide', desc: 'An in-depth look at how churches are implementing structured accountability programs and what works.', href: '/blog/mens-ministry-accountability', cta: 'Read the Article' },
             ].map((item) => (

@@ -74,7 +74,7 @@ Getting a group up and running in Remain Faithful takes about fifteen minutes fo
 
 Don't send someone a link to an app without context. The conversation matters. Here's what to cover:
 
-- **What the app does:** It monitors for concerning content using on-device AI and notifies your accountability partners when something is flagged.
+- **What the app does:** Always-on filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners see category, timestamp, and severity — not which app.
 - **What partners see:** Metadata only: timestamp, category, severity. Not your screen, not your browsing history.
 - **The covenant:** Both parties commit to honesty, grace, and confidentiality. You'll see this in the app.
 - **It's voluntary:** Anyone can disable monitoring at any time. This is a choice, not a surveillance program.
@@ -90,8 +90,8 @@ After creating your account:
 3. Enter a group name (e.g., "Tuesday Accountability," "Iron Sharpens Iron," or whatever your group calls itself)
 4. Review the covenant text (this is what every member will agree to before joining)
 5. Choose your leader visibility settings:
-   - **Alert summaries:** receive aggregate weekly data (recommended)
-   - **Individual alerts:** see each alert as it occurs (use with care; discuss with your group first)
+   - **Leader-only alerts:** members can share alerts with you rather than the whole group
+   - **Group alerts:** all members receive category-level alerts as they occur
 6. Tap **Create Group**
 
 You'll see a 6-character invite code. Screenshot it or write it down.
@@ -104,15 +104,15 @@ Share the invite code however makes sense for your group: group chat, in person,
 
 That's it. The app walks them through the rest.
 
-## Step 3: Enable Monitoring (Each Member)
+## Step 3: Enable Filtering (Each Member)
 
-Each member goes to **Settings → Monitoring → Enable**. The app will:
+Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. The app will:
 
-1. Ask for Screen Recording permission (a standard iOS dialog)
-2. Walk through a brief explanation of what gets monitored
-3. Confirm that monitoring is active with a green indicator on the dashboard
+1. Walk through selecting apps and categories to block
+2. Confirm that filtering is active
+3. Mention that Deep Scan is optional and, if used later, asks for screen broadcast permission separately
 
-The first few days, encourage members to keep an eye on the dashboard to make sure everything is working. The green "Monitoring active" status is the confirmation.
+The first few days, encourage members to keep an eye on the dashboard to make sure everything is working.
 
 ## Step 4: First Group Meeting
 
