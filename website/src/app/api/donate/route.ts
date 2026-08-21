@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { checkoutReturnUrls } from '@/lib/checkout-urls'
 
 export async function POST(request: Request) {
   try {
@@ -15,10 +16,7 @@ export async function POST(request: Request) {
     }
 
     const stripe = new Stripe(secretKey)
-    const origin =
-      request.headers.get('origin') ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      'https://remainfaithful.com'
+    const { successUrl, cancelUrl } = checkoutReturnUrls(request.headers.get('origin'))
 
     const amountCents = Math.round(amount * 100)
 
@@ -40,8 +38,8 @@ export async function POST(request: Request) {
         },
       ],
       mode: recurring ? 'subscription' : 'payment',
-      success_url: `${origin}/?donated=true`,
-      cancel_url: `${origin}/`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     })
 
     return Response.json({ url: session.url })

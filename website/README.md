@@ -33,7 +33,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `STRIPE_SECRET_KEY` | Yes | Stripe secret key (server-side) for creating Checkout sessions |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | Stripe publishable key (client-side) |
 | `BACKEND_URL` | No | Base URL of the Go backend API (contact form fallback) |
-| `NEXT_PUBLIC_SITE_URL` | Yes | Canonical site URL (e.g. `https://remainfaithful.com`) |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Canonical site URL (e.g. `https://remainfaithful.com`). Not used for Stripe Checkout return URLs. |
 | `NEXT_PUBLIC_GA_ID` | No | Google Analytics 4 Measurement ID (`G-XXXXXXXXXX`) |
 
 ## Deploying to Vercel
@@ -74,7 +74,7 @@ vercel --prod
 
 | Route | Method | Description |
 |---|---|---|
-| `/api/donate` | POST | Creates a Stripe Checkout session directly; accepts `{ amount, recurring }`, returns `{ url }` |
+| `/api/donate` | POST | Creates a Stripe Checkout session directly; accepts `{ amount, recurring }`, returns `{ url }`. Production success/cancel URLs are always `https://www.remainfaithful.com/?donated=true` and `https://www.remainfaithful.com/#donate`. Localhost Origins are kept for local Stripe test checkouts. |
 | `/api/contact` | POST | Forwards to backend `/contact` if `BACKEND_URL` is set; otherwise logs and returns success |
 
 ## Project Structure
