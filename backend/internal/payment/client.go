@@ -10,6 +10,14 @@ import (
 	"github.com/stripe/stripe-go/v76/checkout/session"
 )
 
+// Production Stripe Checkout return URLs. remainfaithful.app does not resolve,
+// and /thank-you is a 404 on remainfaithful.com. The homepage already shows
+// DonationSuccessBanner when ?donated=true is present.
+const (
+	ProductionSuccessURL = "https://www.remainfaithful.com/?donated=true"
+	ProductionCancelURL  = "https://www.remainfaithful.com/#donate"
+)
+
 // Client wraps the Stripe SDK for checkout session creation.
 // When STRIPE_SECRET_KEY is absent the client is disabled and returns errors.
 type Client struct {
@@ -62,8 +70,8 @@ func (c *Client) CreateCheckoutSession(ctx context.Context, p CheckoutParams) (s
 			{PriceData: priceData, Quantity: stripe.Int64(1)},
 		},
 		Mode:       mode,
-		SuccessURL: stripe.String("https://remainfaithful.app/thank-you"),
-		CancelURL:  stripe.String("https://remainfaithful.app/"),
+		SuccessURL: stripe.String(ProductionSuccessURL),
+		CancelURL:  stripe.String(ProductionCancelURL),
 	}
 	params.AddMetadata("user_id", strconv.FormatInt(p.UserID, 10))
 
