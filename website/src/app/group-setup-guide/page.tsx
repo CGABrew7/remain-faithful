@@ -20,8 +20,8 @@ export default function GroupSetupGuidePage() {
 
           {/* Cover */}
           <div
-            className="rounded-3xl p-12 mb-12 text-center print:rounded-none print:mb-8 print:page-break-after-avoid"
-            style={{ background: 'linear-gradient(135deg, #162235 0%, #1A2A40 100%)', border: '1px solid rgba(201,168,76,0.3)' }}
+            className="rounded-sm p-12 mb-12 text-center print:rounded-none print:mb-8 print:page-break-after-avoid"
+            style={{ boxShadow: 'var(--shadow-border)' }}
           >
             <div className="flex justify-center mb-6">
               <svg width="56" height="64" viewBox="0 0 32 36" fill="none">
@@ -29,35 +29,35 @@ export default function GroupSetupGuidePage() {
                 <path d="M11 18L14.5 21.5L21 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <defs>
                   <linearGradient id="guideShieldGrad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#C9A84C"/>
-                    <stop offset="1" stopColor="#E8C87A"/>
+                    <stop stopColor="#7a2c28"/>
+                    <stop offset="1" stopColor="#5c211e"/>
                   </linearGradient>
                 </defs>
               </svg>
             </div>
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Ministry Leader Guide</p>
-            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-4">
+            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Ministry Leader Guide</p>
+            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-4">
               Remain Faithful
             </h1>
-            <p className="font-serif text-2xl text-[#C9A84C] mb-6">Group Setup Guide</p>
-            <p className="text-[#8A9BB0] max-w-md mx-auto leading-relaxed">
+            <p className="font-serif text-2xl text-wax mb-6">Group Setup Guide</p>
+            <p className="text-ink-soft max-w-md mx-auto leading-relaxed">
               Everything you need to launch a structured accountability group in your men&apos;s ministry, discipleship cohort, or small group.
             </p>
-            <div className="mt-8 flex justify-center gap-8 text-sm text-[#8A9BB0]">
+            <div className="mt-8 flex justify-center gap-8 text-sm text-ink-soft">
               <span>Free Forever</span>
-              <span className="text-[#C9A84C]">|</span>
+              <span className="text-wax">|</span>
               <span>Privacy-First</span>
-              <span className="text-[#C9A84C]">|</span>
+              <span className="text-wax">|</span>
               <span>iOS App</span>
             </div>
           </div>
 
           {/* Section 1: What is Remain Faithful */}
           <GuideSection number="1" title="What Is Remain Faithful?">
-            <p className="text-[#8A9BB0] leading-relaxed mb-4">
+            <p className="text-ink-soft leading-relaxed mb-4">
               Remain Faithful (RF) is a free iOS app that provides peer accountability for adults committed to purity. Always-on Family Controls filtering blocks the apps and categories you choose and notifies partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods.
             </p>
-            <p className="text-[#8A9BB0] leading-relaxed mb-6">
+            <p className="text-ink-soft leading-relaxed mb-6">
               Always-on filtering uses Apple Family Controls. It does not see screen content. Optional Deep Scan, if started, classifies non-DRM frames on-device. No screen content is ever transmitted to anyone. Partners receive only alert metadata: category, timestamp, and severity.
             </p>
             <div className="grid sm:grid-cols-3 gap-4">
@@ -66,9 +66,9 @@ export default function GroupSetupGuidePage() {
                 { title: 'On-Device Privacy', desc: 'Screen content stays on the user\'s device. Partners see metadata only.' },
                 { title: 'Covenant-Based', desc: 'Every partner accepts a covenant before gaining any access.' },
               ].map((item) => (
-                <div key={item.title} className="p-4 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <h4 className="font-semibold text-[#C9A84C] text-sm mb-2">{item.title}</h4>
-                  <p className="text-xs text-[#8A9BB0] leading-relaxed">{item.desc}</p>
+                <div key={item.title} className="p-4 rounded-sm border border-hairline bg-paper-deep">
+                  <h4 className="font-semibold text-wax text-sm mb-2">{item.title}</h4>
+                  <p className="text-xs text-ink-soft leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -76,7 +76,7 @@ export default function GroupSetupGuidePage() {
 
           {/* Section 2: How Group Accountability Works */}
           <GuideSection number="2" title="How Group Accountability Works">
-            <p className="text-[#8A9BB0] leading-relaxed mb-4">
+            <p className="text-ink-soft leading-relaxed mb-4">
               RF supports both one-to-one partnerships and groups of up to 20 members. In a group setting:
             </p>
             <ul className="space-y-3 mb-6">
@@ -86,31 +86,31 @@ export default function GroupSetupGuidePage() {
                 'Members can choose to share alerts with all group members or the leader only.',
                 'No one sees which app was involved, screenshots, browsing history, or any content from another member\'s screen.',
               ].map((point, i) => (
-                <li key={i} className="flex gap-3 text-sm text-[#8A9BB0] leading-relaxed">
-                  <span className="text-[#C9A84C] font-bold flex-shrink-0">{i + 1}.</span>
+                <li key={i} className="flex gap-3 text-sm text-ink-soft leading-relaxed">
+                  <span className="text-wax font-bold flex-shrink-0">{i + 1}.</span>
                   {point}
                 </li>
               ))}
             </ul>
             <div
-              className="rounded-xl p-6 border border-[#C9A84C]/20"
-              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+              className="rounded-sm p-6 border border-wax/25"
+              
             >
-              <p className="text-sm text-[#F0EDE8] font-semibold mb-2">What partners see when an alert fires:</p>
+              <p className="text-sm text-ink font-semibold mb-2">What partners see when an alert fires:</p>
               <div className="grid grid-cols-3 gap-3 mt-3">
                 {['Timestamp', 'Category (e.g., "Adult Content")', 'Severity Level'].map((item) => (
-                  <div key={item} className="text-center p-3 rounded-lg bg-[#0F1B2D] border border-[#1E3050]">
-                    <p className="text-xs text-[#8A9BB0]">{item}</p>
+                  <div key={item} className="text-center p-3 rounded-lg bg-paper border border-hairline">
+                    <p className="text-xs text-ink-soft">{item}</p>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#8A9BB0] mt-3 text-center">That&apos;s it. Nothing else is shared.</p>
+              <p className="text-xs text-ink-soft mt-3 text-center">That&apos;s it. Nothing else is shared.</p>
             </div>
           </GuideSection>
 
           {/* Section 3: Setting Up Your Group */}
           <GuideSection number="3" title="Setting Up Your Group (Step by Step)">
-            <p className="text-[#8A9BB0] leading-relaxed mb-6">
+            <p className="text-ink-soft leading-relaxed mb-6">
               The whole process takes about 15 minutes for you as the leader, and 5 minutes per member.
             </p>
             <div className="space-y-4">
@@ -141,13 +141,13 @@ export default function GroupSetupGuidePage() {
                   desc: 'Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. Deep Scan is optional and, if used later, asks for screen broadcast permission separately.',
                 },
               ].map((step) => (
-                <div key={step.n} className="flex gap-5 p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-bold text-sm flex items-center justify-center flex-shrink-0">
+                <div key={step.n} className="flex gap-5 p-5 rounded-sm border border-hairline bg-paper-deep">
+                  <div className="w-8 h-8 rounded-sm bg-wax text-paper font-bold text-sm flex items-center justify-center flex-shrink-0">
                     {step.n}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-[#F0EDE8] mb-1">{step.title}</h4>
-                    <p className="text-sm text-[#8A9BB0] leading-relaxed">{step.desc}</p>
+                    <h4 className="font-semibold text-ink mb-1">{step.title}</h4>
+                    <p className="text-sm text-ink-soft leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
               ))}
@@ -156,7 +156,7 @@ export default function GroupSetupGuidePage() {
 
           {/* Section 4: Inviting Members */}
           <GuideSection number="4" title="Inviting Members and the Covenant">
-            <p className="text-[#8A9BB0] leading-relaxed mb-4">
+            <p className="text-ink-soft leading-relaxed mb-4">
               Before you share the invite code, have the conversation. Don&apos;t send someone a link to an app without context. Cover these points:
             </p>
             <div className="space-y-3 mb-6">
@@ -166,22 +166,22 @@ export default function GroupSetupGuidePage() {
                 { label: 'The covenant', text: 'Everyone in the group, including you as leader, agrees to a covenant before gaining any access. This shapes how the group responds to alerts.' },
                 { label: 'It\'s voluntary', text: 'Monitoring can be paused or disabled at any time. Joining the group is a choice, not a requirement.' },
               ].map((item) => (
-                <div key={item.label} className="flex gap-4 p-4 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <div className="w-2 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#E8C87A] flex-shrink-0 mt-1" style={{ minHeight: 36 }}/>
+                <div key={item.label} className="flex gap-4 p-4 rounded-sm border border-hairline bg-paper-deep">
+                  <div className="w-2 rounded-sm bg-wax flex-shrink-0 mt-1" style={{ minHeight: 36 }}/>
                   <div>
-                    <p className="font-semibold text-[#F0EDE8] text-sm mb-1">{item.label}</p>
-                    <p className="text-sm text-[#8A9BB0]">{item.text}</p>
+                    <p className="font-semibold text-ink text-sm mb-1">{item.label}</p>
+                    <p className="text-sm text-ink-soft">{item.text}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             <div
-              className="rounded-2xl p-7 border border-[#C9A84C]/20"
-              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+              className="rounded-sm p-7 border border-wax/25"
+              
             >
-              <h3 className="font-serif text-lg font-semibold text-[#F0EDE8] mb-4">The Covenant</h3>
-              <p className="text-sm text-[#8A9BB0] mb-4">Every member agrees to this before joining. Reviewing it together in your first meeting is worth the time.</p>
+              <h3 className="font-serif text-lg font-semibold text-ink mb-4">The Covenant</h3>
+              <p className="text-sm text-ink-soft mb-4">Every member agrees to this before joining. Reviewing it together in your first meeting is worth the time.</p>
               <ul className="space-y-3">
                 {[
                   'I will be honest with my partner, even when it is difficult.',
@@ -190,8 +190,8 @@ export default function GroupSetupGuidePage() {
                   'I will not share my partner\'s alerts with others.',
                   'I will pursue my partner\'s flourishing above my own curiosity.',
                 ].map((line, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-[#8A9BB0] leading-relaxed">
-                    <span className="text-[#C9A84C] mt-0.5 flex-shrink-0">✦</span>
+                  <li key={i} className="flex gap-3 text-sm text-ink-soft leading-relaxed">
+                    <span className="text-wax mt-0.5 flex-shrink-0">✦</span>
                     {line}
                   </li>
                 ))}
@@ -201,7 +201,7 @@ export default function GroupSetupGuidePage() {
 
           {/* Section 5: Running Your Group */}
           <GuideSection number="5" title="Running Your Group Well">
-            <p className="text-[#8A9BB0] leading-relaxed mb-5">
+            <p className="text-ink-soft leading-relaxed mb-5">
               RF is infrastructure. The ministry is what happens around it. Here&apos;s how to use it well:
             </p>
 
@@ -257,31 +257,31 @@ export default function GroupSetupGuidePage() {
                   a: 'Yes. The iOS app, Go backend, and this website are all publicly available on GitHub. Anyone can inspect the code to verify our privacy claims.',
                 },
               ].map((item, i) => (
-                <div key={i} className="p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <p className="font-semibold text-[#F0EDE8] text-sm mb-2">{item.q}</p>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.a}</p>
+                <div key={i} className="p-5 rounded-sm border border-hairline bg-paper-deep">
+                  <p className="font-semibold text-ink text-sm mb-2">{item.q}</p>
+                  <p className="text-sm text-ink-soft leading-relaxed">{item.a}</p>
                 </div>
               ))}
             </div>
           </GuideSection>
 
           {/* Footer */}
-          <div className="mt-12 pt-8 border-t border-[#1E3050] text-center">
+          <div className="mt-12 pt-8 border-t border-hairline text-center">
             <div className="flex justify-center mb-4">
               <svg width="28" height="32" viewBox="0 0 32 36" fill="none">
                 <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="url(#footerGuideGrad)"/>
                 <path d="M11 18L14.5 21.5L21 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <defs>
                   <linearGradient id="footerGuideGrad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#C9A84C"/>
-                    <stop offset="1" stopColor="#E8C87A"/>
+                    <stop stopColor="#7a2c28"/>
+                    <stop offset="1" stopColor="#5c211e"/>
                   </linearGradient>
                 </defs>
               </svg>
             </div>
-            <p className="font-serif text-lg text-[#F0EDE8] mb-2">Remain Faithful</p>
-            <p className="text-sm text-[#8A9BB0] mb-4">Free peer accountability for adults committed to purity.</p>
-            <p className="text-xs text-[#8A9BB0]/60">
+            <p className="font-serif text-lg text-ink mb-2">Remain Faithful</p>
+            <p className="text-sm text-ink-soft mb-4">Free peer accountability for adults committed to purity.</p>
+            <p className="text-xs text-ink-soft/60">
               remainfaithful.com &nbsp;|&nbsp; support@remainfaithful.com &nbsp;|&nbsp; Free forever
             </p>
           </div>
@@ -297,10 +297,10 @@ function GuideSection({ number, title, children }: { number: string; title: stri
   return (
     <div className="mb-12 print:mb-8 print:page-break-inside-avoid">
       <div className="flex items-center gap-4 mb-6">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-bold text-lg flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-sm bg-wax text-paper font-bold text-lg flex items-center justify-center flex-shrink-0">
           {number}
         </div>
-        <h2 className="font-serif text-2xl font-bold text-[#F0EDE8]">{title}</h2>
+        <h2 className="font-serif text-2xl font-bold text-ink">{title}</h2>
       </div>
       {children}
     </div>
@@ -309,11 +309,11 @@ function GuideSection({ number, title, children }: { number: string; title: stri
 
 function GuideTip({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-4 p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
-      <div className="w-2 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#E8C87A] flex-shrink-0 mt-1" style={{ minHeight: 40 }}/>
+    <div className="flex gap-4 p-5 rounded-sm border border-hairline bg-paper-deep">
+      <div className="w-2 rounded-sm bg-wax flex-shrink-0 mt-1" style={{ minHeight: 40 }}/>
       <div>
-        <h4 className="font-semibold text-[#F0EDE8] mb-2">{title}</h4>
-        <p className="text-sm text-[#8A9BB0] leading-relaxed">{children}</p>
+        <h4 className="font-semibold text-ink mb-2">{title}</h4>
+        <p className="text-sm text-ink-soft leading-relaxed">{children}</p>
       </div>
     </div>
   )

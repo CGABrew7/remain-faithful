@@ -11,12 +11,12 @@ export default function TermsPage() {
     <div className="pt-32 pb-24">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12">
-          <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
-          <h1 className="font-serif text-4xl font-bold text-[#F0EDE8] mb-4">Terms of Service</h1>
-          <p className="text-[#8A9BB0] text-sm">Last updated: May 2025</p>
+          <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
+          <h1 className="font-serif text-4xl font-bold text-ink mb-4">Terms of Service</h1>
+          <p className="text-ink-soft text-sm">Last updated: May 2025</p>
         </div>
 
-        <div className="space-y-10 text-[#8A9BB0] leading-relaxed">
+        <div className="space-y-10 text-ink-soft leading-relaxed">
           <Section title="Acceptance of Terms">
             <p>
               By downloading, installing, or using Remain Faithful (the &quot;App&quot;) or this website, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the App or website.
@@ -65,15 +65,15 @@ export default function TermsPage() {
           <Section title="Contact">
             <p>
               Questions about these Terms may be directed to{' '}
-              <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">
+              <a href="mailto:support@remainfaithful.com" className="text-wax hover:underline">
                 support@remainfaithful.com
               </a>.
             </p>
           </Section>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-[#1E3050]">
-          <Link href="/privacy" className="text-[#C9A84C] text-sm hover:underline">
+        <div className="mt-12 pt-8 border-t border-hairline">
+          <Link href="/privacy" className="text-wax text-sm hover:underline">
             ← View Privacy Policy
           </Link>
         </div>
@@ -84,8 +84,8 @@ export default function TermsPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-[#1E3050] pt-8">
-      <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">{title}</h2>
+    <div className="border-t border-hairline pt-8">
+      <h2 className="font-serif text-2xl font-bold text-ink mb-4">{title}</h2>
       <div className="space-y-4">{children}</div>
     </div>
   )

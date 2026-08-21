@@ -50,13 +50,13 @@ export default function HowItWorksPage() {
         <Breadcrumbs items={[{ name: 'How It Works', url: 'https://remainfaithful.com/how-it-works' }]} />
       </div>
       {/* Hero */}
-      <section className="pt-8 pb-20 border-b border-[#1E3050]">
+      <section className="pt-8 pb-20 border-b border-hairline">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">The Method</p>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-6">
+          <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-4">The Method</p>
+          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6">
             How Remain Faithful Works
           </h1>
-          <p className="text-[#8A9BB0] text-lg max-w-2xl mx-auto">
+          <p className="text-ink-soft text-lg max-w-2xl mx-auto">
             Always-on Family Controls filtering is the credible core. Deep Scan is optional.
             Built on peer trust, on-device privacy, and the covenant model.
           </p>
@@ -68,16 +68,16 @@ export default function HowItWorksPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-5">
+              <h2 className="font-serif text-3xl font-bold text-ink mb-5">
                 The Accountability Model
               </h2>
-              <p className="text-[#8A9BB0] leading-relaxed mb-4">
+              <p className="text-ink-soft leading-relaxed mb-4">
                 Lasting change in purity requires three things: vulnerability, consistent visibility, and a community of trust. Most accountability fails because it operates on the honor system: you report what you choose to report, when you choose to report it.
               </p>
-              <p className="text-[#8A9BB0] leading-relaxed mb-4">
+              <p className="text-ink-soft leading-relaxed mb-4">
                 Remain Faithful creates a consistent, automatic signal that removes the decision to disclose. When your device flags something, your partners know, regardless of whether you would have told them. This isn&apos;t surveillance. It&apos;s the covenant made real.
               </p>
-              <p className="text-[#8A9BB0] leading-relaxed">
+              <p className="text-ink-soft leading-relaxed">
                 The app is a tool, not a replacement for relationship. Alerts are conversation starters, not verdicts.
               </p>
             </div>
@@ -87,11 +87,11 @@ export default function HowItWorksPage() {
                 { label: 'Consistent Visibility', desc: 'Automatic alerts remove the shame barrier of self-disclosure without removing personal responsibility.' },
                 { label: 'Community of Trust', desc: 'Partners accept terms before gaining any access. Relationships must exist before accountability can work.' },
               ].map((item) => (
-                <div key={item.label} className="flex gap-4 p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <div className="w-2 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#E8C87A] flex-shrink-0 mt-1" style={{ minHeight: 40 }} />
+                <div key={item.label} className="flex gap-4 p-5 rounded-sm border border-hairline bg-paper-deep">
+                  <div className="w-2 rounded-sm bg-wax flex-shrink-0 mt-1" style={{ minHeight: 40 }} />
                   <div>
-                    <h3 className="font-semibold text-[#F0EDE8] mb-1">{item.label}</h3>
-                    <p className="text-sm text-[#8A9BB0]">{item.desc}</p>
+                    <h3 className="font-semibold text-ink mb-1">{item.label}</h3>
+                    <p className="text-sm text-ink-soft">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -101,13 +101,13 @@ export default function HowItWorksPage() {
       </section>
 
       {/* One-to-One vs Group */}
-      <section className="py-20 bg-[#0A1420] border-y border-[#1E3050]">
+      <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               One-to-One or Group Accountability
             </h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <p className="text-ink-soft max-w-xl mx-auto">
               RF supports both models. Choose what fits your relationships and community structure.
             </p>
           </div>
@@ -138,20 +138,20 @@ export default function HowItWorksPage() {
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               How Monitoring Works
             </h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <p className="text-ink-soft max-w-xl mx-auto">
               Four public layers. Always-on Family Controls filtering is the credible core. Deep Scan is optional.
             </p>
           </div>
 
           <div className="space-y-3 relative">
-            <div className="absolute left-7 top-10 bottom-10 w-px bg-gradient-to-b from-[#C9A84C]/60 via-[#C9A84C]/20 to-transparent" />
+            <div className="absolute left-7 top-10 bottom-10 w-px bg-wax/30" />
 
             <div className="ml-4 pb-1 pt-2">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-sm bg-green-400" />
                 Layer 1 — Always-On Filtering
               </span>
             </div>
@@ -168,57 +168,57 @@ export default function HowItWorksPage() {
                 body: 'When a blocked category is attempted, an alert is created. Partners receive category, timestamp, and severity — not which app, not a bundle ID, and never screen content.',
               },
             ].map((item) => (
-              <div key={item.step} className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-400 flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+              <div key={item.step} className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
+                <div className="w-8 h-8 rounded-sm bg-wax flex items-center justify-center text-paper font-bold text-sm flex-shrink-0 -ml-8 border-2 border-paper">
                   {item.step}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#F0EDE8] mb-1">{item.title}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.body}</p>
+                  <h3 className="font-semibold text-ink mb-1">{item.title}</h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">{item.body}</p>
                 </div>
               </div>
             ))}
 
             <div className="ml-4 pb-1 pt-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-sm bg-green-400" />
                 Layer 2 — DeviceActivity Usage Monitoring
               </span>
             </div>
 
-            <div className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-400 flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+            <div className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
+              <div className="w-8 h-8 rounded-sm bg-wax flex items-center justify-center text-paper font-bold text-sm flex-shrink-0 -ml-8 border-2 border-paper">
                 3
               </div>
               <div>
-                <h3 className="font-semibold text-[#F0EDE8] mb-1">Category Events, Not Screen Content</h3>
-                <p className="text-sm text-[#8A9BB0] leading-relaxed">
+                <h3 className="font-semibold text-ink mb-1">Category Events, Not Screen Content</h3>
+                <p className="text-sm text-ink-soft leading-relaxed">
                   DeviceActivity watches usage as category-level events in the background. It does not capture screen frames, page content, or which specific app was opened. Partners still receive only category, timestamp, and severity.
                 </p>
               </div>
             </div>
 
             <div className="ml-4 pb-1 pt-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-sm bg-green-400" />
                 Layer 3 — Time-Window Shielding
               </span>
             </div>
 
-            <div className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-400 flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+            <div className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
+              <div className="w-8 h-8 rounded-sm bg-wax flex items-center justify-center text-paper font-bold text-sm flex-shrink-0 -ml-8 border-2 border-paper">
                 4
               </div>
               <div>
-                <h3 className="font-semibold text-[#F0EDE8] mb-1">Shield Chosen Apps During Hours You Set</h3>
-                <p className="text-sm text-[#8A9BB0] leading-relaxed">
+                <h3 className="font-semibold text-ink mb-1">Shield Chosen Apps During Hours You Set</h3>
+                <p className="text-sm text-ink-soft leading-relaxed">
                   You can restrict chosen apps to time windows — evenings, travel, or a season of struggle. Shielding uses the same Family Controls stack as always-on filtering. It does not see screen content.
                 </p>
               </div>
             </div>
 
             <div className="ml-4 pb-1 pt-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/25 text-[#C9A84C] text-xs font-bold uppercase tracking-widest">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
                 Layer 4 — Deep Scan (Opt-In)
               </span>
             </div>
@@ -237,15 +237,15 @@ export default function HowItWorksPage() {
                 note: 'Deep Scan cannot see DRM-protected video or banking apps. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM — unbypassable, not a Remain Faithful bug. It can analyze browsers, photos, social media, and most non-DRM apps.',
               },
             ].map((item) => (
-              <div key={item.step} className="flex gap-6 p-5 rounded-xl border border-[#1E3050] bg-[#162235] ml-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+              <div key={item.step} className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
+                <div className="w-8 h-8 rounded-sm bg-wax flex items-center justify-center text-paper font-bold text-sm flex-shrink-0 -ml-8 border-2 border-paper">
                   {item.step}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#F0EDE8] mb-1">{item.title}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.body}</p>
+                  <h3 className="font-semibold text-ink mb-1">{item.title}</h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">{item.body}</p>
                   {item.note && (
-                    <p className="text-sm text-[#C9A84C]/80 leading-relaxed mt-2 flex items-start gap-1.5">
+                    <p className="text-sm text-wax/80 leading-relaxed mt-2 flex items-start gap-1.5">
                       <svg className="flex-shrink-0 mt-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                       </svg>
@@ -256,13 +256,13 @@ export default function HowItWorksPage() {
               </div>
             ))}
 
-            <div className="flex gap-6 p-5 rounded-xl border border-[#C9A84C]/25 bg-[#162235] ml-4 mt-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] font-bold text-sm flex-shrink-0 -ml-8 border-2 border-[#0F1B2D]">
+            <div className="flex gap-6 p-5 rounded-sm border border-wax/25 bg-paper-deep ml-4 mt-3">
+              <div className="w-8 h-8 rounded-sm bg-wax flex items-center justify-center text-paper font-bold text-sm flex-shrink-0 -ml-8 border-2 border-paper">
                 7
               </div>
               <div>
-                <h3 className="font-semibold text-[#F0EDE8] mb-1">Alert Delivered to Partners</h3>
-                <p className="text-sm text-[#8A9BB0] leading-relaxed">
+                <h3 className="font-semibold text-ink mb-1">Alert Delivered to Partners</h3>
+                <p className="text-sm text-ink-soft leading-relaxed">
                   When a layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: the alert category, severity level, and timestamp. Partners do not receive which app, a bundle ID, or a system-generated description. No screenshots. No raw content. Ever.
                 </p>
               </div>
@@ -272,29 +272,26 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Covenant Model */}
-      <section className="py-20 bg-[#0A1420] border-y border-[#1E3050]">
+      <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">The Foundation</p>
-              <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-5">
+              <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">The Foundation</p>
+              <h2 className="font-serif text-3xl font-bold text-ink mb-5">
                 The Covenant Model
               </h2>
-              <p className="text-[#8A9BB0] leading-relaxed mb-4">
+              <p className="text-ink-soft leading-relaxed mb-4">
                 Before any partner gains access to your account, they must agree to a covenant. This isn&apos;t a terms-of-service checkbox. It&apos;s a statement of intent that frames the entire relationship.{' '}
-                <Link href="/blog/covenant-model" className="text-[#C9A84C] hover:underline underline-offset-2">
+                <Link href="/blog/covenant-model" className="text-wax hover:underline underline-offset-2">
                   Read more about the covenant model.
                 </Link>
               </p>
-              <p className="text-[#8A9BB0] leading-relaxed">
+              <p className="text-ink-soft leading-relaxed">
                 You also agree to it on your end. Accountability is bilateral. The covenant frames both the monitoring and the response to it.
               </p>
             </div>
-            <div
-              className="rounded-2xl p-8 border border-[#C9A84C]/20"
-              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
-            >
-              <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-5">The Covenant</h3>
+            <div className="rounded-sm p-8" style={{ boxShadow: 'var(--shadow-border)' }}>
+              <h3 className="font-serif text-xl font-semibold text-ink mb-5">The Covenant</h3>
               <ul className="space-y-3">
                 {[
                   'I will be honest with my partner, even when it is difficult.',
@@ -303,8 +300,8 @@ export default function HowItWorksPage() {
                   'I will not share my partner\'s alerts with others.',
                   'I will pursue my partner\'s flourishing above my own curiosity.',
                 ].map((line, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-[#8A9BB0] leading-relaxed">
-                    <span className="text-[#C9A84C] mt-0.5 flex-shrink-0">✦</span>
+                  <li key={i} className="flex gap-3 text-sm text-ink-soft leading-relaxed">
+                    <span className="text-wax mt-0.5 flex-shrink-0">✦</span>
                     {line}
                   </li>
                 ))}
@@ -318,7 +315,7 @@ export default function HowItWorksPage() {
       <section className="py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               Frequently Asked Questions
             </h2>
           </div>
@@ -327,13 +324,13 @@ export default function HowItWorksPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 border-t border-[#1E3050]">
+      <section className="py-16 border-t border-hairline">
         <div className="max-w-xl mx-auto px-4 text-center">
-          <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">Ready to start?</h2>
-          <p className="text-[#8A9BB0] mb-8">Join the waitlist and be among the first to use Remain Faithful when it launches.</p>
+          <h2 className="font-serif text-2xl font-bold text-ink mb-4">Ready to start?</h2>
+          <p className="text-ink-soft mb-8">Join the waitlist and be among the first to use Remain Faithful when it launches.</p>
           <a
             href="/#waitlist"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
           >
             Join the Waitlist
           </a>
@@ -345,12 +342,12 @@ export default function HowItWorksPage() {
 
 function ModeCard({ title, points }: { title: string; points: string[] }) {
   return (
-    <div className="rounded-2xl p-8 border border-[#1E3050] bg-[#162235]">
-      <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-5">{title}</h3>
+    <div className="rounded-sm p-8 border border-hairline bg-paper-deep">
+      <h3 className="font-serif text-xl font-semibold text-ink mb-5">{title}</h3>
       <ul className="space-y-2.5">
         {points.map((p, i) => (
-          <li key={i} className="flex gap-3 text-sm text-[#8A9BB0] leading-relaxed">
-            <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2.5" strokeLinecap="round">
+          <li key={i} className="flex gap-3 text-sm text-ink-soft leading-relaxed">
+            <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2.5" strokeLinecap="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             {p}

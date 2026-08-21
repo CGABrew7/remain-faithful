@@ -40,10 +40,9 @@ export default function PilotForm() {
 
   if (submitted) {
     return (
-      <div className="text-center py-12 rounded-2xl border border-[#C9A84C]/20 bg-[#162235]">
-        <div className="text-4xl mb-4">✅</div>
-        <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-3">You&apos;re Registered</h3>
-        <p className="text-[#8A9BB0] text-sm max-w-sm mx-auto">
+      <div className="py-10 border-t border-b border-hairline">
+        <h3 className="font-serif text-xl font-medium text-ink mb-3">You&apos;re registered</h3>
+        <p className="text-ink-soft max-w-sm">
           We&apos;ll reach out personally when Remain Faithful is ready to onboard your church.
         </p>
       </div>
@@ -59,7 +58,7 @@ export default function PilotForm() {
             required
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
-            placeholder="Pastor Mike"
+            placeholder="Your name"
             className="input-field"
           />
         </Field>
@@ -125,16 +124,16 @@ export default function PilotForm() {
         />
       </Field>
 
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-wax text-sm">{error}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:not-disabled:scale-[0.96] disabled:opacity-70 disabled:cursor-not-allowed"
+        className="btn-wax w-full"
       >
         {loading ? 'Submitting...' : 'Register Your Church'}
       </button>
-      <p className="text-center text-xs text-[#8A9BB0]">
+      <p className="text-center font-mono text-[11px] tracking-[0.08em] uppercase text-ink-faint">
         We&apos;ll be in touch before launch. No spam, ever.
       </p>
     </form>
@@ -144,9 +143,9 @@ export default function PilotForm() {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[#F0EDE8] mb-2">
+      <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
         {label}
-        {required && <span className="text-[#C9A84C] ml-1">*</span>}
+        {required && <span className="text-wax ml-1">*</span>}
       </label>
       {children}
     </div>

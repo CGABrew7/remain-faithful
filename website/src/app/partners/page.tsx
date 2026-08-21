@@ -16,19 +16,19 @@ export default function PartnersPage() {
         <Breadcrumbs items={[{ name: 'Partners', url: 'https://remainfaithful.com/partners' }]} />
       </div>
       {/* Hero */}
-      <section className="pt-8 pb-20 border-b border-[#1E3050]">
+      <section className="pt-8 pb-20 border-b border-hairline">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">For Pastors &amp; Ministry Leaders</p>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-6">
+          <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-4">For Pastors &amp; Ministry Leaders</p>
+          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6">
             Equip Your Church&apos;s Accountability Ministry
           </h1>
-          <p className="text-[#8A9BB0] text-lg max-w-2xl mx-auto">
+          <p className="text-ink-soft text-lg max-w-2xl mx-auto">
             Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and ministry programs — at no cost to your church.
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <a
               href="#pilot"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
             >
               Join the Waitlist
             </a>
@@ -36,7 +36,7 @@ export default function PartnersPage() {
               href="/group-setup-guide"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#F0EDE8] border border-[#1E3050] hover:border-[#C9A84C]/50 hover:bg-[#162235] transition-[border-color,background-color,scale] duration-200 ease-out active:scale-[0.96]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-ink border border-hairline hover:border-wax/50 hover:bg-paper-deep transition-[border-color,background-color,scale] duration-200 ease-out active:scale-[0.96]"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -51,8 +51,8 @@ export default function PartnersPage() {
       <section className="py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Why Ministries Choose RF</h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Why Ministries Choose RF</h2>
+            <p className="text-ink-soft max-w-xl mx-auto">
               From small accountability triads to church-wide programs, RF scales to your structure.
             </p>
           </div>
@@ -75,9 +75,9 @@ export default function PartnersPage() {
                 desc: 'Screen content stays on member devices. You see alert metadata, not surveillance footage. Dignity is preserved.',
               },
             ].map((b) => (
-              <div key={b.title} className="rounded-2xl p-6 border border-[#1E3050] bg-[#162235]">
-                <h3 className="font-serif text-lg font-semibold text-[#F0EDE8] mb-2">{b.title}</h3>
-                <p className="text-sm text-[#8A9BB0] leading-relaxed">{b.desc}</p>
+              <div key={b.title} className="rounded-sm p-6 border border-hairline bg-paper-deep">
+                <h3 className="font-serif text-lg font-semibold text-ink mb-2">{b.title}</h3>
+                <p className="text-sm text-ink-soft leading-relaxed">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -88,11 +88,11 @@ export default function PartnersPage() {
       <section className="py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className="rounded-3xl p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8 border border-[#C9A84C]/30"
-            style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+            className="rounded-sm p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8 border border-wax/30"
+            
           >
-            <div className="w-16 h-16 rounded-2xl bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+            <div className="w-16 h-16 rounded-sm bg-wax/15 border border-wax/30 flex items-center justify-center flex-shrink-0">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
@@ -101,8 +101,8 @@ export default function PartnersPage() {
               </svg>
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h3 className="font-serif text-xl font-bold text-[#F0EDE8] mb-2">Free Group Setup Guide</h3>
-              <p className="text-[#8A9BB0] text-sm leading-relaxed">
+              <h3 className="font-serif text-xl font-bold text-ink mb-2">Free Group Setup Guide</h3>
+              <p className="text-ink-soft text-sm leading-relaxed">
                 A complete printable guide for ministry leaders: covenant text, step-by-step setup, group norms, and FAQ. Designed for in-person group launches.
               </p>
             </div>
@@ -110,7 +110,7 @@ export default function PartnersPage() {
               href="/group-setup-guide"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] whitespace-nowrap text-sm"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] whitespace-nowrap text-sm"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -122,19 +122,19 @@ export default function PartnersPage() {
       </section>
 
       {/* Men's Ministry Implementation */}
-      <section className="py-20 bg-[#0A1420] border-y border-[#1E3050]">
+      <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Implementation Guide</p>
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Men&apos;s Ministry Implementation</h2>
-            <p className="text-[#8A9BB0] max-w-2xl mx-auto">
+            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Implementation Guide</p>
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Men&apos;s Ministry Implementation</h2>
+            <p className="text-ink-soft max-w-2xl mx-auto">
               How to successfully roll out Remain Faithful in your men&apos;s small group, from first conversation to ongoing culture.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-4">Phase 1: Preparing Leadership</h3>
+              <h3 className="font-serif text-xl font-semibold text-ink mb-4">Phase 1: Preparing Leadership</h3>
               <ul className="space-y-3">
                 {[
                   'The leader installs and uses RF personally before asking anyone else to join.',
@@ -142,15 +142,15 @@ export default function PartnersPage() {
                   'Decide on leader visibility settings before launch (leader-only alerts vs. group alerts).',
                   'Brief your pastor on the approach — his awareness helps normalize the conversation.',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-[#8A9BB0]">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] text-xs font-bold">{i + 1}</span>
+                  <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-sm bg-wax/20 flex items-center justify-center text-wax text-xs font-bold">{i + 1}</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-4">Phase 2: Group Launch</h3>
+              <h3 className="font-serif text-xl font-semibold text-ink mb-4">Phase 2: Group Launch</h3>
               <ul className="space-y-3">
                 {[
                   'Introduce RF at an existing group meeting — not as an app, but as an accountability covenant.',
@@ -158,30 +158,30 @@ export default function PartnersPage() {
                   'Allow members to ask questions. Invite honest hesitation — this is a trust-building moment.',
                   'Set a 30-day trial. No pressure to continue; just try it and see.',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-[#8A9BB0]">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] text-xs font-bold">{i + 1}</span>
+                  <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-sm bg-wax/20 flex items-center justify-center text-wax text-xs font-bold">{i + 1}</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-4">Phase 3: Sustaining the Culture</h3>
+              <h3 className="font-serif text-xl font-semibold text-ink mb-4">Phase 3: Sustaining the Culture</h3>
               <ul className="space-y-3">
                 {[
                   'Begin every meeting with a brief accountability check: "Did anything come up this week?"',
                   'When an alert fires, respond within 24 hours — a short text asking "How are you doing?" is enough.',
                   'After 90 days, revisit the covenant. Adjust based on what you\'ve learned.',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-[#8A9BB0]">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] text-xs font-bold">{i + 1}</span>
+                  <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-sm bg-wax/20 flex items-center justify-center text-wax text-xs font-bold">{i + 1}</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-4">What Not To Do</h3>
+              <h3 className="font-serif text-xl font-semibold text-ink mb-4">What Not To Do</h3>
               <ul className="space-y-3">
                 {[
                   'Don\'t mandate RF without conversation — it must be chosen, not required.',
@@ -189,7 +189,7 @@ export default function PartnersPage() {
                   'Don\'t respond to an alert with shame. The covenant requires grace.',
                   'Don\'t expect the app to do the relational work. RF is infrastructure, not relationship.',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-[#8A9BB0]">
+                  <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
                     <svg className="flex-shrink-0 mt-0.5 text-red-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -203,21 +203,21 @@ export default function PartnersPage() {
       </section>
 
       {/* Recovery Ministry Integration */}
-      <section className="py-20 border-b border-[#1E3050]">
+      <section className="py-20 border-b border-hairline">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Recovery Ministry</p>
-              <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-5">
+              <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Recovery Ministry</p>
+              <h2 className="font-serif text-3xl font-bold text-ink mb-5">
                 Recovery Ministry Integration
               </h2>
-              <p className="text-[#8A9BB0] leading-relaxed mb-4">
+              <p className="text-ink-soft leading-relaxed mb-4">
                 Remain Faithful integrates naturally with Celebrate Recovery and similar programs. For participants working through sexual purity or addiction to pornography, RF provides an automatic accountability layer that works between weekly meetings.
               </p>
-              <p className="text-[#8A9BB0] leading-relaxed mb-4">
+              <p className="text-ink-soft leading-relaxed mb-4">
                 The key alignment with 12-step and recovery models: RF removes the decision to self-disclose at the moment of greatest shame. It makes honesty automatic, which is exactly what recovery programs teach but struggle to enforce between meetings.
               </p>
-              <p className="text-[#8A9BB0] leading-relaxed mb-6">
+              <p className="text-ink-soft leading-relaxed mb-6">
                 RF can pair with any existing sponsor or accountability partner structure — the sponsor relationship already exists; RF simply adds a consistent signal layer to it.
               </p>
               <div className="space-y-3">
@@ -228,8 +228,8 @@ export default function PartnersPage() {
                   'Shame-resistant — partners see metadata, not content',
                   'Supports one-to-one sponsor relationships or CR small groups',
                 ].map((item) => (
-                  <div key={item} className="flex items-center gap-2 text-sm text-[#8A9BB0]">
-                    <svg className="flex-shrink-0 text-[#C9A84C]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <div key={item} className="flex items-center gap-2 text-sm text-ink-soft">
+                    <svg className="flex-shrink-0 text-wax" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                     {item}
@@ -239,10 +239,10 @@ export default function PartnersPage() {
             </div>
             <div className="space-y-4">
               <div
-                className="rounded-2xl p-7 border border-[#C9A84C]/20"
-                style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+                className="rounded-sm p-7 border border-wax/25"
+                
               >
-                <h3 className="font-semibold text-[#F0EDE8] mb-3">Suggested CR Integration</h3>
+                <h3 className="font-semibold text-ink mb-3">Suggested CR Integration</h3>
                 <ol className="space-y-2">
                   {[
                     'Introduce RF at Step 5 or Step 8 groups where accountability already exists.',
@@ -251,16 +251,16 @@ export default function PartnersPage() {
                     'CR leader can be a partner on alerts, same as any other member.',
                     'Use RF alerts as a bridge topic at weekly CR meetings.',
                   ].map((step, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-[#8A9BB0]">
-                      <span className="text-[#C9A84C] font-semibold flex-shrink-0">{i + 1}.</span>
+                    <li key={i} className="flex items-start gap-2 text-sm text-ink-soft">
+                      <span className="text-wax font-semibold flex-shrink-0">{i + 1}.</span>
                       {step}
                     </li>
                   ))}
                 </ol>
               </div>
-              <div className="rounded-2xl p-5 border border-[#1E3050] bg-[#162235]">
-                <p className="text-xs text-[#8A9BB0]/70 uppercase tracking-wide mb-2">Important Note</p>
-                <p className="text-sm text-[#8A9BB0] leading-relaxed">
+              <div className="rounded-sm p-5 border border-hairline bg-paper-deep">
+                <p className="text-xs text-ink-soft/70 uppercase tracking-wide mb-2">Important Note</p>
+                <p className="text-sm text-ink-soft leading-relaxed">
                   RF is not a clinical tool and is not a replacement for counseling, therapy, or professional addiction treatment. It is a peer accountability tool designed for voluntary use within healthy community structures.
                 </p>
               </div>
@@ -270,12 +270,12 @@ export default function PartnersPage() {
       </section>
 
       {/* Small Group Deployment Checklist */}
-      <section className="py-20 bg-[#0A1420] border-b border-[#1E3050]">
+      <section className="py-20 bg-paper-deep border-b border-hairline">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Small Group</p>
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Small Group Deployment Checklist</h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Small Group</p>
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Small Group Deployment Checklist</h2>
+            <p className="text-ink-soft max-w-xl mx-auto">
               Everything a group leader needs to confirm before, during, and after launch.
             </p>
           </div>
@@ -284,7 +284,7 @@ export default function PartnersPage() {
             {[
               {
                 phase: 'Before Launch',
-                color: '#C9A84C',
+                color: '#7a2c28',
                 items: [
                   'Leader has installed RF and authorized always-on filtering personally',
                   'Leader has read the Group Setup Guide',
@@ -295,7 +295,7 @@ export default function PartnersPage() {
               },
               {
                 phase: 'During Launch Week',
-                color: '#C9A84C',
+                color: '#7a2c28',
                 items: [
                   'Covenant discussed and agreed on by all members',
                   'All members have installed RF and created accounts',
@@ -306,7 +306,7 @@ export default function PartnersPage() {
               },
               {
                 phase: 'First 30 Days',
-                color: '#C9A84C',
+                color: '#7a2c28',
                 items: [
                   'At least one alert has been responded to with grace',
                   'Group has had at least one conversation that started with an alert',
@@ -315,14 +315,14 @@ export default function PartnersPage() {
                 ],
               },
             ].map((col) => (
-              <div key={col.phase} className="rounded-2xl border border-[#1E3050] bg-[#162235] overflow-hidden">
-                <div className="h-1.5 bg-gradient-to-r from-[#C9A84C] to-[#E8C87A]" />
+              <div key={col.phase} className="rounded-sm border border-hairline bg-paper-deep overflow-hidden">
+                <div className="h-1.5 bg-wax" />
                 <div className="p-6">
-                  <h3 className="font-semibold text-[#F0EDE8] mb-4">{col.phase}</h3>
+                  <h3 className="font-semibold text-ink mb-4">{col.phase}</h3>
                   <ul className="space-y-3">
                     {col.items.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-[#8A9BB0]">
-                        <div className="w-4 h-4 mt-0.5 rounded border border-[#C9A84C]/40 flex-shrink-0" />
+                      <li key={i} className="flex items-start gap-2 text-sm text-ink-soft">
+                        <div className="w-4 h-4 mt-0.5 rounded border border-wax/40 flex-shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -335,12 +335,12 @@ export default function PartnersPage() {
       </section>
 
       {/* Church-Wide Accountability Program */}
-      <section className="py-20 border-b border-[#1E3050]">
+      <section className="py-20 border-b border-hairline">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Church-Wide</p>
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Church-Wide Accountability Program</h2>
-            <p className="text-[#8A9BB0] max-w-2xl mx-auto">
+            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Church-Wide</p>
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Church-Wide Accountability Program</h2>
+            <p className="text-ink-soft max-w-2xl mx-auto">
               How to adopt Remain Faithful across multiple groups, ministries, or age cohorts within a single church body.
             </p>
           </div>
@@ -373,39 +373,39 @@ export default function PartnersPage() {
                 desc: 'Assign one staff member or elder as the RF point person. They help group leaders with questions and can point someone toward professional care when a conversation suggests deeper need. They do not receive a separate aggregate feed.',
               },
             ].map((step) => (
-              <div key={step.step} className="flex gap-5 p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-bold text-sm flex items-center justify-center flex-shrink-0">
+              <div key={step.step} className="flex gap-5 p-6 rounded-sm border border-hairline bg-paper-deep">
+                <div className="w-10 h-10 rounded-sm bg-wax text-paper font-bold text-sm flex items-center justify-center flex-shrink-0">
                   {step.step}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#F0EDE8] mb-1">{step.title}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{step.desc}</p>
+                  <h3 className="font-semibold text-ink mb-1">{step.title}</h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
           <div
-            className="mt-10 p-7 rounded-2xl border border-[#C9A84C]/20"
-            style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+            className="mt-10 p-7 rounded-sm border border-wax/25"
+            
           >
-            <h3 className="font-semibold text-[#F0EDE8] mb-3">A Note on Scale</h3>
-            <p className="text-sm text-[#8A9BB0] leading-relaxed">
+            <h3 className="font-semibold text-ink mb-3">A Note on Scale</h3>
+            <p className="text-sm text-ink-soft leading-relaxed">
               Remain Faithful is free regardless of how many groups your church runs. Whether you have 2 groups or 20, there is no cost. Our model is donor-funded so that no church faces a barrier to adoption. If your church has found RF valuable, consider{' '}
-              <a href="/#donate" className="text-[#C9A84C] hover:underline">making a donation</a> to support the infrastructure for others.
+              <a href="/#donate" className="text-wax hover:underline">making a donation</a> to support the infrastructure for others.
             </p>
           </div>
         </div>
       </section>
 
       {/* Group Setup Steps */}
-      <section id="group-setup" className="py-20 bg-[#0A1420] border-b border-[#1E3050]">
+      <section id="group-setup" className="py-20 bg-paper-deep border-b border-hairline">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               How to Set Up a Group
             </h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <p className="text-ink-soft max-w-xl mx-auto">
               Five steps from download to your first accountable group.
             </p>
           </div>
@@ -417,13 +417,13 @@ export default function PartnersPage() {
               { n: '4', title: 'Members Enable Filtering', desc: 'Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. Deep Scan is optional and, if used later, asks for screen broadcast permission separately.' },
               { n: '5', title: 'Stay Connected', desc: 'Members can alert you directly. Use RF as the backbone of your regular accountability conversations.' },
             ].map((step) => (
-              <div key={step.n} className="flex gap-5 p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-bold text-sm flex items-center justify-center flex-shrink-0">
+              <div key={step.n} className="flex gap-5 p-6 rounded-sm border border-hairline bg-paper-deep">
+                <div className="w-8 h-8 rounded-sm bg-wax text-paper font-bold text-sm flex items-center justify-center flex-shrink-0">
                   {step.n}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#F0EDE8] mb-1">{step.title}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{step.desc}</p>
+                  <h3 className="font-semibold text-ink mb-1">{step.title}</h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -434,7 +434,7 @@ export default function PartnersPage() {
               href="/group-setup-guide"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-[#C9A84C]/40 bg-[#C9A84C]/10 text-[#C9A84C] text-sm font-medium hover:bg-[#C9A84C]/20 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-sm border border-wax/40 bg-wax/10 text-wax text-sm font-medium hover:bg-wax/20 transition-colors"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -446,14 +446,14 @@ export default function PartnersPage() {
       </section>
 
       {/* Church waitlist form */}
-      <section id="pilot" className="py-20 bg-[#0A1420] border-t border-[#1E3050]">
+      <section id="pilot" className="py-20 bg-paper-deep border-t border-hairline">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Waitlist</p>
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Waitlist</p>
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               Join the Church Waitlist
             </h2>
-            <p className="text-[#8A9BB0]">
+            <p className="text-ink-soft">
               Remain Faithful is in pre-launch. Join the waitlist and we will notify you when the app is ready for churches and ministries.
             </p>
           </div>

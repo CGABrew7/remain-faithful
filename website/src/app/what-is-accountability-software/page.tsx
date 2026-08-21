@@ -68,19 +68,19 @@ export default function WhatIsAccountabilitySoftware() {
 
           {/* Hero */}
           <div className="mb-10">
-            <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">Educational Guide</p>
-            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-6 leading-tight">
+            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-4">Educational Guide</p>
+            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6 leading-tight">
               What Is Accountability Software? A Complete Guide (2026)
             </h1>
-            <p className="text-[#8A9BB0] text-lg leading-relaxed">
+            <p className="text-ink-soft text-lg leading-relaxed">
               Accountability software monitors device activity and shares a report with a trusted person, called an accountability partner. This guide explains how it works technically, who uses it, and how to evaluate the different options available.
             </p>
           </div>
 
           {/* Table of contents */}
-          <nav className="mb-14 p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
-            <h2 className="font-semibold text-[#F0EDE8] mb-3 text-sm uppercase tracking-wide">Contents</h2>
-            <ol className="space-y-1.5 text-sm text-[#C9A84C]">
+          <nav className="mb-14 p-6 rounded-sm border border-hairline bg-paper-deep">
+            <h2 className="font-semibold text-ink mb-3 text-sm uppercase tracking-wide">Contents</h2>
+            <ol className="space-y-1.5 text-sm text-wax">
               {[
                 ['#definition', 'Definition: what accountability software does'],
                 ['#how-it-works', 'How accountability software works technically'],
@@ -99,22 +99,22 @@ export default function WhatIsAccountabilitySoftware() {
 
           {/* Definition */}
           <section className="mb-14" id="definition">
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Definition: What Accountability Software Does</h2>
-            <p className="text-[#8A9BB0] leading-relaxed mb-4">
+            <h2 className="font-serif text-2xl font-bold text-ink mb-5">Definition: What Accountability Software Does</h2>
+            <p className="text-ink-soft leading-relaxed mb-4">
               Accountability software is any application designed to monitor a person&apos;s device activity and share that information with a designated partner. The core function is visibility: the monitored person consents to sharing behavioral data with someone they trust, creating a structure where continued use of problematic content or apps cannot be easily hidden.
             </p>
-            <p className="text-[#8A9BB0] leading-relaxed mb-4">
+            <p className="text-ink-soft leading-relaxed mb-4">
               The category covers a range of products with different technical approaches, different levels of privacy, and different use cases. The common thread is the accountability relationship: one person consents to be monitored, and another person receives information about their activity.
             </p>
-            <p className="text-[#8A9BB0] leading-relaxed">
+            <p className="text-ink-soft leading-relaxed">
               Accountability software should be distinguished from parental controls, which are typically non-consensual and applied by a parent to a child&apos;s device. Adult accountability software requires the monitored person to install and enable it voluntarily.
             </p>
           </section>
 
           {/* How it works technically */}
           <section className="mb-14" id="how-it-works">
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">How Accountability Software Works Technically</h2>
-            <p className="text-[#8A9BB0] leading-relaxed mb-4">
+            <h2 className="font-serif text-2xl font-bold text-ink mb-5">How Accountability Software Works Technically</h2>
+            <p className="text-ink-soft leading-relaxed mb-4">
               The technical implementation varies significantly by product. The core workflow is similar across all of them:
             </p>
             <div className="space-y-3 mb-6">
@@ -125,11 +125,11 @@ export default function WhatIsAccountabilitySoftware() {
                 { step: '4', label: 'Reports or alerts delivered', desc: 'When something is flagged, the partner receives a notification. Depending on the product, this may be an immediate alert, a daily email report, or a weekly summary.' },
                 { step: '5', label: 'Accountability conversation', desc: 'The partner and monitored person discuss the alert. The quality of this conversation is what determines whether accountability actually works.' },
               ].map((item) => (
-                <div key={item.step} className="flex gap-4 p-4 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] font-bold text-xs flex items-center justify-center flex-shrink-0">{item.step}</div>
+                <div key={item.step} className="flex gap-4 p-4 rounded-sm border border-hairline bg-paper-deep">
+                  <div className="w-7 h-7 rounded-sm bg-wax text-paper font-bold text-xs flex items-center justify-center flex-shrink-0">{item.step}</div>
                   <div>
-                    <p className="font-semibold text-[#F0EDE8] text-sm mb-0.5">{item.label}</p>
-                    <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.desc}</p>
+                    <p className="font-semibold text-ink text-sm mb-0.5">{item.label}</p>
+                    <p className="text-sm text-ink-soft leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -138,8 +138,8 @@ export default function WhatIsAccountabilitySoftware() {
 
           {/* Main approaches */}
           <section className="mb-14" id="approaches">
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">The Main Monitoring Approaches</h2>
-            <p className="text-[#8A9BB0] leading-relaxed mb-6">
+            <h2 className="font-serif text-2xl font-bold text-ink mb-5">The Main Monitoring Approaches</h2>
+            <p className="text-ink-soft leading-relaxed mb-6">
               There are four primary technical approaches used by accountability software today. Each has different privacy implications, battery impacts, and coverage capabilities.
             </p>
             <div className="space-y-5">
@@ -169,19 +169,19 @@ export default function WhatIsAccountabilitySoftware() {
                   examples: 'Remain Faithful, Ever Accountable',
                 },
               ].map((item) => (
-                <div key={item.title} className="p-6 rounded-2xl border border-[#1E3050] bg-[#162235]">
-                  <h3 className="font-semibold text-[#F0EDE8] mb-3">{item.title}</h3>
+                <div key={item.title} className="p-6 rounded-sm border border-hairline bg-paper-deep">
+                  <h3 className="font-semibold text-ink mb-3">{item.title}</h3>
                   <div className="grid sm:grid-cols-2 gap-3 mb-3">
                     <div>
                       <p className="text-xs text-green-400 font-semibold uppercase tracking-wide mb-1">Advantages</p>
-                      <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.pros}</p>
+                      <p className="text-sm text-ink-soft leading-relaxed">{item.pros}</p>
                     </div>
                     <div>
                       <p className="text-xs text-red-400 font-semibold uppercase tracking-wide mb-1">Limitations</p>
-                      <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.cons}</p>
+                      <p className="text-sm text-ink-soft leading-relaxed">{item.cons}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-[#8A9BB0]/60">Examples: {item.examples}</p>
+                  <p className="text-xs text-ink-soft/60">Examples: {item.examples}</p>
                 </div>
               ))}
             </div>
@@ -189,7 +189,7 @@ export default function WhatIsAccountabilitySoftware() {
 
           {/* Use cases */}
           <section className="mb-14" id="use-cases">
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Who Uses Accountability Software</h2>
+            <h2 className="font-serif text-2xl font-bold text-ink mb-5">Who Uses Accountability Software</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
                 { title: 'Individuals seeking purity', body: 'The largest segment of users are adults seeking to address pornography use, typically within a religious context. Christians seeking purity accountability represent a substantial portion of the accountability software market.' },
@@ -199,9 +199,9 @@ export default function WhatIsAccountabilitySoftware() {
                 { title: 'Parents monitoring older children', body: 'Some parents use accountability software rather than parental controls for teenagers who have earned more autonomy. The consensual nature of accountability software is an advantage in building trust.' },
                 { title: 'Mentorship relationships', body: 'Pastors, discipleship leaders, and mentors use accountability software as a structured layer for one-on-one accountability relationships.' },
               ].map((item) => (
-                <div key={item.title} className="p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <h3 className="font-semibold text-[#F0EDE8] mb-2">{item.title}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.body}</p>
+                <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
+                  <h3 className="font-semibold text-ink mb-2">{item.title}</h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">{item.body}</p>
                 </div>
               ))}
             </div>
@@ -209,8 +209,8 @@ export default function WhatIsAccountabilitySoftware() {
 
           {/* How to choose */}
           <section className="mb-14" id="choosing">
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">How to Choose the Right Accountability Software</h2>
-            <p className="text-[#8A9BB0] leading-relaxed mb-6">Five questions determine which tool fits your situation best.</p>
+            <h2 className="font-serif text-2xl font-bold text-ink mb-5">How to Choose the Right Accountability Software</h2>
+            <p className="text-ink-soft leading-relaxed mb-6">Five questions determine which tool fits your situation best.</p>
             <div className="space-y-4">
               {[
                 { q: '1. Which platforms do you and your partner use?', a: 'If you need cross-platform coverage (Windows, Mac, Android), your options are Covenant Eyes, Ever Accountable, and Accountable2You. If you use iPhone exclusively, Remain Faithful is also an option.' },
@@ -219,9 +219,9 @@ export default function WhatIsAccountabilitySoftware() {
                 { q: '4. What is your budget?', a: 'Remain Faithful is $0. Paid tools charge subscriptions. Public August 2026 list prices we verified: Covenant Eyes $18/month or $198/year (account, not per-user; not multiplied by household size), Ever Accountable $129/year, Accountable2You $121/year Personal. Verify current amounts on each provider\'s site.' },
                 { q: '5. What kind of relationship framework do you want?', a: 'Most tools are monitoring tools. Remain Faithful adds a covenant layer in which partners explicitly agree to respond with grace before gaining access. If the relational framework matters to you, this distinction is significant.' },
               ].map((item) => (
-                <div key={item.q} className="p-5 rounded-xl border border-[#1E3050] bg-[#162235]">
-                  <h3 className="font-semibold text-[#F0EDE8] mb-2">{item.q}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{item.a}</p>
+                <div key={item.q} className="p-5 rounded-sm border border-hairline bg-paper-deep">
+                  <h3 className="font-semibold text-ink mb-2">{item.q}</h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">{item.a}</p>
                 </div>
               ))}
             </div>
@@ -229,15 +229,15 @@ export default function WhatIsAccountabilitySoftware() {
 
           {/* Major tools */}
           <section className="mb-14" id="major-tools">
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">Major Tools in the Market (2026)</h2>
-            <div className="overflow-x-auto rounded-2xl border border-[#1E3050]">
+            <h2 className="font-serif text-2xl font-bold text-ink mb-5">Major Tools in the Market (2026)</h2>
+            <div className="overflow-x-auto rounded-sm border border-hairline">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1E3050] bg-[#0A1420]">
-                    <th className="text-left p-4 text-[#8A9BB0] font-semibold">Tool</th>
-                    <th className="text-left p-4 text-[#8A9BB0] font-semibold">Price</th>
-                    <th className="text-left p-4 text-[#8A9BB0] font-semibold">Approach</th>
-                    <th className="text-left p-4 text-[#8A9BB0] font-semibold">Platforms</th>
+                  <tr className="border-b border-hairline bg-paper-deep">
+                    <th className="text-left p-4 text-ink-soft font-semibold">Tool</th>
+                    <th className="text-left p-4 text-ink-soft font-semibold">Price</th>
+                    <th className="text-left p-4 text-ink-soft font-semibold">Approach</th>
+                    <th className="text-left p-4 text-ink-soft font-semibold">Platforms</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -247,27 +247,27 @@ export default function WhatIsAccountabilitySoftware() {
                     ['Ever Accountable', '$129/yr', 'On-device AI', 'iOS, Android, Windows, Mac'],
                     ['Accountable2You', '$121/yr Personal', 'VPN-based', 'iOS, Android, Windows, Mac, Kindle'],
                   ].map(([tool, price, approach, platforms], i) => (
-                    <tr key={i} className={`border-b border-[#1E3050] ${i % 2 === 0 ? 'bg-[#162235]' : 'bg-[#0F1B2D]'}`}>
-                      <td className="p-4 text-[#F0EDE8] font-medium">{tool}</td>
-                      <td className="p-4 text-[#8A9BB0]">{price}</td>
-                      <td className="p-4 text-[#8A9BB0]">{approach}</td>
-                      <td className="p-4 text-[#8A9BB0]">{platforms}</td>
+                    <tr key={i} className={`border-b border-hairline ${i % 2 === 0 ? 'bg-paper-deep' : 'bg-paper'}`}>
+                      <td className="p-4 text-ink font-medium">{tool}</td>
+                      <td className="p-4 text-ink-soft">{price}</td>
+                      <td className="p-4 text-ink-soft">{approach}</td>
+                      <td className="p-4 text-ink-soft">{platforms}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-[#8A9BB0]/60 mt-2">{COMPETITOR_PRICING_NOTE}</p>
+            <p className="text-xs text-ink-soft/60 mt-2">{COMPETITOR_PRICING_NOTE}</p>
             <div className="mt-4 flex flex-wrap gap-3 text-sm">
-              <Link href="/compare/covenant-eyes" className="text-[#C9A84C] hover:underline underline-offset-2">RF vs Covenant Eyes →</Link>
-              <Link href="/compare/ever-accountable" className="text-[#C9A84C] hover:underline underline-offset-2">RF vs Ever Accountable →</Link>
-              <Link href="/compare/accountable2you" className="text-[#C9A84C] hover:underline underline-offset-2">RF vs Accountable2You →</Link>
+              <Link href="/compare/covenant-eyes" className="text-wax hover:underline underline-offset-2">RF vs Covenant Eyes →</Link>
+              <Link href="/compare/ever-accountable" className="text-wax hover:underline underline-offset-2">RF vs Ever Accountable →</Link>
+              <Link href="/compare/accountable2you" className="text-wax hover:underline underline-offset-2">RF vs Accountable2You →</Link>
             </div>
           </section>
 
           {/* FAQ */}
           <section className="mb-14" id="faq">
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-6">Frequently Asked Questions</h2>
+            <h2 className="font-serif text-2xl font-bold text-ink mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
                 { q: 'What is accountability software?', a: 'Accountability software monitors device activity and shares a report with a trusted person, called an accountability partner. The goal is to create consistent visibility into device use so that struggling behavior is not hidden. Different tools use different approaches: some capture screenshots, some route traffic through a VPN, some use on-device AI to classify screen content without transmitting it.' },
@@ -276,22 +276,22 @@ export default function WhatIsAccountabilitySoftware() {
                 { q: 'Is accountability software legal?', a: 'Yes, on your own devices or on devices you own and provide to minors. Using accountability software on another adult\'s device without their knowledge or consent would raise serious legal and ethical concerns. All reputable accountability software requires the monitored person to install and enable the software themselves. Monitoring should always be consensual for adults.' },
                 { q: 'What is the best free accountability app?', a: 'Remain Faithful is the only fully free accountability app for iPhone with no subscription tier, no premium features, and no advertising. Always-on filtering is the core; Deep Scan is optional; screen content never leaves your device. Other options charge subscriptions. Public August 2026 list prices: Covenant Eyes $18/month or $198/year (account, not per-user), Ever Accountable $129/year, Accountable2You $121/year Personal. Verify on each provider site.' },
               ].map((faq) => (
-                <div key={faq.q} className="rounded-2xl border border-[#1E3050] bg-[#162235] p-6">
-                  <h3 className="font-semibold text-[#F0EDE8] mb-3">{faq.q}</h3>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{faq.a}</p>
+                <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
+                  <h3 className="font-semibold text-ink mb-3">{faq.q}</h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">{faq.a}</p>
                 </div>
               ))}
             </div>
           </section>
 
           {/* CTA */}
-          <div className="text-center p-10 rounded-3xl border border-[#C9A84C]/20" style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}>
-            <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">Try Remain Faithful</h2>
-            <p className="text-[#8A9BB0] mb-2">The only fully free accountability app for iPhone. On-device AI. Open source. No subscription.</p>
-            <p className="text-[#8A9BB0] mb-6">
-              <Link href="/how-it-works" className="text-[#C9A84C] hover:underline underline-offset-2">Learn exactly how it works</Link> before you decide.
+          <div className="text-center p-10 rounded-sm border border-wax/25" >
+            <h2 className="font-serif text-2xl font-bold text-ink mb-4">Try Remain Faithful</h2>
+            <p className="text-ink-soft mb-2">The only fully free accountability app for iPhone. On-device AI. Open source. No subscription.</p>
+            <p className="text-ink-soft mb-6">
+              <Link href="/how-it-works" className="text-wax hover:underline underline-offset-2">Learn exactly how it works</Link> before you decide.
             </p>
-            <Link href="/#waitlist" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+            <Link href="/#waitlist" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
               Join the Waitlist (Free)
             </Link>
           </div>
