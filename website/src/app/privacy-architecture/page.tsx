@@ -32,18 +32,18 @@ export default function PrivacyArchitecturePage() {
       />
 
       {/* Hero */}
-      <section className="pt-32 pb-20 border-b border-[#1E3050]">
+      <section className="pt-32 pb-20 border-b border-hairline">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 mb-6">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-sm bg-wax/10 border border-wax/25 mb-6">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-4">Privacy Architecture</p>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-[#F0EDE8] mb-6">
+          <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-4">Privacy Architecture</p>
+          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6">
             How Your Privacy is Protected
           </h1>
-          <p className="text-[#8A9BB0] text-lg max-w-2xl mx-auto">
+          <p className="text-ink-soft text-lg max-w-2xl mx-auto">
             A detailed look at how Remain Faithful processes content without compromising your privacy — from device to partner notification.
           </p>
         </div>
@@ -53,10 +53,10 @@ export default function PrivacyArchitecturePage() {
       <section className="py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               What Always Runs — and What You Opt Into
             </h2>
-            <p className="text-[#8A9BB0] max-w-2xl mx-auto">
+            <p className="text-ink-soft max-w-2xl mx-auto">
               The credible core is always-on. Deep Scan is optional. No screen content is ever sent off-device — only alert metadata (category, severity, and timestamp) is uploaded.
             </p>
           </div>
@@ -84,19 +84,19 @@ export default function PrivacyArchitecturePage() {
                 body: 'If you start Deep Scan, on-device AI classifies non-DRM frames only. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM — unbypassable, not a bug.',
               },
             ].map((card) => (
-              <div key={card.title} className="rounded-2xl p-6 border border-[#1E3050] bg-[#162235]">
-                <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C] mb-3">{card.label}</p>
-                <h3 className="font-semibold text-[#F0EDE8] mb-2">{card.title}</h3>
-                <p className="text-sm text-[#8A9BB0] leading-relaxed">{card.body}</p>
+              <div key={card.title} className="rounded-sm p-6 border border-hairline bg-paper-deep">
+                <p className="text-xs font-bold uppercase tracking-widest text-wax mb-3">{card.label}</p>
+                <h3 className="font-semibold text-ink mb-2">{card.title}</h3>
+                <p className="text-sm text-ink-soft leading-relaxed">{card.body}</p>
               </div>
             ))}
           </div>
 
           <div className="text-center mb-14">
-            <h3 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-4">
+            <h3 className="font-serif text-2xl font-bold text-ink mb-4">
               Deep Scan Classification (Opt-In Only)
             </h3>
-            <p className="text-[#8A9BB0] max-w-2xl mx-auto">
+            <p className="text-ink-soft max-w-2xl mx-auto">
               When you start a Deep Scan session, frames from non-DRM apps are classified entirely on your device. This is not always-on, and it cannot see DRM-protected video or banking apps.
             </p>
           </div>
@@ -104,18 +104,18 @@ export default function PrivacyArchitecturePage() {
           {/* Pipeline diagram */}
           <div className="relative">
             {/* Vertical connector line (desktop) */}
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-[#C9A84C]/40 via-[#C9A84C]/20 to-[#C9A84C]/40 -translate-x-1/2" />
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-wax/25 -translate-x-1/2" />
 
             <div className="space-y-6">
               {/* Device */}
               <PipelineStep
                 side="center"
                 badge="Start"
-                badgeColor="#162235"
+                badgeColor="#5a5148"
                 title="Deep Scan Captures a Screen Frame (Opt-In)"
                 desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, only the alert metadata — category, severity, and timestamp — is uploaded. No static summary. Screen content, OCR text, and screenshots are never transmitted. DRM apps render as black frames."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
                     <line x1="12" y1="18" x2="12.01" y2="18"/>
                   </svg>
@@ -126,11 +126,11 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Tier 1 · On-Device Rules"
-                badgeColor="#C9A84C"
+                badgeColor="#7a2c28"
                 title="Rules: URL Blocklist + Keyword Matching"
                 desc="Known adult domains are checked against a local blocklist. Visible text is pattern-matched against regex rules. Fast, deterministic, 100% on-device. No AI required."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
                     <polyline points="9 11 12 14 22 4"/>
                     <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                   </svg>
@@ -141,11 +141,11 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Tier 2 · On-Device AI"
-                badgeColor="#C9A84C"
+                badgeColor="#7a2c28"
                 title="On-Device AI: Apple SensitiveContentAnalysis + Vision OCR + Text Classifier"
                 desc="Apple Vision OCR extracts text; SensitiveContentAnalysis detects explicit imagery; a local keyword classifier scores the result. All three run on the device's Neural Engine — the dedicated AI chip in modern iPhones. No server involved at any stage."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
                     <circle cx="12" cy="12" r="3"/>
                     <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
                   </svg>
@@ -156,11 +156,11 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Result"
-                badgeColor="#162235"
+                badgeColor="#5a5148"
                 title="Discreet Alert Delivered to Partners"
                 desc="Partners receive: category label (e.g., 'Adult Content'), severity level, and timestamp. Never which app. Never a screenshot. Never your browsing history. Never raw content. The open-source code lets anyone verify exactly what is uploaded."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
                     <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
                   </svg>
                 }
@@ -169,8 +169,8 @@ export default function PrivacyArchitecturePage() {
           </div>
 
           <div
-            className="mt-10 p-5 rounded-2xl border border-[#C9A84C]/20 text-sm text-[#8A9BB0] text-center"
-            style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+            className="mt-10 p-5 rounded-sm border border-wax/25 text-sm text-ink-soft text-center"
+            
           >
             Classification is fully on-device. The only data that leaves your device is alert metadata — category, severity, and timestamp. Screen content never leaves your device, ever.
           </div>
@@ -178,13 +178,13 @@ export default function PrivacyArchitecturePage() {
       </section>
 
       {/* Section 2: What We Can/Cannot See */}
-      <section className="py-20 bg-[#0A1420] border-y border-[#1E3050]">
+      <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               What We Can See vs. What We Cannot See
             </h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <p className="text-ink-soft max-w-xl mx-auto">
               The architecture enforces these limits, not just our policies.
             </p>
           </div>
@@ -193,12 +193,12 @@ export default function PrivacyArchitecturePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr>
-                  <th className="text-left pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold w-1/3">Data type</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold w-1/3">Remain Faithful server</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold w-1/3">Your partners</th>
+                  <th className="text-left pb-4 text-xs uppercase tracking-widest text-wax font-semibold w-1/3">Data type</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-wax font-semibold w-1/3">Remain Faithful server</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-wax font-semibold w-1/3">Your partners</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1E3050]">
+              <tbody className="divide-y divide-hairline">
                 {[
                   ['Screenshots / screen frames', '✗ Never', '✗ Never'],
                   ['Raw screen content or text', '✗ Never', '✗ Never'],
@@ -214,8 +214,8 @@ export default function PrivacyArchitecturePage() {
                   ['System-generated description', '✗ Never', '✗ Never'],
                   ['Your name and email (account info)', '✓ Encrypted at rest', '✗ No'],
                 ].map(([item, server, partners]) => (
-                  <tr key={item} className="hover:bg-[#162235]/50 transition-colors">
-                    <td className="py-3.5 text-[#F0EDE8]">{item}</td>
+                  <tr key={item} className="hover:bg-paper-deep/50 transition-colors">
+                    <td className="py-3.5 text-ink">{item}</td>
                     <td className={`py-3.5 text-center font-medium ${server.startsWith('✗') ? 'text-red-400' : 'text-green-400'}`}>{server}</td>
                     <td className={`py-3.5 text-center font-medium ${partners.startsWith('✗') ? 'text-red-400' : 'text-green-400'}`}>{partners}</td>
                   </tr>
@@ -230,8 +230,8 @@ export default function PrivacyArchitecturePage() {
       <section className="py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Data Flow Diagram</h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Data Flow Diagram</h2>
+            <p className="text-ink-soft max-w-xl mx-auto">
               How a flagged event travels from your device to your partner&apos;s notification — with encryption at every step.
             </p>
           </div>
@@ -246,34 +246,34 @@ export default function PrivacyArchitecturePage() {
             ].map((node, i) => (
               <div key={i} className="flex md:flex-col items-center gap-3">
                 {node.connector && (
-                  <div className="md:hidden flex items-center justify-center text-[#C9A84C]">→</div>
+                  <div className="md:hidden flex items-center justify-center text-wax">→</div>
                 )}
                 {node.connector && (
-                  <div className="hidden md:block w-full h-px bg-gradient-to-r from-[#C9A84C]/40 to-[#C9A84C]/20 -ml-3 mb-2" />
+                  <div className="hidden md:block w-full h-px bg-wax/25 -ml-3 mb-2" />
                 )}
                 <div
-                  className="w-full rounded-2xl p-5 border border-[#1E3050] bg-[#162235] text-center"
+                  className="w-full rounded-sm p-5 border border-hairline bg-paper-deep text-center"
                 >
                   <div className="text-3xl mb-2">{node.icon}</div>
-                  <p className="font-semibold text-[#F0EDE8] text-sm mb-1">{node.label}</p>
-                  <p className="text-xs text-[#8A9BB0]">{node.sub}</p>
+                  <p className="font-semibold text-ink text-sm mb-1">{node.label}</p>
+                  <p className="text-xs text-ink-soft">{node.sub}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <p className="text-center text-sm text-[#8A9BB0] mt-8">
+          <p className="text-center text-sm text-ink-soft mt-8">
             All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. Always-on layers and optional Deep Scan upload only alert metadata — category, severity, and timestamp — never screen content.
           </p>
         </div>
       </section>
 
       {/* Section 4: Threat Model */}
-      <section className="py-20 bg-[#0A1420] border-y border-[#1E3050]">
+      <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Threat Model</h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Threat Model</h2>
+            <p className="text-ink-soft max-w-xl mx-auto">
               What happens in the worst-case scenarios? We&apos;ve thought through them.
             </p>
           </div>
@@ -297,16 +297,16 @@ export default function PrivacyArchitecturePage() {
                 answer: 'The entire codebase is open source and auditable by anyone. We run pre-commit secret scanning on every contribution. Anyone can read the source and confirm that classification is fully on-device and that only alert metadata — never screen content — is ever transmitted.',
               },
             ].map((t) => (
-              <div key={t.threat} className="rounded-2xl p-7 border border-[#1E3050] bg-[#162235]">
+              <div key={t.threat} className="rounded-sm p-7 border border-hairline bg-paper-deep">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-6 h-6 rounded-full bg-[#C9A84C]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2.5" strokeLinecap="round">
+                  <div className="w-6 h-6 rounded-sm bg-wax/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                   </div>
-                  <h3 className="font-semibold text-[#F0EDE8] leading-snug">{t.threat}</h3>
+                  <h3 className="font-semibold text-ink leading-snug">{t.threat}</h3>
                 </div>
-                <p className="text-sm text-[#8A9BB0] leading-relaxed">{t.answer}</p>
+                <p className="text-sm text-ink-soft leading-relaxed">{t.answer}</p>
               </div>
             ))}
           </div>
@@ -318,21 +318,21 @@ export default function PrivacyArchitecturePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-5">Open Source Commitment</h2>
-              <p className="text-[#8A9BB0] leading-relaxed mb-4">
+              <h2 className="font-serif text-3xl font-bold text-ink mb-5">Open Source Commitment</h2>
+              <p className="text-ink-soft leading-relaxed mb-4">
                 The entire Remain Faithful codebase — iOS app, Go backend, and this website — is publicly available on GitHub. This is not optional for an app that handles sensitive behavioral data.
               </p>
-              <p className="text-[#8A9BB0] leading-relaxed mb-4">
+              <p className="text-ink-soft leading-relaxed mb-4">
                 Our privacy architecture is not a policy claim. It is verifiable in the code. Anyone can confirm that classification happens entirely on-device and that only alert metadata — never screen content — is ever transmitted.
               </p>
-              <p className="text-[#8A9BB0] leading-relaxed mb-6">
+              <p className="text-ink-soft leading-relaxed mb-6">
                 Security researchers and privacy advocates are invited to review, test, and report findings. We take responsible disclosure seriously.
               </p>
               <a
                 href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-[#1E3050] bg-[#162235] text-[#F0EDE8] text-sm font-semibold hover:border-[#C9A84C]/50 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-sm border border-hairline bg-paper-deep text-ink text-sm font-semibold hover:border-wax/50 transition-colors"
               >
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
@@ -341,10 +341,10 @@ export default function PrivacyArchitecturePage() {
               </a>
             </div>
             <div
-              className="rounded-2xl p-7 border border-[#C9A84C]/20"
-              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+              className="rounded-sm p-7 border border-wax/25"
+              
             >
-              <h3 className="font-semibold text-[#F0EDE8] mb-4">Why open source matters for trust</h3>
+              <h3 className="font-semibold text-ink mb-4">Why open source matters for trust</h3>
               <ul className="space-y-3">
                 {[
                   'Anyone can verify our privacy claims by reading the code',
@@ -353,8 +353,8 @@ export default function PrivacyArchitecturePage() {
                   'No "trust us" black boxes when handling intimate behavioral data',
                   'Pre-commit secret scanning prevents credential leaks',
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-[#8A9BB0]">
-                    <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2.5" strokeLinecap="round">
+                  <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
+                    <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2.5" strokeLinecap="round">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                     {item}
@@ -367,13 +367,13 @@ export default function PrivacyArchitecturePage() {
       </section>
 
       {/* Section 6: Competitor Comparison */}
-      <section className="py-20 bg-[#0A1420] border-y border-[#1E3050]">
+      <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">
               How We Compare to Other Tools
             </h2>
-            <p className="text-[#8A9BB0] max-w-xl mx-auto">
+            <p className="text-ink-soft max-w-xl mx-auto">
               Privacy dimensions compared across the most common accountability apps.
             </p>
           </div>
@@ -382,13 +382,13 @@ export default function PrivacyArchitecturePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr>
-                  <th className="text-left pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Privacy Dimension</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#C9A84C] font-semibold">Remain Faithful</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider A</th>
-                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-[#8A9BB0] font-semibold">Provider B</th>
+                  <th className="text-left pb-4 text-xs uppercase tracking-widest text-wax font-semibold">Privacy Dimension</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-wax font-semibold">Remain Faithful</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-ink-soft font-semibold">Provider A</th>
+                  <th className="text-center pb-4 text-xs uppercase tracking-widest text-ink-soft font-semibold">Provider B</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1E3050]">
+              <tbody className="divide-y divide-hairline">
                 {[
                   ['On-device AI processing', '✓ Yes', '✗ No (cloud)', '✗ No (cloud)'],
                   ['Open source codebase', '✓ Yes', '✗ No', '✗ No'],
@@ -398,18 +398,18 @@ export default function PrivacyArchitecturePage() {
                   ['Cost', '100% Free', 'Paid subscription', 'Paid subscription'],
                   ['Auditable by security researchers', '✓ Yes', '✗ No', '✗ No'],
                 ].map(([dim, rf, ce, ea]) => (
-                  <tr key={dim} className="hover:bg-[#162235]/50 transition-colors">
-                    <td className="py-3.5 text-[#F0EDE8]">{dim}</td>
+                  <tr key={dim} className="hover:bg-paper-deep/50 transition-colors">
+                    <td className="py-3.5 text-ink">{dim}</td>
                     <td className="py-3.5 text-center font-medium text-green-400">{rf}</td>
-                    <td className="py-3.5 text-center font-medium text-[#8A9BB0]">{ce}</td>
-                    <td className="py-3.5 text-center font-medium text-[#8A9BB0]">{ea}</td>
+                    <td className="py-3.5 text-center font-medium text-ink-soft">{ce}</td>
+                    <td className="py-3.5 text-center font-medium text-ink-soft">{ea}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <p className="text-xs text-[#8A9BB0]/60 mt-6 text-center">
+          <p className="text-xs text-ink-soft/60 mt-6 text-center">
             Competitor information based on publicly available documentation. All claims are verifiable via our open-source codebase.
           </p>
         </div>
@@ -418,8 +418,8 @@ export default function PrivacyArchitecturePage() {
       {/* CTA */}
       <section className="py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-serif text-3xl font-bold text-[#F0EDE8] mb-4">Questions About Our Privacy Model?</h2>
-          <p className="text-[#8A9BB0] mb-8">
+          <h2 className="font-serif text-3xl font-bold text-ink mb-4">Questions About Our Privacy Model?</h2>
+          <p className="text-ink-soft mb-8">
             Read the source code, open a GitHub issue, or contact us directly. Transparency is not just a commitment — it is a practice.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -427,13 +427,13 @@ export default function PrivacyArchitecturePage() {
               href={GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#1E3050] bg-[#162235] text-[#F0EDE8] text-sm font-semibold hover:border-[#C9A84C]/50 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-sm border border-hairline bg-paper-deep text-ink text-sm font-semibold hover:border-wax/50 transition-colors"
             >
               View on GitHub
             </a>
             <Link
               href="/about#contact"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] text-sm"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] text-sm"
             >
               Contact Us
             </Link>
@@ -461,26 +461,26 @@ function PipelineStep({
   return (
     <div className="relative flex justify-center">
       <div
-        className="w-full max-w-2xl rounded-2xl p-6 border border-[#1E3050] bg-[#162235]"
+        className="w-full max-w-2xl rounded-sm p-6 border border-hairline bg-paper-deep"
       >
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-sm bg-wax/10 border border-wax/25 flex items-center justify-center flex-shrink-0">
             {icon}
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <span
-                className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm"
                 style={{
-                  background: badgeColor === '#C9A84C' ? 'rgba(201,168,76,0.15)' : 'rgba(138,155,176,0.15)',
-                  color: badgeColor === '#C9A84C' ? '#C9A84C' : '#8A9BB0',
+                  background: badgeColor === '#7a2c28' ? 'rgba(122, 44, 40, 0.12)' : 'rgba(29, 24, 20, 0.06)',
+                  color: badgeColor === '#7a2c28' ? '#7a2c28' : '#5a5148',
                 }}
               >
                 {badge}
               </span>
             </div>
-            <h3 className="font-semibold text-[#F0EDE8] mb-2">{title}</h3>
-            <p className="text-sm text-[#8A9BB0] leading-relaxed">{desc}</p>
+            <h3 className="font-semibold text-ink mb-2">{title}</h3>
+            <p className="text-sm text-ink-soft leading-relaxed">{desc}</p>
           </div>
         </div>
       </div>

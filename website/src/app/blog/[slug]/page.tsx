@@ -58,13 +58,13 @@ function renderBody(body: string) {
     const line = lines[i]
     if (line.startsWith('## ')) {
       elements.push(
-        <h2 key={i} className="font-serif text-2xl font-bold text-[#F0EDE8] mt-10 mb-4">
+        <h2 key={i} className="font-serif text-2xl font-bold text-ink mt-10 mb-4">
           {line.slice(3)}
         </h2>
       )
     } else if (line.startsWith('**') && line.endsWith('**')) {
       elements.push(
-        <p key={i} className="font-semibold text-[#F0EDE8] mt-4 mb-2">
+        <p key={i} className="font-semibold text-ink mt-4 mb-2">
           {line.slice(2, -2)}
         </p>
       )
@@ -73,13 +73,13 @@ function renderBody(body: string) {
       const bold = line.slice(2, boldEnd)
       const rest = line.slice(boldEnd + 2)
       elements.push(
-        <p key={i} className="text-[#8A9BB0] leading-relaxed mb-4">
-          <strong className="text-[#F0EDE8]">{bold}</strong>{rest}
+        <p key={i} className="text-ink-soft leading-relaxed mb-4">
+          <strong className="text-ink">{bold}</strong>{rest}
         </p>
       )
     } else if (line.trim() !== '') {
       elements.push(
-        <p key={i} className="text-[#8A9BB0] leading-relaxed mb-4">
+        <p key={i} className="text-ink-soft leading-relaxed mb-4">
           {line}
         </p>
       )
@@ -113,7 +113,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <article>
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-sm text-[#8A9BB0] hover:text-[#F0EDE8] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-sm text-ink-soft hover:text-ink transition-colors mb-8"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -122,18 +122,18 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             </Link>
 
             <div className="mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C] bg-[#C9A84C]/10 px-3 py-1 rounded-full">
+              <span className="text-xs font-semibold uppercase tracking-wider text-wax bg-wax/10 px-3 py-1 rounded-sm">
                 {post.category}
               </span>
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#F0EDE8] mb-5 leading-tight">
+            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-ink mb-5 leading-tight">
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-4 text-sm text-[#8A9BB0] mb-8 pb-8 border-b border-[#1E3050]">
+            <div className="flex items-center gap-4 text-sm text-ink-soft mb-8 pb-8 border-b border-hairline">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#E8C87A] flex items-center justify-center text-[#0F1B2D] text-xs font-bold">
+                <div className="w-7 h-7 rounded-sm bg-wax flex items-center justify-center text-paper text-xs font-bold">
                   JB
                 </div>
                 <span>Jeff Brewer</span>
@@ -142,19 +142,19 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               <span>{post.readTime}</span>
             </div>
 
-            <div className="text-[#8A9BB0] leading-relaxed">
+            <div className="text-ink-soft leading-relaxed">
               {renderBody(post.body)}
             </div>
 
             {/* Newsletter CTA */}
             <div
-              className="mt-12 p-8 rounded-2xl border border-[#C9A84C]/20"
-              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+              className="mt-12 p-8 rounded-sm border border-wax/25"
+              
             >
-              <h3 className="font-serif text-xl font-bold text-[#F0EDE8] mb-2">
+              <h3 className="font-serif text-xl font-bold text-ink mb-2">
                 Want more like this?
               </h3>
-              <p className="text-[#8A9BB0] text-sm mb-5">
+              <p className="text-ink-soft text-sm mb-5">
                 Get the monthly accountability newsletter — practical guides, theological reflections, and updates from the Remain Faithful team.
               </p>
               <WaitlistForm variant="inline" buttonText="Subscribe" />
@@ -162,18 +162,18 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
             {/* Download CTA */}
             <div
-              className="mt-6 p-8 rounded-2xl border border-[#C9A84C]/20 text-center"
-              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+              className="mt-6 p-8 rounded-sm border border-wax/25 text-center"
+              
             >
-              <h3 className="font-serif text-xl font-bold text-[#F0EDE8] mb-3">
+              <h3 className="font-serif text-xl font-bold text-ink mb-3">
                 Ready to start?
               </h3>
-              <p className="text-[#8A9BB0] text-sm mb-5">
+              <p className="text-ink-soft text-sm mb-5">
                 Join the waitlist and be first to know when Remain Faithful launches.
               </p>
               <Link
                 href="/#waitlist"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] text-sm"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] text-sm"
               >
                 Join the Waitlist
               </Link>
@@ -185,8 +185,8 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           {/* Sidebar */}
           <aside className="space-y-6">
             {/* Related posts */}
-            <div className="rounded-2xl border border-[#1E3050] bg-[#162235] p-6">
-              <h3 className="font-serif text-lg font-bold text-[#F0EDE8] mb-5">More From Our Blog</h3>
+            <div className="rounded-sm border border-hairline bg-paper-deep p-6">
+              <h3 className="font-serif text-lg font-bold text-ink mb-5">More From Our Blog</h3>
               <div className="space-y-4">
                 {posts.filter((p) => p.slug !== post.slug).slice(0, 3).map((p, i, arr) => (
                   <Link
@@ -194,13 +194,13 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                     href={`/blog/${p.slug}`}
                     className="block group"
                   >
-                    <p className="text-xs text-[#C9A84C] font-semibold uppercase tracking-wide mb-1">{p.category}</p>
-                    <p className="text-sm text-[#F0EDE8] font-medium group-hover:text-[#C9A84C] transition-colors leading-snug mb-1">
+                    <p className="text-xs text-wax font-semibold uppercase tracking-wide mb-1">{p.category}</p>
+                    <p className="text-sm text-ink font-medium group-hover:text-wax transition-colors leading-snug mb-1">
                       {p.title}
                     </p>
-                    <p className="text-xs text-[#8A9BB0]">{p.readTime}</p>
+                    <p className="text-xs text-ink-soft">{p.readTime}</p>
                     {i < arr.length - 1 && (
-                      <div className="mt-4 border-t border-[#1E3050]"/>
+                      <div className="mt-4 border-t border-hairline"/>
                     )}
                   </Link>
                 ))}
@@ -209,17 +209,17 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
             {/* Donate nudge */}
             <div
-              className="rounded-2xl p-6 border border-[#C9A84C]/20 text-center"
-              style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
+              className="rounded-sm p-6 border border-wax/25 text-center"
+              
             >
               <div className="text-2xl mb-3">❤️</div>
-              <h3 className="font-serif text-base font-bold text-[#F0EDE8] mb-2">Keep RF Free</h3>
-              <p className="text-xs text-[#8A9BB0] mb-4 leading-relaxed">
+              <h3 className="font-serif text-base font-bold text-ink mb-2">Keep RF Free</h3>
+              <p className="text-xs text-ink-soft mb-4 leading-relaxed">
                 Remain Faithful is free because of voluntary donations from people like you.
               </p>
               <Link
                 href="/#donate"
-                className="block text-center py-2.5 rounded-full text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A]"
+                className="block text-center py-2.5 rounded-sm text-sm font-semibold text-paper bg-wax"
               >
                 Support the Project
               </Link>

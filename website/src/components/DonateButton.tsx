@@ -40,64 +40,57 @@ export default function DonateButton() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* One-time / Monthly toggle */}
-      <div className="flex items-center gap-1 p-1 rounded-full bg-[#162235] border border-[#1E3050]">
+    <div className="flex flex-col items-stretch sm:items-center gap-5">
+      <div className="inline-flex items-center gap-1 p-1 self-center" style={{ boxShadow: 'var(--shadow-border)' }}>
         <button
           onClick={() => setRecurring(false)}
-          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-[color,background-image,box-shadow,scale] duration-200 ease-out active:scale-[0.96] ${
-            !recurring
-              ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] shadow'
-              : 'text-[#8A9BB0] hover:text-[#F0EDE8]'
+          className={`px-5 py-2 min-h-10 font-mono text-[12px] tracking-[0.06em] transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.96] ${
+            !recurring ? 'bg-wax text-paper' : 'text-ink-soft hover:text-ink'
           }`}
         >
           One-time
         </button>
         <button
           onClick={() => setRecurring(true)}
-          className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-[color,background-image,box-shadow,scale] duration-200 ease-out active:scale-[0.96] ${
-            recurring
-              ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] shadow'
-              : 'text-[#8A9BB0] hover:text-[#F0EDE8]'
+          className={`px-5 py-2 min-h-10 font-mono text-[12px] tracking-[0.06em] transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.96] ${
+            recurring ? 'bg-wax text-paper' : 'text-ink-soft hover:text-ink'
           }`}
         >
           Monthly
         </button>
       </div>
 
-      {/* Amount selector */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         {AMOUNTS.map((a) => (
           <button
             key={a.value}
             onClick={() => setSelected(a.value)}
-            className={`w-16 h-10 rounded-full text-sm font-semibold tabular-nums border transition-[border-color,color,background-image,box-shadow,scale] duration-200 ease-out active:scale-[0.96] ${
+            className={`min-w-16 h-10 px-3 font-mono text-sm tabular-nums transition-[color,background-color,box-shadow,scale] duration-150 ease-out active:scale-[0.96] ${
               selected === a.value
-                ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] text-[#0F1B2D] border-transparent shadow-md shadow-[#C9A84C]/30'
-                : 'bg-transparent text-[#8A9BB0] border-[#1E3050] hover:border-[#C9A84C] hover:text-[#F0EDE8]'
+                ? 'bg-wax text-paper'
+                : 'text-ink-soft hover:text-ink'
             }`}
+            style={selected === a.value ? undefined : { boxShadow: 'var(--shadow-border)' }}
           >
             ${a.value}
           </button>
         ))}
       </div>
 
-      {/* Impact label */}
       {currentImpact && (
-        <p className="text-xs text-[#C9A84C]/80 text-center tabular-nums">
+        <p className="font-mono text-[11px] tracking-[0.08em] uppercase text-ink-faint text-center tabular-nums">
           ${selected} {currentImpact.toLowerCase()}
         </p>
       )}
 
-      {/* Donate button */}
       <button
         onClick={handleDonate}
         disabled={loading}
-        className="flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:not-disabled:scale-[0.96] shadow-lg shadow-[#C9A84C]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+        className="btn-wax self-center px-8"
       >
         {loading ? (
           <>
-            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
@@ -105,20 +98,16 @@ export default function DonateButton() {
           </>
         ) : (
           <>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-            </svg>
             Give <span className="tabular-nums">${selected}{recurring ? '/mo' : ''}</span>
           </>
         )}
       </button>
 
       {error && (
-        <p className="text-sm text-red-400">{error}</p>
+        <p className="text-sm text-wax">{error}</p>
       )}
 
-      {/* Disclosure */}
-      <div className="text-center text-xs text-[#8A9BB0]/70 max-w-sm leading-relaxed mt-1">
+      <div className="text-center text-sm text-ink-soft max-w-sm leading-relaxed">
         Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Processed securely via Stripe.
       </div>
     </div>

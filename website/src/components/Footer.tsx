@@ -38,68 +38,48 @@ const footerLinks = {
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0A1420] border-t border-[#1E3050]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
-        {/* Newsletter strip */}
-        <div
-          className="rounded-2xl p-6 sm:p-8 mb-12 border border-[#C9A84C]/20"
-          style={{ background: 'linear-gradient(135deg, #162235, #1A2A40)' }}
-        >
-          <div className="grid sm:grid-cols-2 gap-6 items-center">
-            <div>
-              <h3 className="font-serif text-lg font-bold text-[#F0EDE8] mb-1">
-                Join the accountability newsletter
-              </h3>
-              <p className="text-sm text-[#8A9BB0]">
-                Monthly encouragement, guides, and updates from the Remain Faithful team.
-              </p>
-            </div>
-            <WaitlistForm variant="footer" buttonText="Subscribe" />
+    <footer className="border-t border-hairline bg-paper-deep">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-16 pb-8">
+        <div className="pb-12 mb-12 border-b border-hairline grid sm:grid-cols-2 gap-6 items-end">
+          <div>
+            <p className="kicker mb-3">Letter</p>
+            <h3 className="font-serif text-xl font-medium text-ink mb-2">
+              Join the accountability newsletter
+            </h3>
+            <p className="text-ink-soft text-[1.05rem] leading-relaxed">
+              Monthly encouragement, guides, and updates from Remain Faithful.
+            </p>
           </div>
+          <WaitlistForm variant="footer" buttonText="Subscribe" />
         </div>
 
-        {/* Top grid */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 pb-12 border-b border-[#1E3050]">
-          {/* Logo + tagline */}
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 pb-12 border-b border-hairline">
           <div className="col-span-2 md:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <svg
-                width="28"
-                height="32"
-                viewBox="0 0 32 36"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+            <Link href="/" className="flex items-center gap-2.5 mb-4 min-h-10">
+              <svg width="22" height="24" viewBox="0 0 32 36" fill="none" aria-hidden="true">
                 <path
                   d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z"
-                  fill="url(#footerShieldGrad)"
+                  fill="#7a2c28"
                 />
                 <path
                   d="M11 18L14.5 21.5L21 14"
-                  stroke="white"
+                  stroke="#ece6d8"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-                <defs>
-                  <linearGradient id="footerShieldGrad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#C9A84C" />
-                    <stop offset="1" stopColor="#E8C87A" />
-                  </linearGradient>
-                </defs>
               </svg>
-              <span className="font-serif font-semibold text-[#F0EDE8]">Remain Faithful</span>
+              <span className="font-serif text-ink">Remain Faithful</span>
             </Link>
-            <p className="text-sm text-[#8A9BB0] leading-relaxed max-w-[240px]">
-              Accountability That Works. Free forever, privacy-first, built for believers serious about purity.
+            <p className="text-ink-soft leading-relaxed max-w-[240px]">
+              Free forever, privacy-first, built for believers serious about purity.
             </p>
-            {/* Social */}
             <div className="flex items-center gap-3 mt-6">
               <a
                 href="https://github.com/CGABrew7/remain-faithful"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-[#162235] border border-[#1E3050] flex items-center justify-center text-[#8A9BB0] hover:text-[#F0EDE8] hover:border-[#C9A84C] transition-colors"
+                className="relative w-10 h-10 inline-flex items-center justify-center text-ink-soft hover:text-ink transition-colors duration-200"
                 aria-label="GitHub"
               >
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -109,18 +89,15 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Link columns */}
           {Object.values(footerLinks).map((col) => (
             <div key={col.title} className="col-span-1">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C] mb-4">
-                {col.title}
-              </h3>
+              <h3 className="kicker mb-4">{col.title}</h3>
               <ul className="space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[#8A9BB0] hover:text-[#F0EDE8] transition-colors"
+                      className="text-ink-soft hover:text-ink transition-colors duration-200"
                     >
                       {link.label}
                     </Link>
@@ -131,13 +108,12 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
-          <p className="text-sm text-[#8A9BB0]">
+          <p className="font-mono text-[11px] tracking-[0.14em] uppercase text-ink-faint">
             © 2026 Remain Faithful. Free forever. Open source.
           </p>
-          <p className="text-xs text-[#8A9BB0]/60">
-            Built with integrity, for all who need it.
+          <p className="font-mono text-[11px] tracking-[0.14em] uppercase text-ink-faint">
+            Fort Wayne
           </p>
         </div>
       </div>

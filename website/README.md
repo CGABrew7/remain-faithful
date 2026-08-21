@@ -6,7 +6,8 @@ Marketing website for [remainfaithful.com](https://remainfaithful.com), built wi
 
 - **Framework:** Next.js 14 (App Router)
 - **Styling:** Tailwind CSS v3
-- **Fonts:** Playfair Display (serif headings) + Inter (body)
+- **Fonts:** Newsreader (words) + IBM Plex Mono (UI)
+- **Atmosphere:** ThreeUI Community `meng-to-sketchbook-landing-page` (MIT), restyled — dusk desk, wax-red accent, no sketchbook UI
 - **Deployment:** Vercel
 - **Backend:** Go API at `api.remainfaithful.com`
 
@@ -62,7 +63,7 @@ vercel --prod
 
 | Route | Description |
 |---|---|
-| `/` | Homepage with hero, features, how it works, testimonials, download, donation CTA |
+| `/` | Homepage with letter hero, how it works, privacy, waitlist, donation CTA |
 | `/how-it-works` | Detailed accountability model, monitoring pipeline, FAQ |
 | `/privacy` | Full privacy policy |
 | `/partners` | Ministry leader page with pilot program request form |
@@ -98,6 +99,6 @@ src/
 └── components/
     ├── Nav.tsx
     ├── Footer.tsx
-    ├── AppMockup.tsx       # SVG phone mockup (no external images)
+    ├── LetterAtmosphere.tsx # Desk/letter hero from ThreeUI sketchbook lighting
     └── DonateButton.tsx    # Stripe checkout client component
 ```

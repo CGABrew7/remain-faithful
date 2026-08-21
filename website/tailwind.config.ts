@@ -9,41 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          DEFAULT: '#0F1B2D',
-          light: '#162235',
-          border: '#1E3050',
+        paper: {
+          DEFAULT: '#ece6d8',
+          deep: '#e2d8c6',
+          raised: '#f4efe6',
+          night: '#1c1713',
         },
-        gold: {
-          DEFAULT: '#C9A84C',
-          light: '#E8C87A',
+        ink: {
+          DEFAULT: '#1d1814',
+          soft: '#5a5148',
+          faint: '#85786c',
         },
-        cream: {
-          DEFAULT: '#F0EDE8',
-          muted: '#8A9BB0',
+        wax: {
+          DEFAULT: '#7a2c28',
+          deep: '#5c211e',
         },
+        hairline: 'rgba(29, 24, 20, 0.14)',
       },
       fontFamily: {
-        serif: ['var(--font-playfair)', 'Georgia', 'serif'],
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-      },
-      backgroundImage: {
-        'gold-gradient': 'linear-gradient(135deg, #C9A84C, #E8C87A)',
-        'navy-gradient': 'linear-gradient(180deg, #0F1B2D 0%, #162235 100%)',
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.6s ease-out forwards',
-        'slide-up': 'slideUp 0.5s ease-out forwards',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
+        serif: ['var(--font-newsreader)', 'Georgia', 'Times New Roman', 'serif'],
+        mono: ['var(--font-plex-mono)', 'ui-monospace', 'monospace'],
       },
     },
   },

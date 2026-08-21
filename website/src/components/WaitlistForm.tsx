@@ -42,10 +42,10 @@ export default function WaitlistForm({
 
   if (submitted) {
     return (
-      <div className="text-center py-4">
-        <p className="text-[#C9A84C] font-semibold">You&apos;re on the list!</p>
-        <p className="text-sm text-[#8A9BB0] mt-1">
-          We&apos;ll notify you the moment Remain Faithful launches.
+      <div className="py-4">
+        <p className="text-wax font-serif text-lg">You&apos;re on the list.</p>
+        <p className="text-ink-soft mt-1">
+          We&apos;ll write when Remain Faithful is ready.
         </p>
       </div>
     )
@@ -53,23 +53,23 @@ export default function WaitlistForm({
 
   if (variant === 'footer') {
     return (
-      <form onSubmit={handleSubmit} className="flex gap-2 mt-3">
+      <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
           required
-          className="flex-1 px-3 py-2 rounded-lg bg-[#162235] border border-[#1E3050] text-sm text-[#F0EDE8] placeholder-[#8A9BB0]/60 focus:outline-none focus:border-[#C9A84C]/50 min-w-0"
+          className="input-field flex-1 min-w-0 !py-2.5"
         />
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 rounded-lg text-sm font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] disabled:opacity-70 whitespace-nowrap"
+          className="btn-wax !py-2.5 whitespace-nowrap"
         >
           {loading ? '…' : 'Join'}
         </button>
-        {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+        {error && <p className="text-xs text-wax mt-1">{error}</p>}
       </form>
     )
   }
@@ -83,16 +83,16 @@ export default function WaitlistForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
           required
-          className="flex-1 px-4 py-3 rounded-xl bg-[#0F1B2D] border border-[#1E3050] text-[#F0EDE8] placeholder-[#8A9BB0]/60 focus:outline-none focus:border-[#C9A84C]/50"
+          className="input-field flex-1"
         />
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-3 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] disabled:opacity-70 whitespace-nowrap"
+          className="btn-wax whitespace-nowrap"
         >
           {loading ? 'Joining…' : buttonText}
         </button>
-        {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
+        {error && <p className="text-xs text-wax mt-2">{error}</p>}
       </form>
     )
   }
@@ -100,12 +100,12 @@ export default function WaitlistForm({
   return (
     <div>
       {heading && (
-        <h3 className="font-serif text-xl font-bold text-[#F0EDE8] mb-2">{heading}</h3>
+        <h3 className="font-serif text-xl font-medium text-ink mb-2">{heading}</h3>
       )}
       {subheading && (
-        <p className="text-[#8A9BB0] text-sm mb-5">{subheading}</p>
+        <p className="text-ink-soft mb-5">{subheading}</p>
       )}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md mx-auto">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
@@ -113,7 +113,7 @@ export default function WaitlistForm({
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
             required
-            className="flex-1 px-4 py-3 rounded-xl bg-[#162235] border border-[#1E3050] text-[#F0EDE8] placeholder-[#8A9BB0]/60 focus:outline-none focus:border-[#C9A84C]/50"
+            className="input-field flex-1"
           />
           <input
             type="email"
@@ -121,17 +121,17 @@ export default function WaitlistForm({
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
             required
-            className="flex-1 px-4 py-3 rounded-xl bg-[#162235] border border-[#1E3050] text-[#F0EDE8] placeholder-[#8A9BB0]/60 focus:outline-none focus:border-[#C9A84C]/50"
+            className="input-field flex-1"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 rounded-xl font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] shadow-lg shadow-[#C9A84C]/20 disabled:opacity-70"
+          className="btn-wax w-full"
         >
           {loading ? 'Joining…' : buttonText}
         </button>
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-wax">{error}</p>}
       </form>
     </div>
   )

@@ -41,10 +41,9 @@ export default function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="text-center py-12 rounded-2xl border border-[#C9A84C]/20 bg-[#162235]">
-        <div className="text-4xl mb-4">✅</div>
-        <h3 className="font-serif text-xl font-semibold text-[#F0EDE8] mb-3">Message Sent</h3>
-        <p className="text-[#8A9BB0] text-sm">We&apos;ll get back to you within 2–3 business days.</p>
+      <div className="py-10 border-t border-b border-hairline">
+        <h3 className="font-serif text-xl font-medium text-ink mb-3">Message sent</h3>
+        <p className="text-ink-soft">We&apos;ll get back to you within 2–3 business days.</p>
       </div>
     )
   }
@@ -53,8 +52,8 @@ export default function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
-          <label className="block text-sm font-medium text-[#F0EDE8] mb-2">
-            Name <span className="text-[#C9A84C]">*</span>
+          <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+            Name <span className="text-wax">*</span>
           </label>
           <input
             type="text"
@@ -66,8 +65,8 @@ export default function ContactForm() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#F0EDE8] mb-2">
-            Email <span className="text-[#C9A84C]">*</span>
+          <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+            Email <span className="text-wax">*</span>
           </label>
           <input
             type="email"
@@ -80,8 +79,8 @@ export default function ContactForm() {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-[#F0EDE8] mb-2">
-          Subject <span className="text-[#C9A84C]">*</span>
+        <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+          Subject <span className="text-wax">*</span>
         </label>
         <select
           required
@@ -98,8 +97,8 @@ export default function ContactForm() {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-[#F0EDE8] mb-2">
-          Message <span className="text-[#C9A84C]">*</span>
+        <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+          Message <span className="text-wax">*</span>
         </label>
         <textarea
           required
@@ -110,11 +109,11 @@ export default function ContactForm() {
           className="input-field resize-none"
         />
       </div>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-wax text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3.5 rounded-full font-semibold text-[#0F1B2D] bg-gradient-to-r from-[#C9A84C] to-[#E8C87A] hover:from-[#E8C87A] hover:to-[#C9A84C] transition-[box-shadow,scale] duration-200 ease-out active:not-disabled:scale-[0.96] disabled:opacity-70 disabled:cursor-not-allowed"
+        className="btn-wax w-full"
       >
         {loading ? 'Sending...' : 'Send Message'}
       </button>

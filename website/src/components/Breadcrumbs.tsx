@@ -13,14 +13,14 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
     <>
       <JsonLd data={breadcrumbSchema(allItems)} />
-      <nav aria-label="Breadcrumb" className="text-sm text-[#8A9BB0] mb-6">
+      <nav aria-label="Breadcrumb" className="font-mono text-[11px] tracking-[0.1em] uppercase text-ink-faint mb-6">
         {allItems.map((item, i) => (
           <span key={item.url}>
-            {i > 0 && <span className="mx-2 text-[#1E3050]">/</span>}
+            {i > 0 && <span className="mx-2 text-hairline">/</span>}
             {i === allItems.length - 1 ? (
-              <span className="text-[#F0EDE8]">{item.name}</span>
+              <span className="text-ink">{item.name}</span>
             ) : (
-              <Link href={item.url} className="hover:text-[#C9A84C] transition-colors">
+              <Link href={item.url} className="hover:text-wax transition-colors duration-200">
                 {item.name}
               </Link>
             )}

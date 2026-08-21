@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Newsreader, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
@@ -7,17 +7,19 @@ import Script from 'next/script'
 import { JsonLd } from '@/components/JsonLd'
 import { organizationSchema, websiteSchema } from '@/lib/structured-data'
 
-const playfair = Playfair_Display({
+const newsreader = Newsreader({
   subsets: ['latin'],
-  weight: ['400', '600', '700'],
-  variable: '--font-playfair',
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-newsreader',
   display: 'swap',
+  adjustFontFallback: false,
 })
 
-const inter = Inter({
+const plexMono = IBM_Plex_Mono({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-inter',
+  weight: ['400', '500'],
+  variable: '--font-plex-mono',
   display: 'swap',
 })
 
@@ -84,9 +86,9 @@ export default function RootLayout({
   const gaId = process.env.NEXT_PUBLIC_GA_ID
 
   return (
-    <html lang="en" className={`scroll-smooth ${playfair.variable} ${inter.variable}`}>
+    <html lang="en" className={`scroll-smooth ${newsreader.variable} ${plexMono.variable}`}>
       <head />
-      <body className="bg-[#0F1B2D] text-[#F0EDE8] font-sans">
+      <body className="bg-paper text-ink font-serif">
         {gaId && (
           <>
             <Script

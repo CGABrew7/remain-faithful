@@ -10,14 +10,14 @@ export default function PrivacyPage() {
     <div className="pt-32 pb-24">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12">
-          <p className="text-[#C9A84C] text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
-          <h1 className="font-serif text-4xl font-bold text-[#F0EDE8] mb-4">Privacy Policy</h1>
-          <p className="text-[#8A9BB0] text-sm">Last updated: August 2026</p>
+          <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
+          <h1 className="font-serif text-4xl font-bold text-ink mb-4">Privacy Policy</h1>
+          <p className="text-ink-soft text-sm">Last updated: August 2026</p>
         </div>
 
         <div className="prose-content space-y-12">
           <Section title="Our Commitment">
-            <p className="font-semibold text-[#F0EDE8] leading-relaxed">
+            <p className="font-semibold text-ink leading-relaxed">
               Your name, email address, and personal information will never be shared, sold, or disclosed to any third party, at any time, for any reason. This is a permanent commitment.
             </p>
             <p>
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
             </p>
             <p>
               If you have any questions about this policy, contact us at{' '}
-              <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">
+              <a href="mailto:support@remainfaithful.com" className="text-wax hover:underline">
                 support@remainfaithful.com
               </a>.
             </p>
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
                 <li>Severity level (Low / Medium / High)</li>
               </ul>
               <p>
-                <strong className="text-[#F0EDE8]">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, app content, or any representation of what was on your screen.
+                <strong className="text-ink">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, app content, or any representation of what was on your screen.
               </p>
             </Subsection>
 
@@ -98,23 +98,23 @@ export default function PrivacyPage() {
           <Section title="Data Retention">
             <p>We retain data for the following periods:</p>
             <ul>
-              <li><strong className="text-[#F0EDE8]">Account data:</strong> retained while your account is active, deleted within 30 days of account deletion</li>
-              <li><strong className="text-[#F0EDE8]">Alert history:</strong> configurable by you in Settings → Data Retention. Options: 7, 14, 30, or 90 days. Alerts older than your selected window are automatically purged.</li>
-              <li><strong className="text-[#F0EDE8]">Partnership records:</strong> removed immediately when either partner ends the relationship</li>
-              <li><strong className="text-[#F0EDE8]">Donation records:</strong> retained for 7 years per financial record-keeping obligations</li>
+              <li><strong className="text-ink">Account data:</strong> retained while your account is active, deleted within 30 days of account deletion</li>
+              <li><strong className="text-ink">Alert history:</strong> configurable by you in Settings → Data Retention. Options: 7, 14, 30, or 90 days. Alerts older than your selected window are automatically purged.</li>
+              <li><strong className="text-ink">Partnership records:</strong> removed immediately when either partner ends the relationship</li>
+              <li><strong className="text-ink">Donation records:</strong> retained for 7 years per financial record-keeping obligations</li>
             </ul>
           </Section>
 
           <Section title="Third-Party Services">
             <ul>
               <li>
-                <strong className="text-[#F0EDE8]">Apple (APNs):</strong> We use Apple&apos;s Push Notification service to deliver alerts. Apple&apos;s privacy policy applies to their handling of device tokens.
+                <strong className="text-ink">Apple (APNs):</strong> We use Apple&apos;s Push Notification service to deliver alerts. Apple&apos;s privacy policy applies to their handling of device tokens.
               </li>
               <li>
-                <strong className="text-[#F0EDE8]">Stripe:</strong> Donation payment processing. Stripe is PCI-compliant. We do not store card data. See Stripe&apos;s privacy policy for details.
+                <strong className="text-ink">Stripe:</strong> Donation payment processing. Stripe is PCI-compliant. We do not store card data. See Stripe&apos;s privacy policy for details.
               </li>
               <li>
-                <strong className="text-[#F0EDE8]">Google Analytics:</strong> Website analytics only. Not present in the iOS app.
+                <strong className="text-ink">Google Analytics:</strong> Website analytics only. Not present in the iOS app.
               </li>
             </ul>
           </Section>
@@ -122,14 +122,14 @@ export default function PrivacyPage() {
           <Section title="Your Rights">
             <p>You may, at any time:</p>
             <ul>
-              <li><strong className="text-[#F0EDE8]">Access your data:</strong> request a full export of your account data via Settings → Export My Data, or by emailing support@remainfaithful.com</li>
-              <li><strong className="text-[#F0EDE8]">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
-              <li><strong className="text-[#F0EDE8]">Delete your data:</strong> delete your account in Settings → Delete Account. This triggers immediate deletion of your account data and alerts, with confirmation within 30 days</li>
-              <li><strong className="text-[#F0EDE8]">Withdraw consent:</strong> disable filtering at any time from within the app. Partners will no longer receive alerts immediately upon disabling.</li>
+              <li><strong className="text-ink">Access your data:</strong> request a full export of your account data via Settings → Export My Data, or by emailing support@remainfaithful.com</li>
+              <li><strong className="text-ink">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
+              <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings → Delete Account. This triggers immediate deletion of your account data and alerts, with confirmation within 30 days</li>
+              <li><strong className="text-ink">Withdraw consent:</strong> disable filtering at any time from within the app. Partners will no longer receive alerts immediately upon disabling.</li>
             </ul>
             <p>
               For data requests or concerns, contact{' '}
-              <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">
+              <a href="mailto:support@remainfaithful.com" className="text-wax hover:underline">
                 support@remainfaithful.com
               </a>. We respond within 30 days.
             </p>
@@ -156,8 +156,8 @@ export default function PrivacyPage() {
           <Section title="Contact">
             <p>
               Remain Faithful<br />
-              Email: <a href="mailto:support@remainfaithful.com" className="text-[#C9A84C] hover:underline">support@remainfaithful.com</a><br />
-              GitHub: <a href="https://github.com/remainfaithful" className="text-[#C9A84C] hover:underline" target="_blank" rel="noopener noreferrer">github.com/remainfaithful</a>
+              Email: <a href="mailto:support@remainfaithful.com" className="text-wax hover:underline">support@remainfaithful.com</a><br />
+              GitHub: <a href="https://github.com/remainfaithful" className="text-wax hover:underline" target="_blank" rel="noopener noreferrer">github.com/remainfaithful</a>
             </p>
           </Section>
         </div>
@@ -168,9 +168,9 @@ export default function PrivacyPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-[#1E3050] pt-10">
-      <h2 className="font-serif text-2xl font-bold text-[#F0EDE8] mb-5">{title}</h2>
-      <div className="space-y-4 text-[#8A9BB0] leading-relaxed [&_ul]:space-y-2 [&_ul]:list-none [&_ul_li]:flex [&_ul_li]:gap-3 [&_ul_li]:before:content-['–'] [&_ul_li]:before:text-[#C9A84C] [&_ul_li]:before:flex-shrink-0">
+    <div className="border-t border-hairline pt-10">
+      <h2 className="font-serif text-2xl font-bold text-ink mb-5">{title}</h2>
+      <div className="space-y-4 text-ink-soft leading-relaxed [&_ul]:space-y-2 [&_ul]:list-none [&_ul_li]:flex [&_ul_li]:gap-3 [&_ul_li]:before:content-['–'] [&_ul_li]:before:text-wax [&_ul_li]:before:flex-shrink-0">
         {children}
       </div>
     </div>
@@ -180,7 +180,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Subsection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="font-semibold text-[#F0EDE8] mb-2">{title}</h3>
+      <h3 className="font-semibold text-ink mb-2">{title}</h3>
       <div className="space-y-3">{children}</div>
     </div>
   )
