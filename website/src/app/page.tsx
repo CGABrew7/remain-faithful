@@ -85,7 +85,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="max-w-xl">
               <h1 className="font-serif text-5xl sm:text-6xl font-bold leading-[1.1] text-[#F0EDE8] mb-6">
-                Accountability<br />
+                Accountability <br />
                 <span
                   style={{
                     background: 'linear-gradient(135deg, #C9A84C, #E8C87A)',
