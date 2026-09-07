@@ -81,7 +81,7 @@ export default function PrivacyPage() {
               <li>Any visual content from your screen</li>
             </ul>
             <p>
-              When Deep Scan flags a non-DRM frame, only alert metadata — category, severity, and timestamp — is uploaded. No static summary. No system-generated description. It never transmits screen content, OCR text, screenshots, or any visual representation of what was on screen. The open-source code makes this verifiable by anyone.
+              When Deep Scan flags a non-DRM frame, only alert metadata — category, severity, and timestamp — is uploaded. No static summary. No system-generated description. It never transmits screen content, OCR text, screenshots, or any visual representation of what was on screen. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.
             </p>
           </Section>
 
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
             <p>
               Remain Faithful<br />
               Email: <a href="mailto:support@remainfaithful.com" className="text-wax hover:underline">support@remainfaithful.com</a><br />
-              GitHub: <a href="https://github.com/remainfaithful" className="text-wax hover:underline" target="_blank" rel="noopener noreferrer">github.com/remainfaithful</a>
+              GitHub: <a href="https://github.com/CGABrew7/remain-faithful" className="text-wax hover:underline" target="_blank" rel="noopener noreferrer">github.com/CGABrew7/remain-faithful</a>
             </p>
           </Section>
         </div>

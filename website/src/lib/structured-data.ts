@@ -3,7 +3,6 @@ export const organizationSchema = {
   '@type': 'Organization',
   name: 'Remain Faithful',
   url: 'https://remainfaithful.com',
-  logo: 'https://remainfaithful.com/logo.png',
   description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
   founder: {
     '@type': 'Person',
@@ -93,7 +92,7 @@ export const homepageFaqSchema = {
       name: 'How is this different from other accountability apps?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
+        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
       },
     },
     {
@@ -101,7 +100,7 @@ export const homepageFaqSchema = {
       name: 'Does this work on Android?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Android support is planned for Fall 2026. Currently Remain Faithful is available for iPhone (iOS 17+). Join the waitlist to be notified when Android launches.',
+        text: 'Android support is planned, with no launch date. Remain Faithful is coming soon for iPhone (iOS 17+). Join the waitlist to be notified.',
       },
     },
     {

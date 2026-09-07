@@ -35,7 +35,7 @@ const faqSchema = {
       name: 'Who uses accountability software?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'The primary users are individuals and families seeking to address pornography or explicit content use, often within a religious context. Christians seeking purity accountability represent a large portion of the market. Parents use accountability software to monitor children\'s device activity. Recovery programs for sexual addiction integrate accountability software as part of treatment. Church small groups and men\'s ministries use it as a structured accountability layer.',
+        text: 'The primary users are consenting adults seeking peer accountability around pornography or explicit content use, often within a religious context. Christians seeking purity accountability represent a large portion of the market. Remain Faithful is for adults 18+ only — spouses, mentors, and church small groups — not parental controls. Recovery programs for sexual addiction integrate accountability software as part of treatment.',
       },
     },
     {
@@ -164,9 +164,9 @@ export default function WhatIsAccountabilitySoftware() {
                 },
                 {
                   title: '4. On-device AI classification',
-                  pros: 'Screen content never leaves the device. Classification happens entirely on-device using local AI models. Partners receive only metadata (category, severity) rather than screenshots. No battery penalty from VPN. Can monitor screen content across all apps.',
-                  cons: 'Requires sufficient device processing power. Cannot monitor DRM-protected streaming video (iOS limitation). Newer approach with less real-world track record than VPN or screenshot methods.',
-                  examples: 'Remain Faithful, Ever Accountable',
+                  pros: 'Screen content never leaves the device. Classification happens entirely on-device using local AI models. Partners receive only metadata (category, severity) rather than screenshots. No battery penalty from VPN. Coverage is limited to non-DRM frames the user opts to scan — not every app, and not DRM video.',
+                  cons: 'Optional, not always-on. Requires sufficient device processing power. Cannot see DRM-protected video (Netflix, Disney+, and similar apps render as black frames). Newer approach with less real-world track record than VPN or screenshot methods.',
+                  examples: 'Remain Faithful (optional Deep Scan), Ever Accountable',
                 },
               ].map((item) => (
                 <div key={item.title} className="p-6 rounded-sm border border-hairline bg-paper-deep">
@@ -196,7 +196,7 @@ export default function WhatIsAccountabilitySoftware() {
                 { title: 'Church small groups', body: 'Churches and men\'s ministries use accountability software as infrastructure for existing accountability relationships. Groups that already meet use the software to create accountability between meetings.' },
                 { title: 'Married couples', body: 'Spouses who want mutual transparency use accountability software as one partner, providing consistent visibility without requiring self-disclosure.' },
                 { title: 'Recovery programs', body: 'Programs addressing sexual addiction or pornography use, including Celebrate Recovery and similar ministry-based approaches, integrate accountability software as part of their structured support framework.' },
-                { title: 'Parents monitoring older children', body: 'Some parents use accountability software rather than parental controls for teenagers who have earned more autonomy. The consensual nature of accountability software is an advantage in building trust.' },
+                { title: 'Adult peer partnerships', body: 'Two consenting adults 18+ — friends, mentors, or spouses — hold each other accountable as peers. Each person authorizes Family Controls on their own device. Remain Faithful is adult self-monitor accountability, not parental controls and not for monitoring children.' },
                 { title: 'Mentorship relationships', body: 'Pastors, discipleship leaders, and mentors use accountability software as a structured layer for one-on-one accountability relationships.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
@@ -213,7 +213,7 @@ export default function WhatIsAccountabilitySoftware() {
             <p className="text-ink-soft leading-relaxed mb-6">Five questions determine which tool fits your situation best.</p>
             <div className="space-y-4">
               {[
-                { q: '1. Which platforms do you and your partner use?', a: 'If you need cross-platform coverage (Windows, Mac, Android), your options are Covenant Eyes, Ever Accountable, and Accountable2You. If you use iPhone exclusively, Remain Faithful is also an option.' },
+                { q: '1. Which platforms do you and your partner use?', a: 'If you need cross-platform coverage (Windows, Mac, Android), your options are Covenant Eyes, Ever Accountable, and Accountable2You. Remain Faithful is coming soon for iPhone (iOS 17+); Android is planned.' },
                 { q: '2. What should your partner actually receive?', a: 'Screenshot tools send actual screenshots of flagged content, exposing partners to harmful material. Category-only tools (like Remain Faithful) send only a category label and severity level, protecting partners from exposure while still creating accountability.' },
                 { q: '3. What does privacy mean to you?', a: 'Screenshot tools transmit screen content to cloud servers and partner devices. VPN tools route traffic externally. On-device AI tools (Remain Faithful, Ever Accountable) keep screen content on your device. If privacy is important, on-device AI is the strongest option.' },
                 { q: '4. What is your budget?', a: 'Remain Faithful is $0. Paid tools charge subscriptions. Public August 2026 list prices we verified: Covenant Eyes $18/month or $198/year (account, not per-user; not multiplied by household size), Ever Accountable $129/year, Accountable2You $121/year Personal. Verify current amounts on each provider\'s site.' },
@@ -272,7 +272,7 @@ export default function WhatIsAccountabilitySoftware() {
               {[
                 { q: 'What is accountability software?', a: 'Accountability software monitors device activity and shares a report with a trusted person, called an accountability partner. The goal is to create consistent visibility into device use so that struggling behavior is not hidden. Different tools use different approaches: some capture screenshots, some route traffic through a VPN, some use on-device AI to classify screen content without transmitting it.' },
                 { q: 'How does accountability software work?', a: 'Accountability software works by monitoring device activity and generating reports or alerts for a designated partner. The monitoring approach varies by product: screenshot-based tools capture images of the screen at intervals; DNS-based tools block content at the network level; VPN-based tools route traffic through a local VPN to inspect URLs; on-device AI tools classify screen content using machine learning running entirely on the device. Partners receive reports via email, app notifications, or in-app dashboards depending on the product.' },
-                { q: 'Who uses accountability software?', a: 'The primary users are individuals and families seeking to address pornography or explicit content use, often within a religious context. Christians seeking purity accountability represent a large portion of the market. Parents use accountability software to monitor children\'s device activity. Recovery programs for sexual addiction integrate accountability software as part of treatment. Church small groups and men\'s ministries use it as a structured accountability layer.' },
+                { q: 'Who uses accountability software?', a: 'The primary users are consenting adults seeking peer accountability around pornography or explicit content use, often within a religious context. Christians seeking purity accountability represent a large portion of the market. Remain Faithful is for adults 18+ only — spouses, mentors, and church small groups — not parental controls. Recovery programs for sexual addiction integrate accountability software as part of treatment.' },
                 { q: 'Is accountability software legal?', a: 'Yes, on your own devices or on devices you own and provide to minors. Using accountability software on another adult\'s device without their knowledge or consent would raise serious legal and ethical concerns. All reputable accountability software requires the monitored person to install and enable the software themselves. Monitoring should always be consensual for adults.' },
                 { q: 'What is the best free accountability app?', a: 'Remain Faithful is the only fully free accountability app for iPhone with no subscription tier, no premium features, and no advertising. Always-on filtering is the core; Deep Scan is optional; screen content never leaves your device. Other options charge subscriptions. Public August 2026 list prices: Covenant Eyes $18/month or $198/year (account, not per-user), Ever Accountable $129/year, Accountable2You $121/year Personal. Verify on each provider site.' },
               ].map((faq) => (

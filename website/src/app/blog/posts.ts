@@ -100,7 +100,7 @@ You'll see a 6-character invite code. Screenshot it or write it down.
 
 Share the invite code however makes sense for your group: group chat, in person, email. Include these instructions:
 
-> *Download Remain Faithful from the App Store. Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose.*
+> *After Remain Faithful launches for iPhone (iOS 17+), create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose. The app is in pre-launch — join the waitlist to be notified.*
 
 That's it. The app walks them through the rest.
 

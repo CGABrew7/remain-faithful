@@ -48,11 +48,11 @@ const faqs = [
   },
   {
     q: 'How is this different from other accountability apps?',
-    a: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
+    a: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
   },
   {
     q: 'Does this work on Android?',
-    a: 'Android support is planned for Fall 2026. Currently Remain Faithful is available for iPhone (iOS 17+). Join the waitlist to be notified when Android launches.',
+    a: 'Android support is planned, with no launch date. Remain Faithful is coming soon for iPhone (iOS 17+). Join the waitlist to be notified.',
   },
 ]
 
@@ -167,7 +167,7 @@ export default function HomePage() {
           Three steps to real accountability
         </h2>
         <p className="text-ink-soft text-lg leading-relaxed mb-10 max-w-[42ch]">
-          No complicated setup. No long onboarding. Start holding each other accountable in minutes.
+          Invite adult peers, then authorize Family Controls so always-on filtering can run. No invented setup-time promise — each person joins and authorizes on their own iPhone.
         </p>
 
         <ol className="m-0 p-0 list-none space-y-8">
@@ -273,13 +273,13 @@ export default function HomePage() {
           </a>
           <div className="btn-ghost opacity-70 pointer-events-none" aria-disabled="true">
             <span className="text-left">
-              <span className="block font-mono text-[10px] tracking-[0.12em] uppercase">Android launching</span>
-              <span>Fall 2026</span>
+              <span className="block font-mono text-[10px] tracking-[0.12em] uppercase">Android</span>
+              <span>Planned</span>
             </span>
           </div>
         </div>
         <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-ink-faint mt-6">
-          Android launching Fall 2026. Join the waitlist to be notified.
+          Android is planned. Join the waitlist to be notified.
         </p>
       </section>
 

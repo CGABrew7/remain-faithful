@@ -111,14 +111,14 @@ export default function GroupSetupGuidePage() {
           {/* Section 3: Setting Up Your Group */}
           <GuideSection number="3" title="Setting Up Your Group (Step by Step)">
             <p className="text-ink-soft leading-relaxed mb-6">
-              The whole process takes about 15 minutes for you as the leader, and 5 minutes per member.
+              The leader creates a group; each adult authorizes Family Controls on their own iPhone. Remain Faithful is in pre-launch — join the waitlist to be notified.
             </p>
             <div className="space-y-4">
               {[
                 {
                   n: '1',
                   title: 'Download and Create Your Leader Account',
-                  desc: 'Download Remain Faithful from the App Store (iOS 17 or later required). Create an account with your name and email. Your role as group leader is set at this step.',
+                  desc: 'After launch, create a leader account on iPhone (iOS 17+) with your name and email. Remain Faithful is in pre-launch — join the waitlist to be notified. Your role as group leader is set at this step.',
                 },
                 {
                   n: '2',
@@ -254,7 +254,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'Is the app open source?',
-                  a: 'Yes. The iOS app, Go backend, and this website are all publicly available on GitHub. Anyone can inspect the code to verify our privacy claims.',
+                  a: 'Yes. The iOS app, Go backend, and this website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
                 },
               ].map((item, i) => (
                 <div key={i} className="p-5 rounded-sm border border-hairline bg-paper-deep">

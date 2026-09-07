@@ -169,10 +169,10 @@ export default function AboutPage() {
                 Remain Faithful is open source. Every line of code (iOS app, Go backend, and this website) is publicly available on GitHub.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                For an app that handles intimate personal behavioral data, open source isn&apos;t optional. You should be able to verify our privacy claims by reading the code. Anyone who tells you to &ldquo;just trust us&rdquo; with this kind of data is asking too much.
+                For an app that handles intimate personal behavioral data, open source isn&apos;t optional. The iOS app, backend, and website source are public so you can inspect how the product is built. Design notes and audit markdown in the repository are historical working papers — not product promises.
               </p>
               <p className="text-ink-soft leading-relaxed mb-6">
-                Security researchers, privacy advocates, and curious developers are all welcome to inspect, fork, and contribute.
+                Security researchers, privacy advocates, and curious developers are welcome to inspect and contribute.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
@@ -194,39 +194,14 @@ export default function AboutPage() {
                 </Link>
               </div>
             </div>
-            <div
-              className="rounded-sm p-6 font-mono text-xs text-paper"
-              style={{ background: 'var(--dusk)' }}
-            >
-              <div className="flex items-center gap-1.5 mb-4">
-                <span className="ml-0 text-paper/50">SampleHandler.swift</span>
-              </div>
-              <pre className="text-paper/70 overflow-x-auto leading-relaxed">
-                <span className="text-paper/45">// On-device only.</span>{'\n'}
-                <span className="text-paper/45">// This data never leaves the device.</span>{'\n'}
-                {'\n'}
-                <span className="text-paper">private func</span>{' '}
-                <span className="text-paper">classifyFrame</span>
-                {'(_ frame: CMSampleBuffer) {'}{'\n'}
-                {'  '}<span className="text-paper">let</span> tier1 = URLBlocklist
-                {'\n'}
-                {'    '}.check(frame){'\n'}
-                {'  '}<span className="text-paper">guard</span> !tier1.flagged{' '}
-                <span className="text-paper">else</span> {'{'}
-                {'\n'}
-                {'    '}sendAlert(tier1.result){'\n'}
-                {'    '}<span className="text-paper">return</span>{'\n'}
-                {'  }'}{'\n'}
-                {'\n'}
-                {'  '}<span className="text-paper">let</span> tier2 = OnDeviceClassifier
-                {'\n'}
-                {'    '}.classify(frame){'\n'}
-                {'  '}<span className="text-paper">if</span> tier2.confidence {'>'} 0.85 {'{'}
-                {'\n'}
-                {'    '}sendAlert(tier2.result){'\n'}
-                {'  }'}{'\n'}
-                {'}'}
-              </pre>
+            <div className="rounded-sm p-6 border border-hairline bg-paper-deep">
+              <p className="text-xs text-wax font-semibold uppercase tracking-widest mb-3">How it actually works</p>
+              <p className="text-ink-soft leading-relaxed mb-4">
+                Always-on filtering uses Apple Family Controls in the adult self-monitor (.individual) authorization. You choose apps and categories to block. Partners are notified when a blocked category is attempted — category, severity, and timestamp only.
+              </p>
+              <p className="text-ink-soft leading-relaxed">
+                Optional Deep Scan can classify non-DRM screen frames on-device. It cannot see DRM-protected video. No screen content leaves the device. We do not show a fake code path here; the public repo is the source of truth.
+              </p>
             </div>
           </div>
         </div>

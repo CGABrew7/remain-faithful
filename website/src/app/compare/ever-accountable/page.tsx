@@ -36,7 +36,7 @@ const pageFaqSchema = {
       name: 'Can I switch from Ever Accountable to Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Cancel your Ever Accountable subscription and download Remain Faithful. Invite your accountability partners and walk through the covenant setup. Note that Remain Faithful is currently iOS only; if your partners use Android, Windows, or Mac, Ever Accountable has broader coverage.',
+        text: 'When Remain Faithful launches, you can cancel Ever Accountable and join from the waitlist. Invite your partners and walk through the covenant setup. Remain Faithful is coming soon for iPhone (iOS 17+) only; if your partners use Android, Windows, or Mac, Ever Accountable has broader coverage.',
       },
     },
   ],
@@ -84,7 +84,7 @@ export default function EverAccountableCompare() {
                 <tbody>
                   {[
                     ['Price', 'Free forever', '$129/year'],
-                    ['Platform', 'iOS 17+ (Android Fall 2026)', 'iOS, Android, Windows, Mac'],
+                    ['Platform', 'iOS 17+ coming soon (Android planned)', 'iOS, Android, Windows, Mac'],
                     ['Monitoring approach', 'On-device AI classification', 'On-device AI classification'],
                     ['Screenshots shared with partners?', 'Never. Category + severity only.', 'Partners see screenshot reports'],
                     ['Where AI runs', 'Entirely on your device', 'On-device'],
@@ -186,7 +186,7 @@ export default function EverAccountableCompare() {
               {[
                 { q: 'Is Remain Faithful as effective as Ever Accountable?', a: 'Both apps use on-device AI, which is a meaningful shared strength. Ever Accountable has a more mature iOS implementation with four generations of development. Remain Faithful is newer but is entirely free, open source, and built on a covenant accountability model. Which is more effective depends on your specific situation.' },
                 { q: 'Does Ever Accountable also do on-device processing?', a: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $129/year), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.' },
-                { q: 'Can I switch from Ever Accountable to Remain Faithful?', a: 'Yes. Cancel your Ever Accountable subscription and download Remain Faithful. Invite your accountability partners and walk through the covenant setup. Note that Remain Faithful is currently iOS only; if your partners use Android, Windows, or Mac, Ever Accountable has broader coverage.' },
+                { q: 'Can I switch from Ever Accountable to Remain Faithful?', a: 'When Remain Faithful launches, you can cancel Ever Accountable and join from the waitlist. Invite your partners and walk through the covenant setup. Remain Faithful is coming soon for iPhone (iOS 17+) only; if your partners use Android, Windows, or Mac, Ever Accountable has broader coverage.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
                   <h3 className="font-semibold text-ink mb-3">{faq.q}</h3>
