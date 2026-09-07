@@ -14,8 +14,8 @@ import (
 	"syscall"
 	"time"
 
-	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/apns"
+	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/email"
 	"remain-faithful/backend/internal/handler"
 	"remain-faithful/backend/internal/payment"
@@ -52,7 +52,7 @@ func main() {
 		log.Printf("apns: configured for %s", apnsClient.Environment())
 	}
 
-	emailClient  := email.New()
+	emailClient := email.New()
 	stripeClient := payment.New()
 
 	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Stripe: stripeClient}
@@ -114,6 +114,27 @@ func (sw *statusWriter) WriteHeader(code int) {
 // minute per IP (fixed window). Used for /auth/* and POST /contact.
 // Uses only stdlib; no external dependency.
 func authRateLimiter() mux.MiddlewareFunc {
+	return fixedWindowRateLimiter(10, clientIP)
+}
+
+// authenticatedRateLimiter limits authenticated spam surfaces to `limit`
+// requests per minute. Keyed by user ID when JWT middleware has already
+// run, otherwise by client IP. Heartbeat uses a higher limit so the
+// broadcast extension's 2-minute cadence is never throttled.
+func authenticatedRateLimiter(limit int) mux.MiddlewareFunc {
+	return fixedWindowRateLimiter(limit, authenticatedRateLimitKey)
+}
+
+func authenticatedRateLimitKey(r *http.Request) string {
+	if uid, ok := rfauth.UserIDFromContext(r.Context()); ok {
+		return "user:" + strconv.FormatInt(uid, 10)
+	}
+	return "ip:" + clientIP(r)
+}
+
+// fixedWindowRateLimiter allows `limit` requests per minute per key.
+// Uses only stdlib; no external dependency.
+func fixedWindowRateLimiter(limit int, keyFn func(*http.Request) string) mux.MiddlewareFunc {
 	type window struct {
 		count int
 		start time.Time
@@ -128,31 +149,31 @@ func authRateLimiter() mux.MiddlewareFunc {
 		for range t.C {
 			mu.Lock()
 			cutoff := time.Now().Add(-2 * time.Minute)
-			for ip, w := range windows {
+			for key, w := range windows {
 				if w.start.Before(cutoff) {
-					delete(windows, ip)
+					delete(windows, key)
 				}
 			}
 			mu.Unlock()
 		}
 	}()
 
-	allow := func(ip string) bool {
+	allow := func(key string) bool {
 		mu.Lock()
 		defer mu.Unlock()
 		now := time.Now()
-		w, ok := windows[ip]
+		w, ok := windows[key]
 		if !ok || now.Sub(w.start) >= time.Minute {
-			windows[ip] = &window{count: 1, start: now}
+			windows[key] = &window{count: 1, start: now}
 			return true
 		}
 		w.count++
-		return w.count <= 10
+		return w.count <= limit
 	}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !allow(clientIP(r)) {
+			if !allow(keyFn(r)) {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
@@ -162,6 +183,12 @@ func authRateLimiter() mux.MiddlewareFunc {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// debugPushEnabled reports whether POST /debug/test-push should be registered.
+// Off when APP_ENV=production (fly.toml). Unset / development / staging stay on.
+func debugPushEnabled() bool {
+	return os.Getenv("APP_ENV") != "production"
 }
 
 // clientIP extracts the real client IP, preferring the Fly-Client-IP header
@@ -222,51 +249,56 @@ func routes(h *handler.H) http.Handler {
 	// Public auth routes — rate-limited to 10 requests/minute per IP.
 	auth := r.PathPrefix("/auth").Subrouter()
 	auth.Use(authRateLimiter())
-	auth.HandleFunc("/register",        h.Register).Methods(http.MethodPost)
-	auth.HandleFunc("/login",           h.Login).Methods(http.MethodPost)
-	auth.HandleFunc("/apple",           h.AppleSignIn).Methods(http.MethodPost)
-	auth.HandleFunc("/google",          h.GoogleSignIn).Methods(http.MethodPost)
+	auth.HandleFunc("/register", h.Register).Methods(http.MethodPost)
+	auth.HandleFunc("/login", h.Login).Methods(http.MethodPost)
+	auth.HandleFunc("/apple", h.AppleSignIn).Methods(http.MethodPost)
+	auth.HandleFunc("/google", h.GoogleSignIn).Methods(http.MethodPost)
 	auth.HandleFunc("/forgot-password", h.ForgotPassword).Methods(http.MethodPost)
-	auth.HandleFunc("/reset-password",  h.ResetPassword).Methods(http.MethodPost)
+	auth.HandleFunc("/reset-password", h.ResetPassword).Methods(http.MethodPost)
 
 	// Protected routes — JWT required
 	api := r.NewRoute().Subrouter()
 	api.Use(rfauth.Middleware)
 
-	api.HandleFunc("/users/me",             h.GetMe).Methods(http.MethodGet)
-	api.HandleFunc("/users/me",             h.UpdateMe).Methods(http.MethodPut)
-	api.HandleFunc("/users/me",             h.DeleteMe).Methods(http.MethodDelete)
-	api.HandleFunc("/users/me/stats",       h.GetUserStats).Methods(http.MethodGet)
-	api.HandleFunc("/relationships",                    h.CreateRelationship).Methods(http.MethodPost)
-	api.HandleFunc("/relationships",                    h.ListRelationships).Methods(http.MethodGet)
-	api.HandleFunc("/relationships/invite",             h.InvitePartner).Methods(http.MethodPost)
-	api.HandleFunc("/relationships/accept-invite",      h.AcceptPartnerInvite).Methods(http.MethodPost)
-	api.HandleFunc("/relationships/{id}/primary",       h.SetPrimaryPartner).Methods(http.MethodPut)
-	api.HandleFunc("/relationships/{id}/pin",           h.SetRelationshipPIN).Methods(http.MethodPost)
-	api.HandleFunc("/relationships/{id}/pin",           h.DeleteRelationshipPIN).Methods(http.MethodDelete)
-	api.HandleFunc("/relationships/{id}",               h.DeleteRelationship).Methods(http.MethodDelete)
-	api.HandleFunc("/protection/alerts",                h.SendProtectionAlert).Methods(http.MethodPost)
-	api.HandleFunc("/protection/pin",                   h.GetPINStatus).Methods(http.MethodGet)
-	api.HandleFunc("/protection/pin/verify",            h.VerifyPIN).Methods(http.MethodPost)
-	api.HandleFunc("/groups/leave-all",          h.LeaveAllGroups).Methods(http.MethodPost)
-	api.HandleFunc("/groups",                    h.ListMyGroups).Methods(http.MethodGet)
-	api.HandleFunc("/groups",                    h.CreateGroup).Methods(http.MethodPost)
-	api.HandleFunc("/groups/{id}",               h.GetGroup).Methods(http.MethodGet)
-	api.HandleFunc("/groups/{id}/members/me",    h.LeaveGroup).Methods(http.MethodDelete)
-	api.HandleFunc("/groups/{id}/invite",        h.InviteMember).Methods(http.MethodPost)
-	api.HandleFunc("/groups/{id}/email-invite",  h.GroupEmailInvite).Methods(http.MethodPost)
-	api.HandleFunc("/events",               h.CreateEvent).Methods(http.MethodPost)
-	api.HandleFunc("/events",               h.ListEvents).Methods(http.MethodGet)
-	api.HandleFunc("/alerts",                    h.ListAlerts).Methods(http.MethodGet)
-	api.HandleFunc("/alerts/count",              h.AlertUnreadCount).Methods(http.MethodGet)
-	api.HandleFunc("/alerts/mark-seen",          h.MarkAlertsSeen).Methods(http.MethodPost)
-	api.HandleFunc("/alerts/{id}/discussed",     h.MarkAlertDiscussed).Methods(http.MethodPatch)
-	api.HandleFunc("/heartbeat",                           h.Heartbeat).Methods(http.MethodPost)
-	api.HandleFunc("/users/device-token",                  h.RegisterDeviceToken).Methods(http.MethodPost)
-	api.HandleFunc("/panic",                               h.SendPanicAlert).Methods(http.MethodPost)
-	api.HandleFunc("/debug/test-push",                     h.SendTestPush).Methods(http.MethodPost)
-	api.HandleFunc("/auth/refresh",                        h.RefreshToken).Methods(http.MethodPost)
-	api.HandleFunc("/donations/create-checkout-session",   h.CreateCheckoutSession).Methods(http.MethodPost)
+	api.HandleFunc("/users/me", h.GetMe).Methods(http.MethodGet)
+	api.HandleFunc("/users/me", h.UpdateMe).Methods(http.MethodPut)
+	api.HandleFunc("/users/me", h.DeleteMe).Methods(http.MethodDelete)
+	api.HandleFunc("/users/me/stats", h.GetUserStats).Methods(http.MethodGet)
+	api.HandleFunc("/relationships", h.CreateRelationship).Methods(http.MethodPost)
+	api.HandleFunc("/relationships", h.ListRelationships).Methods(http.MethodGet)
+	api.HandleFunc("/relationships/invite", h.InvitePartner).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/accept-invite", h.AcceptPartnerInvite).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/{id}/primary", h.SetPrimaryPartner).Methods(http.MethodPut)
+	api.HandleFunc("/relationships/{id}/pin", h.SetRelationshipPIN).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/{id}/pin", h.DeleteRelationshipPIN).Methods(http.MethodDelete)
+	api.HandleFunc("/relationships/{id}", h.DeleteRelationship).Methods(http.MethodDelete)
+	// Authenticated write surfaces that fan out partner pushes are
+	// fixed-window limited per user (see authenticatedRateLimiter).
+	// Heartbeat is more generous so the 2-minute broadcast cadence is safe.
+	api.Handle("/protection/alerts", authenticatedRateLimiter(20)(http.HandlerFunc(h.SendProtectionAlert))).Methods(http.MethodPost)
+	api.HandleFunc("/protection/pin", h.GetPINStatus).Methods(http.MethodGet)
+	api.HandleFunc("/protection/pin/verify", h.VerifyPIN).Methods(http.MethodPost)
+	api.HandleFunc("/groups/leave-all", h.LeaveAllGroups).Methods(http.MethodPost)
+	api.HandleFunc("/groups", h.ListMyGroups).Methods(http.MethodGet)
+	api.HandleFunc("/groups", h.CreateGroup).Methods(http.MethodPost)
+	api.HandleFunc("/groups/{id}", h.GetGroup).Methods(http.MethodGet)
+	api.HandleFunc("/groups/{id}/members/me", h.LeaveGroup).Methods(http.MethodDelete)
+	api.HandleFunc("/groups/{id}/invite", h.InviteMember).Methods(http.MethodPost)
+	api.HandleFunc("/groups/{id}/email-invite", h.GroupEmailInvite).Methods(http.MethodPost)
+	api.Handle("/events", authenticatedRateLimiter(30)(http.HandlerFunc(h.CreateEvent))).Methods(http.MethodPost)
+	api.HandleFunc("/events", h.ListEvents).Methods(http.MethodGet)
+	api.HandleFunc("/alerts", h.ListAlerts).Methods(http.MethodGet)
+	api.HandleFunc("/alerts/count", h.AlertUnreadCount).Methods(http.MethodGet)
+	api.HandleFunc("/alerts/mark-seen", h.MarkAlertsSeen).Methods(http.MethodPost)
+	api.HandleFunc("/alerts/{id}/discussed", h.MarkAlertDiscussed).Methods(http.MethodPatch)
+	api.Handle("/heartbeat", authenticatedRateLimiter(60)(http.HandlerFunc(h.Heartbeat))).Methods(http.MethodPost)
+	api.HandleFunc("/users/device-token", h.RegisterDeviceToken).Methods(http.MethodPost)
+	api.Handle("/panic", authenticatedRateLimiter(20)(http.HandlerFunc(h.SendPanicAlert))).Methods(http.MethodPost)
+	if debugPushEnabled() {
+		api.HandleFunc("/debug/test-push", h.SendTestPush).Methods(http.MethodPost)
+	}
+	api.HandleFunc("/auth/refresh", h.RefreshToken).Methods(http.MethodPost)
+	api.HandleFunc("/donations/create-checkout-session", h.CreateCheckoutSession).Methods(http.MethodPost)
 
 	// Contact form — unauthenticated, rate-limited to 10 requests/minute per IP
 	// (same fixed-window limiter as /auth).
