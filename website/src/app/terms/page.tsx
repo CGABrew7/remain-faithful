@@ -40,7 +40,7 @@ export default function TermsPage() {
 
           <Section title="Donations">
             <p>
-              Donations are voluntary and non-refundable. Remain Faithful is not a registered nonprofit organization; donations are not tax-deductible. Payment processing is handled by Stripe, Inc. We do not store payment card information.
+              Donations are voluntary and non-refundable. Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Payment processing is handled by Stripe, Inc. We do not store payment card information.
             </p>
           </Section>
 
