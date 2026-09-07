@@ -141,7 +141,7 @@ export default function ChristianAccountabilityApp() {
             <div className="grid sm:grid-cols-2 gap-4 mb-6">
               {[
                 { title: 'Built-in group mode', body: 'Create a group, share an invite code, and members join when they are ready. Always-on filtering starts after each member authorizes Family Controls.' },
-                { title: 'Member-controlled visibility', body: 'Members choose whether alerts go to the whole group or the leader only. Partners receive category, timestamp, and severity — not which app.' },
+                { title: 'Member-controlled visibility', body: 'Members choose whether alerts go to the whole group or the leader only. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app.' },
                 { title: 'No cost to your church', body: 'Remain Faithful is free for churches, small groups, and ministries of any size. No organizational license required.' },
                 { title: 'Group Setup Guide', body: 'A free printable guide for ministry leaders covers covenant discussion, setup walkthrough, and first-month expectations.' },
               ].map((item) => (

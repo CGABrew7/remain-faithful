@@ -58,12 +58,12 @@ export default function GroupSetupGuidePage() {
               Remain Faithful (RF) is a free iOS app that provides peer accountability for adults committed to purity. Always-on Family Controls filtering blocks the apps and categories you choose and notifies partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods.
             </p>
             <p className="text-ink-soft leading-relaxed mb-6">
-              Always-on filtering uses Apple Family Controls. It does not see screen content. Optional Deep Scan, if started, classifies non-DRM frames on-device. No screen content is ever transmitted to anyone. Partners receive only alert metadata: category, timestamp, and severity.
+              Always-on filtering uses Apple Family Controls. It does not see screen content. Optional Deep Scan, if started, classifies non-DRM frames on-device. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.
             </p>
             <div className="grid sm:grid-cols-3 gap-4">
               {[
                 { title: 'Always Free', desc: 'No subscription, no paywalls. Sustained by voluntary donations.' },
-                { title: 'On-Device Privacy', desc: 'Screen content stays on the user\'s device. Partners see metadata only.' },
+                { title: 'On-Device Privacy', desc: 'Screenshots and raw screen content stay on the user\'s device. Partners see metadata, which may include a short system-generated summary.' },
                 { title: 'Covenant-Based', desc: 'Every partner accepts a covenant before gaining any access.' },
               ].map((item) => (
                 <div key={item.title} className="p-4 rounded-sm border border-hairline bg-paper-deep">
@@ -97,28 +97,28 @@ export default function GroupSetupGuidePage() {
               
             >
               <p className="text-sm text-ink font-semibold mb-2">What partners see when an alert fires:</p>
-              <div className="grid grid-cols-3 gap-3 mt-3">
-                {['Timestamp', 'Category (e.g., "Adult Content")', 'Severity Level'].map((item) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                {['Timestamp', 'Category (e.g., "Adult Content")', 'Severity Level', 'Short system-generated summary'].map((item) => (
                   <div key={item} className="text-center p-3 rounded-lg bg-paper border border-hairline">
                     <p className="text-xs text-ink-soft">{item}</p>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-ink-soft mt-3 text-center">That&apos;s it. Nothing else is shared.</p>
+              <p className="text-xs text-ink-soft mt-3 text-center">Screenshots, OCR text, and raw screen content are not shared.</p>
             </div>
           </GuideSection>
 
           {/* Section 3: Setting Up Your Group */}
           <GuideSection number="3" title="Setting Up Your Group (Step by Step)">
             <p className="text-ink-soft leading-relaxed mb-6">
-              The whole process takes about 15 minutes for you as the leader, and 5 minutes per member.
+              The leader creates a group; each adult authorizes Family Controls on their own iPhone. Remain Faithful is available for iPhone (iOS 17+).
             </p>
             <div className="space-y-4">
               {[
                 {
                   n: '1',
                   title: 'Download and Create Your Leader Account',
-                  desc: 'Download Remain Faithful from the App Store (iOS 17 or later required). Create an account with your name and email. Your role as group leader is set at this step.',
+                  desc: 'Create a leader account on iPhone (iOS 17+) with your name and email. Remain Faithful is available for iPhone. Your role as group leader is set at this step.',
                 },
                 {
                   n: '2',
@@ -128,7 +128,7 @@ export default function GroupSetupGuidePage() {
                 {
                   n: '3',
                   title: 'Choose Visibility Settings',
-                  desc: 'Members can share alerts with the whole group or with the leader only. Discuss with your group which setting fits your context before enabling. Partners receive category, timestamp, and severity — not which app.',
+                  desc: 'Members can share alerts with the whole group or with the leader only. Discuss with your group which setting fits your context before enabling. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app.',
                 },
                 {
                   n: '4',
@@ -161,8 +161,8 @@ export default function GroupSetupGuidePage() {
             </p>
             <div className="space-y-3 mb-6">
               {[
-                { label: 'What it does', text: 'Always-on filtering blocks chosen apps and categories and notifies the group when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners receive category, timestamp, and severity only.' },
-                { label: 'What you see', text: 'Metadata only: timestamp, content category, and severity. No screenshots. No browsing history. No screen content.' },
+                { label: 'What it does', text: 'Always-on filtering blocks chosen apps and categories and notifies the group when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.' },
+                { label: 'What you see', text: 'Alert metadata: timestamp, content category, severity, and a short system-generated summary. No screenshots. No browsing history. No raw screen content.' },
                 { label: 'The covenant', text: 'Everyone in the group, including you as leader, agrees to a covenant before gaining any access. This shapes how the group responds to alerts.' },
                 { label: 'It\'s voluntary', text: 'Monitoring can be paused or disabled at any time. Joining the group is a choice, not a requirement.' },
               ].map((item) => (
@@ -242,7 +242,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'Can I see what a member\'s screen looks like?',
-                  a: 'No. No one sees screenshots, screen recordings, or any content from another member\'s device. You see alert metadata only: timestamp, content category, and severity level.',
+                  a: 'No. No one sees screenshots, screen recordings, or raw content from another member\'s device. You see alert metadata: timestamp, content category, severity level, and a short system-generated summary.',
                 },
                 {
                   q: 'What if a member doesn\'t want to share with the whole group?',
@@ -254,7 +254,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'Is the app open source?',
-                  a: 'Yes. The iOS app, Go backend, and this website are all publicly available on GitHub. Anyone can inspect the code to verify our privacy claims.',
+                  a: 'Yes. The iOS app, Go backend, and this website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
                 },
               ].map((item, i) => (
                 <div key={i} className="p-5 rounded-sm border border-hairline bg-paper-deep">

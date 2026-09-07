@@ -169,7 +169,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 Ready to start?
               </h3>
               <p className="text-ink-soft text-sm mb-5">
-                Join the waitlist and be first to know when Remain Faithful launches.
+                Remain Faithful is available for iPhone (iOS 17+). Join the waitlist for updates and Android notify.
               </p>
               <Link
                 href="/#waitlist"

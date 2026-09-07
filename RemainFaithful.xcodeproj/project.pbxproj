@@ -140,6 +140,7 @@
 		CF100000000000000000001B /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
 		CF100000000000000000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF100000000000000000001D /* RemainFaithful.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithful.entitlements; sourceTree = "<group>"; };
+		CF100000000000000000001F /* RemainFaithful.Debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithful.Debug.entitlements; sourceTree = "<group>"; };
 		CF100000000000000000001E /* RemainFaithfulBroadcast.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulBroadcast.entitlements; sourceTree = "<group>"; };
 		CF100000000000000000002F /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		CF1000000000000000000031 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -299,6 +300,7 @@
 				CF1000000000000000000041 /* NotificationService.swift */,
 				CF100000000000000000000D /* Assets.xcassets */,
 				CF100000000000000000001D /* RemainFaithful.entitlements */,
+				CF100000000000000000001F /* RemainFaithful.Debug.entitlements */,
 				CF4000000000000000000001 /* Info.plist */,
 				CF1000000000000000000018 /* Preview Content */,
 				8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */,
@@ -895,7 +897,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.entitlements;
+				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.Debug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;

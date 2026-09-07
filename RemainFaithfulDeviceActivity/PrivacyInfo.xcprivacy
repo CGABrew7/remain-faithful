@@ -26,9 +26,11 @@
 
 	<!--
 	  App-usage threshold events: fired when monitored app sets exceed a 1-minute
-	  usage threshold. Payload contains category ("app_usage"), severity, a static
-	  summary string, and timestamp. Specific app names or bundle IDs are never
-	  transmitted — only that a monitored threshold was crossed.
+	  usage threshold. Payload contains category ("app_usage"), severity, a short
+	  system-generated summary string, and timestamp. Specific app names or bundle
+	  IDs are never transmitted — only that a monitored threshold was crossed,
+	  plus that short summary. Screenshots, OCR text, and raw screen content
+	  never leave the device.
 	-->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>

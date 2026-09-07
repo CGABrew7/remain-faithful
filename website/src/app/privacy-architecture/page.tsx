@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Privacy Architecture',
   description:
-    'A detailed technical explanation of how Remain Faithful protects your privacy through on-device AI, encrypted data flows, and open-source transparency.',
+    'How Remain Faithful protects privacy: on-device classification, no screenshots or OCR off-device, and a short system-generated summary that partners may receive with category, severity, and timestamp.',
 }
 
 const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
@@ -57,7 +57,7 @@ export default function PrivacyArchitecturePage() {
               What Always Runs — and What You Opt Into
             </h2>
             <p className="text-ink-soft max-w-2xl mx-auto">
-              The credible core is always-on. Deep Scan is optional. No screen content is ever sent off-device — only alert metadata (category, severity, and timestamp) is uploaded.
+              The credible core is always-on. Deep Scan is optional. Screenshots, OCR text, and raw screen content never leave the device. Partners may receive a short system-generated summary string in addition to category, severity, and timestamp.
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Start"
                 badgeColor="#5a5148"
                 title="Deep Scan Captures a Screen Frame (Opt-In)"
-                desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, only the alert metadata — category, severity, and timestamp — is uploaded. No static summary. Screen content, OCR text, and screenshots are never transmitted. DRM apps render as black frames."
+                desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, alert metadata is uploaded: category, severity, timestamp, and a short system-generated summary string. Screenshots, OCR text, and raw screen content are never transmitted. DRM apps render as black frames."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
@@ -158,7 +158,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Result"
                 badgeColor="#5a5148"
                 title="Discreet Alert Delivered to Partners"
-                desc="Partners receive: category label (e.g., 'Adult Content'), severity level, and timestamp. Never which app. Never a screenshot. Never your browsing history. Never raw content. The open-source code lets anyone verify exactly what is uploaded."
+                desc="Partners may receive a short system-generated summary string in addition to category, severity, and timestamp. Never which app. Never a screenshot. Never your browsing history. Never raw OCR text or screen content. The open-source code lets anyone verify exactly what is uploaded."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
                     <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
@@ -172,7 +172,7 @@ export default function PrivacyArchitecturePage() {
             className="mt-10 p-5 rounded-sm border border-wax/25 text-sm text-ink-soft text-center"
             
           >
-            Classification is fully on-device. The only data that leaves your device is alert metadata — category, severity, and timestamp. Screen content never leaves your device, ever.
+            Classification is fully on-device. What leaves your device is alert metadata — category, severity, timestamp, and a short system-generated summary. Screenshots, OCR text, and raw screen content never leave your device.
           </div>
         </div>
       </section>
@@ -203,7 +203,7 @@ export default function PrivacyArchitecturePage() {
                   ['Screenshots / screen frames', '✗ Never', '✗ Never'],
                   ['Raw screen content or text', '✗ Never', '✗ Never'],
                   ['Browsing history or URLs', '✗ Never', '✗ Never'],
-                  ['Usage category events', '✓ Encrypted metadata', '✓ Category + timestamp + severity'],
+                  ['Usage category events', '✓ Encrypted metadata', '✓ Category + timestamp + severity + short summary'],
                   ['Which specific app (bundle ID)', '✗ Never', '✗ Never'],
                   ['Passwords or financial data', '✗ Never', '✗ Never'],
                   ['Message content', '✗ Never', '✗ Never'],
@@ -211,7 +211,7 @@ export default function PrivacyArchitecturePage() {
                   ['Alert category (e.g. "Adult Content")', '✓ Encrypted metadata', '✓ Yes'],
                   ['Severity level (Low / Medium / High)', '✓ Encrypted metadata', '✓ Yes'],
                   ['Timestamp', '✓ Encrypted metadata', '✓ Yes'],
-                  ['System-generated description', '✗ Never', '✗ Never'],
+                  ['Short system-generated summary', '✓ Encrypted metadata', '✓ Yes'],
                   ['Your name and email (account info)', '✓ Encrypted at rest', '✗ No'],
                 ].map(([item, server, partners]) => (
                   <tr key={item} className="hover:bg-paper-deep/50 transition-colors">
@@ -239,7 +239,7 @@ export default function PrivacyArchitecturePage() {
           <div className="grid md:grid-cols-5 gap-3 items-center">
             {[
               { label: 'Your Device', sub: 'On-device classification; no screen content uploaded', icon: '📱' },
-              { label: 'Alert Metadata', sub: 'Category + severity only', icon: '📋', connector: true },
+              { label: 'Alert Metadata', sub: 'Category, severity, timestamp, short summary', icon: '📋', connector: true },
               { label: 'RF Server', sub: 'Encrypted at rest (AES-256)', icon: '🔐', connector: true },
               { label: 'APNs', sub: 'Apple Push (TLS 1.3)', icon: '📡', connector: true },
               { label: "Partner's Device", sub: 'Notification received', icon: '🔔', connector: true },
@@ -263,7 +263,7 @@ export default function PrivacyArchitecturePage() {
           </div>
 
           <p className="text-center text-sm text-ink-soft mt-8">
-            All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. Always-on layers and optional Deep Scan upload only alert metadata — category, severity, and timestamp — never screen content.
+            All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. Always-on layers and optional Deep Scan upload alert metadata — category, severity, timestamp, and a short system-generated summary — never screenshots, OCR text, or raw screen content.
           </p>
         </div>
       </section>
@@ -282,7 +282,7 @@ export default function PrivacyArchitecturePage() {
             {[
               {
                 threat: 'What if your servers are hacked?',
-                answer: 'We do not store screenshots or browsing content. The database contains only encrypted alert metadata (category, severity, timestamp) and account information (name, email, bcrypt-hashed password). A breach would expose metadata, not your screen content.',
+                answer: 'We do not store screenshots or browsing content. The database contains encrypted alert metadata (category, severity, timestamp, and a short system-generated summary) and account information (name, email, bcrypt-hashed password). A breach would expose that metadata, not your screen content.',
               },
               {
                 threat: 'What if data is intercepted in transit?',
@@ -290,11 +290,11 @@ export default function PrivacyArchitecturePage() {
               },
               {
                 threat: 'What if a partner is malicious?',
-                answer: 'Partners only see alert categories and timestamps — never raw content, screenshots, or browsing history. A malicious partner has nothing to expose. You can remove a partner instantly at any time.',
+                answer: 'Partners may see category, severity, timestamp, and a short system-generated summary — never raw content, screenshots, OCR text, or browsing history. A malicious partner cannot share your screen. You can remove a partner instantly at any time.',
               },
               {
                 threat: 'What if the app itself is compromised?',
-                answer: 'The entire codebase is open source and auditable by anyone. We run pre-commit secret scanning on every contribution. Anyone can read the source and confirm that classification is fully on-device and that only alert metadata — never screen content — is ever transmitted.',
+                answer: 'The entire codebase is open source and auditable by anyone. We run pre-commit secret scanning on every contribution. Anyone can read the source and confirm that classification is fully on-device and that what is transmitted is alert metadata (category, severity, timestamp, and a short system-generated summary) — never screenshots, OCR text, or raw screen content.',
               },
             ].map((t) => (
               <div key={t.threat} className="rounded-sm p-7 border border-hairline bg-paper-deep">
@@ -323,7 +323,7 @@ export default function PrivacyArchitecturePage() {
                 The entire Remain Faithful codebase — iOS app, Go backend, and this website — is publicly available on GitHub. This is not optional for an app that handles sensitive behavioral data.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                Our privacy architecture is not a policy claim. It is verifiable in the code. Anyone can confirm that classification happens entirely on-device and that only alert metadata — never screen content — is ever transmitted.
+                Our privacy architecture is not a policy claim. It is verifiable in the code. Anyone can confirm that classification happens entirely on-device and that what is transmitted is alert metadata (including a short system-generated summary) — never screenshots, OCR text, or raw screen content.
               </p>
               <p className="text-ink-soft leading-relaxed mb-6">
                 Security researchers and privacy advocates are invited to review, test, and report findings. We take responsible disclosure seriously.

@@ -42,7 +42,7 @@ This sounds intrusive. But consider: this is exactly what covenant accountabilit
 
 Here's the other failure mode: some accountability systems work too well. A partner finds out, responds poorly, and the accountability seeker feels worse than they did before. They disengage from the relationship. They disengage from the community. The accountability infrastructure that was supposed to help them becomes the source of additional trauma.
 
-We built Remain Faithful with this failure mode in mind. The covenant model requires both parties to agree upfront to respond with grace. Partners see metadata: not content, not screenshots, not a record of exactly what happened. "An alert was triggered" is enough information to open a conversation. It's not enough to enable judgment.
+We built Remain Faithful with this failure mode in mind. The covenant model requires both parties to agree upfront to respond with grace. Partners see metadata — category, severity, timestamp, and a short system-generated summary — not screenshots, not OCR text, not a record of exactly what was on screen. That is enough information to open a conversation. It's not enough to enable judgment.
 
 The alert says: "Something happened." The conversation that follows determines what happens next.
 
@@ -74,8 +74,8 @@ Getting a group up and running in Remain Faithful takes about fifteen minutes fo
 
 Don't send someone a link to an app without context. The conversation matters. Here's what to cover:
 
-- **What the app does:** Always-on filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners see category, timestamp, and severity — not which app.
-- **What partners see:** Metadata only: timestamp, category, severity. Not your screen, not your browsing history.
+- **What the app does:** Always-on filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app.
+- **What partners see:** Alert metadata: timestamp, category, severity, and a short system-generated summary. Not your screen, not your browsing history.
 - **The covenant:** Both parties commit to honesty, grace, and confidentiality. You'll see this in the app.
 - **It's voluntary:** Anyone can disable monitoring at any time. This is a choice, not a surveillance program.
 
@@ -100,7 +100,7 @@ You'll see a 6-character invite code. Screenshot it or write it down.
 
 Share the invite code however makes sense for your group: group chat, in person, email. Include these instructions:
 
-> *Download Remain Faithful from the App Store. Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose.*
+> *Remain Faithful is available for iPhone (iOS 17+). Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose.*
 
 That's it. The app walks them through the rest.
 
@@ -129,7 +129,7 @@ Plan a meeting within the first two weeks of launch. Use it to:
 False positives happen. The AI isn't perfect. If your partner gets an alert for something that wasn't what it looks like, that's a conversation, not a verdict. Talk about it.
 
 **"Can I see what my partner sees?"**
-No. The app doesn't share screen content. You see the same metadata your partners see: timestamp, category, severity.
+No. The app doesn't share screen content. You see the same metadata your partners see: timestamp, category, severity, and a short system-generated summary.
 
 **"What if I need to step away for a bit?"**
 Monitoring can be paused anytime from the Settings tab. Partners will see that monitoring is paused. That's its own form of transparency.
@@ -186,7 +186,7 @@ The credible core of Remain Faithful is always-on Family Controls filtering. Opt
 
 ## Deep Scan Uses ReplayKit (Opt-In Only)
 
-If you start a Deep Scan session, iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads only alert metadata when a frame is flagged. That metadata contains the alert category, severity level, and a timestamp — not a static description, not which app. No screen content, OCR text, or screenshots ever leave your device. Always-on filtering does not use ReplayKit and does not see screen content.
+If you start a Deep Scan session, iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads alert metadata when a frame is flagged. That metadata contains the alert category, severity level, a timestamp, and a short system-generated summary — not which app. Screenshots, OCR text, and raw screen content never leave your device. Always-on filtering does not use ReplayKit and does not see screen content.
 
 That's not a policy commitment. Anyone can verify it by reading the open-source code.
 

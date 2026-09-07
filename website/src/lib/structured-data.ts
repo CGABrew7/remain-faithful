@@ -3,7 +3,6 @@ export const organizationSchema = {
   '@type': 'Organization',
   name: 'Remain Faithful',
   url: 'https://remainfaithful.com',
-  logo: 'https://remainfaithful.com/logo.png',
   description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
   founder: {
     '@type': 'Person',
@@ -22,7 +21,7 @@ export const softwareApplicationSchema = {
   name: 'Remain Faithful',
   operatingSystem: 'iOS 17+',
   applicationCategory: 'LifestyleApplication',
-  description: 'Free peer accountability app for Christians committed to purity. Always-on Family Controls filtering with partner notify. Optional on-device Deep Scan. No screenshots ever leave your device. Partners receive category, timestamp, and severity only.',
+  description: 'Free peer accountability app for Christians committed to purity. Always-on Family Controls filtering with partner notify. Optional on-device Deep Scan. No screenshots ever leave your device. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.',
   offers: {
     '@type': 'Offer',
     price: '0',
@@ -61,7 +60,7 @@ export const homepageFaqSchema = {
       name: 'Can my accountability partners see what I was looking at?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Remain Faithful never captures or shares screenshots. Partners receive a discreet alert with a category (like "Adult Content") and severity level, never the actual content. This protects partners from being exposed to harmful material.',
+        text: 'No. Remain Faithful never captures or shares screenshots. Partners receive a discreet alert with a category (like "Adult Content"), severity, timestamp, and a short system-generated summary — never screenshots, OCR text, or raw screen content. This protects partners from being exposed to harmful material.',
       },
     },
     {
@@ -93,7 +92,7 @@ export const homepageFaqSchema = {
       name: 'How is this different from other accountability apps?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and no screen content ever leaves your device. The entire codebase is open source so anyone can verify exactly what is and is not transmitted.',
+        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
       },
     },
     {
@@ -101,7 +100,7 @@ export const homepageFaqSchema = {
       name: 'Does this work on Android?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Android support is planned for Fall 2026. Currently Remain Faithful is available for iPhone (iOS 17+). Join the waitlist to be notified when Android launches.',
+        text: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Join the waitlist to be notified about Android and updates.',
       },
     },
     {
@@ -132,7 +131,7 @@ export const howItWorksFaqSchema = {
       name: 'Who sees my data when using Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), and the severity level. They do not see which app, a bundle ID, screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
+        text: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), the severity level, and a short system-generated summary. They do not see which app, a bundle ID, screenshots, browsing history, or raw OCR text. Screenshots, OCR text, and raw screen content are never transmitted off your device.',
       },
     },
     {
@@ -140,7 +139,7 @@ export const howItWorksFaqSchema = {
       name: 'What exactly does Remain Faithful monitor?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering of chosen apps and categories, with partner notify when a blocked category is attempted. DeviceActivity monitors usage as category events, not screen content. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM screen frames. Partners receive category, timestamp, and severity only — not which app.',
+        text: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering of chosen apps and categories, with partner notify when a blocked category is attempted. DeviceActivity monitors usage as category events, not screen content. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM screen frames. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app, screenshots, OCR text, or raw content.',
       },
     },
     {
