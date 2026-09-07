@@ -9,8 +9,8 @@ import (
 	"log"
 	"net/http"
 
-	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/apns"
+	rfauth "remain-faithful/backend/internal/auth"
 )
 
 // RegisterDeviceToken upserts an APNs device token for the authenticated user.
@@ -59,6 +59,7 @@ func (h *H) RegisterDeviceToken(w http.ResponseWriter, r *http.Request) {
 
 // SendTestPush sends a test push notification to all active tokens of the
 // authenticated user. Used to verify APNs configuration end-to-end.
+// Registered only when APP_ENV is not "production" (see debugPushEnabled).
 // POST /debug/test-push
 func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
@@ -132,7 +133,6 @@ func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 		"results":         results,
 	})
 }
-
 
 // SendPanicAlert sends a time-sensitive push notification to the caller's
 // designated primary partner (or most recently added accepted partner as a

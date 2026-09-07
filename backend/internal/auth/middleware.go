@@ -33,6 +33,11 @@ func Middleware(next http.Handler) http.Handler {
 	})
 }
 
+// ContextWithUser injects userID the same way Middleware does. Used by tests.
+func ContextWithUser(ctx context.Context, userID int64) context.Context {
+	return context.WithValue(ctx, ctxUserID, userID)
+}
+
 // UserIDFromContext extracts the authenticated user's ID injected by Middleware.
 func UserIDFromContext(ctx context.Context) (int64, bool) {
 	id, ok := ctx.Value(ctxUserID).(int64)

@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/apns"
+	rfauth "remain-faithful/backend/internal/auth"
 
-	"golang.org/x/crypto/bcrypt"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Per-user rate-limit state for POST /protection/pin/verify.
@@ -46,6 +46,29 @@ func init() {
 			pinMu.Unlock()
 		}
 	}()
+}
+
+// allowedProtectionAlertTypes are type strings already used by the iOS app or
+// existing backend code. Unknown types are rejected so a captured token cannot
+// spam partners with arbitrary push copy. Do not add types that are not
+// already sent by a client or generated server-side.
+var allowedProtectionAlertTypes = map[string]struct{}{
+	"monitoring_disabled":       {}, // SettingsView
+	"shielding_disabled":        {}, // ActivitySelectionManager
+	"lockout_disabled":          {}, // SettingsView
+	"lockout_broadcast_stopped": {}, // protectionAlertBody (legacy name)
+	"deep_scan_stopped":         {}, // AppLockoutManager, broadcast SampleHandler
+	"pin_wrong_attempt":         {}, // protectionAlertBody (legacy name)
+	"wrong_pin_attempt":         {}, // PartnerPINManager
+	"pin_removed":               {}, // SettingsView
+	"pin_changed":               {}, // PINEntryView
+	"family_controls_revoked":   {}, // RemainFaithfulApp
+	"heartbeat_silence":         {}, // heartbeat_sweep
+}
+
+func isAllowedProtectionAlertType(t string) bool {
+	_, ok := allowedProtectionAlertTypes[t]
+	return ok
 }
 
 // pinVerifyRateLimit returns true (denied) when userID has exceeded 5 attempts
@@ -80,6 +103,10 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Type == "" {
 		writeError(w, http.StatusBadRequest, "type is required")
+		return
+	}
+	if !isAllowedProtectionAlertType(req.Type) {
+		writeError(w, http.StatusBadRequest, "unknown protection alert type")
 		return
 	}
 
