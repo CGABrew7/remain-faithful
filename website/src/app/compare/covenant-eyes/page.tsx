@@ -87,7 +87,7 @@ export default function CovenantEyesCompare() {
                     ['Annual cost', '$0', '$198/yr (up to 10 members on one account)'],
                     ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac, Chromebook'],
                     ['Monitoring approach', 'On-device AI classification', 'Screen capture + cloud AI analysis'],
-                    ['Screenshots shared with partners?', 'Never. Category + severity only.', 'Yes. Screenshots sent to partner.'],
+                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Yes. Screenshots sent to partner.'],
                     ['Where AI runs', 'Entirely on your device', 'Cloud servers'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Ally-based reports'],
@@ -132,8 +132,8 @@ export default function CovenantEyesCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Price', body: 'Remain Faithful is free. Covenant Eyes publicly lists $18/month or $198/year for an account (up to 10 members) — not a per-user fee, and not multiplied by household size. There is no version of Covenant Eyes that is free; Remain Faithful is free without limitations. Verify current pricing on their site.' },
-                { title: 'Privacy: no screenshots ever leave your device', body: 'Covenant Eyes sends screenshots of your screen to cloud servers for AI analysis. Remain Faithful does all classification on your device using Apple\'s Neural Engine. No screen content, no screenshots, and no OCR text is ever transmitted. Your screen stays on your phone.' },
-                { title: 'Partner protection', body: 'Covenant Eyes partners receive actual screenshots of flagged content, which means partners are exposed to the harmful material. Remain Faithful partners receive only a category label and severity level. Partners never see the content that triggered the alert.' },
+                { title: 'Privacy: no screenshots ever leave your device', body: 'Covenant Eyes sends screenshots of your screen to cloud servers for AI analysis. Remain Faithful does all classification on your device using Apple\'s Neural Engine. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. Your screen stays on your phone.' },
+                { title: 'Partner protection', body: 'Covenant Eyes partners receive actual screenshots of flagged content, which means partners are exposed to the harmful material. Remain Faithful partners may receive a short system-generated summary in addition to category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content.' },
                 { title: 'Open source transparency', body: 'Anyone can read every line of Remain Faithful\'s code on GitHub and verify exactly what is and is not transmitted. Covenant Eyes is proprietary. For an app handling sensitive behavioral data, open source is a meaningful trust advantage.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds accountability in a biblical understanding of relationship rather than a surveillance model. Partners agree to respond with grace before they gain any access. This shapes how alerts are received and processed.' },
               ].map((item) => (

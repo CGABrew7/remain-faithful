@@ -101,7 +101,7 @@ export default function AboutPage() {
                 We wanted something that creates automatic, consistent signals, so that disclosure isn&apos;t a choice a struggling person has to summon the courage to make in their worst moment, while still preserving dignity and privacy.
               </p>
               <p className="text-ink-soft leading-relaxed">
-                The on-device AI model was the key insight. Your screen content never leaves your device. Partners see metadata, not surveillance. That changes everything about what&apos;s possible in this space.
+                The on-device AI model was the key insight. Screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary with category, severity, and timestamp — not surveillance. That changes everything about what&apos;s possible in this space.
               </p>
             </div>
             <div>
@@ -197,10 +197,10 @@ export default function AboutPage() {
             <div className="rounded-sm p-6 border border-hairline bg-paper-deep">
               <p className="text-xs text-wax font-semibold uppercase tracking-widest mb-3">How it actually works</p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                Always-on filtering uses Apple Family Controls in the adult self-monitor (.individual) authorization. You choose apps and categories to block. Partners are notified when a blocked category is attempted — category, severity, and timestamp only.
+                Always-on filtering uses Apple Family Controls in the adult self-monitor (.individual) authorization. You choose apps and categories to block. Partners are notified when a blocked category is attempted — they may receive a short system-generated summary in addition to category, severity, and timestamp.
               </p>
               <p className="text-ink-soft leading-relaxed">
-                Optional Deep Scan can classify non-DRM screen frames on-device. It cannot see DRM-protected video. No screen content leaves the device. We do not show a fake code path here; the public repo is the source of truth.
+                Optional Deep Scan can classify non-DRM screen frames on-device. It cannot see DRM-protected video. Screenshots, OCR text, and raw screen content do not leave the device; partners may receive a short system-generated summary. We do not show a fake code path here; the public repo is the source of truth.
               </p>
             </div>
           </div>

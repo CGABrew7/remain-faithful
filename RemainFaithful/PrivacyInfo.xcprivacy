@@ -77,9 +77,11 @@
 		</dict>
 
 		<!--
-		  Monitoring events: category (e.g. "adult_content"), severity, and a
-		  short summary string are sent to the user's chosen accountability partners.
-		  Raw screen content is NEVER transmitted; only structured metadata is shared.
+		  Monitoring events: category (e.g. "adult_content"), severity, timestamp,
+		  and a short system-generated summary string are sent to the user's chosen
+		  accountability partners. Screenshots, OCR text, and raw screen content are
+		  NEVER transmitted; only structured metadata (including that short summary)
+		  is shared.
 		-->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>

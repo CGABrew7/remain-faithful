@@ -26,8 +26,10 @@
 
 	<!--
 	  The broadcast extension generates and uploads content-detection events
-	  (category, severity, static summary, timestamp) linked to the user's account.
-	  Raw screen content is never transmitted — only structured metadata.
+	  (category, severity, a short system-generated summary, timestamp) linked
+	  to the user's account. Screenshots, OCR text, and raw screen content are
+	  never transmitted — only structured metadata, which may include that
+	  short summary.
 	-->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>

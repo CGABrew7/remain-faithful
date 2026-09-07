@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How Remain Faithful collects, uses, and protects your data. Your screen content stays on your device.',
+  description: 'How Remain Faithful collects, uses, and protects your data. Screenshots, OCR text, and raw screen content stay on your device. Partners may receive a short system-generated summary.',
 }
 
 export default function PrivacyPage() {
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         <div className="mb-12">
           <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
           <h1 className="font-serif text-4xl font-bold text-ink mb-4">Privacy Policy</h1>
-          <p className="text-ink-soft text-sm">Last updated: August 2026</p>
+          <p className="text-ink-soft text-sm">Last updated: September 2026</p>
         </div>
 
         <div className="prose-content space-y-12">
@@ -51,9 +51,10 @@ export default function PrivacyPage() {
                 <li>Timestamp of the alert</li>
                 <li>Content category (e.g., &quot;Adult Content&quot;, &quot;Explicit Text&quot;)</li>
                 <li>Severity level (Low / Medium / High)</li>
+                <li>A short system-generated summary string</li>
               </ul>
               <p>
-                <strong className="text-ink">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, app content, or any representation of what was on your screen.
+                <strong className="text-ink">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, or raw screen content. Partner sharing does not include those items beyond the short summary above.
               </p>
             </Subsection>
 
@@ -81,7 +82,7 @@ export default function PrivacyPage() {
               <li>Any visual content from your screen</li>
             </ul>
             <p>
-              When Deep Scan flags a non-DRM frame, only alert metadata — category, severity, and timestamp — is uploaded. No static summary. No system-generated description. It never transmits screen content, OCR text, screenshots, or any visual representation of what was on screen. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.
+              When Deep Scan flags a non-DRM frame, alert metadata is uploaded: category, severity, timestamp, and a short system-generated summary string. Screenshots, OCR text, and raw screen content never leave the device. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.
             </p>
           </Section>
 
@@ -89,7 +90,7 @@ export default function PrivacyPage() {
             <p>Your accountability partners have access to:</p>
             <ul>
               <li>Your display name and account email (as provided by you when you initiated the partnership)</li>
-              <li>Alert metadata as described above: timestamp, category, and severity level — not which app, and not a bundle ID</li>
+              <li>Alert metadata as described above: timestamp, category, severity level, and a short system-generated summary — not which app, and not a bundle ID</li>
               <li>Your streak count (aggregate, not individual events)</li>
             </ul>
             <p>Partners do not have access to your screen content, browsing history, or any data beyond alert metadata and account-level statistics you have explicitly made visible.</p>

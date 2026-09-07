@@ -86,7 +86,7 @@ export default function EverAccountableCompare() {
                     ['Price', 'Free forever', '$129/year'],
                     ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac'],
                     ['Monitoring approach', 'On-device AI classification', 'On-device AI classification'],
-                    ['Screenshots shared with partners?', 'Never. Category + severity only.', 'Partners see screenshot reports'],
+                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Partners see screenshot reports'],
                     ['Where AI runs', 'Entirely on your device', 'On-device'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Partner-based report sharing'],
@@ -128,8 +128,8 @@ export default function EverAccountableCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Price', body: 'Remain Faithful is completely free. Ever Accountable publicly lists $129 per year for one reporting user. For ministries deploying accountability tools to dozens of people, free is a significant difference. Verify current pricing on their site.' },
-                { title: 'Open source transparency', body: 'Remain Faithful is fully open source. Anyone can read the code and verify that screen content is never transmitted. Ever Accountable is proprietary. Both say they protect your privacy; only one lets you verify it.' },
-                { title: 'Partner protection', body: 'Ever Accountable shares screenshot reports with accountability partners, exposing them to the content that was flagged. Remain Faithful partners receive only a category and severity label. Partners never see the material that triggered the alert.' },
+                { title: 'Open source transparency', body: 'Remain Faithful is fully open source. Anyone can read the code and verify that screenshots, OCR text, and raw screen content are never transmitted, and that partners may receive a short system-generated summary. Ever Accountable is proprietary. Both say they protect your privacy; only one lets you verify it.' },
+                { title: 'Partner protection', body: 'Ever Accountable shares screenshot reports with accountability partners, exposing them to the content that was flagged. Remain Faithful partners may receive a short system-generated summary in addition to a category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds Remain Faithful\'s accountability in a theological understanding of relationship. Partners agree to respond with grace before gaining access. This is designed to shape how alerts are received.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-wax/25 bg-paper-deep">

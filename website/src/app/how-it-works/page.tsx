@@ -7,7 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
   title: 'How Remain Faithful Works: Always-On Filtering for iPhone',
-  description: 'Always-on Family Controls filtering, DeviceActivity usage monitoring, time-window shielding, and optional Deep Scan. Partners receive category, timestamp, and severity — never screen content.',
+  description: 'Always-on Family Controls filtering, DeviceActivity usage monitoring, time-window shielding, and optional Deep Scan. Partners may receive a short system-generated summary plus category, timestamp, and severity — never screenshots or raw screen content.',
   alternates: { canonical: 'https://remainfaithful.com/how-it-works' },
 }
 
@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: 'Who sees my data?',
-    a: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), and the severity level. They do not see which app, a bundle ID, screenshots, browsing history, app content, or raw OCR text. None of that data is ever transmitted off your device.',
+    a: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), the severity level, and a short system-generated summary. They do not see which app, a bundle ID, screenshots, browsing history, or raw OCR text. Screenshots, OCR text, and raw screen content are never transmitted off your device.',
   },
   {
     q: 'Can I be anonymous?',
@@ -26,7 +26,7 @@ const faqs = [
   },
   {
     q: 'What exactly gets monitored?',
-    a: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering: you choose apps and categories to block, they stay blocked through lock and reboot, and partners are notified when a blocked category is attempted. DeviceActivity monitors usage as category events — not screen content and not which specific app. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM frames. Deep Scan cannot see DRM-protected video or banking apps — Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM, not a Remain Faithful bug. Partners receive category, timestamp, and severity only.',
+    a: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering: you choose apps and categories to block, they stay blocked through lock and reboot, and partners are notified when a blocked category is attempted. DeviceActivity monitors usage as category events — not screen content and not which specific app. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM frames. Deep Scan cannot see DRM-protected video or banking apps — Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM, not a Remain Faithful bug. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.',
   },
   {
     q: 'How do I leave a group?',
@@ -38,7 +38,7 @@ const faqs = [
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'The broadcast extension is part of opt-in Deep Scan only. iOS ReplayKit allows a sandboxed extension to capture screen frames from non-DRM apps. The extension runs AI analysis entirely on-device and, when something is flagged, uploads only alert metadata (category, severity, and timestamp) — never the screen frame itself. Screen content, OCR text, and screenshots are never transmitted. Always-on filtering, usage monitoring, and time-window shielding use Apple\'s Family Controls and DeviceActivity frameworks — they do not use a broadcast extension and they do not see screen content.',
+    a: 'The broadcast extension is part of opt-in Deep Scan only. iOS ReplayKit allows a sandboxed extension to capture screen frames from non-DRM apps. The extension runs AI analysis entirely on-device and, when something is flagged, uploads alert metadata (category, severity, timestamp, and a short system-generated summary) — never the screen frame itself. Screenshots, OCR text, and raw screen content are never transmitted. Always-on filtering, usage monitoring, and time-window shielding use Apple\'s Family Controls and DeviceActivity frameworks — they do not use a broadcast extension and they do not see screen content.',
   },
 ]
 
@@ -165,7 +165,7 @@ export default function HowItWorksPage() {
               {
                 step: '2',
                 title: 'Partners Are Notified on a Blocked Attempt',
-                body: 'When a blocked category is attempted, an alert is created. Partners receive category, timestamp, and severity — not which app, not a bundle ID, and never screen content.',
+                body: 'When a blocked category is attempted, an alert is created. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app, not a bundle ID, and never screenshots or raw screen content.',
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
@@ -193,7 +193,7 @@ export default function HowItWorksPage() {
               <div>
                 <h3 className="font-semibold text-ink mb-1">Category Events, Not Screen Content</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">
-                  DeviceActivity watches usage as category-level events in the background. It does not capture screen frames, page content, or which specific app was opened. Partners still receive only category, timestamp, and severity.
+                  DeviceActivity watches usage as category-level events in the background. It does not capture screen frames, page content, or which specific app was opened. Partners may still receive a short system-generated summary in addition to category, timestamp, and severity.
                 </p>
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function HowItWorksPage() {
               <div>
                 <h3 className="font-semibold text-ink mb-1">Alert Delivered to Partners</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">
-                  When a layer flags something, you receive a notification first. Then a push notification goes to each partner containing only: the alert category, severity level, and timestamp. Partners do not receive which app, a bundle ID, or a system-generated description. No screenshots. No raw content. Ever.
+                  When a layer flags something, you receive a notification first. Then a push notification goes to each partner with the alert category, severity level, timestamp, and a short system-generated summary. Partners do not receive which app, a bundle ID, screenshots, OCR text, or raw screen content.
                 </p>
               </div>
             </div>

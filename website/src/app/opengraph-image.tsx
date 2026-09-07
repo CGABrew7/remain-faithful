@@ -60,7 +60,7 @@ export default async function Image() {
               maxWidth: 720,
             }}
           >
-            Free peer accountability. Always-on filtering. No screen content ever leaves your device.
+            Free peer accountability. Always-on filtering. Screenshots and raw content stay on your device.
           </div>
           <div
             style={{
