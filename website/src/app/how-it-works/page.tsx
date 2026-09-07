@@ -327,7 +327,7 @@ export default function HowItWorksPage() {
       <section className="py-16 border-t border-hairline">
         <div className="max-w-xl mx-auto px-4 text-center">
           <h2 className="font-serif text-2xl font-bold text-ink mb-4">Ready to start?</h2>
-          <p className="text-ink-soft mb-8">Join the waitlist and be among the first to use Remain Faithful when it launches.</p>
+          <p className="text-ink-soft mb-8">Remain Faithful is available for iPhone (iOS 17+). Join the waitlist for updates and Android notify.</p>
           <a
             href="/#waitlist"
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"

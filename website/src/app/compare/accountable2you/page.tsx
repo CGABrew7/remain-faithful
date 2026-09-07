@@ -28,7 +28,7 @@ const pageFaqSchema = {
       name: 'Can I switch from Accountable2You to Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'When Remain Faithful launches, you can cancel Accountable2You, remove the VPN profile from your device, and join from the waitlist. Remain Faithful is coming soon for iPhone (iOS 17+) only; if your partners use Android or Windows, Accountable2You has broader platform support.',
+        text: 'Yes. Cancel Accountable2You, remove the VPN profile from your device, and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is available for iPhone only; if your partners use Android or Windows, Accountable2You has broader platform support.',
       },
     },
     {
@@ -84,7 +84,7 @@ export default function Accountable2YouCompare() {
                 <tbody>
                   {[
                     ['Price', 'Free forever', '$121/year Personal'],
-                    ['Platform', 'iOS 17+ coming soon (Android planned)', 'iOS, Android, Windows, Mac, Kindle'],
+                    ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac, Kindle'],
                     ['Monitoring technology', 'Family Controls + optional on-device AI', 'VPN-based traffic monitoring'],
                     ['Web page title logging', 'No. Category only.', 'Yes. Specific page titles logged.'],
                     ['Battery impact', 'Minimal', 'Higher (VPN runs continuously)'],
@@ -114,7 +114,7 @@ export default function Accountable2YouCompare() {
               {[
                 { title: 'Cross-platform coverage', body: 'Accountable2You runs on iOS, Android, Windows, Mac, and Kindle. Remain Faithful is currently iOS only. For families with mixed devices, A2Y provides unified coverage across all of them.' },
                 { title: 'Detailed web activity reporting', body: 'Accountable2You logs specific web page titles and generates detailed activity reports. If your accountability partner or pastor wants more granular visibility into browsing behavior, A2Y provides more detail than Remain Faithful\'s category-level alerts.' },
-                { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is in pre-launch and has not shipped yet. For users who want a proven, stable product, A2Y has an advantage in maturity.' },
+                { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is newer and available for iPhone (iOS 17+). For users who want a longer track record, A2Y has an advantage in maturity.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
                   <h3 className="font-semibold text-ink mb-2">{item.title}</h3>
@@ -189,7 +189,7 @@ export default function Accountable2YouCompare() {
             <div className="space-y-4">
               {[
                 { q: 'Does Accountable2You drain the battery?', a: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, which has minimal battery impact.' },
-                { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'When Remain Faithful launches, you can cancel Accountable2You, remove the VPN profile from your device, and join from the waitlist. Remain Faithful is coming soon for iPhone (iOS 17+) only; if your partners use Android or Windows, Accountable2You has broader platform support.' },
+                { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'Yes. Cancel Accountable2You, remove the VPN profile from your device, and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is available for iPhone only; if your partners use Android or Windows, Accountable2You has broader platform support.' },
                 { q: 'Does Remain Faithful log specific web page titles like Accountable2You?', a: 'No. Remain Faithful does not log or transmit web page titles or browsing history. Partners receive only a category label and severity level when something is flagged. Accountable2You logs specific page titles in its reports, which can expose more detail than some users want their partners to see.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">

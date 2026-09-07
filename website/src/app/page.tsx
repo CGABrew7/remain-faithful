@@ -52,7 +52,7 @@ const faqs = [
   },
   {
     q: 'Does this work on Android?',
-    a: 'Android support is planned, with no launch date. Remain Faithful is coming soon for iPhone (iOS 17+). Join the waitlist to be notified.',
+    a: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Join the waitlist to be notified about Android and updates.',
   },
 ]
 
@@ -68,7 +68,7 @@ export default function HomePage() {
 
       <LetterAtmosphere>
         <header className="relative flex items-start justify-between gap-4 mb-8">
-          <p className="kicker">Fort Wayne · Pre-launch · iPhone</p>
+          <p className="kicker">Fort Wayne · iPhone (iOS 17+)</p>
           <span className="wax-seal inline-flex items-center justify-center shrink-0" aria-hidden="true">
             <svg width="14" height="16" viewBox="0 0 32 36" fill="none">
               <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="currentColor" />
@@ -112,12 +112,12 @@ export default function HomePage() {
       </LetterAtmosphere>
 
       <section id="waitlist" className="page-section">
-        <p className="kicker mb-4">Coming soon</p>
+        <p className="kicker mb-4">Updates</p>
         <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-4">
           Write your name down.
         </h2>
         <p className="text-ink-soft text-lg leading-relaxed mb-8 max-w-[40ch]">
-          Enter your email and we&apos;ll notify you the moment Remain Faithful is available.
+          Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.
         </p>
         <WaitlistForm variant="default" buttonText="Join the Waitlist" />
       </section>
@@ -279,7 +279,7 @@ export default function HomePage() {
           </div>
         </div>
         <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-ink-faint mt-6">
-          Android is planned. Join the waitlist to be notified.
+          Available for iPhone (iOS 17+). Android is planned — join the waitlist to be notified.
         </p>
       </section>
 

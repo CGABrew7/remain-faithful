@@ -411,7 +411,7 @@ export default function PartnersPage() {
           </div>
           <div className="space-y-4">
             {[
-              { n: '1', title: 'Create Your Leader Account', desc: 'After launch, create a leader account on iPhone (iOS 17+). Remain Faithful is in pre-launch — join the waitlist to be notified. Your role as group leader is established at this step.' },
+              { n: '1', title: 'Create Your Leader Account', desc: 'Create a leader account on iPhone (iOS 17+). Remain Faithful is available for iPhone. Your role as group leader is established at this step.' },
               { n: '2', title: 'Create a Group', desc: 'Tap Group tab → New Group. Give it a name (e.g., "Tuesday Accountability Group"), set your covenant expectations, and choose your leader visibility settings.' },
               { n: '3', title: 'Share the Invite Code', desc: 'Your group generates a 6-character invite code. Share it in your group chat, bulletin, or Sunday handout. Members join with that code.' },
               { n: '4', title: 'Members Enable Filtering', desc: 'Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. Deep Scan is optional and, if used later, asks for screen broadcast permission separately.' },
@@ -454,7 +454,7 @@ export default function PartnersPage() {
               Join the Church Waitlist
             </h2>
             <p className="text-ink-soft">
-              Remain Faithful is in pre-launch. Join the waitlist and we will notify you when the app is ready for churches and ministries.
+              Remain Faithful is available for iPhone (iOS 17+). Join the church waitlist for ministry updates and group-setup notify.
             </p>
           </div>
           <PilotForm />

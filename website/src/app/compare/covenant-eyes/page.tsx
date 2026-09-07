@@ -28,7 +28,7 @@ const pageFaqSchema = {
       name: 'Can I switch from Covenant Eyes to Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'When Remain Faithful launches, you can cancel Covenant Eyes, join from the waitlist, and invite your partners. Remain Faithful is coming soon for iPhone (iOS 17+) only; if your partners use Android, Windows, or Mac, Covenant Eyes may be the better fit for now.',
+        text: 'Yes. Cancel Covenant Eyes and set up Remain Faithful on iPhone (iOS 17+), then invite your partners. Remain Faithful is available for iPhone only; if your partners use Android, Windows, or Mac, Covenant Eyes may be the better fit for now.',
       },
     },
     {
@@ -36,7 +36,7 @@ const pageFaqSchema = {
       name: 'Does Remain Faithful work on the same devices as Covenant Eyes?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Covenant Eyes supports iOS, Android, Windows, Mac, and Chromebook. Remain Faithful is coming soon for iPhone (iOS 17+). Android is planned, with no launch date. If you need multi-platform coverage today, Covenant Eyes has the advantage.',
+        text: 'No. Covenant Eyes supports iOS, Android, Windows, Mac, and Chromebook. Remain Faithful is available for iPhone (iOS 17+). Android is planned, with no launch date. If you need multi-platform coverage today, Covenant Eyes has the advantage.',
       },
     },
   ],
@@ -85,7 +85,7 @@ export default function CovenantEyesCompare() {
                   {[
                     ['Price', 'Free forever', '$18/mo or $198/yr (account, not per-user)'],
                     ['Annual cost', '$0', '$198/yr (up to 10 members on one account)'],
-                    ['Platform', 'iOS 17+ coming soon (Android planned)', 'iOS, Android, Windows, Mac, Chromebook'],
+                    ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac, Chromebook'],
                     ['Monitoring approach', 'On-device AI classification', 'Screen capture + cloud AI analysis'],
                     ['Screenshots shared with partners?', 'Never. Category + severity only.', 'Yes. Screenshots sent to partner.'],
                     ['Where AI runs', 'Entirely on your device', 'Cloud servers'],
@@ -95,7 +95,7 @@ export default function CovenantEyesCompare() {
                     ['Content blocking', 'Yes, always-on Family Controls (adult self-monitor)', 'Yes, customizable filtering'],
                     ['DRM streaming monitoring', 'No (iOS limitation)', 'No (iOS limitation)'],
                     ['Established since', '2026', '2000'],
-                    ['User base', 'Pre-launch (waitlist)', '1.5M+ users (verify on provider site)'],
+                    ['User base', 'Available for iPhone (iOS 17+)', '1.5M+ users (verify on provider site)'],
                   ].map(([feature, rf, ce], i) => (
                     <tr key={i} className={`border-b border-hairline ${i % 2 === 0 ? 'bg-paper-deep' : 'bg-paper'}`}>
                       <td className="p-4 text-ink-soft font-medium">{feature}</td>
@@ -114,7 +114,7 @@ export default function CovenantEyesCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Platform coverage', body: 'Covenant Eyes supports 5 platforms: iOS, Android, Windows, Mac, and Chromebook. Remain Faithful is iOS only right now. If you or your partners use non-Apple devices, CE has the clear advantage.' },
-                { title: 'Track record', body: 'Covenant Eyes has been in operation since 2000 and publicly cites a large user base (verify the current figure on their site). That is 25 years of proven history. Remain Faithful is in pre-launch and has not shipped yet. Maturity matters for trust.' },
+                { title: 'Track record', body: 'Covenant Eyes has been in operation since 2000 and publicly cites a large user base (verify the current figure on their site). That is 25 years of proven history. Remain Faithful is newer and available for iPhone (iOS 17+). Maturity matters for trust.' },
                 { title: 'Content filtering', body: 'Covenant Eyes offers robust website and app blocking with granular category controls. Remain Faithful uses Apple Family Controls in the adult self-monitor (.individual) authorization to block chosen apps and categories. CE has a more mature filtering system overall.' },
                 { title: 'Enterprise and church administration', body: 'Covenant Eyes has mature organizational management tools designed for large-scale church or ministry deployments. For denominations or large organizations with IT requirements, CE has purpose-built infrastructure.' },
               ].map((item) => (
@@ -191,8 +191,8 @@ export default function CovenantEyesCompare() {
             <div className="space-y-4">
               {[
                 { q: 'Is Remain Faithful as effective as Covenant Eyes?', a: 'Remain Faithful and Covenant Eyes take different approaches. Covenant Eyes has 25 years of proven history and broad multi-platform coverage. Remain Faithful is newer but introduces on-device AI that keeps screen content entirely private, a covenant-based accountability model, and costs nothing. Effectiveness depends on what your situation requires.' },
-                { q: 'Can I switch from Covenant Eyes to Remain Faithful?', a: 'When Remain Faithful launches, you can cancel Covenant Eyes, join from the waitlist, and invite your partners. Remain Faithful is coming soon for iPhone (iOS 17+) only; if your partners use Android, Windows, or Mac, Covenant Eyes may be the better fit for now.' },
-                { q: 'Does Remain Faithful work on the same devices as Covenant Eyes?', a: 'No. Covenant Eyes supports iOS, Android, Windows, Mac, and Chromebook. Remain Faithful is coming soon for iPhone (iOS 17+). Android is planned, with no launch date. If you need multi-platform coverage today, Covenant Eyes has the advantage.' },
+                { q: 'Can I switch from Covenant Eyes to Remain Faithful?', a: 'Yes. Cancel Covenant Eyes and set up Remain Faithful on iPhone (iOS 17+), then invite your partners. Remain Faithful is available for iPhone only; if your partners use Android, Windows, or Mac, Covenant Eyes may be the better fit for now.' },
+                { q: 'Does Remain Faithful work on the same devices as Covenant Eyes?', a: 'No. Covenant Eyes supports iOS, Android, Windows, Mac, and Chromebook. Remain Faithful is available for iPhone (iOS 17+). Android is planned, with no launch date. If you need multi-platform coverage today, Covenant Eyes has the advantage.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
                   <h3 className="font-semibold text-ink mb-3">{faq.q}</h3>

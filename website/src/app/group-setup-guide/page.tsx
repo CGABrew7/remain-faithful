@@ -111,14 +111,14 @@ export default function GroupSetupGuidePage() {
           {/* Section 3: Setting Up Your Group */}
           <GuideSection number="3" title="Setting Up Your Group (Step by Step)">
             <p className="text-ink-soft leading-relaxed mb-6">
-              The leader creates a group; each adult authorizes Family Controls on their own iPhone. Remain Faithful is in pre-launch — join the waitlist to be notified.
+              The leader creates a group; each adult authorizes Family Controls on their own iPhone. Remain Faithful is available for iPhone (iOS 17+).
             </p>
             <div className="space-y-4">
               {[
                 {
                   n: '1',
                   title: 'Download and Create Your Leader Account',
-                  desc: 'After launch, create a leader account on iPhone (iOS 17+) with your name and email. Remain Faithful is in pre-launch — join the waitlist to be notified. Your role as group leader is set at this step.',
+                  desc: 'Create a leader account on iPhone (iOS 17+) with your name and email. Remain Faithful is available for iPhone. Your role as group leader is set at this step.',
                 },
                 {
                   n: '2',
