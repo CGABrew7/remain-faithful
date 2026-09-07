@@ -212,7 +212,7 @@ func protectionAlertBody(name, alertType, _ string) string {
 	case "pin_changed":
 		return name + "'s protection PIN was changed"
 	case "family_controls_revoked":
-		return name + " revoked Screen Time authorization"
+		return name + " revoked Family Controls authorization"
 	case "heartbeat_silence":
 		return name + "'s device has stopped sending heartbeats"
 	default:

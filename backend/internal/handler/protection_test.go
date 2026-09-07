@@ -66,7 +66,7 @@ func TestProtectionAlertBodyKnownTypesIgnoreDetail(t *testing.T) {
 		{"lockout_disabled", "Alex disabled App Lockout"},
 		{"pin_removed", "Alex's protection PIN was removed"},
 		{"pin_changed", "Alex's protection PIN was changed"},
-		{"family_controls_revoked", "Alex revoked Screen Time authorization"},
+		{"family_controls_revoked", "Alex revoked Family Controls authorization"},
 		{"heartbeat_silence", "Alex's device has stopped sending heartbeats"},
 	}
 
