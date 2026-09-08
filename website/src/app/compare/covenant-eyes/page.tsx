@@ -154,7 +154,7 @@ export default function CovenantEyesCompare() {
                   {[
                     'Need Windows, Mac, or Android coverage today',
                     'Organizations with mature IT admin requirements',
-                    'Families who want a proven 25-year track record',
+                    'Users who want multi-platform coverage and a proven 25-year track record',
                     'Users whose partners prefer to see screenshots',
                     'Large ministries needing enterprise management',
                   ].map((item) => (

@@ -112,7 +112,7 @@ export default function Accountable2YouCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Accountable2You Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Cross-platform coverage', body: 'Accountable2You runs on iOS, Android, Windows, Mac, and Kindle. Remain Faithful is currently iOS only. For families with mixed devices, A2Y provides unified coverage across all of them.' },
+                { title: 'Cross-platform coverage', body: 'Accountable2You runs on iOS, Android, Windows, Mac, and Kindle. Remain Faithful is currently iOS only. For people with mixed devices, A2Y provides unified coverage across all of them.' },
                 { title: 'Detailed web activity reporting', body: 'Accountable2You logs specific web page titles and generates detailed activity reports. If your accountability partner or pastor wants more granular visibility into browsing behavior, A2Y provides more detail than Remain Faithful\'s category-level alerts.' },
                 { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is newer and available for iPhone (iOS 17+). For users who want a longer track record, A2Y has an advantage in maturity.' },
               ].map((item) => (
