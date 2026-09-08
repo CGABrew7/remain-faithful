@@ -6,10 +6,77 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 
-	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/apns"
+	rfauth "remain-faithful/backend/internal/auth"
 )
+
+// maxEventSummaryLen bounds partner-facing summary text. Honest iOS strings
+// are well under this; a modified client cannot push a novel essay.
+const maxEventSummaryLen = 120
+
+// allowedEventSummaries are the fixed strings honest iOS clients emit:
+// SampleHandler.buildSummary, hardcoded Deep Scan matches, DeviceActivity
+// summarize(), and the ActivitySelectionManager drain fallback.
+var allowedEventSummaries = map[string]struct{}{
+	"Explicit content detected":                       {},
+	"Gambling content detected":                       {},
+	"Violent content detected":                        {},
+	"Self-harm content detected":                      {},
+	"Content reviewed — no concerns":                  {},
+	"Explicit image detected (perceptual hash match)": {},
+	"Blocked domain detected":                         {},
+	"Explicit keyword detected in screen text":        {},
+	"Monitored app used for 1+ minute":                {},
+	"Monitored app category used for 1+ minute":       {},
+	"Monitored app activity detected":                 {},
+	"App activity detected":                           {},
+}
+
+// continuedActivitySummary matches SampleHandler.continuedActivitySummary:
+// "<base> — detected N time(s) in 5 min"
+var continuedActivitySummary = regexp.MustCompile(
+	`^(Explicit content|Gambling content|Violent content|Self-harm content|Activity) — detected [1-9][0-9]{0,3} times? in 5 min$`,
+)
+
+var validEventCategories = map[string]bool{
+	"adult_content": true, "gambling": true,
+	"violence": true, "self_harm": true, "clean": true,
+	"app_usage": true,
+}
+
+var validEventSeverities = map[string]bool{
+	"informational": true, "concerning": true, "severe": true,
+}
+
+func isAllowedEventSummary(s string) bool {
+	if s == "" || len(s) > maxEventSummaryLen {
+		return false
+	}
+	if _, ok := allowedEventSummaries[s]; ok {
+		return true
+	}
+	return continuedActivitySummary.MatchString(s)
+}
+
+// validateCreateEvent returns a client-facing 400 message, or "" if the
+// category, severity, and summary are bound to known iOS values.
+func validateCreateEvent(category, severity, summary string) string {
+	if category == "" || severity == "" || summary == "" {
+		return "category, severity, and summary are required"
+	}
+	if !validEventCategories[category] {
+		return "invalid category"
+	}
+	if !validEventSeverities[severity] {
+		return "invalid severity"
+	}
+	if !isAllowedEventSummary(summary) {
+		return "invalid summary"
+	}
+	return ""
+}
 
 // CreateEvent records a flagged monitoring event from a device and fans out
 // alerts to all accountability partners (via relationships AND group membership).
@@ -28,24 +95,8 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if req.Category == "" || req.Severity == "" || req.Summary == "" {
-		writeError(w, http.StatusBadRequest, "category, severity, and summary are required")
-		return
-	}
-	validCategories := map[string]bool{
-		"adult_content": true, "gambling": true,
-		"violence": true, "self_harm": true, "clean": true,
-		"app_usage": true,
-	}
-	validSeverities := map[string]bool{
-		"informational": true, "concerning": true, "severe": true,
-	}
-	if !validCategories[req.Category] {
-		writeError(w, http.StatusBadRequest, "invalid category")
-		return
-	}
-	if !validSeverities[req.Severity] {
-		writeError(w, http.StatusBadRequest, "invalid severity")
+	if msg := validateCreateEvent(req.Category, req.Severity, req.Summary); msg != "" {
+		writeError(w, http.StatusBadRequest, msg)
 		return
 	}
 
