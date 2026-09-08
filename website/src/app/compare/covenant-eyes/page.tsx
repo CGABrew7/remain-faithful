@@ -219,8 +219,8 @@ export default function CovenantEyesCompare() {
           <div className="text-center p-10 rounded-sm border border-wax/25" >
             <h2 className="font-serif text-2xl font-bold text-ink mb-4">Try Remain Faithful Free</h2>
             <p className="text-ink-soft mb-6">No subscription. No credit card. Just accountability.</p>
-            <Link href="/#waitlist" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
-              Join the Waitlist
+            <Link href="/#download" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+              Get started
             </Link>
           </div>
         </div>

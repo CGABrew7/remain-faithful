@@ -291,8 +291,8 @@ export default function WhatIsAccountabilitySoftware() {
             <p className="text-ink-soft mb-6">
               <Link href="/how-it-works" className="text-wax hover:underline underline-offset-2">Learn exactly how it works</Link> before you decide.
             </p>
-            <Link href="/#waitlist" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
-              Join the Waitlist (Free)
+            <Link href="/#download" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+              Get started (Free)
             </Link>
           </div>
         </div>

@@ -100,7 +100,7 @@ export const homepageFaqSchema = {
       name: 'Does this work on Android?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Join the waitlist to be notified about Android and updates.',
+        text: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
       },
     },
     {

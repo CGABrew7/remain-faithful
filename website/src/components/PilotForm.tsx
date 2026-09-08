@@ -43,7 +43,7 @@ export default function PilotForm() {
       <div className="py-10 border-t border-b border-hairline">
         <h3 className="font-serif text-xl font-medium text-ink mb-3">You&apos;re registered</h3>
         <p className="text-ink-soft max-w-sm">
-          We&apos;ll reach out personally when Remain Faithful is ready to onboard your church.
+          We&apos;ll reach out about ministry updates and group setup. Remain Faithful is available for iPhone (iOS 17+).
         </p>
       </div>
     )
