@@ -299,6 +299,7 @@ func routes(h *handler.H) http.Handler {
 	}
 	api.HandleFunc("/auth/refresh", h.RefreshToken).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session", h.CreateCheckoutSession).Methods(http.MethodPost)
+	api.HandleFunc("/donations/billing-portal", h.CreateBillingPortalSession).Methods(http.MethodPost)
 
 	// Contact form — unauthenticated, rate-limited to 10 requests/minute per IP
 	// (same fixed-window limiter as /auth).
@@ -461,6 +462,36 @@ func migrate(db *sql.DB) error {
 		created_at        TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 	);
 	CREATE INDEX IF NOT EXISTS idx_donations_user ON donations(user_id);
+
+	ALTER TABLE donations ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'completed';
+	ALTER TABLE donations ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+	ALTER TABLE donations ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+	ALTER TABLE donations ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT;
+	CREATE INDEX IF NOT EXISTS idx_donations_customer ON donations(stripe_customer_id);
+	CREATE INDEX IF NOT EXISTS idx_donations_subscription ON donations(stripe_subscription_id);
+
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+
+	-- Idempotent Stripe webhook log. Business logic runs only when the insert is new.
+	CREATE TABLE IF NOT EXISTS donation_events (
+		id              BIGSERIAL    PRIMARY KEY,
+		stripe_event_id TEXT         NOT NULL UNIQUE,
+		type            TEXT         NOT NULL,
+		payload         JSONB,
+		created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+	);
+	CREATE INDEX IF NOT EXISTS idx_donation_events_type ON donation_events(type);
+
+	CREATE TABLE IF NOT EXISTS stripe_subscriptions (
+		id                     BIGSERIAL    PRIMARY KEY,
+		user_id                BIGINT       REFERENCES users(id) ON DELETE CASCADE,
+		stripe_customer_id     TEXT         NOT NULL DEFAULT '',
+		stripe_subscription_id TEXT         NOT NULL UNIQUE,
+		status                 TEXT         NOT NULL,
+		updated_at             TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+	);
+	CREATE INDEX IF NOT EXISTS idx_stripe_subscriptions_user ON stripe_subscriptions(user_id);
+	CREATE INDEX IF NOT EXISTS idx_stripe_subscriptions_customer ON stripe_subscriptions(stripe_customer_id);
 
 	-- Idempotent column additions for existing databases.
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id  TEXT UNIQUE;

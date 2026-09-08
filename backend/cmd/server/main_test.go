@@ -53,6 +53,17 @@ func TestDebugPushRouteGatedByAppEnv(t *testing.T) {
 	}
 }
 
+func TestBillingPortalRouteRequiresJWT(t *testing.T) {
+	t.Setenv("JWT_SECRET", "test-secret-not-for-production")
+	router := routes(nil)
+	req := httptest.NewRequest(http.MethodPost, "/donations/billing-portal", nil)
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("POST /donations/billing-portal status = %d, want 401", rr.Code)
+	}
+}
+
 func TestFixedWindowRateLimiter(t *testing.T) {
 	lim := fixedWindowRateLimiter(3, func(*http.Request) string { return "test" })
 	h := lim(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
