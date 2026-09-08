@@ -27,10 +27,10 @@ export default function PartnersPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <a
-              href="#pilot"
+              href="/#download"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
             >
-              Join the Waitlist
+              Get started
             </a>
             <a
               href="/group-setup-guide"
@@ -445,16 +445,16 @@ export default function PartnersPage() {
         </div>
       </section>
 
-      {/* Church waitlist form */}
+      {/* Church ministry-updates form */}
       <section id="pilot" className="py-20 bg-paper-deep border-t border-hairline">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Waitlist</p>
+            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Ministry updates</p>
             <h2 className="font-serif text-3xl font-bold text-ink mb-4">
-              Join the Church Waitlist
+              Register your church
             </h2>
             <p className="text-ink-soft">
-              Remain Faithful is available for iPhone (iOS 17+). Join the church waitlist for ministry updates and group-setup notify.
+              Remain Faithful is available for iPhone (iOS 17+). Leave your email for ministry updates and group-setup notify.
             </p>
           </div>
           <PilotForm />

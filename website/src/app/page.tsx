@@ -52,7 +52,7 @@ const faqs = [
   },
   {
     q: 'Does this work on Android?',
-    a: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Join the waitlist to be notified about Android and updates.',
+    a: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
   },
 ]
 
@@ -92,8 +92,8 @@ export default function HomePage() {
         </p>
 
         <div className="flex flex-wrap gap-3 mb-10">
-          <a href="#waitlist" className="btn-wax">
-            Join the Waitlist
+          <a href="#download" className="btn-wax">
+            Get started
           </a>
           <Link href="/how-it-works" className="btn-ghost">
             How it works
@@ -119,7 +119,7 @@ export default function HomePage() {
         <p className="text-ink-soft text-lg leading-relaxed mb-8 max-w-[40ch]">
           Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.
         </p>
-        <WaitlistForm variant="default" buttonText="Join the Waitlist" />
+        <WaitlistForm variant="default" buttonText="Get updates" />
       </section>
 
       <hr className="rule" />
@@ -266,12 +266,12 @@ export default function HomePage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <a href="#waitlist" className="btn-wax">
+          <Link href="/how-it-works" className="btn-wax">
             <span className="text-left">
               <span className="block font-mono text-[10px] tracking-[0.12em] uppercase opacity-80">iPhone (iOS 17+)</span>
-              <span>Join the Waitlist</span>
+              <span>Get started</span>
             </span>
-          </a>
+          </Link>
           <div className="btn-ghost opacity-70 pointer-events-none" aria-disabled="true">
             <span className="text-left">
               <span className="block font-mono text-[10px] tracking-[0.12em] uppercase">Android</span>
@@ -280,7 +280,7 @@ export default function HomePage() {
           </div>
         </div>
         <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-ink-faint mt-6">
-          Available for iPhone (iOS 17+). Android is planned — join the waitlist to be notified.
+          Available for iPhone (iOS 17+). Android is planned — leave your email for notify.
         </p>
       </section>
 

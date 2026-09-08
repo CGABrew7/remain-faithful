@@ -85,10 +85,10 @@ export default function Nav() {
 
           <div className="hidden md:flex items-center">
             <Link
-              href="/#waitlist"
+              href="/#download"
               className={inkNav ? 'btn-wax !py-2 !px-4' : 'btn-ghost !py-2 !px-4 !text-paper !shadow-[0_0_0_1px_rgba(255,255,255,0.18)] hover:!bg-white/5'}
             >
-              Join the Waitlist
+              Get started
             </Link>
           </div>
 
@@ -138,8 +138,8 @@ export default function Nav() {
               </Link>
             ))}
             <div className="mt-3 pt-4 border-t border-hairline">
-              <Link href="/#waitlist" className="btn-wax w-full">
-                Join the Waitlist
+              <Link href="/#download" className="btn-wax w-full">
+                Get started
               </Link>
             </div>
           </nav>
