@@ -48,26 +48,37 @@ func init() {
 	}()
 }
 
-// allowedProtectionAlertTypes are type strings already used by the iOS app or
-// existing backend code. Unknown types are rejected so a captured token cannot
-// spam partners with arbitrary push copy. Do not add types that are not
-// already sent by a client or generated server-side.
-var allowedProtectionAlertTypes = map[string]struct{}{
-	"monitoring_disabled":       {}, // SettingsView
-	"shielding_disabled":        {}, // ActivitySelectionManager
-	"lockout_disabled":          {}, // SettingsView
-	"lockout_broadcast_stopped": {}, // protectionAlertBody (legacy name)
-	"deep_scan_stopped":         {}, // AppLockoutManager, broadcast SampleHandler
-	"pin_wrong_attempt":         {}, // protectionAlertBody (legacy name)
-	"wrong_pin_attempt":         {}, // PartnerPINManager
-	"pin_removed":               {}, // SettingsView
-	"pin_changed":               {}, // PINEntryView
-	"family_controls_revoked":   {}, // RemainFaithfulApp
-	"heartbeat_silence":         {}, // heartbeat_sweep
+// clientProtectionAlertTypes are the type strings the iOS app / broadcast
+// extension actually POST. Unknown and server-only types are rejected so a
+// captured token cannot spam partners or forge heartbeat_silence.
+//
+// lockout_broadcast_stopped / pin_wrong_attempt are legacy protectionAlertBody
+// names only — iOS sends deep_scan_stopped / wrong_pin_attempt. They are not
+// accepted on HTTP POST.
+var clientProtectionAlertTypes = map[string]struct{}{
+	"monitoring_disabled":     {}, // SettingsView
+	"shielding_disabled":      {}, // ActivitySelectionManager
+	"lockout_disabled":        {}, // SettingsView
+	"deep_scan_stopped":       {}, // AppLockoutManager, broadcast SampleHandler
+	"wrong_pin_attempt":       {}, // PartnerPINManager
+	"pin_removed":             {}, // SettingsView
+	"pin_changed":             {}, // PINEntryView
+	"family_controls_revoked": {}, // RemainFaithfulApp
 }
 
-func isAllowedProtectionAlertType(t string) bool {
-	_, ok := allowedProtectionAlertTypes[t]
+// serverOnlyProtectionAlertTypes are generated internally (heartbeat sweep).
+// sendProtectionAlertToPartners may still send them; HTTP POST must not.
+var serverOnlyProtectionAlertTypes = map[string]struct{}{
+	"heartbeat_silence": {}, // heartbeat_sweep
+}
+
+func isClientProtectionAlertType(t string) bool {
+	_, ok := clientProtectionAlertTypes[t]
+	return ok
+}
+
+func isServerOnlyProtectionAlertType(t string) bool {
+	_, ok := serverOnlyProtectionAlertTypes[t]
 	return ok
 }
 
@@ -105,7 +116,7 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "type is required")
 		return
 	}
-	if !isAllowedProtectionAlertType(req.Type) {
+	if isServerOnlyProtectionAlertType(req.Type) || !isClientProtectionAlertType(req.Type) {
 		writeError(w, http.StatusBadRequest, "unknown protection alert type")
 		return
 	}
@@ -125,7 +136,9 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 }
 
 // sendProtectionAlertToPartners fans out a PROTECTION_ALERT push to all
-// accepted partners of userID. Only metadata is sent — never screen content.
+// accepted partners of userID. It does not apply the HTTP client allowlist, so
+// internal callers (heartbeat sweep) may send server-only types.
+// Only metadata is sent — never screen content.
 func (h *H) sendProtectionAlertToPartners(userID int64, senderName, alertType, detail string) {
 	ctx := context.Background()
 
@@ -150,6 +163,11 @@ func (h *H) sendProtectionAlertToPartners(userID int64, senderName, alertType, d
 		return
 	}
 
+	if detail != "" {
+		log.Printf("[protection] alert user=%d type=%s detail=%q", userID, alertType, truncateForLog(detail, 80))
+	}
+
+	// detail is never interpolated into the APNs body — only fixed copy per type.
 	body := protectionAlertBody(senderName, alertType, detail)
 	payload := map[string]any{
 		"aps": map[string]any{
@@ -174,10 +192,10 @@ func (h *H) sendProtectionAlertToPartners(userID int64, senderName, alertType, d
 	}
 }
 
-// protectionAlertBody returns a human-readable notification body for the given
-// alert type. The detail parameter is a safe fallback for unknown types.
+// protectionAlertBody returns fixed notification copy for the given alert type.
+// detail is ignored so client-supplied text cannot inflate the APNs body.
 // Screen content is never included — only metadata.
-func protectionAlertBody(name, alertType, detail string) string {
+func protectionAlertBody(name, alertType, _ string) string {
 	switch alertType {
 	case "monitoring_disabled":
 		return name + " turned off activity monitoring"
@@ -185,24 +203,32 @@ func protectionAlertBody(name, alertType, detail string) string {
 		return name + " turned off app blocking"
 	case "lockout_disabled":
 		return name + " disabled App Lockout"
-	case "lockout_broadcast_stopped":
+	case "lockout_broadcast_stopped", "deep_scan_stopped":
 		return name + " stopped Deep Scan — apps are re-shielded"
-	case "pin_wrong_attempt":
+	case "pin_wrong_attempt", "wrong_pin_attempt":
 		return name + " entered an incorrect Partner PIN"
 	case "pin_removed":
 		return name + "'s protection PIN was removed"
 	case "pin_changed":
 		return name + "'s protection PIN was changed"
 	case "family_controls_revoked":
-		return name + " revoked Screen Time authorization"
+		return name + " revoked Family Controls authorization"
 	case "heartbeat_silence":
 		return name + "'s device has stopped sending heartbeats"
 	default:
-		if detail != "" {
-			return name + ": " + detail
-		}
 		return name + " changed a protection setting"
 	}
+}
+
+func truncateForLog(s string, maxRunes int) string {
+	if maxRunes <= 0 || s == "" {
+		return ""
+	}
+	r := []rune(s)
+	if len(r) <= maxRunes {
+		return s
+	}
+	return string(r[:maxRunes]) + "…"
 }
 
 // GetPINStatus reports whether any accepted relationship for the authenticated
