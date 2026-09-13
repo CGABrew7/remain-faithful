@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Newsreader, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
@@ -88,6 +88,9 @@ export const metadata: Metadata = {
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
+}
+
+export const viewport: Viewport = {
   themeColor: '#ece6d8',
 }
 
