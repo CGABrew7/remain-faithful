@@ -4,6 +4,7 @@ import { JsonLd } from '@/components/JsonLd'
 import { comparisonSchema } from '@/lib/structured-data'
 import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { UpdatedStamp } from '@/components/UpdatedStamp'
 
 export const metadata: Metadata = {
   title: 'Remain Faithful vs Ever Accountable: Honest Comparison (2026)',
@@ -28,7 +29,7 @@ const pageFaqSchema = {
       name: 'Does Ever Accountable also do on-device processing?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $129/year), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.',
+        text: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful, not a claim of feature parity. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $14.99/month or $129/year), what partners see (Remain Faithful never transmits screenshots), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.',
       },
     },
     {
@@ -56,12 +57,15 @@ export default function EverAccountableCompare() {
           ]} />
 
           <div className="mb-10">
-            <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-4">Honest Comparison</p>
-            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6 leading-tight">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <p className="text-wax text-sm font-semibold uppercase tracking-widest">Honest Comparison</p>
+              <UpdatedStamp />
+            </div>
+            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6 leading-tight text-balance">
               Remain Faithful vs Ever Accountable
             </h1>
-            <p className="text-ink-soft text-lg leading-relaxed mb-4">
-              Both apps take a privacy-first approach with on-device AI. This is a closer comparison than most. Here is where they actually differ.
+            <p className="text-ink-soft text-lg leading-relaxed mb-4 text-pretty">
+              Both apps use on-device AI. That is a shared strength, not feature parity. They still differ on what partners see: Ever Accountable&apos;s public how-it-works copy says partners get a report of screens, apps, and websites viewed; Remain Faithful never transmits screenshots. Here is an honest comparison of the rest.
             </p>
             <div className="p-5 rounded-sm border border-wax/25 bg-wax/5 text-sm text-ink-soft leading-relaxed">
               <strong className="text-wax">Disclosure:</strong> We built Remain Faithful, so we are biased. We will be transparent about where Ever Accountable is stronger.
@@ -83,10 +87,10 @@ export default function EverAccountableCompare() {
                 </thead>
                 <tbody>
                   {[
-                    ['Price', 'Free forever', '$129/year'],
-                    ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac'],
+                    ['Price', 'Free forever', '$14.99/mo or $129/year'],
+                    ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac, Chromebook, Kindle'],
                     ['Monitoring approach', 'On-device AI classification', 'On-device AI classification'],
-                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Partners see screenshot reports'],
+                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Yes. Their how-it-works copy says partners can see screens, apps, and websites viewed.'],
                     ['Where AI runs', 'Entirely on your device', 'On-device'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Partner-based report sharing'],
@@ -111,7 +115,7 @@ export default function EverAccountableCompare() {
             <div className="space-y-4">
               {[
                 { title: 'More mature iOS implementation', body: 'Ever Accountable is on its fourth generation of iOS development with over 700,000 installs. That level of real-world testing produces a more polished, battle-tested app. Remain Faithful is newer and available for iPhone (iOS 17+).' },
-                { title: 'Multi-platform coverage', body: 'Ever Accountable supports iOS, Android, Windows, and Mac. Remain Faithful is iOS only right now. If your accountability partner uses Android, Windows, or Mac, Ever Accountable serves them. Remain Faithful does not yet.' },
+                { title: 'Multi-platform coverage', body: 'Ever Accountable lists iOS, Android, Windows, Mac, Chromebook, and Kindle. Remain Faithful is iOS only right now. If your accountability partner uses Android, Windows, or Mac, Ever Accountable serves them. Remain Faithful does not yet.' },
                 { title: 'Professional accountability coach option', body: 'Ever Accountable offers a paid add-on to connect with a professional accountability coach. Remain Faithful is peer-only; it does not offer a coached accountability option.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
@@ -127,9 +131,9 @@ export default function EverAccountableCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Remain Faithful Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Price', body: 'Remain Faithful is completely free. Ever Accountable publicly lists $129 per year for one reporting user. For ministries deploying accountability tools to dozens of people, free is a significant difference. Verify current pricing on their site.' },
+                { title: 'Price', body: 'Remain Faithful is completely free. Ever Accountable publicly lists $14.99 per month or $129 per year for one reporting user. For ministries deploying accountability tools to dozens of people, free is a significant difference. Verify current pricing on their site.' },
                 { title: 'Open source transparency', body: 'Remain Faithful is fully open source. Anyone can read the code and verify that screenshots, OCR text, and raw screen content are never transmitted, and that partners may receive a short system-generated summary. Ever Accountable is proprietary. Both say they protect your privacy; only one lets you verify it.' },
-                { title: 'Partner protection', body: 'Ever Accountable shares screenshot reports with accountability partners, exposing them to the content that was flagged. Remain Faithful partners may receive a short system-generated summary in addition to a category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content.' },
+                { title: 'Partner protection', body: 'Ever Accountable\'s public how-it-works copy says a partner can see screens, apps, and websites the reporting user viewed. Remain Faithful partners may receive a short system-generated summary in addition to a category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content. That is a difference in what is shared — not a claim that the two products monitor the same things.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds Remain Faithful\'s accountability in a theological understanding of relationship. Partners agree to respond with grace before gaining access. This is designed to shape how alerts are received.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-wax/25 bg-paper-deep">
@@ -185,7 +189,7 @@ export default function EverAccountableCompare() {
             <div className="space-y-4">
               {[
                 { q: 'Is Remain Faithful as effective as Ever Accountable?', a: 'Both apps use on-device AI, which is a meaningful shared strength. Ever Accountable has a more mature iOS implementation with four generations of development. Remain Faithful is newer but is entirely free, open source, and built on a covenant accountability model. Which is more effective depends on your specific situation.' },
-                { q: 'Does Ever Accountable also do on-device processing?', a: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $129/year), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.' },
+                { q: 'Does Ever Accountable also do on-device processing?', a: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful, not a claim of feature parity. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $14.99/month or $129/year), what partners see (Remain Faithful never transmits screenshots), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.' },
                 { q: 'Can I switch from Ever Accountable to Remain Faithful?', a: 'Yes. Cancel Ever Accountable and set up Remain Faithful on iPhone (iOS 17+). Invite your partners and walk through the covenant setup. Remain Faithful is available for iPhone only; if your partners use Android, Windows, or Mac, Ever Accountable has broader coverage.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
