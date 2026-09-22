@@ -75,7 +75,7 @@ vercel --prod
 
 | Route | Method | Description |
 |---|---|---|
-| `/api/donate` | POST | Creates a Stripe Checkout session directly; accepts `{ amount, recurring }`, returns `{ url }`. Production success/cancel URLs are always `https://www.remainfaithful.com/?donated=true` and `https://www.remainfaithful.com/#donate`. Localhost Origins are kept for local Stripe test checkouts. |
+| `/api/donate` | POST | Legacy Checkout session creator; accepts `{ amount, recurring }`, returns `{ url }`. The homepage donate section does not call this route. It opens the live Woodfield Foundation Payment Links in `src/lib/donate-links.ts`. Production success/cancel URLs for this route are always `https://www.remainfaithful.com/?donated=true` and `https://www.remainfaithful.com/#donate`. Localhost Origins are kept for local Stripe test checkouts. |
 | `/api/contact` | POST | Forwards to backend `/contact` if `BACKEND_URL` is set; otherwise logs and returns success |
 
 ## Project Structure
@@ -100,5 +100,5 @@ src/
     ├── Nav.tsx
     ├── Footer.tsx
     ├── LetterAtmosphere.tsx # Desk/letter hero from ThreeUI sketchbook lighting
-    └── DonateButton.tsx    # Stripe checkout client component
+    └── DonateButton.tsx    # Woodfield Stripe Payment Link donate control
 ```
