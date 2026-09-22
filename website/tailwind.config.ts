@@ -9,26 +9,45 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        navy: {
+          DEFAULT: '#0F1B2D',
+          light: '#162235',
+          border: '#1E3050',
+        },
+        gold: {
+          DEFAULT: '#C9A84C',
+          light: '#E8C87A',
+        },
+        cream: {
+          DEFAULT: '#F0EDE8',
+          muted: '#8A9BB0',
+        },
+        // Keep old class names working while pages migrate off paper/wax.
         paper: {
-          DEFAULT: '#ece6d8',
-          deep: '#e2d8c6',
-          raised: '#f4efe6',
-          night: '#1c1713',
+          DEFAULT: '#0F1B2D',
+          deep: '#0B1422',
+          raised: '#162235',
+          night: '#0A1628',
         },
         ink: {
-          DEFAULT: '#1d1814',
-          soft: '#5a5148',
-          faint: '#85786c',
+          DEFAULT: '#F0EDE8',
+          soft: '#C5C0B8',
+          faint: '#8A9BB0',
         },
         wax: {
-          DEFAULT: '#7a2c28',
-          deep: '#5c211e',
+          DEFAULT: '#C9A84C',
+          deep: '#A88B38',
         },
-        hairline: 'rgba(29, 24, 20, 0.14)',
+        hairline: 'rgba(201, 168, 76, 0.22)',
       },
       fontFamily: {
-        serif: ['var(--font-newsreader)', 'Georgia', 'Times New Roman', 'serif'],
-        mono: ['var(--font-plex-mono)', 'ui-monospace', 'monospace'],
+        serif: ['var(--font-playfair)', 'Georgia', 'serif'],
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+      },
+      backgroundImage: {
+        'gold-gradient': 'linear-gradient(135deg, #C9A84C, #E8C87A)',
+        'navy-gradient': 'linear-gradient(180deg, #0F1B2D 0%, #162235 100%)',
       },
     },
   },
