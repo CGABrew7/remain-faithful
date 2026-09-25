@@ -1,29 +1,51 @@
 # Manual Fixes Needed
 
-Items that require human action, Apple entitlements, credentials, or architectural decisions not automatable by this test loop.
+Updated 2026-09-22. Older “MF-01 not implemented” text is obsolete.
 
 ---
 
-## MF-01 — Heartbeat Silence Detection Not Implemented
+## MF-01 — Heartbeat silence detection — IMPLEMENTED
 
-**Severity:** Medium  
-**Related test:** BE-14
+**Status:** Shipped in source.
 
-**What's missing:** There is no logic anywhere in the codebase (iOS or backend) that detects when a user's device stops sending heartbeats and triggers a `heartbeat_silence` alert to their partners.
+- `backend/internal/handler/heartbeat.go` writes `users.last_heartbeat_at` on `POST /heartbeat`.
+- `backend/internal/handler/heartbeat_sweep.go` runs every 5 minutes from `main.go` via `StartHeartbeatSweep`.
+- Threshold: `HEARTBEAT_SILENCE_MINUTES` (default 30).
+- Dedup: `relationships.last_silence_alert_at` so each partner is alerted once per silence window.
+- `heartbeat_silence` is a **server-only** alert type. HTTP clients cannot forge it.
 
-**What was fixed automatically:** The `protectionAlertBody` switch in `backend/internal/handler/protection.go` now has an explicit `case "heartbeat_silence":` so the notification message is correct if/when this alert type is ever sent.
+**Still Jeff / ops:**
 
-**What still needs building:**
+1. Confirm Fly.io secret `HEARTBEAT_SILENCE_MINUTES` is set (or accept default 30).
+2. Confirm production Postgres actually has `users.last_heartbeat_at` and `relationships.last_silence_alert_at` (added by `migrate()` in `main.go`, not by the stale `001_schema.sql` file).
+3. On a real device, stop heartbeats for 30+ minutes and verify the partner receives “[Name]’s device has stopped sending heartbeats.”
 
-Choose one of these approaches:
+`001_schema.sql` is documentation-only and lags `migrate()`. Do not treat that file as the live schema.
 
-**Option A — Backend cron job (recommended):**
-Add a scheduled job (e.g., every 5 minutes) that queries for users whose `last_heartbeat_at` timestamp is older than a configurable threshold (e.g., 30 minutes) and calls `sendProtectionAlertToPartners` with `alert_type = "heartbeat_silence"`. Requires adding a `last_heartbeat_at` column to the `users` table (or a separate `heartbeats` table) and a cron trigger on Fly.io.
+---
 
-**Option B — iOS-side detection:**
-Have the iOS app detect that it hasn't sent a heartbeat in X minutes (e.g., because the app was force-quit or the extension was killed) and send a `heartbeat_silence` alert on next foreground. This is harder because a killed app cannot alert.
+## MF-02 — Family Controls distribution entitlement
 
-**Option C — Partner-side polling:**
-The partner app periodically polls for the last known heartbeat timestamp and shows a local in-app warning (no backend push). Less reliable for async accountability.
+**Severity:** Blocker for App Store / external TestFlight.
 
-No credentials or entitlements are blocked here — this is a feature build.
+Apple must approve Family Controls for Team ID production distribution. Development entitlement is not enough. Jeff requests this in the Apple Developer portal if the App ID still shows Development only.
+
+---
+
+## MF-03 — App Store Connect upload
+
+**Severity:** Blocker for “submitted by EOW.”
+
+Requires Jeff’s Mac, paid Apple Developer account, certificates, and App Store Connect. Agents cannot submit the binary. Listing copy and review notes: `docs/APP_STORE_SUBMISSION.md`.
+
+---
+
+## MF-04 — Woodfield Stripe legal name + EIN on receipts
+
+Payment Links are live. Confirm Checkout shows Woodfield Foundation (not a personal name) and that tax-deductible receipts include the 501(c)(3) legal name and EIN.
+
+---
+
+## MF-05 — Waitlist persistence
+
+Website `/api/waitlist` currently logs and returns success without storing the email. Wire HubSpot or email before treating the homepage form as a launch channel.

@@ -15,6 +15,23 @@ struct DonationView: View {
     private let presets = [5, 10, 25, 50]
     private let pink    = Color(red: 0.90, green: 0.25, blue: 0.48)
 
+    // Live Woodfield Foundation Payment Links (same URLs as the website).
+    // Custom amounts still go through the backend Checkout session.
+    private static let woodfieldLinks: [Bool: [Int: String]] = [
+        false: [
+            5:  "https://donate.stripe.com/28E7sN3HKfDa3O3fGJ08g03",
+            10: "https://donate.stripe.com/3cIcN7dik76EgAP0LP08g00",
+            25: "https://donate.stripe.com/cNi3cxdikez6acr0LP08g01",
+            50: "https://donate.stripe.com/4gM6oJ0vy4YwgAPeCF08g02",
+        ],
+        true: [
+            5:  "https://donate.stripe.com/fZu00lguwaiQ1FV0LP08g04",
+            10: "https://donate.stripe.com/28EeVf0vyez61FVfGJ08g05",
+            25: "https://donate.stripe.com/dRm14pdikfDa1FVamp08g07",
+            50: "https://donate.stripe.com/cNi14pbac1Mkbgv3Y108g06",
+        ],
+    ]
+
     private var effectiveAmount: Int? {
         if let p = selectedPreset { return p }
         let v = Int(customAmount.trimmingCharacters(in: .whitespaces))
@@ -49,8 +66,6 @@ struct DonationView: View {
         }
     }
 
-    // MARK: - Close
-
     private var closeButton: some View {
         HStack {
             Spacer()
@@ -63,8 +78,6 @@ struct DonationView: View {
             }
         }
     }
-
-    // MARK: - Header
 
     private var headerSection: some View {
         VStack(spacing: 14) {
@@ -82,15 +95,13 @@ struct DonationView: View {
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
 
-            Text("Remain Faithful is completely free — no subscriptions, no paywalls. It exists because people like you believe in this mission.")
+            Text("Remain Faithful is completely free — no subscriptions, no paywalls. Gifts are processed by Woodfield Foundation and keep the app free for everyone.")
                 .font(.system(size: 14))
                 .foregroundStyle(Color.white.opacity(0.60))
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
         }
     }
-
-    // MARK: - Monthly toggle
 
     private var frequencyToggle: some View {
         HStack(spacing: 0) {
@@ -109,8 +120,6 @@ struct DonationView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
-
-    // MARK: - Amount grid
 
     private var amountGrid: some View {
         LazyVGrid(
@@ -133,8 +142,6 @@ struct DonationView: View {
         }
     }
 
-    // MARK: - Custom amount
-
     private var customAmountField: some View {
         HStack(spacing: 8) {
             Text("$")
@@ -153,8 +160,6 @@ struct DonationView: View {
                     .stroke(Color.rfGold.opacity(0.40), lineWidth: 1.5))
         )
     }
-
-    // MARK: - Donate button
 
     private var donateButton: some View {
         VStack(spacing: 12) {
@@ -197,13 +202,12 @@ struct DonationView: View {
                     .multilineTextAlignment(.center)
             }
 
-            Text("Powered by Stripe · Secure checkout")
+            Text("Woodfield Foundation · Stripe Checkout · Tax-deductible where eligible")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.white.opacity(0.30))
+                .multilineTextAlignment(.center)
         }
     }
-
-    // MARK: - Why donate?
 
     private var whyDonateSection: some View {
         VStack(spacing: 0) {
@@ -227,13 +231,13 @@ struct DonationView: View {
             if whyExpanded {
                 VStack(alignment: .leading, spacing: 14) {
                     WhyRow(icon: "server.rack",
-                           text: "Server costs — AI content analysis and push notifications aren't free. Your gift keeps them running.")
+                           text: "Servers and push notifications — the API, database, and APNs relay that deliver partner alerts. Classification stays on-device; we do not pay a cloud AI vendor to read anyone's screen.")
                     WhyRow(icon: "lock.shield.fill",
-                           text: "Privacy infrastructure — keeping your data off ad networks and behind proper encryption costs money.")
+                           text: "Privacy infrastructure — TLS, Keychain sessions, and keeping raw screen content off our servers.")
                     WhyRow(icon: "heart.fill",
-                           text: "Ministry mission — we believe every man deserves this tool, regardless of income.")
+                           text: "Ministry mission — every person committed to purity should have this tool, regardless of income.")
                     WhyRow(icon: "cross.fill",
-                           text: "100% mission-driven — no VC money, no ads, no data selling. Just people helping people stay free.")
+                           text: "100% mission-driven — no VC money, no ads, no data selling. Gifts through Woodfield Foundation keep Remain Faithful free.")
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 18)
@@ -248,13 +252,19 @@ struct DonationView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    // MARK: - Checkout
-
     @MainActor
     private func startCheckout(amount: Int) async {
         isLoading    = true
         errorMessage = nil
         defer { isLoading = false }
+
+        if let link = Self.woodfieldLinks[isMonthly]?[amount],
+           let url = URL(string: link) {
+            checkoutURL = url
+            showSafari  = true
+            return
+        }
+
         do {
             let url = try await APIClient.shared.createCheckoutSession(
                 amountDollars: amount, monthly: isMonthly)
@@ -265,8 +275,6 @@ struct DonationView: View {
         }
     }
 }
-
-// MARK: - Sub-views
 
 private struct FreqTab: View {
     let label:    String
