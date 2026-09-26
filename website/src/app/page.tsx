@@ -29,6 +29,27 @@ export const metadata: Metadata = {
   },
 }
 
+const proof = [
+  {
+    href: '#download',
+    kicker: 'iPhone',
+    title: 'Get started on iOS 17+',
+    body: 'Free forever. Always-on Family Controls filtering with partner notify. Android is planned.',
+  },
+  {
+    href: '/how-it-works',
+    kicker: 'How it works',
+    title: 'Partners, then filtering',
+    body: 'Invite adult peers, authorize Family Controls, and receive alerts with category, severity, timestamp, and a short system-generated summary.',
+  },
+  {
+    href: '/privacy-architecture',
+    kicker: 'Privacy',
+    title: 'Your screen stays on your device',
+    body: 'Screenshots, OCR text, and raw screen content stay on the phone. Partners receive alert metadata and a short system-generated summary.',
+  },
+]
+
 const faqs = [
   {
     q: 'Can my accountability partners see what I was looking at?',
@@ -87,15 +108,18 @@ export default function HomePage() {
           Free peer accountability for Christians committed to purity.
         </p>
 
-        <p className="text-[1.05rem] leading-[1.75] text-ink-soft mb-10 max-w-[42ch]">
-          Always-on filtering blocks the apps and categories you choose, and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods. Screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary.
+        <p className="text-[1.05rem] leading-[1.75] text-ink-soft mb-8 max-w-[42ch]">
+          Always-on filtering blocks the apps and categories you choose, and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods. Screenshots, OCR text, and raw screen content stay on your device. Partners receive a short system-generated summary.
         </p>
 
-        <div className="flex flex-wrap gap-3 mb-10">
-          <a href="#download" className="btn-wax">
-            Get started
+        <div className="flex flex-col sm:flex-row sm:items-stretch gap-3 mb-10 max-w-xl">
+          <a href="#download" className="btn-wax w-full sm:w-auto">
+            <span className="text-left">
+              <span className="block font-mono text-[10px] font-semibold tracking-[0.14em] uppercase opacity-80">iPhone · iOS 17+</span>
+              <span className="block text-[0.95rem] leading-tight">Get started</span>
+            </span>
           </a>
-          <Link href="/how-it-works" className="btn-ghost">
+          <Link href="/how-it-works" className="btn-ghost w-full sm:w-auto pl-6 pr-[1.375rem]">
             How it works
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
               <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -103,13 +127,51 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 pt-6 border-t border-hairline">
-          <TrustItem>Always-on filtering</TrustItem>
-          <TrustItem>100% free, forever</TrustItem>
-          <TrustItem>No screenshots or raw content leave your device</TrustItem>
-          <TrustItem>Optional Deep Scan</TrustItem>
+        <ul className="grid sm:grid-cols-3 gap-3 m-0 p-0 list-none">
+          {proof.map((item) => (
+            <li key={item.href}>
+              <ProofLink href={item.href}>
+                <span className="kicker">{item.kicker}</span>
+                <span className="font-serif text-[1.35rem] leading-snug text-ink mt-3 text-balance">{item.title}</span>
+                <span className="text-sm leading-relaxed text-ink-soft mt-2 text-pretty">{item.body}</span>
+              </ProofLink>
+            </li>
+          ))}
         </ul>
       </LetterAtmosphere>
+
+      <hr className="rule" />
+
+      <section id="download" className="page-section !pt-0 scroll-mt-24">
+        <div className="download-card">
+          <div className="download-pane">
+            <p className="kicker mb-4">iPhone · iOS 17+</p>
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-4">
+              Get started
+            </h2>
+            <p className="text-ink-soft text-lg leading-relaxed max-w-[40ch]">
+              Free forever. Always-on Family Controls filtering, optional Deep Scan, and partners you choose. Android is planned.
+            </p>
+
+            <div className="grid sm:grid-cols-3 gap-4 mt-8 mb-2">
+              <Spec term="Platform" detail="iPhone, iOS 17+" />
+              <Spec term="Price" detail="Free forever" />
+              <Spec term="Privacy" detail="Screen stays on device" />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-stretch gap-1 mt-4">
+              <Link href="/how-it-works" className="tap-row sm:flex-1">
+                How it works
+                <Arrow />
+              </Link>
+              <a href="#waitlist" className="tap-row sm:flex-1">
+                Android notify
+                <Arrow />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section id="waitlist" className="page-section">
         <p className="kicker mb-4">Updates</p>
@@ -161,127 +223,78 @@ export default function HomePage() {
 
       <hr className="rule" />
 
-      <section className="page-section !pt-0">
+      <section className="page-section !pt-0" aria-labelledby="method-heading">
         <p className="kicker mb-4">The method</p>
-        <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-5">
+        <h2 id="method-heading" className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-4">
           Three steps to real accountability
         </h2>
-        <p className="text-ink-soft text-lg leading-relaxed mb-10 max-w-[42ch]">
-          Invite adult peers, then authorize Family Controls so always-on filtering can run. No invented setup-time promise — each person joins and authorizes on their own iPhone.
+        <p className="text-ink-soft text-lg leading-relaxed mb-8 max-w-[46ch]">
+          Invite adult peers, then authorize Family Controls so always-on filtering can run. Each person joins and authorizes on their own iPhone.
         </p>
 
-        <ol className="m-0 p-0 list-none space-y-8">
-          <Step
-            n="I"
-            title="Choose your partners"
-            body="Invite one or more trusted friends, mentors, or group members to be your accountability partners. They accept a covenant before gaining any access."
-          />
-          <Step
-            n="II"
-            title="Enable filtering"
-            body="Always-on Family Controls filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. DeviceActivity monitors usage as category events — not screen content. For high-risk periods you can start an optional Deep Scan session."
-          />
-          <Step
-            n="III"
-            title="Stay accountable"
-            body="When something is flagged, you and your partners receive a discreet alert. No surprises, no shame spirals. Just honest accountability."
-          />
-        </ol>
+        <div className="method-card">
+          <div className="grid md:grid-cols-2 gap-2">
+            <div className="method-pane">
+              <p className="kicker mb-4">How it works</p>
+              <ol className="m-0 p-0 list-none">
+                <Step
+                  n="I"
+                  title="Choose your partners"
+                  body="Invite trusted friends, a mentor, a spouse, or a small group. They accept a covenant before gaining any access."
+                />
+                <Step
+                  n="II"
+                  title="Enable filtering"
+                  body="Always-on Family Controls blocks the apps and categories you choose and notifies partners when a blocked category is attempted. Optional Deep Scan is for high-risk periods."
+                />
+                <Step
+                  n="III"
+                  title="Stay accountable"
+                  body="A discreet alert carries category, severity, timestamp, and a short system-generated summary. The aim is an honest conversation."
+                />
+              </ol>
+              <Link href="/how-it-works" className="tap-row">
+                Read the full breakdown
+                <Arrow />
+              </Link>
+            </div>
 
-        <p className="mt-10">
-          <Link
-            href="/how-it-works"
-            className="font-mono text-[12px] tracking-[0.08em] uppercase text-wax hover:text-wax-deep"
-          >
-            Read the full breakdown →
-          </Link>
-        </p>
-      </section>
-
-      <hr className="rule" />
-
-      <section className="page-section !pt-0">
-        <p className="kicker mb-4">Privacy</p>
-        <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-5">
-          Screenshots and raw content stay on your device
-        </h2>
-        <p className="text-ink-soft text-lg leading-relaxed mb-10 max-w-[42ch]">
-          We designed the privacy model first, then built the app around it.
-        </p>
-
-        <div className="space-y-6 mb-12">
-          <PrivacyPoint
-            title="On-device AI"
-            body="Apple Vision OCR and SensitiveContentAnalysis run entirely on your hardware. No server-side processing of your screen."
-          />
-          <PrivacyPoint
-            title="Alert metadata only"
-            body="Partners may receive a short system-generated summary string in addition to timestamp, category, and severity. Never which app. Never a screenshot. Never raw OCR text or screen content. Never your browsing history."
-          />
-          <PrivacyPoint
-            title="You control access"
-            body="You approve every partner. You set alert thresholds. You can pause monitoring or remove partners at any time, instantly."
-          />
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-8 sm:gap-12">
-          <div>
-            <h3 className="kicker mb-4">Stays on your device</h3>
-            <ul className="space-y-2 text-ink-soft leading-relaxed">
-              <li>Screenshots &amp; raw screen content</li>
-              <li>Browsing history &amp; page content</li>
-              <li>Passwords &amp; financial data</li>
-              <li>Message content</li>
-              <li>Photos &amp; videos</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="kicker mb-4">Shared with partners</h3>
-            <ul className="space-y-2 text-ink leading-relaxed">
-              <li>Alert category (e.g. &ldquo;Adult Content&rdquo;)</li>
-              <li>Severity level (Low / Medium / High)</li>
-              <li>Timestamp</li>
-              <li>Short system-generated summary</li>
-            </ul>
+            <div className="method-pane">
+              <p className="kicker mb-4">Privacy</p>
+              <h3 className="font-serif text-2xl text-ink mb-3">
+                Screenshots stay on your device
+              </h3>
+              <p className="text-ink-soft leading-relaxed mb-6">
+                Classification runs on your iPhone. You approve every partner, set thresholds, and can pause or remove access.
+              </p>
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-5">
+                <div>
+                  <h4 className="kicker mb-3">On your device</h4>
+                  <ul className="space-y-2 text-sm text-ink-soft leading-relaxed">
+                    <li>Screenshots &amp; raw screen content</li>
+                    <li>Browsing history &amp; page content</li>
+                    <li>Passwords &amp; financial data</li>
+                    <li>Message content</li>
+                    <li>Photos &amp; videos</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="kicker mb-3">With partners</h4>
+                  <ul className="space-y-2 text-sm text-ink leading-relaxed">
+                    <li>Alert category</li>
+                    <li>Severity (Low / Medium / High)</li>
+                    <li>Timestamp</li>
+                    <li>Short system-generated summary</li>
+                  </ul>
+                </div>
+              </div>
+              <Link href="/privacy-architecture" className="tap-row">
+                Full Privacy Architecture
+                <Arrow />
+              </Link>
+            </div>
           </div>
         </div>
-
-        <p className="mt-8 text-sm text-ink-soft leading-relaxed">
-          Classification is fully on-device. Alert metadata (category, severity, timestamp, and a short system-generated summary) may be uploaded — no screen content, no OCR text, no screenshots.{' '}
-          <Link href="/privacy-architecture" className="text-wax hover:text-wax-deep">
-            Full Privacy Architecture
-          </Link>
-        </p>
-      </section>
-
-      <hr className="rule" />
-
-      <section id="download" className="page-section !pt-0">
-        <p className="kicker mb-4">Get started</p>
-        <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-5">
-          Start your accountability journey
-        </h2>
-        <p className="text-ink-soft text-lg leading-relaxed mb-8 max-w-[36ch]">
-          Free forever. No subscription. No ads. Just accountability.
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Link href="/how-it-works" className="btn-wax">
-            <span className="text-left">
-              <span className="block font-mono text-[10px] tracking-[0.12em] uppercase opacity-80">iPhone (iOS 17+)</span>
-              <span>Get started</span>
-            </span>
-          </Link>
-          <div className="btn-ghost opacity-70 pointer-events-none" aria-disabled="true">
-            <span className="text-left">
-              <span className="block font-mono text-[10px] tracking-[0.12em] uppercase">Android</span>
-              <span>Planned</span>
-            </span>
-          </div>
-        </div>
-        <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-ink-faint mt-6">
-          Available for iPhone (iOS 17+). Android is planned — leave your email for notify.
-        </p>
       </section>
 
       <hr className="rule" />
@@ -318,12 +331,28 @@ export default function HomePage() {
   )
 }
 
-function TrustItem({ children }: { children: React.ReactNode }) {
+function ProofLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const className = 'proof-card h-full'
+  if (href.startsWith('#')) {
+    return <a href={href} className={className}>{children}</a>
+  }
+  return <Link href={href} className={className}>{children}</Link>
+}
+
+function Spec({ term, detail }: { term: string; detail: string }) {
   return (
-    <li className="flex items-baseline gap-2 font-mono text-[11px] tracking-[0.08em] uppercase text-ink-soft">
-      <span className="text-wax" aria-hidden="true">—</span>
-      <span>{children}</span>
-    </li>
+    <div className="min-h-11">
+      <p className="kicker mb-1">{term}</p>
+      <p className="text-ink leading-snug m-0">{detail}</p>
+    </div>
+  )
+}
+
+function Arrow() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
   )
 }
 
@@ -333,7 +362,7 @@ function Feature({
   n: string; title: string; body: string; href?: string
 }) {
   const heading = href ? (
-    <Link href={href} className="font-serif text-2xl text-ink hover:text-wax transition-colors duration-200">
+    <Link href={href} className="inline-flex items-center min-h-11 font-serif text-2xl text-ink hover:text-wax transition-colors duration-200">
       {title}
     </Link>
   ) : (
@@ -353,19 +382,10 @@ function Feature({
 
 function Step({ n, title, body }: { n: string; title: string; body: string }) {
   return (
-    <li>
-      <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-wax mb-2">{n}</p>
-      <h3 className="font-serif text-2xl text-ink mb-2">{title}</h3>
-      <p className="text-ink-soft leading-relaxed max-w-[46ch]">{body}</p>
+    <li className="py-4 border-b border-hairline last:border-b-0">
+      <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-wax mb-1.5">{n}</p>
+      <h3 className="font-serif text-xl text-ink mb-1.5">{title}</h3>
+      <p className="text-sm text-ink-soft leading-relaxed text-pretty">{body}</p>
     </li>
-  )
-}
-
-function PrivacyPoint({ title, body }: { title: string; body: string }) {
-  return (
-    <div>
-      <h3 className="font-serif text-xl text-ink mb-1">{title}</h3>
-      <p className="text-ink-soft leading-relaxed">{body}</p>
-    </div>
   )
 }
