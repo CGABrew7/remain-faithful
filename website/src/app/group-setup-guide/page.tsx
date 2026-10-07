@@ -25,14 +25,8 @@ export default function GroupSetupGuidePage() {
           >
             <div className="flex justify-center mb-6">
               <svg width="56" height="64" viewBox="0 0 32 36" fill="none">
-                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="url(#guideShieldGrad)"/>
-                <path d="M11 18L14.5 21.5L21 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <defs>
-                  <linearGradient id="guideShieldGrad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#D1AB4C"/>
-                    <stop offset="1" stopColor="#B08E3A"/>
-                  </linearGradient>
-                </defs>
+                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="#D1AB4C"/>
+                <path d="M11 18L14.5 21.5L21 14" stroke="#12214C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Ministry Leader Guide</p>
@@ -269,14 +263,8 @@ export default function GroupSetupGuidePage() {
           <div className="mt-12 pt-8 border-t border-hairline text-center">
             <div className="flex justify-center mb-4">
               <svg width="28" height="32" viewBox="0 0 32 36" fill="none">
-                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="url(#footerGuideGrad)"/>
-                <path d="M11 18L14.5 21.5L21 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <defs>
-                  <linearGradient id="footerGuideGrad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#D1AB4C"/>
-                    <stop offset="1" stopColor="#B08E3A"/>
-                  </linearGradient>
-                </defs>
+                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="#D1AB4C"/>
+                <path d="M11 18L14.5 21.5L21 14" stroke="#12214C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <p className="font-serif text-lg text-ink mb-2">Remain Faithful</p>
