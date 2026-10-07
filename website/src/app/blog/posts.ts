@@ -6,9 +6,150 @@ export interface Post {
   date: string
   readTime: string
   body: string
+  /** Enables `> ` block quotes and `[text](https://...)` links in the body. */
+  rich?: boolean
 }
 
 export const posts: Post[] = [
+  {
+    slug: 'biblical-accountability',
+    title: 'You Were Never Meant to Fight Alone: What the Bible Says About Accountability',
+    excerpt:
+      'Most Christians fight their private sin by themselves. Scripture never asks us to. A look at accountability through the Bible and the preaching of John Piper, John MacArthur, and Voddie Baucham.',
+    category: 'Faith',
+    date: 'October 7, 2026',
+    readTime: '8 min read',
+    rich: true,
+    body: `
+Many Christians fight their worst sin by themselves. The struggle with porn or lust stays hidden. We pray about it late at night, promise God it was the last time, and tell no one. Keeping it private can feel like the humble thing to do.
+
+The Bible sees it differently. God deals with sin in the light, and he does it among his people. Accountability between believers is one of the ordinary ways he keeps us.
+
+## It Starts With God
+
+Before accountability is something we do with each other, it is something we live in before God. David prayed:
+
+> Search me, O God, and know my heart! Try me and know my thoughts! And see if there be any grievous way in me, and lead me in the way everlasting!
+> -- Psalm 139:23-24 (ESV)
+
+God already sees everything. Nothing on your phone or in your head is news to him. The real question is whether we will agree with him about it. Proverbs puts the choice plainly: "Whoever conceals his transgressions will not prosper, but he who confesses and forsakes them will obtain mercy" (Proverbs 28:13).
+
+Mercy is what he gives. "If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness" (1 John 1:9). For everyone in Christ, the verdict is already in. "There is therefore now no condemnation for those who are in Christ Jesus" (Romans 8:1).
+
+That order matters. We do not confess to a brother to earn God's forgiveness. Christ earned it for us at the cross. We confess to each other because we are already forgiven, and forgiven people have nothing left to protect. John ties the two together: "if we walk in the light, as he is in the light, we have fellowship with one another, and the blood of Jesus his Son cleanses us from all sin" (1 John 1:7). Walking in the light with God leads straight into honest fellowship with his people.
+
+## God Gave Us Each Other
+
+Scripture assumes we will need help.
+
+> Two are better than one, because they have a good reward for their toil. For if they fall, one will lift up his fellow. But woe to him who is alone when he falls and has not another to lift him up!
+> -- Ecclesiastes 4:9-10 (ESV)
+
+"Iron sharpens iron, and one man sharpens another" (Proverbs 27:17). That only happens when two people are close enough to rub against each other.
+
+Hebrews gives one of the clearest commands on this: "But exhort one another every day, as long as it is called 'today,' that none of you may be hardened by the deceitfulness of sin" (Hebrews 3:13). John Piper preached on that passage in 2012 and summed it up in one line:
+
+> Eternal security is a community project.
+> -- John Piper, [Eternal Security Is a Community Project](https://www.desiringgod.org/messages/eternal-security-is-a-community-project--2) (2012)
+
+In that sermon Piper is clear that God himself preserves everyone who belongs to Christ. He also says God does it through the words of other believers. Your perseverance is God's work, and he has chosen to use your brothers and sisters to do it.
+
+Why every day? Piper answered that in a later message:
+
+> You know why it says every day? Because you're being lied to every day.
+> -- John Piper, [Without Good Friends, You Will Die](https://www.desiringgod.org/messages/we-need-each-other/excerpts/without-good-friends-you-will-die) (2017)
+
+Temptation lies. It says this will satisfy, nobody will know, and it doesn't really matter. A friend who knows what you are facing can answer those lies with the truth. Piper says that is what Christian friendship is for:
+
+> Christian friendships exist for this: to say things that keep each other believing.
+> -- John Piper, [Without Good Friends, You Will Die](https://www.desiringgod.org/messages/we-need-each-other/excerpts/without-good-friends-you-will-die) (2017)
+
+Hebrews 10 adds the other side. We do more than warn each other. We push each other toward good: "And let us consider how to stir up one another to love and good works, not neglecting to meet together, as is the habit of some, but encouraging one another, and all the more as you see the Day drawing near" (Hebrews 10:24-25).
+
+## Sin Wants You Alone
+
+Temptation is strongest when we are isolated. John MacArthur said it this way in a 1989 sermon on Galatians 6:
+
+> Have I any need to remind you that sin likes to have you alone; and the more alone you are, the more tempted you are; and the more isolated you are, the more tempted you are?
+> -- John MacArthur, [Helping Others Walk by the Spirit](https://www.gty.org/sermons/90-35/helping-others-walk-by-the-spirit) (1989)
+
+Most of us know this from experience. The hardest moments tend to come late, alone, with a phone in hand.
+
+Paul tells the church what to do about it:
+
+> Brothers, if anyone is caught in any transgression, you who are spiritual should restore him in a spirit of gentleness. Keep watch on yourself, lest you too be tempted. Bear one another's burdens, and so fulfill the law of Christ.
+> -- Galatians 6:1-2 (ESV)
+
+In that same sermon, MacArthur described how he helps people carry a burden like this. He meets with them regularly or talks with them by phone, and he asks them to do something simple:
+
+> I want you to report to me every time that you fell to that temptation. Keep a list, write it down, and read me the list when we meet.
+> -- John MacArthur, [Helping Others Walk by the Spirit](https://www.gty.org/sermons/90-35/helping-others-walk-by-the-spirit) (1989)
+
+Then he explained why it helps:
+
+> They don't want to read that list, so they don't do that sin.
+> -- John MacArthur, [Helping Others Walk by the Spirit](https://www.gty.org/sermons/90-35/helping-others-walk-by-the-spirit) (1989)
+
+There is nothing clever about it. God made us to be helped by people who love us. Knowing a friend will ask is real help in the moment temptation comes.
+
+James says it in one verse: "Therefore, confess your sins to one another and pray for one another, that you may be healed" (James 5:16). Confession to God brings forgiveness. Confession to a brother or sister also brings their prayers, their help, and their company. MacArthur closed his 1989 sermon with this picture of the church:
+
+> God has set in motion the church as an accountability body closely knit together for the purpose of the spiritual coming alongside the fleshly to lift them up, to hold them up, to build them up.
+> -- John MacArthur, [Helping Others Walk by the Spirit](https://www.gty.org/sermons/90-35/helping-others-walk-by-the-spirit) (1989)
+
+Preaching the same passage in 2018, he put the charge in seven words:
+
+> Don't let them carry their burden alone.
+> -- John MacArthur, [Restoring the Sinning Brother](https://www.gty.org/sermons/48-40/restoring-the-sinning-brother) (2018)
+
+## The Fight Doesn't End When You Come to Christ
+
+Some believers are ashamed that they still struggle after years of following Jesus. They assume a real Christian would be past this by now. The late Voddie Baucham wrote in Tabletalk magazine that
+
+> coming to faith in Christ is the end of our enmity with God, but it is in nowise an end of warfare.
+> -- Voddie Baucham, [Pilgrims in a Post-Christian Culture](https://learn.ligonier.org/articles/pilgrims-in-a-post-christian-culture) (2012)
+
+In the same article he warned that the struggle can get harder after conversion:
+
+> our battle with the world, the flesh, and the Devil only intensifies once we have crossed from death to life.
+> -- Voddie Baucham, [Pilgrims in a Post-Christian Culture](https://learn.ligonier.org/articles/pilgrims-in-a-post-christian-culture) (2012)
+
+So the fight is normal. It does not mean you are not saved. Paul says, "No temptation has overtaken you that is not common to man. God is faithful, and he will not let you be tempted beyond your ability, but with the temptation he will also provide the way of escape, that you may be able to endure it" (1 Corinthians 10:13). Often the way of escape God provides comes through another believer.
+
+Preaching on Titus 2 and the call for older believers to teach younger ones, Baucham said:
+
+> Godly mature men and women are a gift that God has given to his church.
+> -- Voddie Baucham, [The Sufficiency of Scripture in the Disciple-Making Ministry of the Church and the Home](https://churchandfamilylife.com/resources/60ca801423fa965169a3cd52/the-sufficiency-of-scripture-in-the-disciplemaking-ministry-of-the-church-and-the-home)
+
+If you are younger in the faith, look for those people in your church. Men, ask an older brother to walk with you. Women, ask an older sister. If you are the older one, be that person for someone.
+
+## What Good Accountability Looks Like
+
+Accountability can go wrong. It can turn into a checklist, a guilt session, or a way to police each other. The Bible describes something better.
+
+It is gentle. Galatians 6:1 says to restore "in a spirit of gentleness." The goal is to bring a brother back to Christ. Winning the conversation is not the goal.
+
+It is humble. The same verse says, "Keep watch on yourself, lest you too be tempted." The person asking the hard questions is a sinner saved by grace too.
+
+It is honest and specific. "I've been struggling a little" gives a friend nothing to pray about. Say what happened.
+
+It is regular. Hebrews says "every day." Most of us can't meet daily, but we can text, call, and meet often enough that the friendship is already real when the hard day comes.
+
+It starts close. When Jesus taught about a brother's sin, the first step was to go "between you and him alone" (Matthew 18:15). Most of this work happens between a few people who trust each other.
+
+And it points to Christ. The aim is holiness and joy in God. A clean record is not the point. Piper's phrase fits here: we are trying to keep each other believing.
+
+## Where to Start
+
+Pick one believer you trust and tell him or her the truth this week. Be specific. If no one comes to mind, ask your pastor to help you find someone. Set a regular time to meet or call. Open the Bible together, confess, pray, and keep showing up.
+
+We built Remain Faithful to help with one part of this. It is a free, open-source, donation-funded iPhone app for adults who want to pursue sexual purity together. You choose one partner or a group of 3 to 12 people. When something concerning happens on your phone, they get a short alert with a category and severity level. They never see screenshots or the content itself. It is for adults holding themselves accountable. It is not a parental-control tool. The app is coming soon to iPhone. It can help start an honest conversation, and it cannot replace a friend, a pastor, or a local church.
+
+Our hope rests on Christ. He carried our sin to the cross, and he has given us his people so we do not carry our burdens alone. You were never meant to fight alone.
+
+Scripture quotations are from the ESV Bible (The Holy Bible, English Standard Version), copyright 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.
+    `.trim(),
+  },
   {
     slug: 'why-accountability-fails',
     title: 'Why Accountability Fails (And How RF Fixes It)',
