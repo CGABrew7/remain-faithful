@@ -21,8 +21,10 @@ export default function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
           </button>
-          <div className={`overflow-hidden transition-[max-height] duration-300 ${open === i ? 'max-h-96' : 'max-h-0'}`}>
-            <p className="pb-5 text-ink-soft leading-relaxed">{faq.a}</p>
+          <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${open === i ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+            <div className="overflow-hidden">
+              <p className="pb-5 leading-relaxed text-ink-soft">{faq.a}</p>
+            </div>
           </div>
         </div>
       ))}

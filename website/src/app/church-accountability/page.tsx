@@ -24,10 +24,10 @@ export default function ChurchAccountability() {
             Remain Faithful brings structured, technology-assisted accountability to your church. It is free for every church, regardless of size. There are no licenses, no organizational tiers, and no cost to your congregation.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/partners" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+            <Link href="/partners" className="btn-wax">
               Register Your Church
             </Link>
-            <Link href="/group-setup-guide" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-ink border border-hairline hover:border-wax/50 hover:bg-paper-deep transition-colors">
+            <Link href="/group-setup-guide" className="btn-ghost">
               Download Group Setup Guide
             </Link>
           </div>
@@ -133,10 +133,10 @@ export default function ChurchAccountability() {
           <h2 className="font-serif text-2xl font-bold text-ink mb-4">Bring Remain Faithful to Your Church</h2>
           <p className="text-ink-soft mb-6">Free for your congregation. No license, no cost, no catch.</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/partners" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+            <Link href="/partners" className="btn-wax">
               Register Your Ministry
             </Link>
-            <Link href="/#download" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-ink border border-hairline hover:border-wax/50 hover:bg-paper-deep transition-colors">
+            <Link href="/#download" className="btn-ghost">
               Get started
             </Link>
           </div>

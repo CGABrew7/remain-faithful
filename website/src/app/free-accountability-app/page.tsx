@@ -69,7 +69,7 @@ export default function FreeAccountabilityApp() {
             <p className="text-ink-soft text-lg leading-relaxed mb-6">
               Remain Faithful is a free accountability app for iPhone. No subscription. No premium features. No advertising. On-device AI keeps your screen content private. Built for Christians serious about purity.
             </p>
-            <Link href="/#download" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] shadow-lg ">
+            <Link href="/#download" className="btn-wax">
               Get started (Free)
             </Link>
           </div>
@@ -197,7 +197,7 @@ export default function FreeAccountabilityApp() {
           <div className="text-center p-10 rounded-sm border border-wax/25" >
             <h2 className="font-serif text-2xl font-bold text-ink mb-4">Get started. It&apos;s Free.</h2>
             <p className="text-ink-soft mb-6">No credit card. No subscription. No catch.</p>
-            <Link href="/#download" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+            <Link href="/#download" className="btn-wax">
               Get started
             </Link>
             <p className="text-xs text-ink-soft/60 mt-4">

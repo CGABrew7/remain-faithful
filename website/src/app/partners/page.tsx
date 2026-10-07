@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import PhoneFrame from '@/components/PhoneFrame'
 import PilotForm from '@/components/PilotForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
@@ -16,27 +17,25 @@ export default function PartnersPage() {
         <Breadcrumbs items={[{ name: 'Partners', url: 'https://remainfaithful.com/partners' }]} />
       </div>
       {/* Hero */}
-      <section className="pt-8 pb-20 border-b border-hairline">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-4">For Pastors &amp; Ministry Leaders</p>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6">
+      <section className="border-b border-white/10 pb-20 pt-8">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:px-8">
+          <div>
+          <p className="kicker mb-4">For Pastors &amp; Ministry Leaders</p>
+          <h1 className="mb-6 font-serif text-4xl font-bold text-ink sm:text-5xl lg:text-6xl">
             Equip Your Church&apos;s Accountability Ministry
           </h1>
-          <p className="text-ink-soft text-lg max-w-2xl mx-auto">
+          <p className="max-w-2xl text-lg text-ink-soft">
             Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and ministry programs — at no cost to your church.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <a
-              href="/#download"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
-            >
+          <div className="mt-8 flex flex-wrap gap-4">
+            <a href="/#download" className="btn-wax">
               Get started
             </a>
             <a
               href="/group-setup-guide"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-ink border border-hairline hover:border-wax/50 hover:bg-paper-deep transition-[border-color,background-color,scale] duration-200 ease-out active:scale-[0.96]"
+              className="btn-ghost"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -44,6 +43,11 @@ export default function PartnersPage() {
               Download Group Setup Guide
             </a>
           </div>
+          </div>
+          <PhoneFrame
+            src="/screens/group.png"
+            alt="Remain Faithful group screen with member count, group covenant, and invite member."
+          />
         </div>
       </section>
 
@@ -56,7 +60,7 @@ export default function PartnersPage() {
               From small accountability triads to church-wide programs, RF scales to your structure.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid gap-5 lg:grid-cols-12">
             {[
               {
                 title: 'Structured Accountability',
@@ -74,8 +78,8 @@ export default function PartnersPage() {
                 title: 'Privacy by Design',
                 desc: 'Screen content stays on member devices. You see alert metadata, not surveillance footage. Dignity is preserved.',
               },
-            ].map((b) => (
-              <div key={b.title} className="rounded-sm p-6 border border-hairline bg-paper-deep">
+            ].map((b, i) => (
+              <div key={b.title} className={`rounded-sm border border-hairline bg-paper-deep p-7 ${i === 0 || i === 3 ? 'lg:col-span-7' : 'lg:col-span-5'}`}>
                 <h3 className="font-serif text-lg font-semibold text-ink mb-2">{b.title}</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">{b.desc}</p>
               </div>
@@ -110,7 +114,7 @@ export default function PartnersPage() {
               href="/group-setup-guide"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] whitespace-nowrap text-sm"
+              className="btn-wax whitespace-nowrap text-sm"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>

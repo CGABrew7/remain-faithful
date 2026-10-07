@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Playfair_Display, Source_Sans_3 } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
@@ -9,15 +9,15 @@ import { organizationSchema, websiteSchema } from '@/lib/structured-data'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
-  weight: ['400', '600', '700'],
+  weight: ['500', '600', '700'],
   variable: '--font-playfair',
   display: 'swap',
 })
 
-const inter = Inter({
+const sourceSans = Source_Sans_3({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-source',
   display: 'swap',
 })
 
@@ -100,9 +100,10 @@ export default function RootLayout({
   const gaId = process.env.NEXT_PUBLIC_GA_ID
 
   return (
-    <html lang="en" className={`scroll-smooth ${playfair.variable} ${inter.variable}`}>
+    <html lang="en" className={`scroll-smooth ${playfair.variable} ${sourceSans.variable}`}>
       <head />
-      <body className="bg-navy text-cream font-sans">
+      <body className="text-ink-soft font-sans">
+        <a href="#main" className="skip">Skip to content</a>
         {gaId && (
           <>
             <Script
@@ -122,7 +123,7 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <Nav />
-        <main className="min-h-screen">{children}</main>
+        <main id="main" className="min-h-screen">{children}</main>
         <Footer />
       </body>
     </html>

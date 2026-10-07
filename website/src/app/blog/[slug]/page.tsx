@@ -173,7 +173,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               </p>
               <Link
                 href="/#download"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96] text-sm"
+                className="btn-wax text-sm"
               >
                 Get started
               </Link>
@@ -219,7 +219,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               </p>
               <Link
                 href="/#donate"
-                className="block text-center py-2.5 rounded-sm text-sm font-semibold text-paper bg-wax"
+                className="btn-wax w-full text-sm"
               >
                 Support the Project
               </Link>

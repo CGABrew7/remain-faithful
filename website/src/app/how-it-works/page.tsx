@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import FaqAccordion from '@/components/FaqAccordion'
+import PhoneFrame from '@/components/PhoneFrame'
 import { JsonLd } from '@/components/JsonLd'
 import { howItWorksFaqSchema } from '@/lib/structured-data'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
@@ -50,16 +51,22 @@ export default function HowItWorksPage() {
         <Breadcrumbs items={[{ name: 'How It Works', url: 'https://remainfaithful.com/how-it-works' }]} />
       </div>
       {/* Hero */}
-      <section className="pt-8 pb-20 border-b border-hairline">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-4">The Method</p>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6">
-            How Remain Faithful Works
-          </h1>
-          <p className="text-ink-soft text-lg max-w-2xl mx-auto">
-            Always-on Family Controls filtering is the credible core. Deep Scan is optional.
-            Built on peer trust, on-device privacy, and the covenant model.
-          </p>
+      <section className="border-b border-white/10 pb-20 pt-8">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:px-8">
+          <div>
+            <p className="kicker mb-4">The Method</p>
+            <h1 className="mb-6 font-serif text-4xl font-bold text-ink sm:text-5xl lg:text-6xl">
+              How Remain Faithful Works
+            </h1>
+            <p className="max-w-xl text-lg text-ink-soft">
+              Always-on Family Controls filtering is the credible core. Deep Scan is optional.
+              Built on peer trust, on-device privacy, and the covenant model.
+            </p>
+          </div>
+          <PhoneFrame
+            src="/screens/home.png"
+            alt="Remain Faithful home screen with monitoring status, verse of the day, and recent flags."
+          />
         </div>
       </section>
 
@@ -330,7 +337,7 @@ export default function HowItWorksPage() {
           <p className="text-ink-soft mb-8">Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.</p>
           <a
             href="/#download"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
+            className="btn-wax"
           >
             Get started
           </a>

@@ -232,7 +232,7 @@ export default function AboutPage() {
           </p>
           <Link
             href="/#donate"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]"
+            className="btn-wax"
           >
             Support the Project
           </Link>
