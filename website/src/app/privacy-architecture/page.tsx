@@ -216,8 +216,8 @@ export default function PrivacyArchitecturePage() {
                 ].map(([item, server, partners]) => (
                   <tr key={item} className="hover:bg-paper-deep/50 transition-colors">
                     <td className="py-3.5 text-ink">{item}</td>
-                    <td className={`py-3.5 text-center font-medium ${server.startsWith('✗') ? 'text-red-400' : 'text-green-400'}`}>{server}</td>
-                    <td className={`py-3.5 text-center font-medium ${partners.startsWith('✗') ? 'text-red-400' : 'text-green-400'}`}>{partners}</td>
+                    <td className={`py-3.5 text-center font-medium ${server.startsWith('✗') ? 'text-ink-faint' : 'text-wax'}`}>{server}</td>
+                    <td className={`py-3.5 text-center font-medium ${partners.startsWith('✗') ? 'text-ink-faint' : 'text-wax'}`}>{partners}</td>
                   </tr>
                 ))}
               </tbody>
@@ -400,7 +400,7 @@ export default function PrivacyArchitecturePage() {
                 ].map(([dim, rf, ce, ea]) => (
                   <tr key={dim} className="hover:bg-paper-deep/50 transition-colors">
                     <td className="py-3.5 text-ink">{dim}</td>
-                    <td className="py-3.5 text-center font-medium text-green-400">{rf}</td>
+                    <td className="py-3.5 text-center font-medium text-wax">{rf}</td>
                     <td className="py-3.5 text-center font-medium text-ink-soft">{ce}</td>
                     <td className="py-3.5 text-center font-medium text-ink-soft">{ea}</td>
                   </tr>
