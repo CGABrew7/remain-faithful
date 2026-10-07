@@ -157,8 +157,8 @@ export default function HowItWorksPage() {
             <div className="absolute left-7 top-10 bottom-10 w-px bg-wax/30" />
 
             <div className="ml-4 pb-1 pt-2">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-sm bg-green-400" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-sm bg-wax" />
                 Layer 1 — Always-On Filtering
               </span>
             </div>
@@ -187,8 +187,8 @@ export default function HowItWorksPage() {
             ))}
 
             <div className="ml-4 pb-1 pt-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-sm bg-green-400" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-sm bg-wax" />
                 Layer 2 — DeviceActivity Usage Monitoring
               </span>
             </div>
@@ -206,8 +206,8 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="ml-4 pb-1 pt-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-green-500/10 border border-green-500/25 text-green-400 text-xs font-bold uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-sm bg-green-400" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-sm bg-wax" />
                 Layer 3 — Time-Window Shielding
               </span>
             </div>

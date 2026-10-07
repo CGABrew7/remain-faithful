@@ -263,7 +263,7 @@ export default function PartnersPage() {
                 </ol>
               </div>
               <div className="rounded-sm p-5 border border-hairline bg-paper-deep">
-                <p className="text-xs text-ink-soft/70 uppercase tracking-wide mb-2">Important Note</p>
+                <p className="text-xs text-ink-faint uppercase tracking-wide mb-2">Important Note</p>
                 <p className="text-sm text-ink-soft leading-relaxed">
                   RF is not a clinical tool and is not a replacement for counseling, therapy, or professional addiction treatment. It is a peer accountability tool designed for voluntary use within healthy community structures.
                 </p>
