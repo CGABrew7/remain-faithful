@@ -35,7 +35,7 @@ export default function PrivacyArchitecturePage() {
       <section className="pt-32 pb-20 border-b border-hairline">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-sm bg-wax/10 border border-wax/25 mb-6">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
@@ -111,11 +111,11 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Start"
-                badgeColor="#5a5148"
+                badgeColor="#8E98B8"
                 title="Deep Scan Captures a Screen Frame (Opt-In)"
                 desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, alert metadata is uploaded: category, severity, timestamp, and a short system-generated summary string. Screenshots, OCR text, and raw screen content are never transmitted. DRM apps render as black frames."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
                     <line x1="12" y1="18" x2="12.01" y2="18"/>
                   </svg>
@@ -126,11 +126,11 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Tier 1 · On-Device Rules"
-                badgeColor="#7a2c28"
+                badgeColor="#D1AB4C"
                 title="Rules: URL Blocklist + Keyword Matching"
                 desc="Known adult domains are checked against a local blocklist. Visible text is pattern-matched against regex rules. Fast, deterministic, 100% on-device. No AI required."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
                     <polyline points="9 11 12 14 22 4"/>
                     <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                   </svg>
@@ -141,11 +141,11 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Tier 2 · On-Device AI"
-                badgeColor="#7a2c28"
+                badgeColor="#D1AB4C"
                 title="On-Device AI: Apple SensitiveContentAnalysis + Vision OCR + Text Classifier"
                 desc="Apple Vision OCR extracts text; SensitiveContentAnalysis detects explicit imagery; a local keyword classifier scores the result. All three run on the device's Neural Engine — the dedicated AI chip in modern iPhones. No server involved at any stage."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
                     <circle cx="12" cy="12" r="3"/>
                     <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
                   </svg>
@@ -156,11 +156,11 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Result"
-                badgeColor="#5a5148"
+                badgeColor="#8E98B8"
                 title="Discreet Alert Delivered to Partners"
                 desc="Partners may receive a short system-generated summary string in addition to category, severity, and timestamp. Never which app. Never a screenshot. Never your browsing history. Never raw OCR text or screen content. The open-source code lets anyone verify exactly what is uploaded."
                 icon={
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
                     <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
                   </svg>
                 }
@@ -300,7 +300,7 @@ export default function PrivacyArchitecturePage() {
               <div key={t.threat} className="rounded-sm p-7 border border-hairline bg-paper-deep">
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-6 h-6 rounded-sm bg-wax/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2.5" strokeLinecap="round">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                   </div>
@@ -354,7 +354,7 @@ export default function PrivacyArchitecturePage() {
                   'Pre-commit secret scanning prevents credential leaks',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
-                    <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2.5" strokeLinecap="round">
+                    <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2.5" strokeLinecap="round">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                     {item}
@@ -472,8 +472,8 @@ function PipelineStep({
               <span
                 className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm"
                 style={{
-                  background: badgeColor === '#7a2c28' ? 'rgba(122, 44, 40, 0.12)' : 'rgba(29, 24, 20, 0.06)',
-                  color: badgeColor === '#7a2c28' ? '#7a2c28' : '#5a5148',
+                  background: badgeColor === '#D1AB4C' ? 'rgba(209, 171, 76, 0.14)' : 'rgba(255, 255, 255, 0.06)',
+                  color: badgeColor === '#D1AB4C' ? '#D1AB4C' : '#8E98B8',
                 }}
               >
                 {badge}

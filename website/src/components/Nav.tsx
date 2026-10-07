@@ -51,7 +51,7 @@ export default function Nav() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2.5 group min-h-10">
             <WaxMark />
-            <span className={`font-serif text-[1.15rem] tracking-tight transition-colors duration-200 ${inkNav ? 'text-ink' : 'text-paper'}`}>
+            <span className="font-serif text-[1.15rem] tracking-tight text-ink">
               Remain Faithful
             </span>
           </Link>
@@ -71,10 +71,10 @@ export default function Nav() {
                     current
                       ? inkNav
                         ? 'text-wax'
-                        : 'text-paper'
+                        : 'text-ink'
                       : inkNav
                         ? 'text-ink-soft hover:text-ink'
-                        : 'text-paper/70 hover:text-paper'
+                        : 'text-ink/70 hover:text-ink'
                   }`}
                 >
                   {link.label}
@@ -86,16 +86,14 @@ export default function Nav() {
           <div className="hidden md:flex items-center">
             <Link
               href="/#download"
-              className={inkNav ? 'btn-wax !py-2 !px-4' : 'btn-ghost !py-2 !px-4 !text-paper !shadow-[0_0_0_1px_rgba(255,255,255,0.18)] hover:!bg-white/5'}
+              className={inkNav ? 'btn-wax !py-2 !px-4' : 'btn-ghost !py-2 !px-4 !text-ink !shadow-[0_0_0_1px_rgba(255,255,255,0.18)] hover:!bg-white/5'}
             >
               Get started
             </Link>
           </div>
 
           <button
-            className={`md:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-1.5 ${
-              inkNav ? 'text-ink' : 'text-paper'
-            }`}
+            className="md:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-1.5 text-ink"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
@@ -161,11 +159,11 @@ function WaxMark() {
     >
       <path
         d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z"
-        fill="#7a2c28"
+        fill="#D1AB4C"
       />
       <path
         d="M11 18L14.5 21.5L21 14"
-        stroke="#ece6d8"
+        stroke="#12214C"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"

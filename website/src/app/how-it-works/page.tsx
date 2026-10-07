@@ -347,7 +347,7 @@ function ModeCard({ title, points }: { title: string; points: string[] }) {
       <ul className="space-y-2.5">
         {points.map((p, i) => (
           <li key={i} className="flex gap-3 text-sm text-ink-soft leading-relaxed">
-            <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2.5" strokeLinecap="round">
+            <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2.5" strokeLinecap="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             {p}

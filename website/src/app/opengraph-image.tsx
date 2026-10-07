@@ -10,7 +10,7 @@ export default async function Image() {
     (
       <div
         style={{
-          background: '#1c1713',
+          background: '#12214C',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -21,7 +21,7 @@ export default async function Image() {
       >
         <div
           style={{
-            background: '#ece6d8',
+            background: '#1C3066',
             width: '100%',
             height: '100%',
             display: 'flex',
@@ -35,7 +35,7 @@ export default async function Image() {
               fontSize: 18,
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
-              color: '#85786c',
+              color: '#D1AB4C',
               marginBottom: 24,
             }}
           >
@@ -44,7 +44,7 @@ export default async function Image() {
           <div
             style={{
               fontSize: 72,
-              color: '#1d1814',
+              color: '#FFFFFF',
               lineHeight: 1.05,
               letterSpacing: '-1px',
             }}
@@ -55,7 +55,7 @@ export default async function Image() {
             style={{
               marginTop: 20,
               fontSize: 28,
-              color: '#5a5148',
+              color: '#C5CBE0',
               lineHeight: 1.35,
               maxWidth: 720,
             }}
@@ -68,7 +68,7 @@ export default async function Image() {
               width: 48,
               height: 48,
               borderRadius: 24,
-              background: '#7a2c28',
+              background: '#D1AB4C',
             }}
           />
         </div>

@@ -99,7 +99,7 @@ export default function HomePage() {
 
         <h1
           id="letter-heading"
-          className="font-serif font-normal text-[2.6rem] sm:text-6xl leading-[1.08] tracking-[-0.02em] text-ink mb-6"
+          className="font-serif font-bold text-[2.6rem] sm:text-6xl leading-[1.08] tracking-[-0.02em] text-ink mb-6"
         >
           Remain Faithful
         </h1>
@@ -146,7 +146,7 @@ export default function HomePage() {
         <div className="download-card">
           <div className="download-pane">
             <p className="kicker mb-4">iPhone · iOS 17+</p>
-            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-4">
+            <h2 className="font-serif font-bold text-3xl sm:text-4xl text-ink mb-4">
               Get started
             </h2>
             <p className="text-ink-soft text-lg leading-relaxed max-w-[40ch]">
@@ -175,7 +175,7 @@ export default function HomePage() {
 
       <section id="waitlist" className="page-section">
         <p className="kicker mb-4">Updates</p>
-        <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-4">
+        <h2 className="font-serif font-bold text-3xl sm:text-4xl text-ink mb-4">
           Write your name down.
         </h2>
         <p className="text-ink-soft text-lg leading-relaxed mb-8 max-w-[40ch]">
@@ -188,7 +188,7 @@ export default function HomePage() {
 
       <section className="page-section !pt-0">
         <p className="kicker mb-4">What it is</p>
-        <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-5">
+        <h2 className="font-serif font-bold text-3xl sm:text-4xl text-ink mb-5">
           Built on covenant, not a stage.
         </h2>
         <p className="text-ink-soft text-lg leading-relaxed mb-10 max-w-[46ch]">
@@ -225,7 +225,7 @@ export default function HomePage() {
 
       <section className="page-section !pt-0" aria-labelledby="method-heading">
         <p className="kicker mb-4">The method</p>
-        <h2 id="method-heading" className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-4">
+        <h2 id="method-heading" className="font-serif font-bold text-3xl sm:text-4xl text-ink mb-4">
           Three steps to real accountability
         </h2>
         <p className="text-ink-soft text-lg leading-relaxed mb-8 max-w-[46ch]">
@@ -301,7 +301,7 @@ export default function HomePage() {
 
       <section className="page-section !pt-0">
         <p className="kicker mb-4">Common questions</p>
-        <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-10">
+        <h2 className="font-serif font-bold text-3xl sm:text-4xl text-ink mb-10">
           Frequently asked questions
         </h2>
 
@@ -319,7 +319,7 @@ export default function HomePage() {
 
       <section id="donate" className="page-section !pt-0 pb-24">
         <p className="kicker mb-4">Sustain the work</p>
-        <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-5">
+        <h2 className="font-serif font-bold text-3xl sm:text-4xl text-ink mb-5">
           Keep Remain Faithful free
         </h2>
         <p className="text-ink-soft text-lg leading-relaxed mb-10 max-w-[40ch]">

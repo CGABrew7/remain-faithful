@@ -29,8 +29,8 @@ export default function GroupSetupGuidePage() {
                 <path d="M11 18L14.5 21.5L21 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <defs>
                   <linearGradient id="guideShieldGrad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#7a2c28"/>
-                    <stop offset="1" stopColor="#5c211e"/>
+                    <stop stopColor="#D1AB4C"/>
+                    <stop offset="1" stopColor="#B08E3A"/>
                   </linearGradient>
                 </defs>
               </svg>
@@ -273,8 +273,8 @@ export default function GroupSetupGuidePage() {
                 <path d="M11 18L14.5 21.5L21 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <defs>
                   <linearGradient id="footerGuideGrad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#7a2c28"/>
-                    <stop offset="1" stopColor="#5c211e"/>
+                    <stop stopColor="#D1AB4C"/>
+                    <stop offset="1" stopColor="#B08E3A"/>
                   </linearGradient>
                 </defs>
               </svg>

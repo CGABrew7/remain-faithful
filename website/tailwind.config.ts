@@ -10,35 +10,35 @@ const config: Config = {
     extend: {
       colors: {
         navy: {
-          DEFAULT: '#0F1B2D',
-          light: '#162235',
-          border: '#1E3050',
+          DEFAULT: '#12214C',
+          light: '#1C3066',
+          border: '#2B3C70',
         },
         gold: {
-          DEFAULT: '#C9A84C',
-          light: '#E8C87A',
+          DEFAULT: '#D1AB4C',
+          light: '#E2C46E',
         },
         cream: {
-          DEFAULT: '#F0EDE8',
-          muted: '#8A9BB0',
+          DEFAULT: '#FFFFFF',
+          muted: '#8E98B8',
         },
         // Keep old class names working while pages migrate off paper/wax.
         paper: {
-          DEFAULT: '#0F1B2D',
-          deep: '#0B1422',
-          raised: '#162235',
-          night: '#0A1628',
+          DEFAULT: '#12214C',
+          deep: '#0E1A3E',
+          raised: '#1C3066',
+          night: '#0C1638',
         },
         ink: {
-          DEFAULT: '#F0EDE8',
-          soft: '#C5C0B8',
-          faint: '#8A9BB0',
+          DEFAULT: '#FFFFFF',
+          soft: '#C5CBE0',
+          faint: '#8E98B8',
         },
         wax: {
-          DEFAULT: '#C9A84C',
-          deep: '#A88B38',
+          DEFAULT: '#D1AB4C',
+          deep: '#B08E3A',
         },
-        hairline: 'rgba(201, 168, 76, 0.22)',
+        hairline: 'rgba(209, 171, 76, 0.22)',
       },
       fontFamily: {
         serif: ['var(--font-playfair)', 'Georgia', 'serif'],
@@ -46,8 +46,8 @@ const config: Config = {
         mono: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
-        'gold-gradient': 'linear-gradient(135deg, #C9A84C, #E8C87A)',
-        'navy-gradient': 'linear-gradient(180deg, #0F1B2D 0%, #162235 100%)',
+        'gold-gradient': 'linear-gradient(135deg, #D1AB4C, #E2C46E)',
+        'navy-gradient': 'linear-gradient(180deg, #12214C 0%, #162756 50%, #1A2D61 100%)',
       },
     },
   },
