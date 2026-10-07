@@ -173,11 +173,11 @@ export default function WhatIsAccountabilitySoftware() {
                   <h3 className="font-semibold text-ink mb-3">{item.title}</h3>
                   <div className="grid sm:grid-cols-2 gap-3 mb-3">
                     <div>
-                      <p className="text-xs text-green-400 font-semibold uppercase tracking-wide mb-1">Advantages</p>
+                      <p className="text-xs text-wax font-semibold uppercase tracking-wide mb-1">Advantages</p>
                       <p className="text-sm text-ink-soft leading-relaxed">{item.pros}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-red-400 font-semibold uppercase tracking-wide mb-1">Limitations</p>
+                      <p className="text-xs text-ink-faint font-semibold uppercase tracking-wide mb-1">Limitations</p>
                       <p className="text-sm text-ink-soft leading-relaxed">{item.cons}</p>
                     </div>
                   </div>
