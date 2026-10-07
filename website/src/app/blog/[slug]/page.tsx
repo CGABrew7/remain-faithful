@@ -41,7 +41,8 @@ export async function generateMetadata({
   if (!post) return {}
   const displayTitle = blogTitles[post.slug] || post.title
   return {
-    title: `${displayTitle} | Remain Faithful`,
+    // Root layout's title.template appends " | Remain Faithful".
+    title: displayTitle,
     description: post.excerpt,
     alternates: { canonical: `https://remainfaithful.com/blog/${post.slug}` },
     openGraph: {
