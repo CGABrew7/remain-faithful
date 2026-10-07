@@ -92,7 +92,7 @@ export default function PartnersPage() {
             
           >
             <div className="w-16 h-16 rounded-sm bg-wax/15 border border-wax/30 flex items-center justify-center flex-shrink-0">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7a2c28" strokeWidth="2" strokeLinecap="round">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
@@ -284,7 +284,7 @@ export default function PartnersPage() {
             {[
               {
                 phase: 'Before Launch',
-                color: '#7a2c28',
+                color: '#D1AB4C',
                 items: [
                   'Leader has installed RF and authorized always-on filtering personally',
                   'Leader has read the Group Setup Guide',
@@ -295,7 +295,7 @@ export default function PartnersPage() {
               },
               {
                 phase: 'During Launch Week',
-                color: '#7a2c28',
+                color: '#D1AB4C',
                 items: [
                   'Covenant discussed and agreed on by all members',
                   'All members have installed RF and created accounts',
@@ -306,7 +306,7 @@ export default function PartnersPage() {
               },
               {
                 phase: 'First 30 Days',
-                color: '#7a2c28',
+                color: '#D1AB4C',
                 items: [
                   'At least one alert has been responded to with grace',
                   'Group has had at least one conversation that started with an alert',
