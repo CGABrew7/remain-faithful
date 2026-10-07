@@ -194,7 +194,7 @@ export default function PartnersPage() {
                   'Don\'t expect the app to do the relational work. RF is infrastructure, not relationship.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
-                    <svg className="flex-shrink-0 mt-0.5 text-red-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <svg className="flex-shrink-0 mt-0.5 text-ink-faint" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
                     {item}
