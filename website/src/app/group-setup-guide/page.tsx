@@ -281,7 +281,7 @@ export default function GroupSetupGuidePage() {
             </div>
             <p className="font-serif text-lg text-ink mb-2">Remain Faithful</p>
             <p className="text-sm text-ink-soft mb-4">Free peer accountability for adults committed to purity.</p>
-            <p className="text-xs text-ink-soft/60">
+            <p className="text-xs text-ink-faint">
               remainfaithful.com &nbsp;|&nbsp; support@remainfaithful.com &nbsp;|&nbsp; Free forever
             </p>
           </div>

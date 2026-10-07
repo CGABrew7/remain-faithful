@@ -119,7 +119,7 @@ export default function ChristianAccountabilityApp() {
                   </div>
                   <div className="p-4 grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <p className="text-ink-soft/60 mb-1">Secular tools</p>
+                      <p className="text-ink-faint mb-1">Secular tools</p>
                       <p className="text-ink-soft">{row.secular}</p>
                     </div>
                     <div>

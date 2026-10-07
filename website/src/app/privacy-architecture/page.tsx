@@ -111,7 +111,7 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Start"
-                badgeColor="#8E98B8"
+                badgeColor="#B4BCD4"
                 title="Deep Scan Captures a Screen Frame (Opt-In)"
                 desc="If you start a Deep Scan session, Apple's ReplayKit creates a sandboxed broadcast extension process. All classification happens on-device. When a frame is flagged, alert metadata is uploaded: category, severity, timestamp, and a short system-generated summary string. Screenshots, OCR text, and raw screen content are never transmitted. DRM apps render as black frames."
                 icon={
@@ -156,7 +156,7 @@ export default function PrivacyArchitecturePage() {
               <PipelineStep
                 side="center"
                 badge="Result"
-                badgeColor="#8E98B8"
+                badgeColor="#B4BCD4"
                 title="Discreet Alert Delivered to Partners"
                 desc="Partners may receive a short system-generated summary string in addition to category, severity, and timestamp. Never which app. Never a screenshot. Never your browsing history. Never raw OCR text or screen content. The open-source code lets anyone verify exactly what is uploaded."
                 icon={
@@ -409,7 +409,7 @@ export default function PrivacyArchitecturePage() {
             </table>
           </div>
 
-          <p className="text-xs text-ink-soft/60 mt-6 text-center">
+          <p className="text-xs text-ink-faint mt-6 text-center">
             Competitor information based on publicly available documentation. All claims are verifiable via our open-source codebase.
           </p>
         </div>
@@ -473,7 +473,7 @@ function PipelineStep({
                 className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm"
                 style={{
                   background: badgeColor === '#D1AB4C' ? 'rgba(209, 171, 76, 0.14)' : 'rgba(255, 255, 255, 0.06)',
-                  color: badgeColor === '#D1AB4C' ? '#D1AB4C' : '#8E98B8',
+                  color: badgeColor === '#D1AB4C' ? '#D1AB4C' : '#B4BCD4',
                 }}
               >
                 {badge}

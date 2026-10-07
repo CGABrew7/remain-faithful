@@ -172,7 +172,7 @@ export default function FreeAccountabilityApp() {
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-ink-soft/60 mt-2">{COMPETITOR_PRICING_NOTE}</p>
+            <p className="text-xs text-ink-faint mt-2">{COMPETITOR_PRICING_NOTE}</p>
           </section>
 
           {/* FAQ */}
@@ -200,7 +200,7 @@ export default function FreeAccountabilityApp() {
             <Link href="/#download" className="btn-wax">
               Get started
             </Link>
-            <p className="text-xs text-ink-soft/60 mt-4">
+            <p className="text-xs text-ink-faint mt-4">
               Compare alternatives: <Link href="/compare/covenant-eyes" className="text-wax hover:underline">vs Covenant Eyes</Link> &middot; <Link href="/compare/ever-accountable" className="text-wax hover:underline">vs Ever Accountable</Link> &middot; <Link href="/compare/accountable2you" className="text-wax hover:underline">vs Accountable2You</Link>
             </p>
           </div>

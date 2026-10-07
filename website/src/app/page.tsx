@@ -207,7 +207,7 @@ export default function HomePage() {
 
       <section className="band section" aria-labelledby="method-heading">
         <div className="shell">
-          <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
             <div>
               <p className="kicker mb-4">The method</p>
               <h2 id="method-heading" className="font-serif text-4xl font-bold text-white sm:text-5xl">

@@ -181,7 +181,7 @@ export default function WhatIsAccountabilitySoftware() {
                       <p className="text-sm text-ink-soft leading-relaxed">{item.cons}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-ink-soft/60">Examples: {item.examples}</p>
+                  <p className="text-xs text-ink-faint">Examples: {item.examples}</p>
                 </div>
               ))}
             </div>
@@ -257,7 +257,7 @@ export default function WhatIsAccountabilitySoftware() {
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-ink-soft/60 mt-2">{COMPETITOR_PRICING_NOTE}</p>
+            <p className="text-xs text-ink-faint mt-2">{COMPETITOR_PRICING_NOTE}</p>
             <div className="mt-4 flex flex-wrap gap-3 text-sm">
               <Link href="/compare/covenant-eyes" className="text-wax hover:underline underline-offset-2">RF vs Covenant Eyes →</Link>
               <Link href="/compare/ever-accountable" className="text-wax hover:underline underline-offset-2">RF vs Ever Accountable →</Link>

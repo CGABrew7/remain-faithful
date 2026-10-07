@@ -22,7 +22,7 @@ const config: Config = {
         },
         cream: {
           DEFAULT: '#FFFFFF',
-          muted: '#8E98B8',
+          muted: '#B4BCD4',
         },
         paper: {
           DEFAULT: '#12214C',
@@ -33,7 +33,7 @@ const config: Config = {
         ink: {
           DEFAULT: '#FFFFFF',
           soft: '#C5CBE0',
-          faint: '#8E98B8',
+          faint: '#B4BCD4',
         },
         wax: {
           DEFAULT: '#D1AB4C',

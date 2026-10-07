@@ -227,7 +227,7 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
-          <p className="text-sm text-ink-soft/70 mb-8">
+          <p className="text-sm text-ink-faint mb-8">
             Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible.
           </p>
           <Link

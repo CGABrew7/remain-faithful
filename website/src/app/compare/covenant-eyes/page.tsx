@@ -75,7 +75,7 @@ export default function CovenantEyesCompare() {
           {/* Comparison Table */}
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Side-by-Side Comparison</h2>
-            <p className="text-xs text-ink-soft/60 mb-4">{COMPETITOR_PRICING_NOTE}</p>
+            <p className="text-xs text-ink-faint mb-4">{COMPETITOR_PRICING_NOTE}</p>
             <div className="overflow-x-auto rounded-sm border border-hairline">
               <table className="w-full text-sm">
                 <thead>

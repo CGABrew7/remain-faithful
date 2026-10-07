@@ -6,7 +6,7 @@
   Remain Faithful — navy chapel, gold accent.
   Palette from the iOS app (OnboardingView.swift):
   rfNavy #12214C, mid #162756, lift #1A2D61, deep #0C1D4C, gold #D1AB4C.
-  Muted text is #8E98B8 rather than #6B7799 so small type clears WCAG AA on navy.
+  Muted text is #B4BCD4 so small type stays at least 4.5:1 on the lighter cards.
 */
 
 :root {
@@ -15,7 +15,7 @@
   --paper-raised: #1A2D61;
   --ink: #ffffff;
   --ink-soft: #c5cbe0;
-  --ink-faint: #8e98b8;
+  --ink-faint: #b4bcd4;
   --hairline: rgba(255, 255, 255, 0.1);
   --gold-line: rgba(209, 171, 76, 0.45);
   --wax: #d1ab4c;
@@ -150,7 +150,7 @@
   }
 
   .input-field::placeholder {
-    color: #8e98b8;
+    color: #b4bcd4;
   }
 
   .input-field:focus {
@@ -351,13 +351,112 @@
       0 28px 50px -24px rgba(0, 0, 0, 0.75);
   }
 
-  .phone-screen {
-    display: block;
-    width: 100%;
-    height: auto;
+  .phone-clip {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 390 / 844;
     border-radius: 36px;
+    background: #12214c;
     outline: 1px solid rgba(255, 255, 255, 0.1);
     outline-offset: -1px;
+    container-type: inline-size;
+  }
+
+  .phone-clip-welcome {
+    background: #192c60;
+  }
+
+  .phone-screen {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  /* Welcome's bitmap clips the sign-in line under the home indicator.
+     Show the screen through the end of the button, then paint that line
+     and a clean indicator in the band below. */
+  .phone-clip-welcome .phone-screen {
+    height: 88%;
+    object-position: center 62%;
+  }
+
+  .phone-status {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 6.6%;
+    padding: 0 7.5% 1.1%;
+    background: #12214c;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .phone-time {
+    font-size: 4.4cqi;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .phone-glyphs {
+    display: flex;
+    align-items: center;
+    gap: 1.4cqi;
+  }
+
+  .phone-glyphs svg {
+    display: block;
+    height: 3.1cqi;
+    width: auto;
+    fill: #fff;
+  }
+
+  .phone-signin {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 12%;
+    margin: 0;
+    padding: 1.7cqi 6% 0;
+    background: #192c60;
+    color: #c5cbe0;
+    font-size: 3.55cqi;
+    font-weight: 400;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .phone-signin strong {
+    color: #d1ab4c;
+    font-weight: 600;
+  }
+
+  .phone-home-bar {
+    position: absolute;
+    bottom: 14%;
+    left: 50%;
+    display: block;
+    width: 34%;
+    height: 1.15cqi;
+    min-height: 4px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.88);
+    transform: translateX(-50%);
   }
 
   .phone-btn {
@@ -421,6 +520,7 @@
 
   .proof-bento .proof-lead {
     grid-row: span 2;
+    align-self: start;
   }
 
   .stepper {
