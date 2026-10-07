@@ -11,8 +11,10 @@ const config: Config = {
       colors: {
         navy: {
           DEFAULT: '#12214C',
-          light: '#1C3066',
-          border: '#2B3C70',
+          light: '#1A2D61',
+          mid: '#162756',
+          deep: '#0C1D4C',
+          border: 'rgba(255,255,255,0.10)',
         },
         gold: {
           DEFAULT: '#D1AB4C',
@@ -22,12 +24,11 @@ const config: Config = {
           DEFAULT: '#FFFFFF',
           muted: '#8E98B8',
         },
-        // Keep old class names working while pages migrate off paper/wax.
         paper: {
           DEFAULT: '#12214C',
-          deep: '#0E1A3E',
-          raised: '#1C3066',
-          night: '#0C1638',
+          deep: '#0C1D4C',
+          raised: '#1A2D61',
+          night: '#0C1D4C',
         },
         ink: {
           DEFAULT: '#FFFFFF',
@@ -38,16 +39,19 @@ const config: Config = {
           DEFAULT: '#D1AB4C',
           deep: '#B08E3A',
         },
-        hairline: 'rgba(209, 171, 76, 0.22)',
+        hairline: 'rgba(255, 255, 255, 0.10)',
       },
       fontFamily: {
         serif: ['var(--font-playfair)', 'Georgia', 'serif'],
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-source)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-source)', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
-        'gold-gradient': 'linear-gradient(135deg, #D1AB4C, #E2C46E)',
-        'navy-gradient': 'linear-gradient(180deg, #12214C 0%, #162756 50%, #1A2D61 100%)',
+        'gold-gradient': 'linear-gradient(180deg, #E2C46E, #D1AB4C)',
+        'navy-gradient': 'linear-gradient(180deg, #12214C 0%, #162756 48%, #1A2D61 100%)',
+      },
+      boxShadow: {
+        card: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 18px 40px -28px rgba(0,0,0,0.75)',
       },
     },
   },

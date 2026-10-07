@@ -29,10 +29,10 @@ export default function ChristianAccountabilityApp() {
               Most accountability tools treat the problem as a monitoring problem. Remain Faithful treats it as a relational one. The technology facilitates; the covenant does the real work.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/#download" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+              <Link href="/#download" className="btn-wax">
                 Get started
               </Link>
-              <Link href="/how-it-works" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-ink border border-hairline hover:border-wax/50 hover:bg-paper-deep transition-colors">
+              <Link href="/how-it-works" className="btn-ghost">
                 How It Works
               </Link>
             </div>
@@ -165,7 +165,7 @@ export default function ChristianAccountabilityApp() {
           <div className="text-center p-10 rounded-sm border border-wax/25" >
             <h2 className="font-serif text-2xl font-bold text-ink mb-4">Start Your Accountability Journey</h2>
             <p className="text-ink-soft mb-6">Free for individuals, couples, friends, and churches. Always.</p>
-            <Link href="/#download" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-sm font-semibold text-paper bg-wax hover:bg-wax-deep transition-[box-shadow,scale] duration-200 ease-out active:scale-[0.96]">
+            <Link href="/#download" className="btn-wax">
               Get started
             </Link>
           </div>
