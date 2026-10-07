@@ -4,7 +4,7 @@ import { posts } from './posts'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
-  title: 'Accountability Guides & Resources | Remain Faithful Blog',
+  title: 'Accountability Guides & Resources | Blog',
   description: 'Practical guides, theological reflections, and research on accountability, purity, and the technology behind Remain Faithful.',
   alternates: { canonical: 'https://remainfaithful.com/blog' },
 }
