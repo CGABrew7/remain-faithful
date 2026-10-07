@@ -13,6 +13,7 @@ export function generateStaticParams() {
 }
 
 const blogTitles: Record<string, string> = {
+  'biblical-accountability': 'What the Bible Says About Accountability',
   'why-accountability-fails': 'Why Accountability Fails (And How to Fix It)',
   'setting-up-your-first-group': 'How to Set Up Your First Accountability Group',
   'science-of-peer-accountability': 'The Science Behind Peer Accountability',
@@ -22,6 +23,7 @@ const blogTitles: Record<string, string> = {
 }
 
 const relatedMap: Record<string, string[]> = {
+  'biblical-accountability': ['covenant-model', 'why-accountability-fails'],
   'why-accountability-fails': ['science-of-peer-accountability', 'covenant-model'],
   'setting-up-your-first-group': ['mens-ministry-accountability', 'why-accountability-fails'],
   'science-of-peer-accountability': ['why-accountability-fails', 'on-device-privacy-explained'],
@@ -39,7 +41,8 @@ export async function generateMetadata({
   if (!post) return {}
   const displayTitle = blogTitles[post.slug] || post.title
   return {
-    title: `${displayTitle} | Remain Faithful`,
+    // Root layout's title.template appends " | Remain Faithful".
+    title: displayTitle,
     description: post.excerpt,
     alternates: { canonical: `https://remainfaithful.com/blog/${post.slug}` },
     openGraph: {
@@ -50,12 +53,61 @@ export async function generateMetadata({
   }
 }
 
-function renderBody(body: string) {
+function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  const linkRe = /\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g
+  let last = 0
+  let match: RegExpExecArray | null
+  while ((match = linkRe.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    parts.push(
+      <a
+        key={`${keyPrefix}-${match.index}`}
+        href={match[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-wax underline decoration-wax/40 underline-offset-4 hover:decoration-wax"
+      >
+        {match[1]}
+      </a>
+    )
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
+
+function renderBody(body: string, rich = false) {
   const lines = body.split('\n')
   const elements: React.ReactNode[] = []
   let i = 0
   while (i < lines.length) {
     const line = lines[i]
+    if (rich && line.startsWith('> ')) {
+      const quoteLines: string[] = []
+      let cite: string | null = null
+      while (i < lines.length && lines[i].startsWith('> ')) {
+        const content = lines[i].slice(2)
+        if (content.startsWith('-- ')) cite = content.slice(3)
+        else quoteLines.push(content)
+        i++
+      }
+      elements.push(
+        <figure key={`q-${i}`} className="my-8 border-l-2 border-wax pl-5 sm:pl-6">
+          <blockquote className="font-serif text-lg sm:text-xl text-ink leading-relaxed">
+            {quoteLines.map((q, qi) => (
+              <p key={qi} className={qi > 0 ? 'mt-3' : undefined}>{q}</p>
+            ))}
+          </blockquote>
+          {cite && (
+            <figcaption className="mt-3 text-sm text-ink-faint">
+              {renderInline(cite, `c-${i}`)}
+            </figcaption>
+          )}
+        </figure>
+      )
+      continue
+    }
     if (line.startsWith('## ')) {
       elements.push(
         <h2 key={i} className="font-serif text-2xl font-bold text-ink mt-10 mb-4">
@@ -143,7 +195,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             </div>
 
             <div className="text-ink-soft leading-relaxed">
-              {renderBody(post.body)}
+              {renderBody(post.body, post.rich)}
             </div>
 
             {/* Newsletter CTA */}
