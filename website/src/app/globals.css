@@ -5,7 +5,8 @@
 /*
   Remain Faithful — navy chapel, gold accent.
   Palette from the iOS app (OnboardingView.swift):
-  rfNavy #12214C, mid #162756, lift #1A2D61, deep #0C1D4C, gold #D1AB4C.
+  rfNavy #12214C, rfNavyMid #1C3066, rfGold #D1AB4C.
+  Site-only shades of the same navy: lift #1A2D61 (raised panels), deep #0C1D4C.
   Muted text is #B4BCD4 so small type stays at least 4.5:1 on the lighter cards.
 */
 
@@ -21,7 +22,7 @@
   --wax: #d1ab4c;
   --wax-deep: #b08e3a;
   --dusk: #12214c;
-  --dusk-mid: #162756;
+  --dusk-mid: #1c3066;
   --shadow-border:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 0 0 1px rgba(255, 255, 255, 0.08),
@@ -62,7 +63,7 @@
     background:
       radial-gradient(42% 28% at 82% 0%, rgba(209, 171, 76, 0.16), transparent 62%),
       radial-gradient(36% 30% at 8% 18%, rgba(26, 45, 97, 0.9), transparent 70%),
-      linear-gradient(180deg, #12214c 0%, #162756 46%, #1a2d61 100%);
+      linear-gradient(180deg, #12214c 0%, #1c3066 100%);
   }
 
   h1,
