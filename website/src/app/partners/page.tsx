@@ -20,7 +20,7 @@ export default function PartnersPage() {
       <section className="border-b border-white/10 pb-20 pt-8">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:px-8">
           <div>
-          <p className="kicker mb-4">For Pastors & Ministry Leaders</p>
+          <p className="kicker mb-4">For Pastors &amp; Ministry Leaders</p>
           <h1 className="mb-6 font-serif text-4xl font-bold text-ink sm:text-5xl lg:text-6xl">
             Equip Your Church's Accountability Ministry
           </h1>
