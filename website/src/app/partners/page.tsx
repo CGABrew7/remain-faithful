@@ -5,7 +5,7 @@ import PilotForm from '@/components/PilotForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
-  title: 'Church & Ministry Accountability Program | Remain Faithful Partners',
+  title: 'Church & Ministry Accountability Program | Partners',
   description: "Bring structured accountability to your church, small group, or men's ministry. Free tools, group setup guides, and pastoral resources for ministry leaders.",
   alternates: { canonical: 'https://remainfaithful.com/partners' },
 }
@@ -46,7 +46,7 @@ export default function PartnersPage() {
           </div>
           <PhoneFrame
             src="/screens/group.png"
-            alt="Remain Faithful group screen with member count, group covenant, and invite member."
+            alt="Remain Faithful group screen listing five members with their status and day streaks, and Invite Member."
           />
         </div>
       </section>
@@ -60,6 +60,7 @@ export default function PartnersPage() {
               From small accountability triads to church-wide programs, RF scales to your structure.
             </p>
           </div>
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
           <div className="grid gap-5 lg:grid-cols-12">
             {[
               {
@@ -84,6 +85,11 @@ export default function PartnersPage() {
                 <p className="text-sm text-ink-soft leading-relaxed">{b.desc}</p>
               </div>
             ))}
+          </div>
+            <PhoneFrame
+              src="/screens/alert.png"
+              alt="Remain Faithful alert screen a partner opens from a notification: Adult Content category, Medium severity, when it was detected, a conversation starter, and Mark as Discussed."
+            />
           </div>
         </div>
       </section>
@@ -194,7 +200,7 @@ export default function PartnersPage() {
                   'Don\'t expect the app to do the relational work. RF is infrastructure, not relationship.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
-                    <svg className="flex-shrink-0 mt-0.5 text-red-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <svg className="flex-shrink-0 mt-0.5 text-ink-faint" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
                     {item}
