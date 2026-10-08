@@ -74,12 +74,31 @@ We, the members of this accountability group, covenant together before God and o
 Signed and agreed upon this day, before God and this brotherhood.
 """
 
+// MARK: - Group selection
+
+enum GroupSelection {
+    /// Picks the group the Group tab should show. A stored ID is kept only if the
+    /// signed-in account is still a member of it; otherwise fall back to the first
+    /// group the server lists, or 0 (shows the "No Group Yet" / Create a Group state).
+    static func resolvePrimaryGroupID(stored: Int, memberGroupIDs: [Int]) -> Int {
+        if stored > 0, memberGroupIDs.contains(stored) { return stored }
+        return memberGroupIDs.first ?? 0
+    }
+
+    /// Shareable link for a group's invite sheet. Opens a page on the live site
+    /// that explains how to get the app and be invited by email.
+    static func inviteLink(groupID: Int) -> String {
+        "www.remainfaithful.com/join/\(groupID)"
+    }
+}
+
 // MARK: - GroupView
 
 struct GroupView: View {
     @AppStorage("primaryGroupID")    private var primaryGroupID    = 0
     @AppStorage("customCovenantText") private var customCovenantText = ""
     @EnvironmentObject private var appState: AppState
+    @ObservedObject private var authState = AuthState.shared
 
     @State private var showCovenant       = false
     @State private var showInvite         = false
@@ -173,7 +192,9 @@ struct GroupView: View {
         } message: {
             Text("All members have been notified that the group covenant has been updated and will be prompted to re-accept it.")
         }
-        .task { await discoverGroup() }
+        // Re-validate the stored group every time the tab appears and whenever
+        // a different account signs in.
+        .task(id: authState.currentUser?.id) { await discoverGroup() }
         .task(id: primaryGroupID) { await loadGroup() }
     }
 
@@ -215,15 +236,26 @@ struct GroupView: View {
 
     @MainActor
     private func discoverGroup() async {
-        guard !appState.isDemoMode, primaryGroupID == 0, APIClient.shared.isAuthenticated else { return }
-        guard let groups = try? await APIClient.shared.listMyGroups(), let first = groups.first else { return }
-        primaryGroupID = first.id
+        guard !appState.isDemoMode, APIClient.shared.isAuthenticated else { return }
+        // On a network error keep whatever is stored; the next visit retries.
+        guard let groups = try? await APIClient.shared.listMyGroups() else { return }
+        let resolved = GroupSelection.resolvePrimaryGroupID(stored: primaryGroupID,
+                                                            memberGroupIDs: groups.map(\.id))
+        if resolved != primaryGroupID {
+            primaryGroupID = resolved
+        }
     }
 
     @MainActor
     private func loadGroup() async {
         guard !appState.isDemoMode else { return }
-        guard primaryGroupID > 0, APIClient.shared.isAuthenticated else { return }
+        guard primaryGroupID > 0, APIClient.shared.isAuthenticated else {
+            // No group (or signed out): drop anything shown for a previous group.
+            liveGroupName = ""
+            liveMembers   = []
+            loadError     = nil
+            return
+        }
         isLoading = true
         loadError = nil
         defer { isLoading = false }
@@ -974,8 +1006,8 @@ private struct InviteSheet: View {
     @State private var copied       = false
     @State private var inviteError: String?
 
-    private var inviteCode: String { "remainfaithful.app/join/\(groupID)" }
-    private var inviteURL: URL { URL(string: "https://\(inviteCode)") ?? URL(string: "https://remainfaithful.app")! }
+    private var inviteCode: String { GroupSelection.inviteLink(groupID: groupID) }
+    private var inviteURL: URL { URL(string: "https://\(inviteCode)") ?? URL(string: "https://www.remainfaithful.com")! }
     private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
 
     private var canSend: Bool {
@@ -1154,7 +1186,9 @@ private struct InviteSheet: View {
         let gid   = groupID
         Task {
             do {
-                try await APIClient.shared.inviteMember(groupID: gid, email: email)
+                // Same endpoint as Settings: adds existing users, emails a pending
+                // invite to people who don't have an account yet.
+                try await APIClient.shared.groupEmailInvite(groupID: gid, email: email)
                 await MainActor.run {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { isSent = true }
                 }

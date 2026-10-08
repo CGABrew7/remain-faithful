@@ -23,6 +23,11 @@ final class AuthState: ObservableObject {
     private var inMemoryToken: String?
     private let sharedDefaults = UserDefaults(suiteName: "group.com.remainfaithful.app")
 
+    /// UserDefaults key for the Group tab's selected group (`@AppStorage` in GroupView
+    /// and SettingsView). It belongs to the signed-in account, so it is cleared
+    /// whenever the session ends or a different account signs in.
+    static let primaryGroupIDKey = "primaryGroupID"
+
     init(keychain: KeychainHelper = .shared) {
         self.keychain = keychain
         inMemoryToken = keychain.get("authToken") ?? sharedDefaults?.string(forKey: "authToken")
@@ -36,6 +41,9 @@ final class AuthState: ObservableObject {
     var token: String? { inMemoryToken ?? keychain.get("authToken") ?? sharedDefaults?.string(forKey: "authToken") }
 
     func setSession(token: String, user: RemoteUser) {
+        if currentUser?.id != user.id {
+            UserDefaults.standard.removeObject(forKey: Self.primaryGroupIDKey)
+        }
         inMemoryToken = token
         keychain.set(token, for: "authToken")
         sharedDefaults?.set(token, forKey: "authToken")
@@ -77,6 +85,7 @@ final class AuthState: ObservableObject {
         keychain.delete("authToken")
         keychain.delete("currentUser")
         sharedDefaults?.removeObject(forKey: "authToken")
+        UserDefaults.standard.removeObject(forKey: Self.primaryGroupIDKey)
         DispatchQueue.main.async {
             self.currentUser = nil
             self.isAuthenticated = false
