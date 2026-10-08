@@ -219,7 +219,7 @@ export default function HomePage() {
             </div>
             <PhoneFrame
               src="/screens/home.png"
-              alt="Remain Faithful home screen with monitoring status, verse of the day, clean streak, and recent flags."
+              alt="Remain Faithful home screen with monitoring active, a 47-day clean streak, and no recent flags."
             />
           </div>
 

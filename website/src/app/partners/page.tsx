@@ -46,7 +46,7 @@ export default function PartnersPage() {
           </div>
           <PhoneFrame
             src="/screens/group.png"
-            alt="Remain Faithful group screen with member count, group covenant, and invite member."
+            alt="Remain Faithful group screen listing five members with their status and day streaks, and Invite Member."
           />
         </div>
       </section>
@@ -60,6 +60,7 @@ export default function PartnersPage() {
               From small accountability triads to church-wide programs, RF scales to your structure.
             </p>
           </div>
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
           <div className="grid gap-5 lg:grid-cols-12">
             {[
               {
@@ -84,6 +85,11 @@ export default function PartnersPage() {
                 <p className="text-sm text-ink-soft leading-relaxed">{b.desc}</p>
               </div>
             ))}
+          </div>
+            <PhoneFrame
+              src="/screens/alert.png"
+              alt="Remain Faithful alert screen a partner opens from a notification: Adult Content category, Medium severity, when it was detected, a conversation starter, and Mark as Discussed."
+            />
           </div>
         </div>
       </section>
