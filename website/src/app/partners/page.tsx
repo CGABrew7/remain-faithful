@@ -20,9 +20,9 @@ export default function PartnersPage() {
       <section className="border-b border-white/10 pb-20 pt-8">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:px-8">
           <div>
-          <p className="kicker mb-4">For Pastors &amp; Ministry Leaders</p>
+          <p className="kicker mb-4">For Pastors &amp;amp; Ministry Leaders</p>
           <h1 className="mb-6 font-serif text-4xl font-bold text-ink sm:text-5xl lg:text-6xl">
-            Equip Your Church's Accountability Ministry
+            Equip Your Church&amp;apos;s Accountability Ministry
           </h1>
           <p className="max-w-2xl text-lg text-ink-soft">
             Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and ministry programs — at no cost to your church.
@@ -130,9 +130,9 @@ export default function PartnersPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Implementation Guide</p>
-            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Men's Ministry Implementation</h2>
+            <h2 className="font-serif text-3xl font-bold text-ink mb-4">Men&amp;apos;s Ministry Implementation</h2>
             <p className="text-ink-soft max-w-2xl mx-auto">
-              How to successfully roll out Remain Faithful in your men's small group, from first conversation to ongoing culture.
+              How to successfully roll out Remain Faithful in your men&amp;apos;s small group, from first conversation to ongoing culture.
             </p>
           </div>
 
