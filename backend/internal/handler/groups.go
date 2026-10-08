@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -196,9 +194,12 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// InviteMember adds a user to an existing group. Any group member may invite.
+// InviteMember invites someone to an existing group by email. Any group
+// member may invite. If the email already has an account the user is added
+// immediately; otherwise a pending invite is stored and emailed, and the person
+// joins automatically when they sign up with that email.
 // POST /groups/:id/invite
-// Body: { "user_email": "..." }
+// Body: { "user_email": "..." } (the key "email" is also accepted)
 func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
@@ -208,72 +209,52 @@ func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify caller is a member (any role).
-	var callerRole string
-	if err = h.DB.QueryRowContext(r.Context(),
-		`SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2`,
-		groupID, userID,
-	).Scan(&callerRole); err != nil {
-		writeError(w, http.StatusForbidden, "you must be a member of this group to invite others")
-		return
-	}
-
-	// Enforce group size cap.
-	var memberCount int
-	_ = h.DB.QueryRowContext(r.Context(),
-		`SELECT COUNT(*) FROM group_members WHERE group_id = $1`, groupID,
-	).Scan(&memberCount)
-	if memberCount >= 12 {
-		writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
+	if status, msg := h.checkCanInviteToGroup(r.Context(), groupID, userID); status != 0 {
+		writeError(w, status, msg)
 		return
 	}
 
 	var req struct {
 		UserEmail string `json:"user_email"`
+		Email     string `json:"email"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.UserEmail = strings.ToLower(strings.TrimSpace(req.UserEmail))
-	if req.UserEmail == "" {
+	email := req.UserEmail
+	if strings.TrimSpace(email) == "" {
+		email = req.Email
+	}
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
 		writeError(w, http.StatusBadRequest, "user_email is required")
 		return
 	}
 
-	var inviteeID int64
-	err = h.DB.QueryRowContext(r.Context(),
-		`SELECT id FROM users WHERE email = $1`,
-		req.UserEmail,
-	).Scan(&inviteeID)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "no account found for that email")
+	res, ierr := h.inviteEmailToGroup(r.Context(), userID, groupID, email)
+	if ierr != nil {
+		writeError(w, ierr.status, ierr.msg)
 		return
 	}
-
-	var joinedAt string
-	err = h.DB.QueryRowContext(r.Context(),
-		`INSERT INTO group_members (group_id, user_id, role)
-		 VALUES ($1, $2, 'member')
-		 ON CONFLICT (group_id, user_id) DO NOTHING
-		 RETURNING joined_at`,
-		groupID, inviteeID,
-	).Scan(&joinedAt)
-	if errors.Is(err, sql.ErrNoRows) {
+	switch res.outcome {
+	case groupInviteAlreadyMember:
 		writeError(w, http.StatusConflict, "user is already a member of this group")
-		return
+	case groupInviteAdded:
+		writeJSON(w, http.StatusCreated, map[string]any{
+			"status":    "added",
+			"group_id":  groupID,
+			"user_id":   res.inviteeID,
+			"role":      "member",
+			"joined_at": res.joinedAt,
+		})
+	default:
+		writeJSON(w, http.StatusCreated, map[string]any{
+			"status":   "invited",
+			"group_id": groupID,
+			"email":    email,
+		})
 	}
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to add member")
-		return
-	}
-
-	writeJSON(w, http.StatusCreated, map[string]any{
-		"group_id":  groupID,
-		"user_id":   inviteeID,
-		"role":      "member",
-		"joined_at": joinedAt,
-	})
 }
 
 // LeaveGroup removes the authenticated user from a specific group.
