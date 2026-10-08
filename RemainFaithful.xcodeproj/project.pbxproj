@@ -676,7 +676,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -697,7 +697,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
@@ -725,7 +725,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -747,7 +747,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
@@ -891,7 +891,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.Debug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithful/Info.plist;
@@ -916,7 +916,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithful/Info.plist;
@@ -939,7 +939,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -962,7 +962,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

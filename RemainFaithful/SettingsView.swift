@@ -1455,10 +1455,10 @@ private struct ManageGroupsView: View {
             }
         }
         .task {
-            guard let remoteGroups = try? await APIClient.shared.listMyGroups(),
-                  !remoteGroups.isEmpty else { return }
+            guard let remoteGroups = try? await APIClient.shared.listMyGroups() else { return }
             groups = remoteGroups.map { GroupItem(id: $0.id, name: $0.name) }
-            if primaryGroupID == 0 { primaryGroupID = groups[0].id }
+            primaryGroupID = GroupSelection.resolvePrimaryGroupID(stored: primaryGroupID,
+                                                                  memberGroupIDs: groups.map(\.id))
         }
     }
 
