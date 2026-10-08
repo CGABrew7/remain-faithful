@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -188,92 +191,140 @@ func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify caller is a member (any role).
+	if status, msg := h.checkCanInviteToGroup(r.Context(), groupID, userID); status != 0 {
+		writeError(w, status, msg)
+		return
+	}
+
+	res, ierr := h.inviteEmailToGroup(r.Context(), userID, groupID, req.Email)
+	if ierr != nil {
+		writeError(w, ierr.status, ierr.msg)
+		return
+	}
+	switch res.outcome {
+	case groupInviteAdded:
+		writeJSON(w, http.StatusCreated, map[string]any{
+			"status":  "added",
+			"user_id": res.inviteeID,
+		})
+	case groupInviteAlreadyMember:
+		writeJSON(w, http.StatusOK, map[string]any{"status": "already_member"})
+	default:
+		writeJSON(w, http.StatusCreated, map[string]any{
+			"status": "invited",
+			"email":  req.Email,
+		})
+	}
+}
+
+// maxGroupMembers is the hard cap on accountability group size.
+const maxGroupMembers = 12
+
+type groupInviteOutcome string
+
+const (
+	groupInviteAdded         groupInviteOutcome = "added"
+	groupInviteAlreadyMember groupInviteOutcome = "already_member"
+	groupInviteInvited       groupInviteOutcome = "invited"
+)
+
+type groupInviteResult struct {
+	outcome   groupInviteOutcome
+	inviteeID int64
+	joinedAt  string
+}
+
+type handlerError struct {
+	status int
+	msg    string
+}
+
+// checkCanInviteToGroup verifies the caller is a member of the group (any
+// role) and that the group is below the member cap. It returns a zero status
+// when the invite may proceed.
+func (h *H) checkCanInviteToGroup(ctx context.Context, groupID, userID int64) (int, string) {
 	var callerRole string
-	if err := h.DB.QueryRowContext(r.Context(),
+	if err := h.DB.QueryRowContext(ctx,
 		`SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2`,
 		groupID, userID,
 	).Scan(&callerRole); err != nil {
-		writeError(w, http.StatusForbidden, "you must be a member of this group to invite others")
-		return
+		return http.StatusForbidden, "you must be a member of this group to invite others"
 	}
 
-	// Enforce group size cap.
 	var memberCount int
-	_ = h.DB.QueryRowContext(r.Context(),
+	_ = h.DB.QueryRowContext(ctx,
 		`SELECT COUNT(*) FROM group_members WHERE group_id = $1`, groupID,
 	).Scan(&memberCount)
-	if memberCount >= 12 {
-		writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
-		return
+	if memberCount >= maxGroupMembers {
+		return http.StatusUnprocessableEntity, "group has reached the maximum of 12 members"
 	}
+	return 0, ""
+}
 
+// inviteEmailToGroup adds an existing user to the group, or stores a pending
+// group invite for an email with no account yet. Either way the invitee gets
+// an email. The caller must already have run checkCanInviteToGroup.
+// email must already be trimmed and lowercased.
+func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, email string) (groupInviteResult, *handlerError) {
 	var inviterName, groupName string
-	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT name FROM users WHERE id = $1`, userID,
+	if err := h.DB.QueryRowContext(ctx,
+		`SELECT name FROM users WHERE id = $1`, inviterID,
 	).Scan(&inviterName); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not find your account")
-		return
+		return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "could not find your account"}
 	}
-	if err := h.DB.QueryRowContext(r.Context(),
+	if err := h.DB.QueryRowContext(ctx,
 		`SELECT name FROM groups WHERE id = $1`, groupID,
 	).Scan(&groupName); err != nil {
-		writeError(w, http.StatusNotFound, "group not found")
-		return
+		return groupInviteResult{}, &handlerError{http.StatusNotFound, "group not found"}
 	}
 
 	// If the invitee already has an account, add them directly.
 	var inviteeID int64
-	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT id FROM users WHERE email = $1`, req.Email,
+	if err := h.DB.QueryRowContext(ctx,
+		`SELECT id FROM users WHERE email = $1`, email,
 	).Scan(&inviteeID); err == nil {
 		var joinedAt string
-		if err := h.DB.QueryRowContext(r.Context(),
+		err := h.DB.QueryRowContext(ctx,
 			`INSERT INTO group_members (group_id, user_id, role)
 			 VALUES ($1, $2, 'member')
 			 ON CONFLICT (group_id, user_id) DO NOTHING
 			 RETURNING joined_at`,
 			groupID, inviteeID,
-		).Scan(&joinedAt); err == nil {
-			acceptURL := fmt.Sprintf("%s/groups/%d", siteBase(), groupID)
-			if sendErr := h.Email.SendGroupInvite(req.Email, inviterName, groupName, acceptURL); sendErr != nil {
-				log.Printf("[invite] group email error (existing user) to=%s group=%d: %v", req.Email, groupID, sendErr)
-			}
-			writeJSON(w, http.StatusCreated, map[string]any{
-				"status":  "added",
-				"user_id": inviteeID,
-			})
-			return
+		).Scan(&joinedAt)
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("[invite] skipping email — invitee is already a member of group=%d", groupID)
+			return groupInviteResult{outcome: groupInviteAlreadyMember, inviteeID: inviteeID}, nil
 		}
-		log.Printf("[invite] skipping email — %s is already a member of group=%d", req.Email, groupID)
-		writeJSON(w, http.StatusOK, map[string]any{"status": "already_member"})
-		return
+		if err != nil {
+			return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to add member"}
+		}
+		acceptURL := siteBase() + "/invite?type=group"
+		if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
+			log.Printf("[invite] group email error (existing user) group=%d: %v", groupID, sendErr)
+		}
+		return groupInviteResult{outcome: groupInviteAdded, inviteeID: inviteeID, joinedAt: joinedAt}, nil
 	}
 
-	// No account yet — store a pending invite and send an email.
+	// No account yet — store a pending invite and send an email. The invite is
+	// redeemed automatically when this email registers (acceptPendingGroupInvites).
 	token, err := inviteToken()
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to generate invite token")
-		return
+		return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to generate invite token"}
 	}
-	if _, err := h.DB.ExecContext(r.Context(),
+	if _, err := h.DB.ExecContext(ctx,
 		`INSERT INTO group_invites (inviter_id, group_id, invitee_email, token)
 		 VALUES ($1, $2, $3, $4)
 		 ON CONFLICT (group_id, invitee_email) DO UPDATE
 		   SET token = EXCLUDED.token, created_at = NOW(), status = 'pending'`,
-		userID, groupID, req.Email, token,
+		inviterID, groupID, email, token,
 	); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to store group invite")
-		return
+		return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to store group invite"}
 	}
 	acceptURL := fmt.Sprintf("%s/invite?token=%s&type=group", siteBase(), token)
-	if sendErr := h.Email.SendGroupInvite(req.Email, inviterName, groupName, acceptURL); sendErr != nil {
-		log.Printf("[invite] group email error to=%s group=%d: %v", req.Email, groupID, sendErr)
+	if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
+		log.Printf("[invite] group email error group=%d: %v", groupID, sendErr)
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{
-		"status": "invited",
-		"email":  req.Email,
-	})
+	return groupInviteResult{outcome: groupInviteInvited}, nil
 }
 
 // inviteToken generates a cryptographically random 32-byte hex token.
@@ -290,5 +341,5 @@ func siteBase() string {
 	if u := os.Getenv("SITE_URL"); u != "" {
 		return strings.TrimRight(u, "/")
 	}
-	return "https://remainfaithful.app"
+	return "https://www.remainfaithful.com"
 }
