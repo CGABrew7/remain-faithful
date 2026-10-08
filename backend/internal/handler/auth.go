@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -63,8 +65,10 @@ func (h *H) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Auto-accept any pending partner invites for this email address.
-	go h.acceptPendingInvites(id, req.Email)
+	// Auto-accept any pending partner and group invites for this email address.
+	// Runs before the response so the app sees the new partner/group on its
+	// first load after sign-up. Errors are logged and never fail registration.
+	h.redeemPendingInvites(r.Context(), id, req.Email)
 
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"id":         id,
@@ -74,41 +78,142 @@ func (h *H) Register(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// acceptPendingInvites runs in a goroutine after registration to create
-// relationships for any pending partner invites sent to this email.
-func (h *H) acceptPendingInvites(newUserID int64, email string) {
-	rows, err := h.DB.Query(
+// redeemPendingInvites accepts pending partner and group invites for a newly
+// created account. It is bounded by a short timeout and survives client
+// disconnects so a half-finished sign-up still lands in the right group.
+func (h *H) redeemPendingInvites(parent context.Context, newUserID int64, email string) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 5*time.Second)
+	defer cancel()
+	h.acceptPendingInvites(ctx, newUserID, email)
+	h.acceptPendingGroupInvites(ctx, newUserID, email)
+}
+
+// acceptPendingInvites creates relationships for any pending partner invites
+// sent to this email.
+func (h *H) acceptPendingInvites(ctx context.Context, newUserID int64, email string) {
+	rows, err := h.DB.QueryContext(ctx,
 		`SELECT inviter_id, token FROM relationship_invites
 		 WHERE invitee_email = $1 AND status = 'pending'
 		   AND created_at > NOW() - INTERVAL '7 days'`,
 		email,
 	)
 	if err != nil {
-		log.Printf("[acceptPendingInvites] query error for %s: %v", email, err)
+		log.Printf("[acceptPendingInvites] query error for user=%d: %v", newUserID, err)
 		return
 	}
-	defer rows.Close()
+	type pending struct {
+		inviterID int64
+		token     string
+	}
+	var invites []pending
 	for rows.Next() {
-		var inviterID int64
-		var token string
-		if err := rows.Scan(&inviterID, &token); err != nil {
+		var p pending
+		if err := rows.Scan(&p.inviterID, &p.token); err != nil {
 			log.Printf("[acceptPendingInvites] scan error: %v", err)
 			continue
 		}
-		if _, err := h.DB.Exec(
+		invites = append(invites, p)
+	}
+	rows.Close()
+
+	for _, p := range invites {
+		if _, err := h.DB.ExecContext(ctx,
 			`INSERT INTO relationships (user_id, partner_id, type, status)
 			 VALUES ($1, $2, 'partner', 'accepted')
 			 ON CONFLICT (user_id, partner_id) DO UPDATE SET status = 'accepted'`,
-			inviterID, newUserID,
+			p.inviterID, newUserID,
 		); err != nil {
 			log.Printf("[acceptPendingInvites] insert relationship error: %v", err)
+			continue
 		}
-		if _, err := h.DB.Exec(
-			`UPDATE relationship_invites SET status = 'accepted' WHERE token = $1`, token,
+		if _, err := h.DB.ExecContext(ctx,
+			`UPDATE relationship_invites SET status = 'accepted' WHERE token = $1`, p.token,
 		); err != nil {
 			log.Printf("[acceptPendingInvites] update invite error: %v", err)
 		}
 	}
+}
+
+// acceptPendingGroupInvites adds a newly created account to every group it was
+// invited to by email (pending, sent within the last 7 days). The 12-member
+// cap is enforced under a row lock on the group; if the group is full the
+// invite is left pending.
+func (h *H) acceptPendingGroupInvites(ctx context.Context, newUserID int64, email string) {
+	rows, err := h.DB.QueryContext(ctx,
+		`SELECT id, group_id FROM group_invites
+		 WHERE invitee_email = $1 AND status = 'pending'
+		   AND created_at > NOW() - INTERVAL '7 days'
+		 ORDER BY created_at ASC`,
+		email,
+	)
+	if err != nil {
+		log.Printf("[acceptPendingGroupInvites] query error for user=%d: %v", newUserID, err)
+		return
+	}
+	type pending struct {
+		inviteID int64
+		groupID  int64
+	}
+	var invites []pending
+	for rows.Next() {
+		var p pending
+		if err := rows.Scan(&p.inviteID, &p.groupID); err != nil {
+			log.Printf("[acceptPendingGroupInvites] scan error: %v", err)
+			continue
+		}
+		invites = append(invites, p)
+	}
+	rows.Close()
+
+	for _, p := range invites {
+		if err := h.joinGroupFromInvite(ctx, newUserID, p.inviteID, p.groupID); err != nil {
+			log.Printf("[acceptPendingGroupInvites] invite=%d group=%d: %v", p.inviteID, p.groupID, err)
+		}
+	}
+}
+
+var errGroupFull = errors.New("group is full; invite left pending")
+
+func (h *H) joinGroupFromInvite(ctx context.Context, userID, inviteID, groupID int64) error {
+	tx, err := h.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	var lockedID int64
+	if err := tx.QueryRowContext(ctx,
+		`SELECT id FROM groups WHERE id = $1 FOR UPDATE`, groupID,
+	).Scan(&lockedID); err != nil {
+		return fmt.Errorf("lock group: %w", err)
+	}
+	var memberCount int
+	if err := tx.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM group_members WHERE group_id = $1`, groupID,
+	).Scan(&memberCount); err != nil {
+		return fmt.Errorf("count members: %w", err)
+	}
+	if memberCount >= maxGroupMembers {
+		return errGroupFull
+	}
+	if _, err := tx.ExecContext(ctx,
+		`INSERT INTO group_members (group_id, user_id, role)
+		 VALUES ($1, $2, 'member')
+		 ON CONFLICT (group_id, user_id) DO NOTHING`,
+		groupID, userID,
+	); err != nil {
+		return fmt.Errorf("add member: %w", err)
+	}
+	if _, err := tx.ExecContext(ctx,
+		`UPDATE group_invites SET status = 'accepted' WHERE id = $1`, inviteID,
+	); err != nil {
+		return fmt.Errorf("mark accepted: %w", err)
+	}
+	return tx.Commit()
 }
 
 // Login authenticates a user and returns a JWT.

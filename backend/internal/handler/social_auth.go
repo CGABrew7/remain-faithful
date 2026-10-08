@@ -128,7 +128,8 @@ func (h *H) findOrCreateSocialUser(r *http.Request, idCol, idVal, email, name st
 	}
 
 	// 3. Create new user (no password, social-only account).
-	if email == "" {
+	placeholderEmail := email == ""
+	if placeholderEmail {
 		email = fmt.Sprintf("%s@privaterelay.appleid.com", idVal)
 	}
 	err = h.DB.QueryRowContext(ctx,
@@ -137,6 +138,11 @@ func (h *H) findOrCreateSocialUser(r *http.Request, idCol, idVal, email, name st
 		             RETURNING id, name, email`, idCol),
 		name, email, idVal,
 	).Scan(&userID, &userName, &userEmail)
+	if err == nil && !placeholderEmail {
+		// New account with a real email: redeem partner/group invites sent to it.
+		// Skipped for the ID-derived placeholder, which no one could have invited.
+		h.redeemPendingInvites(ctx, userID, email)
+	}
 	return
 }
 
