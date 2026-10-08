@@ -25,7 +25,6 @@ struct SettingsView: View {
     @State private var showActivityLog      = false
     @State private var showLeaveConfirm     = false
     @State private var showDeleteConfirm    = false
-    @State private var showDonation         = false
     @State private var showManagePartners   = false
     @State private var showManageGroups     = false
     @State private var showHowItWorks       = false
@@ -96,7 +95,6 @@ struct SettingsView: View {
         .sheet(isPresented: $showScreenTime) {
             NavigationStack { ScreenTimeMonitoringView() }
         }
-        .sheet(isPresented: $showDonation)        { DonationView() }
         .sheet(isPresented: $showCovenant)        { SettingsCovenantSheet() }
         .sheet(isPresented: $showActivityLog)     { ActivityLogSheet() }
         .sheet(isPresented: $showManagePartners)  { ManagePartnersView() }
@@ -360,7 +358,11 @@ struct SettingsView: View {
 
     private var supportUsSection: some View {
         SettingsSection(title: "SUPPORT US") {
-            Button { showDonation = true } label: {
+            Button {
+                if let url = URL(string: "https://www.remainfaithful.com/#donate") {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
                 HStack(spacing: 14) {
                     iconBadge("heart.fill", tint: Color(red: 0.90, green: 0.25, blue: 0.48))
                     VStack(alignment: .leading, spacing: 2) {

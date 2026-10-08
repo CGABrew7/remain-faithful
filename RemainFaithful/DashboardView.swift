@@ -237,7 +237,6 @@ struct DashboardView: View {
     @State private var streakDays:       Int              = 0
     @State private var streakBest:       Int              = 0
     @State private var streakWeek:       [Bool]           = Array(repeating: false, count: 7)
-    @State private var showDonation:     Bool             = false
     @State private var isLoadingEvents   = false
     @State private var eventsLoadError:  String?
     @State private var isBroadcasting       = false
@@ -297,8 +296,12 @@ struct DashboardView: View {
                     panicButton
                     if shouldShowDonateBanner {
                         DonateBanner(
-                            onDonate:  { showDonation = true;
-                                         donateBannerLastDismissed = Date().timeIntervalSince1970 },
+                            onDonate: {
+                                if let url = URL(string: "https://www.remainfaithful.com/#donate") {
+                                    UIApplication.shared.open(url)
+                                }
+                                donateBannerLastDismissed = Date().timeIntervalSince1970
+                            },
                             onDismiss: { donateBannerLastDismissed = Date().timeIntervalSince1970 }
                         )
                         .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
@@ -341,7 +344,6 @@ struct DashboardView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: $showDonation) { DonationView() }
         .task { await loadEvents() }
         .task {
             // Poll broadcast status every 5 seconds while the view is active.
@@ -850,7 +852,7 @@ private struct DonateBanner: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Keep RF Free — Donate")
+                Text("Support Remain Faithful")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white)
                 Text("This app runs on generous support.")
