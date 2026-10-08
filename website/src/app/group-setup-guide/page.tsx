@@ -71,7 +71,7 @@ export default function GroupSetupGuidePage() {
           {/* Section 2: How Group Accountability Works */}
           <GuideSection number="2" title="How Group Accountability Works">
             <p className="text-ink-soft leading-relaxed mb-4">
-              RF supports both one-to-one partnerships and groups of up to 20 members. In a group setting:
+              RF supports both one-to-one partnerships and groups of up to 12 members. In a group setting:
             </p>
             <ul className="space-y-3 mb-6">
               {[
@@ -244,7 +244,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'How many people can be in a group?',
-                  a: 'Up to 20 members per group.',
+                  a: 'Up to 12 members per group.',
                 },
                 {
                   q: 'Is the app open source?',
