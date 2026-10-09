@@ -1,7 +1,11 @@
 package handler
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -190,7 +194,8 @@ func (h *H) SetPrimaryPartner(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
-// DeleteRelationship removes an accountability partnership.
+// DeleteRelationship removes an accountability partnership and notifies the
+// other person with a fixed line. Nothing else about the partnership is sent.
 // DELETE /relationships/{id}
 func (h *H) DeleteRelationship(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
@@ -200,6 +205,22 @@ func (h *H) DeleteRelationship(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid relationship id")
 		return
 	}
+
+	var partnerID int64
+	err = h.DB.QueryRowContext(r.Context(),
+		`SELECT partner_id FROM relationships WHERE id = $1 AND user_id = $2`,
+		id, userID,
+	).Scan(&partnerID)
+	if errors.Is(err, sql.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "relationship not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to look up partner")
+		return
+	}
+
+	callerName, _ := h.lookupUserName(r.Context(), userID)
 
 	res, err := h.DB.ExecContext(r.Context(),
 		`DELETE FROM relationships WHERE id = $1 AND user_id = $2`,
@@ -214,4 +235,18 @@ func (h *H) DeleteRelationship(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+
+	if callerName == "" || partnerID == 0 {
+		return
+	}
+	notice := metadataPush(
+		"Partnership Update",
+		partnershipEndedBody(callerName),
+		"PARTNERSHIP_ENDED",
+		callerName,
+		fmt.Sprintf("partnership-ended-%d", id),
+	)
+	h.inBackground(func() {
+		h.notifyUserIDs(context.Background(), []int64{partnerID}, callerName, notice)
+	})
 }

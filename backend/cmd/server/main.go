@@ -221,7 +221,7 @@ func corsMiddleware(allowedOrigins []string) mux.MiddlewareFunc {
 			if origin := r.Header.Get("Origin"); allowed[origin] {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 			}
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			if r.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusNoContent)
@@ -282,6 +282,8 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/groups", h.ListMyGroups).Methods(http.MethodGet)
 	api.HandleFunc("/groups", h.CreateGroup).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}", h.GetGroup).Methods(http.MethodGet)
+	api.HandleFunc("/groups/{id}", h.UpdateGroup).Methods(http.MethodPatch)
+	api.Handle("/groups/{id}/encouragement", authenticatedRateLimiter(10)(http.HandlerFunc(h.SendEncouragement))).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}/members/me", h.LeaveGroup).Methods(http.MethodDelete)
 	api.HandleFunc("/groups/{id}/invite", h.InviteMember).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}/email-invite", h.GroupEmailInvite).Methods(http.MethodPost)
@@ -294,6 +296,7 @@ func routes(h *handler.H) http.Handler {
 	api.Handle("/heartbeat", authenticatedRateLimiter(60)(http.HandlerFunc(h.Heartbeat))).Methods(http.MethodPost)
 	api.HandleFunc("/users/device-token", h.RegisterDeviceToken).Methods(http.MethodPost)
 	api.Handle("/panic", authenticatedRateLimiter(20)(http.HandlerFunc(h.SendPanicAlert))).Methods(http.MethodPost)
+	api.Handle("/feedback", authenticatedRateLimiter(5)(http.HandlerFunc(h.SubmitFeedback))).Methods(http.MethodPost)
 	if debugPushEnabled() {
 		api.HandleFunc("/debug/test-push", h.SendTestPush).Methods(http.MethodPost)
 	}

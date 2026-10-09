@@ -186,7 +186,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitoring Active (green card)',
-            does: 'Shows while Deep Scan is running. It is just a status card. You start and stop Deep Scan from Control Center.',
+            does: 'Shows while Deep Scan is running. It is just a status card. You start and stop Deep Scan from Control Center. While it is running, the line under it says whether pausing will notify your partners. That notice goes out only when App Lockout is on.',
           },
           {
             name: 'Verse of the Day',
@@ -283,12 +283,12 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Your Accountability Partner',
-            does: 'Shows your primary partner\'s name. If you have no partner yet, it asks you to add one.',
+            does: 'Shows your primary partner\'s name. The star in Manage Partners marks who that is. The alert itself goes to every accepted partner and to your group, not only the starred person. If you have no partner and no group yet, it asks you to add one.',
           },
           {
-            name: 'Send Alert to Group',
-            does: 'Sends an urgent notification to your primary partner (the one with the star in Manage Partners). The button turns green and says Alert Sent to Group.',
-            why: 'Your partner hears from you right away, before things go further.',
+            name: 'Alert Partners and Group',
+            does: 'Sends an urgent notification to every accepted partner and to the other people in your groups. The button turns green and says Alert Sent only after the notice goes out. If it cannot send, the screen says so.',
+            why: 'The people you chose hear from you right away, before things go further.',
           },
           { name: "I'm okay, close this", does: 'Closes the screen. Nothing is sent.' },
         ],
@@ -317,7 +317,7 @@ export const guideParts: GuidePart[] = [
         buttons: [
           {
             name: 'Group name',
-            does: 'Your group\'s name and how many people are in it.',
+            does: 'Your group\'s name and how many people are in it. The pencil saves a new name for everyone in the group.',
           },
           {
             name: 'Members',
@@ -326,11 +326,11 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Tap a member',
-            does: 'Opens their streak and their recent flags. Close takes you back.',
+            does: 'Opens their streak and their recent flags. Send Encouragement sends that person a short notice. It says Encouragement Sent only after the notice goes out. Close takes you back.',
           },
           {
             name: 'Group Covenant',
-            does: 'Shows the agreement everyone in the group signed up to.',
+            does: 'Shows the wording saved for your group. Edit Covenant saves it and notifies the other members. They are not asked to sign it again. The notice does not include the wording.',
           },
           {
             name: 'Invite Member',
@@ -375,13 +375,13 @@ export const guideParts: GuidePart[] = [
           { name: 'Edit', does: 'Change your name or email.' },
           {
             name: 'Manage Partners',
-            does: 'Lists your one-to-one partners. Tap the star to make someone your primary partner. That is who the I Need Support Right Now button reaches. Remove ends a partnership and lets them know. Add New Partner sends an invite by email.',
+            does: 'Lists your one-to-one partners. Tap the star to make someone your primary partner. The star changes only after it is saved. The I Need Support button reaches every accepted partner and your group, not only the starred person. Remove ends a partnership and lets them know. Add New Partner sends an invite by email.',
           },
           {
             name: 'Manage Groups',
             does: 'Lists the groups you belong to. Each one has Invite Member and Leave Group. Create New Group starts a new one.',
           },
-          { name: 'View Covenant', does: 'Shows the covenant text.' },
+          { name: 'View Covenant', does: 'Shows the wording saved for your group. If the group has not saved its own, you see a sample labeled as a sample.' },
         ],
       },
       {
@@ -417,16 +417,16 @@ export const guideParts: GuidePart[] = [
         intro: 'These keep your setup from being switched off quietly.',
         buttons: [
           {
-            name: 'Monitoring Active',
-            does: 'Switching it off sends your partners a notice that you turned monitoring off.',
+            name: 'Notifications',
+            does: 'Opens iPhone Settings for Remain Faithful, where you turn alerts on or off.',
           },
           {
             name: 'App Lockout (Deep Scan)',
-            does: 'Optional. When on, the apps you chose stay blocked unless Deep Scan is running. If you stop Deep Scan, the block comes back and your partner gets a notice. Turning App Lockout off also sends a notice.',
+            does: 'Optional. When on, the apps you chose stay blocked unless Deep Scan is running. If you stop Deep Scan, the block comes back and your partners get a notice. The Home card says so only while this is on. Turning App Lockout off also sends a notice.',
           },
           {
             name: 'Partner PIN',
-            does: 'Shows whether a partner has set a PIN for you. Your partner sets it from their own phone in Manage Partners. Once it is set, opening App Restrictions, turning off Monitoring Active, or turning off App Lockout asks for that PIN. A wrong PIN sends your partner a notice.',
+            does: 'Shows whether a partner has set a PIN for you. Your partner sets it from their own phone in Manage Partners. Once it is set, opening App Restrictions or turning off App Lockout asks for that PIN. A wrong PIN sends your partner a notice.',
             why: 'It keeps a weak moment from undoing a decision you made on a strong day.',
           },
         ],
@@ -442,16 +442,17 @@ export const guideParts: GuidePart[] = [
             name: 'Support Remain Faithful',
             does: 'Opens the donation page on our website in Safari. The app stays free either way.',
           },
-          { name: 'How It Works', does: 'A short three-step summary of how the app works.' },
+          { name: 'How It Works', does: 'A short three-step summary of how the app works, with a link to this guide.' },
+          { name: 'Replay App Tour', does: 'Walks through the main buttons again, starting on Home. You can skip any step.' },
           { name: 'Contact Support', does: 'Opens an email to support@remainfaithful.com.' },
           { name: 'Rate the App', does: 'Asks iOS to show the App Store rating box.' },
           {
-            name: 'Suggest an Improvement',
-            does: 'Opens an email to us with the subject filled in. You can also use the form on our website.',
+            name: 'Send Ideas or Report a Problem',
+            does: 'Opens a form for an idea, an improvement, or a problem. Your account name and email are included so we can reply. App version and iPhone model are included only if you turn that on. If sending fails, you can email support@remainfaithful.com instead.',
           },
           {
             name: 'Leave All Groups',
-            does: 'Takes you out of every group. You confirm first.',
+            does: 'Takes you out of every group and lets the other members know. You confirm first. Your alert history stays until you delete your account.',
           },
           {
             name: 'Delete Account',

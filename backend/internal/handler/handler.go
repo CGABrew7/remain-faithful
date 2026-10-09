@@ -32,6 +32,9 @@ type H struct {
 	APNS   APNSSender
 	Email  EmailSender
 	Stripe *payment.Client
+	// SyncPush runs notification side effects on the request goroutine.
+	// Production leaves it false. Tests set it so they can assert sends.
+	SyncPush bool
 }
 
 // writeJSON serialises v as JSON and writes it with the given status code.

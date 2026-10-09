@@ -104,9 +104,10 @@ struct RemoteGroup: Decodable {
     let id: Int
     let name: String
     let createdAt: String
+    let covenant: String?
     let members: [RemoteGroupMember]?
     enum CodingKeys: String, CodingKey {
-        case id, name, members
+        case id, name, members, covenant
         case createdAt = "created_at"
     }
 }
@@ -318,6 +319,27 @@ final class APIClient {
         try await post("/groups", body: ["name": name, "covenant": covenant])
     }
 
+    /// PATCH /groups/{id}. Sends only the fields you pass.
+    func updateGroup(id: Int, name: String? = nil, covenant: String? = nil) async throws {
+        do { try await refreshTokenIfNeeded() } catch { print("[APIClient] token refresh: \(error)") }
+        var fields: [String: String] = [:]
+        if let name { fields["name"] = name }
+        if let covenant { fields["covenant"] = covenant }
+        try await patchJSON("/groups/\(id)", body: JSONStringMap(values: fields))
+    }
+
+    /// POST /groups/{id}/encouragement. The server writes the message.
+    func sendEncouragement(groupID: Int, userID: Int) async throws {
+        do { try await refreshTokenIfNeeded() } catch { print("[APIClient] token refresh: \(error)") }
+        try await postVoid("/groups/\(groupID)/encouragement", body: ["user_id": userID])
+    }
+
+    /// POST /feedback. Name and email come from the signed-in account.
+    func sendFeedback(_ fields: [String: String]) async throws {
+        do { try await refreshTokenIfNeeded() } catch { print("[APIClient] token refresh: \(error)") }
+        try await postVoid("/feedback", body: JSONStringMap(values: fields))
+    }
+
     func inviteMember(groupID: Int, email: String) async throws {
         try await postVoid("/groups/\(groupID)/invite", body: ["user_email": email])
     }
@@ -436,6 +458,19 @@ final class APIClient {
     /// Fire-and-forget DELETE with no request body.
     private func deleteVoid(_ path: String) async throws {
         var req = try makeRequest(path, method: "DELETE")
+        try attachToken(&req)
+        let (data, resp) = try await session.data(for: req)
+        if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
+            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+        }
+    }
+
+    /// PATCH with a JSON object body. Throws the server's error string on failure.
+    private func patchJSON(_ path: String, body: JSONStringMap) async throws {
+        var req = try makeRequest(path, method: "PATCH")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONEncoder().encode(body)
         try attachToken(&req)
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {

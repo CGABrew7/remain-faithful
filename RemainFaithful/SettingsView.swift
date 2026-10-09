@@ -8,19 +8,17 @@ struct SettingsView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("userName")             private var userName             = ""
     @AppStorage("userEmail")            private var userEmail            = ""
-    @AppStorage("monitoringActive")     private var monitoringActive     = true
-    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
-    @AppStorage("dataRetentionDays")    private var dataRetentionDays    = 30
 
     @Environment(\.openURL)       private var openURL
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ObservedObject private var tour = TourController.shared
 
     @ObservedObject private var fcManager      = FamilyControlsManager.shared
     @ObservedObject private var lockoutManager = AppLockoutManager.shared
     @ObservedObject private var pinManager     = PartnerPINManager.shared
 
     @State private var showScreenTime       = false
-    @State private var showRetentionPicker  = false
     @State private var showCovenant         = false
     @State private var showActivityLog      = false
     @State private var showLeaveConfirm     = false
@@ -28,7 +26,9 @@ struct SettingsView: View {
     @State private var showManagePartners   = false
     @State private var showManageGroups     = false
     @State private var showHowItWorks       = false
+    @State private var showFeedback         = false
     @State private var showEditProfile      = false
+    @State private var actionError: String?
     // PIN gate — shared across all gated actions in this view.
     @State private var showPINGate          = false
     @State private var pendingGatedAction:  (() -> Void)? = nil
@@ -44,6 +44,7 @@ struct SettingsView: View {
         ZStack {
             Color.rfNavy.ignoresSafeArea()
 
+            ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     profileCard
@@ -59,6 +60,9 @@ struct SettingsView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .padding(.bottom, 48)
+            }
+            .onAppear { scrollTour(proxy) }
+            .onChange(of: tour.activeAnchor) { _, _ in scrollTour(proxy) }
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -87,11 +91,6 @@ struct SettingsView: View {
             .presentationDetents([.fraction(0.78), .large])
             .presentationDragIndicator(.hidden)
         }
-        .sheet(isPresented: $showRetentionPicker) {
-            RetentionPickerSheet(days: $dataRetentionDays)
-                .presentationDetents([.height(320)])
-                .presentationDragIndicator(.hidden)
-        }
         .sheet(isPresented: $showScreenTime) {
             NavigationStack { ScreenTimeMonitoringView() }
         }
@@ -100,7 +99,16 @@ struct SettingsView: View {
         .sheet(isPresented: $showManagePartners)  { ManagePartnersView() }
         .sheet(isPresented: $showManageGroups)    { ManageGroupsView() }
         .sheet(isPresented: $showHowItWorks)      { HowItWorksView() }
+        .sheet(isPresented: $showFeedback)       { FeedbackSheet(replyEmail: userEmail) }
         .sheet(isPresented: $showEditProfile)    { EditProfileSheet() }
+        .alert("Couldn't finish", isPresented: Binding(
+            get: { actionError != nil },
+            set: { if !$0 { actionError = nil } }
+        )) {
+            Button("OK", role: .cancel) { actionError = nil }
+        } message: {
+            Text(actionError ?? "")
+        }
         .sheet(isPresented: $showLeaveConfirm) {
             DestructiveConfirmSheet(
                 title: "Leave All Groups",
@@ -109,8 +117,12 @@ struct SettingsView: View {
                 confirmLabel: "Leave All Groups"
             ) {
                 Task {
-                    try? await APIClient.shared.leaveAllGroups()
-                    UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                    do {
+                        try await APIClient.shared.leaveAllGroups()
+                        UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                    } catch {
+                        actionError = error.localizedDescription
+                    }
                 }
             }
         }
@@ -166,6 +178,7 @@ struct SettingsView: View {
     private var accountabilitySection: some View {
         SettingsSection(title: "ACCOUNTABILITY") {
             SRow(icon: "person.2.fill", tint: Color.rfGold, label: "Manage Partners") { showManagePartners = true }
+                .tourAnchor(.settingsPartners)
             rowDivider
             SRow(icon: "person.3.fill", tint: Color.rfGold, label: "Manage Groups")   { showManageGroups = true }
             rowDivider
@@ -177,15 +190,14 @@ struct SettingsView: View {
 
     private var monitoringSection: some View {
         SettingsSection(title: "MONITORING") {
-            TRow(icon: "shield.fill",
-                 tint: Color(red: 0.20, green: 0.78, blue: 0.45),
-                 label: "Monitoring Active",
-                 isOn: gatedMonitoringBinding)
-            rowDivider
-            TRow(icon: "bell.fill",
+            SRow(icon: "bell.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
-                 label: "Notifications",
-                 isOn: $notificationsEnabled)
+                 label: "Notifications") {
+                if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                    openURL(url)
+                }
+            }
+            .accessibilityHint("Opens iPhone Settings for Remain Faithful")
         }
     }
 
@@ -213,6 +225,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
             }
+            .tourAnchor(.settingsRestrictions)
         }
     }
 
@@ -306,28 +319,6 @@ struct SettingsView: View {
         )
     }
 
-    // Binding that intercepts turning OFF monitoring (requires PIN).
-    private var gatedMonitoringBinding: Binding<Bool> {
-        Binding(
-            get: { monitoringActive },
-            set: { newValue in
-                if newValue {
-                    monitoringActive = true
-                } else {
-                    withPINGate {
-                        monitoringActive = false
-                        Task {
-                            try? await APIClient.shared.sendProtectionAlert(
-                                type: "monitoring_disabled",
-                                detail: "\(userName) turned off monitoring."
-                            )
-                        }
-                    }
-                }
-            }
-        )
-    }
-
     // If a partner PIN is set, stores the action and shows the PIN sheet.
     // If no PIN is set, executes the action immediately.
     private func withPINGate(_ action: @escaping () -> Void) {
@@ -343,11 +334,6 @@ struct SettingsView: View {
 
     private var privacySection: some View {
         SettingsSection(title: "PRIVACY") {
-            SRow(icon: "calendar",
-                 tint: Color.rfGold,
-                 label: "Data Retention",
-                 value: "\(dataRetentionDays) days") { showRetentionPicker = true }
-            rowDivider
             SRow(icon: "list.bullet.rectangle",
                  tint: Color.rfGold,
                  label: "View My Activity Log") { showActivityLog = true }
@@ -392,6 +378,12 @@ struct SettingsView: View {
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "How It Works") { showHowItWorks = true }
             rowDivider
+            SRow(icon: "play.circle.fill",
+                 tint: Color(red: 0.28, green: 0.56, blue: 0.95),
+                 label: "Replay App Tour") {
+                NotificationCenter.default.post(name: .replayAppTour, object: nil)
+            }
+            rowDivider
             SRow(icon: "bubble.left.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                  label: "Contact Support") {
@@ -406,11 +398,8 @@ struct SettingsView: View {
             rowDivider
             SRow(icon: "lightbulb.fill",
                  tint: Color(red: 0.28, green: 0.56, blue: 0.95),
-                 label: "Suggest an Improvement") {
-                if let url = URL(string: "mailto:support@remainfaithful.com?subject=Remain%20Faithful%20Feature%20Suggestion") {
-                    UIApplication.shared.open(url)
-                }
-            }
+                 label: "Send Ideas or Report a Problem") { showFeedback = true }
+                .tourAnchor(.settingsFeedback)
         }
     }
 
@@ -459,6 +448,22 @@ struct SettingsView: View {
                                 .stroke(Self.red.opacity(0.20), lineWidth: 1))
                     )
             }
+        }
+    }
+
+    private func scrollTour(_ proxy: ScrollViewProxy) {
+        guard let anchor = tour.activeAnchor else { return }
+        switch anchor {
+        case .settingsPartners, .settingsRestrictions, .settingsFeedback:
+            if reduceMotion {
+                proxy.scrollTo(anchor, anchor: .center)
+            } else {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    proxy.scrollTo(anchor, anchor: .center)
+                }
+            }
+        default:
+            break
         }
     }
 
@@ -531,30 +536,6 @@ private struct SRow: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
-    }
-}
-
-// MARK: - Toggle row
-
-private struct TRow: View {
-    let icon:  String
-    let tint:  Color
-    let label: String
-    @Binding var isOn: Bool
-
-    var body: some View {
-        HStack(spacing: 14) {
-            iconBadge(icon, tint: tint)
-            Text(label)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(.white)
-            Spacer()
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .tint(Color.rfGold)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
     }
 }
 
@@ -878,8 +859,12 @@ private struct ManagePartnersView: View {
             Button("Remove", role: .destructive) {
                 guard let p = partnerToRemove else { return }
                 Task {
-                    try? await APIClient.shared.deleteRelationship(id: p.relationshipID)
-                    await MainActor.run { partners.removeAll { $0.id == p.id } }
+                    do {
+                        try await APIClient.shared.deleteRelationship(id: p.relationshipID)
+                        await MainActor.run { partners.removeAll { $0.id == p.id } }
+                    } catch {
+                        await MainActor.run { errorMsg = error.localizedDescription }
+                    }
                 }
             }
             Button("Cancel", role: .cancel) { }
@@ -890,7 +875,12 @@ private struct ManagePartnersView: View {
             Button("Remove PIN", role: .destructive) {
                 guard let p = pinPartner else { return }
                 Task {
-                    try? await APIClient.shared.removeRelationshipPIN(relationshipID: p.relationshipID)
+                    do {
+                        try await APIClient.shared.removeRelationshipPIN(relationshipID: p.relationshipID)
+                    } catch {
+                        await MainActor.run { errorMsg = error.localizedDescription }
+                        return
+                    }
                     try? await APIClient.shared.sendProtectionAlert(
                         type: "pin_removed",
                         detail: "Protection PIN removed by accountability partner."
@@ -1105,13 +1095,22 @@ private struct ManagePartnersView: View {
     }
 
     private func setPrimary(partner: PartnerItem) {
-        guard !partner.isPrimary else { return }
+        guard !partner.isPrimary, !isSettingPrimary else { return }
+        isSettingPrimary = true
+        errorMsg = nil
         Task {
-            guard APIClient.shared.isAuthenticated else { return }
-            try? await APIClient.shared.setPrimaryPartner(relationshipID: partner.relationshipID)
-            await MainActor.run {
-                for i in partners.indices {
-                    partners[i].isPrimary = (partners[i].id == partner.id)
+            do {
+                try await APIClient.shared.setPrimaryPartner(relationshipID: partner.relationshipID)
+                await MainActor.run {
+                    for i in partners.indices {
+                        partners[i].isPrimary = (partners[i].id == partner.id)
+                    }
+                    isSettingPrimary = false
+                }
+            } catch {
+                await MainActor.run {
+                    errorMsg = error.localizedDescription
+                    isSettingPrimary = false
                 }
             }
         }
@@ -1409,6 +1408,7 @@ private struct ManageGroupsView: View {
     @State private var createError: String?
     @State private var groupToLeave: GroupItem?
     @State private var showLeaveConfirm  = false
+    @State private var leaveError: String?
     @State private var groupForInvite: GroupItem?
     @State private var showInviteSheet   = false
     @State private var groups: [GroupItem] = []
@@ -1435,18 +1435,30 @@ private struct ManageGroupsView: View {
             Button("Leave", role: .destructive) {
                 guard let g = groupToLeave else { return }
                 Task {
-                    try? await APIClient.shared.leaveGroup(groupID: g.id)
-                    await MainActor.run {
-                        groups.removeAll { $0.id == g.id }
-                        if primaryGroupID == g.id {
-                            UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                    do {
+                        try await APIClient.shared.leaveGroup(groupID: g.id)
+                        await MainActor.run {
+                            groups.removeAll { $0.id == g.id }
+                            if primaryGroupID == g.id {
+                                UserDefaults.standard.removeObject(forKey: "primaryGroupID")
+                            }
                         }
+                    } catch {
+                        await MainActor.run { leaveError = error.localizedDescription }
                     }
                 }
             }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("You will be removed from \(groupToLeave?.name ?? "this group") and all members will be notified.")
+        }
+        .alert("Couldn't leave", isPresented: Binding(
+            get: { leaveError != nil },
+            set: { if !$0 { leaveError = nil } }
+        )) {
+            Button("OK", role: .cancel) { leaveError = nil }
+        } message: {
+            Text(leaveError ?? "")
         }
         .sheet(isPresented: $showInviteSheet) {
             if let g = groupForInvite {
@@ -1629,6 +1641,7 @@ private struct ManageGroupsView: View {
 
 private struct HowItWorksView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
 
     private let steps: [(icon: String, title: String, body: String)] = [
         ("person.2.fill",
@@ -1687,6 +1700,20 @@ private struct HowItWorksView: View {
                         Text("— Proverbs 27:17")
                             .font(.system(size: 12))
                             .foregroundStyle(Color.rfGold.opacity(0.65))
+
+                        Button {
+                            if let url = URL(string: "https://www.remainfaithful.com/app-guide") {
+                                openURL(url)
+                            }
+                        } label: {
+                            Text("See every button explained at remainfaithful.com/app-guide")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.rfGold)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .accessibilityLabel("See every button explained at remain faithful dot com slash app guide")
+                        .padding(.top, 8)
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 24)
@@ -1760,80 +1787,6 @@ private func sheetHeader(title: String, subtitle: String) -> some View {
     .padding(.bottom, 20)
 }
 
-// MARK: - Data Retention picker sheet
-
-private struct RetentionPickerSheet: View {
-    @Binding var days: Int
-    @Environment(\.dismiss) private var dismiss
-
-    private let options = [30, 60, 90]
-
-    var body: some View {
-        ZStack {
-            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
-            VStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.18))
-                    .frame(width: 40, height: 4)
-                    .padding(.top, 12)
-                    .padding(.bottom, 20)
-
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Data Retention")
-                            .font(.system(size: 20, weight: .bold, design: .serif))
-                            .foregroundStyle(.white)
-                        Text("How long to keep your activity logs")
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color.white.opacity(0.45))
-                    }
-                    Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
-
-                Divider().overlay(Color.white.opacity(0.08))
-
-                VStack(spacing: 0) {
-                    ForEach(options, id: \.self) { option in
-                        Button {
-                            days = option
-                            dismiss()
-                        } label: {
-                            HStack {
-                                Text("\(option) days")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundStyle(.white)
-                                Spacer()
-                                if days == option {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(Color.rfGold)
-                                }
-                            }
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 18)
-                        }
-                        if option != options.last {
-                            Divider()
-                                .overlay(Color.white.opacity(0.07))
-                                .padding(.horizontal, 24)
-                        }
-                    }
-                }
-                Spacer()
-            }
-        }
-    }
-}
-
 // MARK: - Covenant sheet
 
 private let settingsCovenantText = """
@@ -1858,6 +1811,10 @@ Signed and agreed upon this day, before God and this brotherhood.
 
 private struct SettingsCovenantSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("primaryGroupID") private var primaryGroupID = 0
+    @State private var bodyText = settingsCovenantText
+    @State private var subtitle = "Loading…"
+    @State private var isLoading = true
 
     var body: some View {
         ZStack {
@@ -1874,9 +1831,10 @@ private struct SettingsCovenantSheet: View {
                         Text("Group Covenant")
                             .font(.system(size: 20, weight: .bold, design: .serif))
                             .foregroundStyle(.white)
-                        Text("The agreement all members signed")
+                        Text(subtitle)
                             .font(.system(size: 13))
                             .foregroundStyle(Color.rfGold.opacity(0.75))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
                     Button { dismiss() } label: {
@@ -1886,21 +1844,54 @@ private struct SettingsCovenantSheet: View {
                             .padding(10)
                             .background(Circle().fill(Color.white.opacity(0.09)))
                     }
+                    .accessibilityLabel("Close")
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 20)
 
                 Divider().overlay(Color.white.opacity(0.08))
 
-                ScrollView(showsIndicators: false) {
-                    Text(settingsCovenantText)
-                        .font(.system(size: 14, design: .serif))
-                        .foregroundStyle(Color.white.opacity(0.85))
-                        .lineSpacing(6)
-                        .padding(24)
+                if isLoading {
+                    Spacer()
+                    ProgressView().tint(Color.rfGold)
+                    Spacer()
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        Text(bodyText)
+                            .font(.system(size: 14, design: .serif))
+                            .foregroundStyle(Color.white.opacity(0.85))
+                            .lineSpacing(6)
+                            .padding(24)
+                    }
                 }
             }
         }
+        .task { await load() }
+    }
+
+    @MainActor
+    private func load() async {
+        guard primaryGroupID > 0, APIClient.shared.isAuthenticated else {
+            bodyText = settingsCovenantText
+            subtitle = "You are not in a group yet. This is a sample."
+            isLoading = false
+            return
+        }
+        do {
+            let group = try await APIClient.shared.getGroup(id: primaryGroupID)
+            let saved = (group.covenant ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if saved.isEmpty {
+                bodyText = settingsCovenantText
+                subtitle = "Your group has not saved its own wording yet. This is a sample."
+            } else {
+                bodyText = saved
+                subtitle = "Saved for your group"
+            }
+        } catch {
+            bodyText = settingsCovenantText
+            subtitle = "Could not load your group's covenant. This is a sample."
+        }
+        isLoading = false
     }
 }
 

@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // Client sends transactional email via SendGrid's v3 mail/send API.
@@ -75,14 +77,35 @@ func (c *Client) SendGroupInvite(toEmail, inviterName, groupName, acceptURL stri
 
 // SendPasswordReset sends a reset-link email to the given address.
 // SendContact forwards a contact-form submission to the app's support inbox.
+// Name, email, subject, and message are HTML-escaped before they are placed
+// in the HTML part. The subject header has newlines stripped so a crafted
+// subject cannot inject extra mail headers.
 func (c *Client) SendContact(fromEmail, fromName, subject, message, toEmail string) error {
-	subjectLine := "[Remain Faithful Contact] " + subject
-	plain := fmt.Sprintf("From: %s <%s>\n\n%s", fromName, fromEmail, message)
-	html := fmt.Sprintf(
-		`<p><strong>From:</strong> %s &lt;%s&gt;</p><p>%s</p>`,
-		fromName, fromEmail, message,
+	subjectLine, plain, htmlBody := contactParts(fromEmail, fromName, subject, message)
+	return c.send(toEmail, "", subjectLine, plain, htmlBody)
+}
+
+// contactParts builds the subject, plain text, and HTML for a contact email.
+func contactParts(fromEmail, fromName, subject, message string) (subjectLine, plain, htmlBody string) {
+	cleanSubject := sanitizeMailHeader(subject)
+	message = strings.ReplaceAll(message, "\r\n", "\n")
+	message = strings.ReplaceAll(message, "\r", "\n")
+	subjectLine = "[Remain Faithful Contact] " + cleanSubject
+	plain = fmt.Sprintf("From: %s <%s>\nSubject: %s\n\n%s", fromName, fromEmail, cleanSubject, message)
+	htmlBody = fmt.Sprintf(
+		`<p><strong>From:</strong> %s &lt;%s&gt;</p><p><strong>Subject:</strong> %s</p><p>%s</p>`,
+		html.EscapeString(fromName),
+		html.EscapeString(fromEmail),
+		html.EscapeString(cleanSubject),
+		strings.ReplaceAll(html.EscapeString(message), "\n", "<br>"),
 	)
-	return c.send(toEmail, "", subjectLine, plain, html)
+	return subjectLine, plain, htmlBody
+}
+
+func sanitizeMailHeader(s string) string {
+	s = strings.ReplaceAll(s, "\r", " ")
+	s = strings.ReplaceAll(s, "\n", " ")
+	return s
 }
 
 func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {

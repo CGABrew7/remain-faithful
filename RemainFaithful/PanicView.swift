@@ -5,6 +5,8 @@ struct PanicView: View {
     @Environment(\.openURL)  private var openURL
 
     @State private var alertSent      = false
+    @State private var isSending      = false
+    @State private var sendError: String?
     @State private var pulse: CGFloat = 1.0
     @State private var partner:        RemoteRelationship? = nil
     @State private var partnerLoaded   = false
@@ -210,16 +212,30 @@ But when you are tempted, he will also provide a way out so that you can endure 
         let green = Color(red: 0.20, green: 0.78, blue: 0.45)
         let tint  = sent ? green : blue
 
-        return Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                alertSent = true
+        return VStack(spacing: 10) {
+        Button {
+            guard !isSending, !sent else { return }
+            isSending = true
+            sendError = nil
+            Task {
+                do {
+                    try await APIClient.shared.sendPanicAlert()
+                    await MainActor.run {
+                        isSending = false
+                        withAnimation(.easeInOut(duration: 0.25)) { alertSent = true }
+                    }
+                } catch {
+                    await MainActor.run {
+                        isSending = false
+                        sendError = error.localizedDescription
+                    }
+                }
             }
-            Task { try? await APIClient.shared.sendPanicAlert() }
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: sent ? "checkmark.circle.fill" : "bell.badge.fill")
                     .font(.system(size: 16))
-                Text(sent ? "Alert Sent to Group" : "Send Alert to Group")
+                Text(sent ? "Alert Sent" : (isSending ? "Sending…" : "Alert Partners and Group"))
                     .font(.system(size: 16, weight: .semibold))
             }
             .foregroundStyle(tint)
@@ -232,8 +248,15 @@ But when you are tempted, he will also provide a way out so that you can endure 
                         .stroke(tint.opacity(0.35), lineWidth: 1.5))
             )
         }
-        .disabled(sent)
+        .disabled(sent || isSending)
         .animation(.easeInOut(duration: 0.25), value: sent)
+        if let sendError {
+            Text(sendError)
+                .font(.system(size: 13))
+                .foregroundStyle(Color(red: 0.95, green: 0.55, blue: 0.45))
+                .multilineTextAlignment(.center)
+        }
+        }
     }
 
     // MARK: - Close

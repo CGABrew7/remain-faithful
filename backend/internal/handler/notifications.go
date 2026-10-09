@@ -134,69 +134,183 @@ func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// SendPanicAlert sends a time-sensitive push notification to the caller's
-// designated primary partner (or most recently added accepted partner as a
-// fallback). Returns 400 if no accepted partner exists.
+// SendPanicAlert sends a time-sensitive push to every accepted partner and
+// every other member of the caller's groups. Returns 400 when that audience
+// is empty. The push is metadata only: the caller's name and a fixed line.
 // POST /panic
 func (h *H) SendPanicAlert(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
-	var callerName string
-	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT name FROM users WHERE id = $1`, userID,
-	).Scan(&callerName); err != nil {
+	callerName, err := h.lookupUserName(r.Context(), userID)
+	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to look up user")
 		return
 	}
 
-	// Prefer the primary partner; fall back to the most recently added accepted one.
-	var partnerID int64
-	err := h.DB.QueryRowContext(r.Context(), `
-		SELECT partner_id FROM relationships
-		WHERE user_id = $1 AND status = 'accepted' AND is_primary = TRUE
-		LIMIT 1
-	`, userID).Scan(&partnerID)
-	if errors.Is(err, sql.ErrNoRows) {
-		err = h.DB.QueryRowContext(r.Context(), `
-			SELECT partner_id FROM relationships
-			WHERE user_id = $1 AND status = 'accepted'
-			ORDER BY created_at DESC
-			LIMIT 1
-		`, userID).Scan(&partnerID)
-	}
-	if errors.Is(err, sql.ErrNoRows) {
-		writeError(w, http.StatusBadRequest, "no accountability partner set — add a partner first")
-		return
-	}
+	audience, err := h.supportAudienceIDs(r.Context(), userID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to look up partner")
+		writeError(w, http.StatusInternalServerError, "failed to look up who to notify")
 		return
 	}
-
-	payload := map[string]any{
-		"aps": map[string]any{
-			"alert": map[string]string{
-				"title": "Urgent Prayer Request",
-				"body":  callerName + " needs support right now",
-			},
-			"sound":              "default",
-			"interruption-level": "time-sensitive",
-		},
-		"notification_type": "PANIC_ALERT",
-		"sender_name":       callerName,
+	if len(audience) == 0 {
+		writeError(w, http.StatusBadRequest, "Add a partner or join a group before sending an alert")
+		return
 	}
 
 	n := &apns.Notification{
 		PushType:   "alert",
 		Priority:   10,
 		CollapseID: fmt.Sprintf("panic-%d", userID),
-		Payload:    payload,
+		Payload: map[string]any{
+			"aps": map[string]any{
+				"alert": map[string]string{
+					"title": "Urgent Prayer Request",
+					"body":  callerName + " needs support right now",
+				},
+				"sound":              "default",
+				"interruption-level": "time-sensitive",
+			},
+			"notification_type": "PANIC_ALERT",
+			"sender_name":       callerName,
+		},
 	}
 
-	// Respond immediately; fire push in the background.
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 
-	go h.notifyPartnerByID(context.Background(), partnerID, callerName, n)
+	h.inBackground(func() {
+		h.notifyUserIDs(context.Background(), audience, callerName, n)
+	})
+}
+
+// inBackground runs fn after the response. Tests set H.SyncPush to run it inline.
+func (h *H) inBackground(fn func()) {
+	if h.SyncPush {
+		fn()
+		return
+	}
+	go fn()
+}
+
+func (h *H) lookupUserName(ctx context.Context, userID int64) (string, error) {
+	var name string
+	err := h.DB.QueryRowContext(ctx, `SELECT name FROM users WHERE id = $1`, userID).Scan(&name)
+	return name, err
+}
+
+// supportAudienceIDs is every accepted partner (either direction) and every
+// other member of the user's groups. The user is never included.
+func (h *H) supportAudienceIDs(ctx context.Context, userID int64) ([]int64, error) {
+	rows, err := h.DB.QueryContext(ctx, `
+		SELECT DISTINCT other_id FROM (
+			SELECT CASE WHEN user_id = $1 THEN partner_id ELSE user_id END AS other_id
+			FROM   relationships
+			WHERE  (user_id = $1 OR partner_id = $1)
+			  AND  status = 'accepted'
+			UNION
+			SELECT gm2.user_id AS other_id
+			FROM   group_members gm1
+			JOIN   group_members gm2
+			       ON gm2.group_id = gm1.group_id AND gm2.user_id <> $1
+			WHERE  gm1.user_id = $1
+		) audience
+		WHERE other_id <> $1 AND other_id IS NOT NULL
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return scanIDs(rows)
+}
+
+// coMemberIDs returns the other members of every group userID belongs to.
+func (h *H) coMemberIDs(ctx context.Context, userID int64) ([]int64, error) {
+	rows, err := h.DB.QueryContext(ctx, `
+		SELECT DISTINCT gm2.user_id
+		FROM   group_members gm1
+		JOIN   group_members gm2
+		       ON gm2.group_id = gm1.group_id AND gm2.user_id <> $1
+		WHERE  gm1.user_id = $1
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return scanIDs(rows)
+}
+
+// otherMemberIDs returns everyone in groupID except userID.
+func (h *H) otherMemberIDs(ctx context.Context, groupID, userID int64) ([]int64, error) {
+	rows, err := h.DB.QueryContext(ctx, `
+		SELECT user_id FROM group_members
+		WHERE  group_id = $1 AND user_id <> $2
+	`, groupID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return scanIDs(rows)
+}
+
+func scanIDs(rows *sql.Rows) ([]int64, error) {
+	var ids []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
+func (h *H) notifyUserIDs(ctx context.Context, userIDs []int64, senderName string, n *apns.Notification) {
+	seen := make(map[int64]struct{}, len(userIDs))
+	for _, id := range userIDs {
+		if id == 0 {
+			continue
+		}
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		seen[id] = struct{}{}
+		note := *n
+		h.notifyPartnerByID(ctx, id, senderName, &note)
+	}
+}
+
+func metadataPush(title, body, notifType, senderName, collapse string) *apns.Notification {
+	return &apns.Notification{
+		PushType:   "alert",
+		Priority:   10,
+		CollapseID: collapse,
+		Payload: map[string]any{
+			"aps": map[string]any{
+				"alert": map[string]string{
+					"title": title,
+					"body":  body,
+				},
+				"sound": "default",
+			},
+			"notification_type": notifType,
+			"sender_name":       senderName,
+		},
+	}
+}
+
+func encouragementBody(name string) string {
+	return name + " sent you encouragement."
+}
+
+func covenantUpdatedBody(name string) string {
+	return name + " updated the group covenant."
+}
+
+func groupLeftBody(name string) string {
+	return name + " left the group."
+}
+
+func partnershipEndedBody(name string) string {
+	return name + " ended the accountability partnership."
 }
 
 // notifyPartners queries all active device tokens belonging to accepted partners
