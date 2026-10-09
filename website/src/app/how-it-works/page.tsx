@@ -31,7 +31,7 @@ const faqs = [
   },
   {
     q: 'How do I leave a group?',
-    a: 'Navigate to Settings → Groups → select the group → Leave Group. When you leave a group, all group members are notified. Your data is not retained after leaving. Partners will no longer receive alerts from you. Your historical alerts within the group are purged per your data retention setting (default 30 days).',
+    a: 'Open Settings → Manage Groups → Leave Group. The other members are notified. Leaving does not delete your alert history. Alerts stay while your account exists and are deleted when you delete the account.',
   },
   {
     q: 'Does this work on Android?',

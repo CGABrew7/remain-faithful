@@ -231,6 +231,8 @@ struct DashboardView: View {
     @AppStorage("hasDonated")                private var hasDonated           = false
     @AppStorage("donateBannerLastDismissed") private var donateBannerLastDismissed: Double = 0
     @EnvironmentObject private var appState: AppState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ObservedObject private var tour = TourController.shared
     @Binding var showPanic: Bool
 
     @State private var events:           [ActivityEvent]  = []
@@ -265,13 +267,16 @@ struct DashboardView: View {
         ZStack(alignment: .top) {
             Color.rfNavy.ignoresSafeArea()
 
+            ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     headerRow
                     if isBroadcasting {
                         StatusCard(isBroadcasting: true)
+                            .tourAnchor(.homeStatus)
                     } else {
                         BroadcastPausedBanner()
+                            .tourAnchor(.homeStatus)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
                     if showAppUsagePrompt && !isBroadcasting {
@@ -289,11 +294,14 @@ struct DashboardView: View {
                     }
                     VerseCard()
                     StreakCard(days: streakDays, best: streakBest, week: streakWeek)
+                        .tourAnchor(.homeStreak)
                     ActivitySection(events: events,
                                     isLoading: isLoadingEvents,
                                     error: eventsLoadError,
                                     onRetry: { Task { await loadEvents() } })
+                        .tourAnchor(.homeFlags)
                     panicButton
+                        .tourAnchor(.homeSupport)
                     if shouldShowDonateBanner {
                         DonateBanner(
                             onDonate: {
@@ -310,6 +318,9 @@ struct DashboardView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .padding(.bottom, 32)
+            }
+            .onAppear { scrollTour(proxy) }
+            .onChange(of: tour.activeAnchor) { _, _ in scrollTour(proxy) }
             }
 
             // Partner flag banner — slides in from top when a foreground push arrives
@@ -388,6 +399,22 @@ struct DashboardView: View {
         }
     }
 
+    private func scrollTour(_ proxy: ScrollViewProxy) {
+        guard let anchor = tour.activeAnchor else { return }
+        switch anchor {
+        case .homeStatus, .homeStreak, .homeFlags, .homeSupport:
+            if reduceMotion {
+                proxy.scrollTo(anchor, anchor: .center)
+            } else {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    proxy.scrollTo(anchor, anchor: .center)
+                }
+            }
+        default:
+            break
+        }
+    }
+
     private var panicButton: some View {
         Button { showPanic = true } label: {
             HStack(spacing: 12) {
@@ -452,6 +479,7 @@ struct DashboardView: View {
 
 private struct StatusCard: View {
     let isBroadcasting: Bool
+    @ObservedObject private var lockout = AppLockoutManager.shared
     @State private var pulse: CGFloat = 1.0
 
     private static let green   = Color(red: 0.18, green: 0.82, blue: 0.48)
@@ -487,7 +515,7 @@ private struct StatusCard: View {
                         .foregroundStyle(Color.white.opacity(0.6))
                         .fixedSize(horizontal: false, vertical: true)
                     if isBroadcasting {
-                        Text("Pausing will notify your accountability group")
+                        Text(PauseNotice.text(lockoutEnabled: lockout.isEnabled))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Color(red: 0.95, green: 0.72, blue: 0.22))
                             .fixedSize(horizontal: false, vertical: true)

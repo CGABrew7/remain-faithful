@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         <div className="mb-12">
           <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
           <h1 className="font-serif text-4xl font-bold text-ink mb-4">Privacy Policy</h1>
-          <p className="text-ink-soft text-sm">Last updated: September 2026</p>
+          <p className="text-ink-soft text-sm">Last updated: October 2026</p>
         </div>
 
         <div className="prose-content space-y-12">
@@ -69,6 +69,12 @@ export default function PrivacyPage() {
                 Donations are processed by Stripe. We do not store your payment card information. Stripe stores payment data per their own privacy policy. We receive only a confirmation of donation amount for internal records.
               </p>
             </Subsection>
+
+            <Subsection title="Support Messages">
+              <p>
+                If you use Send ideas or report a problem, we receive the type you pick, the words you type, and the name and email on your account so we can reply. App version, iPhone model, and iOS version are included only if you turn that on. The form does not send logs, alerts, screenshots, Screen Time choices, partner names, or group names.
+              </p>
+            </Subsection>
           </Section>
 
           <Section title="What Stays On Your Device">
@@ -100,7 +106,7 @@ export default function PrivacyPage() {
             <p>We retain data for the following periods:</p>
             <ul>
               <li><strong className="text-ink">Account data:</strong> retained while your account is active, deleted within 30 days of account deletion</li>
-              <li><strong className="text-ink">Alert history:</strong> configurable by you in Settings → Data Retention. Options: 7, 14, 30, or 90 days. Alerts older than your selected window are automatically purged.</li>
+              <li><strong className="text-ink">Alert history:</strong> kept while your account exists, and deleted when you delete your account. There is no separate retention window in Settings. Leaving a group notifies the other members. It does not delete your alert history.</li>
               <li><strong className="text-ink">Partnership records:</strong> removed immediately when either partner ends the relationship</li>
               <li><strong className="text-ink">Donation records:</strong> retained for 7 years per financial record-keeping obligations</li>
             </ul>
@@ -123,10 +129,10 @@ export default function PrivacyPage() {
           <Section title="Your Rights">
             <p>You may, at any time:</p>
             <ul>
-              <li><strong className="text-ink">Access your data:</strong> request a full export of your account data via Settings → Export My Data, or by emailing support@remainfaithful.com</li>
+              <li><strong className="text-ink">Access your data:</strong> Settings → View My Activity Log shows your flagged activity in the app. For anything else, email support@remainfaithful.com. There is no separate export button.</li>
               <li><strong className="text-ink">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
               <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings → Delete Account. This triggers immediate deletion of your account data and alerts, with confirmation within 30 days</li>
-              <li><strong className="text-ink">Withdraw consent:</strong> disable filtering at any time from within the app. Partners will no longer receive alerts immediately upon disabling.</li>
+              <li><strong className="text-ink">Change protection:</strong> you can change App Restrictions and turn off App Lockout in Settings. Turning off App Lockout sends your partners a notice. Stopping Deep Scan notifies partners only when App Lockout is on.</li>
             </ul>
             <p>
               For data requests or concerns, contact{' '}

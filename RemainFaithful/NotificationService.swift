@@ -47,6 +47,7 @@ final class NotificationService: NSObject {
             }
             DispatchQueue.main.async {
                 completion?()
+                NotificationCenter.default.post(name: .notificationPermissionResolved, object: nil)
             }
         }
     }
@@ -63,6 +64,9 @@ final class NotificationService: NSObject {
             case .authorized, .provisional:
                 print("[APNs] authorized — calling registerForRemoteNotifications")
                 await MainActor.run { UIApplication.shared.registerForRemoteNotifications() }
+                await MainActor.run {
+                    NotificationCenter.default.post(name: .notificationPermissionResolved, object: nil)
+                }
             case .notDetermined:
                 print("[APNs] not determined — requesting permission now")
                 // Brief delay so the window is fully stable before the system
@@ -72,8 +76,13 @@ final class NotificationService: NSObject {
                 requestPermission()
             case .denied:
                 print("[APNs] permission denied — push notifications are off")
+                await MainActor.run {
+                    NotificationCenter.default.post(name: .notificationPermissionResolved, object: nil)
+                }
             default:
-                break
+                await MainActor.run {
+                    NotificationCenter.default.post(name: .notificationPermissionResolved, object: nil)
+                }
             }
         }
     }

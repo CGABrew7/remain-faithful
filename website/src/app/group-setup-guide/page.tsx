@@ -217,7 +217,7 @@ export default function GroupSetupGuidePage() {
               </GuideTip>
 
               <GuideTip title="Leaving a Group">
-                Members can leave at any time via Settings → Groups → Leave Group. When a member leaves, all group members are notified. Their historical alert data is purged per their data retention settings.
+                Members can leave at any time via Settings → Manage Groups → Leave Group. When a member leaves, the other members are notified. Leaving does not delete their alert history. Alerts stay while the account exists and are deleted when the account is deleted.
               </GuideTip>
             </div>
           </GuideSection>

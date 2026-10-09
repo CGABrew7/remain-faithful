@@ -98,7 +98,9 @@ struct GroupView: View {
     @AppStorage("primaryGroupID")    private var primaryGroupID    = 0
     @AppStorage("customCovenantText") private var customCovenantText = ""
     @EnvironmentObject private var appState: AppState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ObservedObject private var authState = AuthState.shared
+    @ObservedObject private var tour = TourController.shared
 
     @State private var showCovenant       = false
     @State private var showInvite         = false
@@ -107,6 +109,8 @@ struct GroupView: View {
     @State private var selectedMember: GroupMember? = nil
     @State private var showEditCovenant   = false
     @State private var showCovenantAlert  = false
+    @State private var covenantAlertMessage = "Covenant updated."
+    @State private var inviteWarning: String?
     @State private var showCreateGroup    = false
     @State private var liveGroupName      = ""
     @State private var liveMembers:  [GroupMember] = []
@@ -131,6 +135,7 @@ struct GroupView: View {
                 noGroupEmptyState
             } else {
                 VStack(spacing: 0) {
+                    ScrollViewReader { proxy in
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 18) {
                             GroupHeaderCard(name: displayName, memberCount: displayMembers.count) {
@@ -150,6 +155,7 @@ struct GroupView: View {
                             }
                             if !displayMembers.isEmpty {
                                 membersSection
+                                    .tourAnchor(.groupMembers)
                             }
                             CovenantButton { showCovenant = true }
                         }
@@ -157,8 +163,12 @@ struct GroupView: View {
                         .padding(.top, 8)
                         .padding(.bottom, 24)
                     }
+                    .onAppear { scrollTour(proxy) }
+                    .onChange(of: tour.activeAnchor) { _, _ in scrollTour(proxy) }
+                    }
 
                     inviteBar
+                        .tourAnchor(.groupInvite)
                 }
             }
         }
@@ -171,26 +181,52 @@ struct GroupView: View {
         }
         .sheet(isPresented: $showRenameGroup) {
             RenameGroupSheet(name: $renameGroupText) { newName in
+                if appState.isDemoMode || primaryGroupID == 0 {
+                    liveGroupName = newName
+                    return
+                }
+                try await APIClient.shared.updateGroup(id: primaryGroupID, name: newName)
                 liveGroupName = newName
             }
         }
         .sheet(item: $selectedMember) { member in
-            MemberDetailView(member: member)
+            MemberDetailView(member: member, groupID: primaryGroupID)
         }
         .sheet(isPresented: $showEditCovenant) {
-            EditCovenantSheet(text: $customCovenantText) {
+            EditCovenantSheet(
+                initialText: displayCovenant,
+                notifiesMembers: !appState.isDemoMode && primaryGroupID > 0
+            ) { newText in
+                if appState.isDemoMode || primaryGroupID == 0 {
+                    customCovenantText = newText
+                    covenantAlertMessage = "Covenant updated."
+                    showCovenantAlert = true
+                    return
+                }
+                try await APIClient.shared.updateGroup(id: primaryGroupID, covenant: newText)
+                customCovenantText = newText
+                covenantAlertMessage = "Covenant updated. The other members were notified."
                 showCovenantAlert = true
             }
         }
         .sheet(isPresented: $showCreateGroup) {
-            CreateGroupSheet { createdName in
+            CreateGroupSheet { createdName, warning in
                 liveGroupName = createdName
+                inviteWarning = warning
             }
         }
         .alert("Covenant Updated", isPresented: $showCovenantAlert) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text("All members have been notified that the group covenant has been updated and will be prompted to re-accept it.")
+            Text(covenantAlertMessage)
+        }
+        .alert("Group created", isPresented: Binding(
+            get: { inviteWarning != nil },
+            set: { if !$0 { inviteWarning = nil } }
+        )) {
+            Button("OK", role: .cancel) { inviteWarning = nil }
+        } message: {
+            Text(inviteWarning ?? "")
         }
         // Re-validate the stored group every time the tab appears and whenever
         // a different account signs in.
@@ -229,6 +265,7 @@ struct GroupView: View {
                 .frame(height: 54)
                 .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
             }
+            .tourAnchor(.groupCreate)
             .padding(.horizontal, 40)
             Spacer()
         }
@@ -262,6 +299,7 @@ struct GroupView: View {
         do {
             let group = try await APIClient.shared.getGroup(id: primaryGroupID)
             liveGroupName = group.name
+            customCovenantText = group.covenant ?? ""
             liveMembers = (group.members ?? []).map { m in
                 let health: AccountabilityHealth
                 switch m.flagsLast30 {
@@ -274,6 +312,22 @@ struct GroupView: View {
             }
         } catch {
             loadError = error.localizedDescription
+        }
+    }
+
+    private func scrollTour(_ proxy: ScrollViewProxy) {
+        guard let anchor = tour.activeAnchor else { return }
+        switch anchor {
+        case .groupMembers, .groupCreate, .groupInvite:
+            if reduceMotion {
+                proxy.scrollTo(anchor, anchor: .center)
+            } else {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    proxy.scrollTo(anchor, anchor: .center)
+                }
+            }
+        default:
+            break
         }
     }
 
@@ -384,9 +438,11 @@ private struct GroupHeaderCard: View {
 
 private struct RenameGroupSheet: View {
     @Binding var name: String
-    let onSave: (String) -> Void
+    let onSave: (String) async throws -> Void
     @Environment(\.dismiss) private var dismiss
     @FocusState private var focused: Bool
+    @State private var isSaving = false
+    @State private var errorText: String?
 
     var body: some View {
         ZStack {
@@ -445,10 +501,19 @@ private struct RenameGroupSheet: View {
                 )
                 .animation(.easeInOut(duration: 0.18), value: focused)
                 .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .padding(.bottom, 16)
+
+                if let errorText {
+                    Text(errorText)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(red: 0.95, green: 0.55, blue: 0.45))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 12)
+                }
 
                 Button(action: saveAndDismiss) {
-                    Text("Save")
+                        Text(isSaving ? "Saving…" : "Save")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.white.opacity(0.35) : Color.rfNavy)
                         .frame(maxWidth: .infinity)
@@ -458,20 +523,31 @@ private struct RenameGroupSheet: View {
                                 .fill(name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.white.opacity(0.08) : Color.rfGold)
                         )
                 }
-                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || isSaving)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }
         }
-        .presentationDetents([.height(320)])
+        .presentationDetents([.height(360)])
         .onAppear { focused = true }
     }
 
     private func saveAndDismiss() {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
-        onSave(trimmed)
-        dismiss()
+        guard !trimmed.isEmpty, !isSaving else { return }
+        isSaving = true
+        errorText = nil
+        Task {
+            do {
+                try await onSave(trimmed)
+                await MainActor.run { dismiss() }
+            } catch {
+                await MainActor.run {
+                    isSaving = false
+                    errorText = error.localizedDescription
+                }
+            }
+        }
     }
 }
 
@@ -548,9 +624,12 @@ private struct MemberRow: View {
 
 private struct MemberDetailView: View {
     let member: GroupMember
+    let groupID: Int
     @Environment(\.dismiss)  private var dismiss
     @Environment(\.openURL)  private var openURL
     @State private var encouragementSent = false
+    @State private var encouragementError: String?
+    @State private var isSendingEncouragement = false
     @State private var memberAlerts: [ActivityEvent] = []
     @State private var alertsLoading = true
 
@@ -674,15 +753,14 @@ private struct MemberDetailView: View {
                                 }
                             }
 
+                            if member.userId != 0 {
                             Button {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                                    encouragementSent = true
-                                }
+                                sendEncouragement()
                             } label: {
                                 HStack(spacing: 10) {
                                     Image(systemName: encouragementSent ? "checkmark.circle.fill" : "hand.raised.fill")
                                         .font(.system(size: 16))
-                                    Text(encouragementSent ? "Encouragement Sent!" : "Send Encouragement")
+                                    Text(encouragementSent ? "Encouragement Sent" : "Send Encouragement")
                                         .font(.system(size: 16, weight: .semibold))
                                 }
                                 .foregroundStyle(encouragementSent
@@ -701,8 +779,16 @@ private struct MemberDetailView: View {
                                                      : Color(red: 0.28, green: 0.56, blue: 0.95)).opacity(0.35), lineWidth: 1.5))
                                 )
                             }
-                            .disabled(encouragementSent)
+                            .disabled(encouragementSent || isSendingEncouragement)
                             .animation(.easeInOut(duration: 0.25), value: encouragementSent)
+
+                            if let encouragementError {
+                                Text(encouragementError)
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(Color(red: 0.95, green: 0.55, blue: 0.45))
+                                    .multilineTextAlignment(.center)
+                            }
+                            }
                         }
 
                         Button { dismiss() } label: {
@@ -732,6 +818,26 @@ private struct MemberDetailView: View {
                     .filter { $0.event.userId == member.userId }
                     .prefix(10)
                     .compactMap { ActivityEvent.from(remote: $0.event) }
+            }
+        }
+    }
+
+    private func sendEncouragement() {
+        guard !encouragementSent, !isSendingEncouragement, member.userId != 0, groupID > 0 else { return }
+        isSendingEncouragement = true
+        encouragementError = nil
+        Task {
+            do {
+                try await APIClient.shared.sendEncouragement(groupID: groupID, userID: member.userId)
+                await MainActor.run {
+                    isSendingEncouragement = false
+                    encouragementSent = true
+                }
+            } catch {
+                await MainActor.run {
+                    isSendingEncouragement = false
+                    encouragementError = error.localizedDescription
+                }
             }
         }
     }
@@ -920,10 +1026,13 @@ private struct CovenantSheet: View {
 // MARK: - Edit covenant sheet
 
 private struct EditCovenantSheet: View {
-    @Binding var text: String
-    let onSave: () -> Void
+    let initialText: String
+    let notifiesMembers: Bool
+    let onSave: (String) async throws -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var draft = ""
+    @State private var isSaving = false
+    @State private var errorText: String?
 
     var body: some View {
         ZStack {
@@ -941,7 +1050,9 @@ private struct EditCovenantSheet: View {
                         Text("Edit Covenant")
                             .font(.system(size: 20, weight: .bold, design: .serif))
                             .foregroundStyle(.white)
-                        Text("Changes will notify all members")
+                        Text(notifiesMembers
+                             ? "Saving notifies the other members."
+                             : "Saved on this phone.")
                             .font(.system(size: 13))
                             .foregroundStyle(Color(red: 0.95, green: 0.72, blue: 0.22))
                     }
@@ -968,28 +1079,53 @@ private struct EditCovenantSheet: View {
                     .lineSpacing(4)
                     .padding(.horizontal, 20)
 
+                if let errorText {
+                    Text(errorText)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(red: 0.95, green: 0.55, blue: 0.45))
+                        .padding(.horizontal, 24)
+                        .padding(.top, 8)
+                }
+
                 Divider().overlay(Color.white.opacity(0.08))
                     .padding(.top, 16)
                     .padding(.bottom, 16)
 
                 Button {
-                    text = draft
-                    dismiss()
-                    onSave()
+                    save()
                 } label: {
-                    Text("Save Covenant")
+                    Text(isSaving ? "Saving…" : "Save Covenant")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Color.rfNavy)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
                 }
+                .disabled(isSaving)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }
         }
         .onAppear {
-            draft = text.isEmpty ? covenantText : text
+            draft = initialText.isEmpty ? covenantText : initialText
+        }
+    }
+
+    private func save() {
+        guard !isSaving else { return }
+        isSaving = true
+        errorText = nil
+        let text = draft
+        Task {
+            do {
+                try await onSave(text)
+                await MainActor.run { dismiss() }
+            } catch {
+                await MainActor.run {
+                    isSaving = false
+                    errorText = error.localizedDescription
+                }
+            }
         }
     }
 }
@@ -1224,7 +1360,7 @@ Signed and agreed upon this day, before God and this brotherhood.
 """
 
 private struct CreateGroupSheet: View {
-    let onCreate: (String) -> Void
+    let onCreate: (String, String?) -> Void
     @AppStorage("primaryGroupID") private var primaryGroupID = 0
     @Environment(\.dismiss) private var dismiss
 
@@ -1489,12 +1625,19 @@ private struct CreateGroupSheet: View {
         do {
             let group = try await APIClient.shared.createGroup(name: trimmed, covenant: covenant)
             primaryGroupID = group.id
-            // Send email invites for all valid addresses.
             let validEmails = inviteEmails.filter { $0.contains("@") && $0.contains(".") }
+            var failed: [String] = []
             for email in validEmails {
-                try? await APIClient.shared.groupEmailInvite(groupID: group.id, email: email)
+                do {
+                    try await APIClient.shared.groupEmailInvite(groupID: group.id, email: email)
+                } catch {
+                    failed.append(email)
+                }
             }
-            onCreate(group.name)
+            let warning = failed.isEmpty
+                ? nil
+                : "The group was created. These invites did not send: \(failed.joined(separator: ", ")). You can try again from Invite Member."
+            onCreate(group.name, warning)
             dismiss()
         } catch {
             createError = error.localizedDescription

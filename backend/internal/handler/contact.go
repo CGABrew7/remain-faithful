@@ -16,13 +16,18 @@ func (h *H) Contact(w http.ResponseWriter, r *http.Request) {
 		Email   string `json:"email"`
 		Subject string `json:"subject"`
 		Message string `json:"message"`
+		Company string `json:"company"` // honeypot; people never fill this in
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.Name    = strings.TrimSpace(req.Name)
-	req.Email   = strings.TrimSpace(req.Email)
+	if strings.TrimSpace(req.Company) != "" {
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+		return
+	}
+	req.Name = strings.TrimSpace(req.Name)
+	req.Email = strings.TrimSpace(req.Email)
 	req.Subject = strings.TrimSpace(req.Subject)
 	req.Message = strings.TrimSpace(req.Message)
 

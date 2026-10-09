@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -127,11 +129,11 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var name, createdAt string
+	var name, covenant, createdAt string
 	err = h.DB.QueryRowContext(r.Context(),
-		`SELECT name, created_at FROM groups WHERE id = $1`,
+		`SELECT name, covenant, created_at FROM groups WHERE id = $1`,
 		groupID,
-	).Scan(&name, &createdAt)
+	).Scan(&name, &covenant, &createdAt)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "group not found")
 		return
@@ -189,8 +191,173 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":         groupID,
 		"name":       name,
+		"covenant":   covenant,
 		"created_at": createdAt,
 		"members":    members,
+	})
+}
+
+const (
+	maxGroupNameLen     = 80
+	maxGroupCovenantLen = 8000
+)
+
+// UpdateGroup renames a group and/or saves its covenant. Any member may do
+// this. A covenant change notifies the other members with a fixed line. The
+// covenant text itself is not put in the push.
+// PATCH /groups/{id}
+// Body: { "name"?: "...", "covenant"?: "..." }
+func (h *H) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	groupID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid group id")
+		return
+	}
+
+	var req struct {
+		Name     *string `json:"name"`
+		Covenant *string `json:"covenant"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.Name == nil && req.Covenant == nil {
+		writeError(w, http.StatusBadRequest, "name or covenant is required")
+		return
+	}
+
+	var role string
+	if err = h.DB.QueryRowContext(r.Context(),
+		`SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2`,
+		groupID, userID,
+	).Scan(&role); err != nil {
+		writeError(w, http.StatusForbidden, "you must be a member of this group")
+		return
+	}
+	_ = role
+
+	var currentName, currentCovenant string
+	if err = h.DB.QueryRowContext(r.Context(),
+		`SELECT name, covenant FROM groups WHERE id = $1`,
+		groupID,
+	).Scan(&currentName, &currentCovenant); err != nil {
+		writeError(w, http.StatusNotFound, "group not found")
+		return
+	}
+
+	newName := currentName
+	newCovenant := currentCovenant
+	if req.Name != nil {
+		newName = strings.TrimSpace(*req.Name)
+		if newName == "" || len([]rune(newName)) > maxGroupNameLen {
+			writeError(w, http.StatusBadRequest, "name must be 1–80 characters")
+			return
+		}
+	}
+	if req.Covenant != nil {
+		newCovenant = strings.TrimSpace(*req.Covenant)
+		if len([]rune(newCovenant)) > maxGroupCovenantLen {
+			writeError(w, http.StatusBadRequest, "covenant is too long")
+			return
+		}
+	}
+
+	if _, err = h.DB.ExecContext(r.Context(),
+		`UPDATE groups SET name = $1, covenant = $2 WHERE id = $3`,
+		newName, newCovenant, groupID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update group")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"id":       groupID,
+		"name":     newName,
+		"covenant": newCovenant,
+	})
+
+	if newCovenant == currentCovenant {
+		return
+	}
+	senderName, nameErr := h.lookupUserName(r.Context(), userID)
+	if nameErr != nil {
+		return
+	}
+	others, memErr := h.otherMemberIDs(r.Context(), groupID, userID)
+	if memErr != nil || len(others) == 0 {
+		return
+	}
+	notice := metadataPush(
+		"Covenant Updated",
+		covenantUpdatedBody(senderName),
+		"COVENANT_UPDATED",
+		senderName,
+		fmt.Sprintf("covenant-%d", groupID),
+	)
+	h.inBackground(func() {
+		h.notifyUserIDs(context.Background(), others, senderName, notice)
+	})
+}
+
+// SendEncouragement pushes a fixed, metadata-only note to one other member
+// of the group. The sender does not type the message.
+// POST /groups/{id}/encouragement
+// Body: { "user_id": 123 }
+func (h *H) SendEncouragement(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	groupID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid group id")
+		return
+	}
+
+	var req struct {
+		UserID int64 `json:"user_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.UserID == 0 {
+		writeError(w, http.StatusBadRequest, "user_id is required")
+		return
+	}
+	if req.UserID == userID {
+		writeError(w, http.StatusBadRequest, "pick another member")
+		return
+	}
+
+	var both int
+	if err = h.DB.QueryRowContext(r.Context(), `
+		SELECT COUNT(*) FROM group_members
+		WHERE  group_id = $1 AND user_id IN ($2, $3)
+	`, groupID, userID, req.UserID).Scan(&both); err != nil || both != 2 {
+		writeError(w, http.StatusForbidden, "you can only encourage a member of this group")
+		return
+	}
+
+	senderName, err := h.lookupUserName(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to look up user")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+
+	notice := metadataPush(
+		"Encouragement",
+		encouragementBody(senderName),
+		"ENCOURAGEMENT",
+		senderName,
+		fmt.Sprintf("encouragement-%d-%d", userID, req.UserID),
+	)
+	target := req.UserID
+	h.inBackground(func() {
+		h.notifyUserIDs(context.Background(), []int64{target}, senderName, notice)
 	})
 }
 
@@ -257,7 +424,8 @@ func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// LeaveGroup removes the authenticated user from a specific group.
+// LeaveGroup removes the authenticated user from a specific group and notifies
+// the people who remain. The notice is a fixed line with the leaver's name.
 // DELETE /groups/{id}/members/me
 func (h *H) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
@@ -267,6 +435,8 @@ func (h *H) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid group id")
 		return
 	}
+
+	leaverName, _ := h.lookupUserName(r.Context(), userID)
 
 	res, err := h.DB.ExecContext(r.Context(),
 		`DELETE FROM group_members WHERE group_id = $1 AND user_id = $2`,
@@ -280,13 +450,32 @@ func (h *H) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "not a member of this group")
 		return
 	}
+
+	others, _ := h.otherMemberIDs(r.Context(), groupID, userID)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	if leaverName == "" || len(others) == 0 {
+		return
+	}
+	notice := metadataPush(
+		"Group Update",
+		groupLeftBody(leaverName),
+		"GROUP_MEMBER_LEFT",
+		leaverName,
+		fmt.Sprintf("left-group-%d-%d", groupID, userID),
+	)
+	h.inBackground(func() {
+		h.notifyUserIDs(context.Background(), others, leaverName, notice)
+	})
 }
 
-// LeaveAllGroups removes the authenticated user from every group they belong to.
+// LeaveAllGroups removes the authenticated user from every group they belong to
+// and notifies the other members once each.
 // POST /groups/leave-all
 func (h *H) LeaveAllGroups(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	leaverName, _ := h.lookupUserName(r.Context(), userID)
+	others, _ := h.coMemberIDs(r.Context(), userID)
 
 	if _, err := h.DB.ExecContext(r.Context(),
 		`DELETE FROM group_members WHERE user_id = $1`, userID,
@@ -295,4 +484,17 @@ func (h *H) LeaveAllGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	if leaverName == "" || len(others) == 0 {
+		return
+	}
+	notice := metadataPush(
+		"Group Update",
+		groupLeftBody(leaverName),
+		"GROUP_MEMBER_LEFT",
+		leaverName,
+		fmt.Sprintf("left-all-groups-%d", userID),
+	)
+	h.inBackground(func() {
+		h.notifyUserIDs(context.Background(), others, leaverName, notice)
+	})
 }
