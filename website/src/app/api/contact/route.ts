@@ -2,6 +2,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
 
+    // Honeypot field from the feedback form. People never see it, so a value means a bot.
+    if (typeof body.company === 'string' && body.company.trim() !== '') {
+      return Response.json({ success: true })
+    }
+    delete body.company
+
     if (!body.email || !body.name || !body.message) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }

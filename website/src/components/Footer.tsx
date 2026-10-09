@@ -7,6 +7,7 @@ const columns = [
     title: 'Product',
     links: [
       { label: 'How It Works', href: '/how-it-works' },
+      { label: 'App Guide', href: '/app-guide' },
       { label: 'Privacy Architecture', href: '/privacy-architecture' },
       { label: 'Updates', href: '/#waitlist' },
       { label: 'Donate', href: '/#donate' },
@@ -26,6 +27,7 @@ const columns = [
       { label: 'About', href: '/about' },
       { label: 'Blog', href: '/blog' },
       { label: 'Contact', href: '/about#contact' },
+      { label: 'Suggest an Idea', href: '/feedback' },
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
     ],

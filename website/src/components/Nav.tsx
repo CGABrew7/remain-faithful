@@ -7,6 +7,7 @@ import ShieldMark from './ShieldMark'
 
 const navLinks = [
   { href: '/how-it-works', label: 'How It Works' },
+  { href: '/app-guide', label: 'App Guide' },
   { href: '/about', label: 'About' },
   { href: '/partners', label: 'Partners' },
   { href: '/blog', label: 'Blog' },
