@@ -23,7 +23,7 @@ func TestContactPartsEscapesHTML(t *testing.T) {
 		t.Fatalf("subject = %q", subject)
 	}
 
-	for _, raw := range []string{"<script>", "<img", `onerror=`} {
+	for _, raw := range []string{"<script>", "<img"} {
 		if strings.Contains(htmlBody, raw) {
 			t.Fatalf("html still contains %q:\n%s", raw, htmlBody)
 		}
@@ -31,7 +31,7 @@ func TestContactPartsEscapesHTML(t *testing.T) {
 	if !strings.Contains(htmlBody, "&lt;script&gt;") {
 		t.Fatalf("message was not escaped:\n%s", htmlBody)
 	}
-	if !strings.Contains(htmlBody, "&lt;img") {
+	if !strings.Contains(htmlBody, "&lt;img src=x onerror=alert(1)&gt;") {
 		t.Fatalf("name was not escaped:\n%s", htmlBody)
 	}
 	if !strings.Contains(htmlBody, "&lt;/script&gt;") && !strings.Contains(htmlBody, "&lt;script&gt;alert") {
