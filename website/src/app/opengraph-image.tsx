@@ -39,7 +39,7 @@ export default async function Image() {
               marginBottom: 24,
             }}
           >
-            Fort Wayne · Free forever
+            Free forever
           </div>
           <div
             style={{
