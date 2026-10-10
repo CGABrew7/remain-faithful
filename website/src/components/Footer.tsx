@@ -98,8 +98,9 @@ export default function Footer() {
           <WaitlistForm variant="footer" buttonText="Subscribe" />
         </div>
 
-        <div className="flex flex-col gap-2 pt-8 text-sm text-ink-faint sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 pt-8 text-sm text-ink-faint">
           <p>© 2026 Remain Faithful — Free forever. Open source.</p>
+          <p>Woodfield Foundation Inc. is a 501(c)(3) private foundation, EIN 39-2184435. All donations are tax-deductible.</p>
         </div>
       </div>
     </footer>

@@ -167,7 +167,7 @@ export default function AboutPage() {
                 Remain Faithful is open source. Every line of code (iOS app, Go backend, and this website) is publicly available on GitHub.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                For an app that handles intimate personal behavioral data, open source isn&apos;t optional. The iOS app, backend, and website source are public so you can inspect how the product is built. Design notes and audit markdown in the repository are historical working papers — not product promises.
+                For an app that handles intimate personal behavioral data, open source isn&apos;t optional. The iOS app, backend, and website source are public so you can inspect how the product is built.
               </p>
               <p className="text-ink-soft leading-relaxed mb-6">
                 Security researchers, privacy advocates, and curious developers are welcome to inspect and contribute.
@@ -226,7 +226,7 @@ export default function AboutPage() {
             ))}
           </div>
           <p className="text-sm text-ink-faint mb-8">
-            Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible.
+            Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Woodfield Foundation Inc. is a 501(c)(3) private foundation, EIN 39-2184435.
           </p>
           <Link
             href="/#donate"

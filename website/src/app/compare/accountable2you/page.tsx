@@ -29,7 +29,7 @@ const pageFaqSchema = {
       name: 'Can I switch from Accountable2You to Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Cancel Accountable2You, remove the VPN profile from your device, and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is available for iPhone only; if your partners use Android or Windows, Accountable2You has broader platform support.',
+        text: 'Remain Faithful is coming soon to iPhone (iOS 17+). When it is live, cancel Accountable2You, remove the VPN profile from your device, and set it up on iPhone. If your partners use Android or Windows, Accountable2You has broader platform support.',
       },
     },
     {
@@ -116,9 +116,9 @@ export default function Accountable2YouCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Accountable2You Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Cross-platform coverage', body: 'Accountable2You lists Android, iOS, Windows, Mac, Linux, and Chromebook. Remain Faithful is currently iOS only. For people with mixed devices, A2Y provides unified coverage across platforms Remain Faithful does not ship on yet.' },
+                { title: 'Cross-platform coverage', body: 'Accountable2You lists Android, iOS, Windows, Mac, Linux, and Chromebook. Remain Faithful is coming soon to iPhone. For people with mixed devices, A2Y provides unified coverage across platforms Remain Faithful does not ship on yet.' },
                 { title: 'Detailed web activity reporting', body: 'Accountable2You reports internet browsing history (including Incognito, per their site) plus app and device usage. If your accountability partner or pastor wants that granular visibility, A2Y provides more browsing detail than Remain Faithful\'s category-level alerts. Remain Faithful does not claim that same report.' },
-                { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is newer and available for iPhone (iOS 17+). For users who want a longer track record, A2Y has an advantage in maturity.' },
+                { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is newer and coming soon to iPhone (iOS 17+). For users who want a longer track record, A2Y has an advantage in maturity.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
                   <h3 className="font-semibold text-ink mb-2">{item.title}</h3>
@@ -193,7 +193,7 @@ export default function Accountable2YouCompare() {
             <div className="space-y-4">
               {[
                 { q: 'Does Accountable2You drain the battery?', a: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, which has minimal battery impact.' },
-                { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'Yes. Cancel Accountable2You, remove the VPN profile from your device, and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is available for iPhone only; if your partners use Android or Windows, Accountable2You has broader platform support.' },
+                { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'Remain Faithful is coming soon to iPhone (iOS 17+). When it is live, cancel Accountable2You, remove the VPN profile from your device, and set it up on iPhone. If your partners use Android or Windows, Accountable2You has broader platform support.' },
                 { q: 'Does Remain Faithful log specific web page titles like Accountable2You?', a: 'No. Remain Faithful does not log or transmit web page titles or browsing history. Partners may receive a short system-generated summary in addition to category, severity, and timestamp when something is flagged — not page titles. Accountable2You reports browsing history and activity (including Incognito, per their site), which can expose more detail than some users want their partners to see.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">

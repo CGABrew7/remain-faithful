@@ -105,14 +105,14 @@ export default function GroupSetupGuidePage() {
           {/* Section 3: Setting Up Your Group */}
           <GuideSection number="3" title="Setting Up Your Group (Step by Step)">
             <p className="text-ink-soft leading-relaxed mb-6">
-              The leader creates a group; each adult authorizes Family Controls on their own iPhone. Remain Faithful is available for iPhone (iOS 17+).
+              The leader creates a group; each adult authorizes Family Controls on their own iPhone. Remain Faithful is coming soon to iPhone (iOS 17+).
             </p>
             <div className="space-y-4">
               {[
                 {
                   n: '1',
-                  title: 'Download and Create Your Leader Account',
-                  desc: 'Create a leader account on iPhone (iOS 17+) with your name and email. Remain Faithful is available for iPhone. Your role as group leader is set at this step.',
+                  title: 'Create Your Leader Account',
+                  desc: 'Remain Faithful is coming soon to iPhone (iOS 17+). When it is live, create a leader account with your name and email. Your role as group leader is set at this step.',
                 },
                 {
                   n: '2',
@@ -127,7 +127,7 @@ export default function GroupSetupGuidePage() {
                 {
                   n: '4',
                   title: 'Share the Invite Code',
-                  desc: 'Your group generates a 6-character invite code. Share it in your group chat, on a handout, or in person. Members download the app, create an account, and join using that code.',
+                  desc: 'Your group generates a 6-character invite code. Share it in your group chat, on a handout, or in person. When the app is live, members create an account and join using that code.',
                 },
                 {
                   n: '5',
@@ -232,7 +232,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'What devices does it work on?',
-                  a: 'Currently iOS only (iPhone with iOS 17 or later). Android support is planned for late 2026 or early 2027.',
+                  a: 'Coming soon to iPhone (iOS 17+). Android support is planned for late 2026 or early 2027.',
                 },
                 {
                   q: 'Can I see what a member\'s screen looks like?',
@@ -248,7 +248,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'Is the app open source?',
-                  a: 'Yes. The iOS app, Go backend, and this website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
+                  a: 'Yes. The iOS app, Go backend, and this website source are public on GitHub, so you can read how the product is built.',
                 },
               ].map((item, i) => (
                 <div key={i} className="p-5 rounded-sm border border-hairline bg-paper-deep">

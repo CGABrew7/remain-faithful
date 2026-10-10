@@ -42,8 +42,8 @@ const proof = [
   {
     href: '#download',
     kicker: 'iPhone',
-    title: 'Get started on iOS 17+',
-    body: 'Free forever. Always-on Family Controls filtering with partner notify. Android is planned.',
+    title: 'Coming soon to iPhone',
+    body: 'Free forever. Always-on Family Controls filtering with partner notify. Leave your email and we will write when it is ready.',
   },
   {
     href: '/how-it-works',
@@ -72,11 +72,11 @@ const faqs = [
   },
   {
     q: 'How is this different from other accountability apps?',
-    a: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
+    a: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. The iOS app, backend, and website source are public on GitHub, so you can read how filtering, alerts, and privacy work.',
   },
   {
     q: 'Does this work on Android?',
-    a: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
+    a: 'Remain Faithful is coming soon to iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
   },
 ]
 
@@ -92,7 +92,7 @@ export default function HomePage() {
 
       <section className="shell grid items-center gap-8 pb-16 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-24 lg:pt-32">
         <div className="lg:col-start-1 lg:row-start-1">
-          <p className="kicker rise">Free · iPhone (iOS 17+)</p>
+          <p className="kicker rise">Free · Coming soon to iPhone</p>
           <Ornament className="rise rise-2 mb-6 mt-5" />
           <h1 className="rise rise-2 font-serif text-[2.75rem] font-bold leading-[1.04] tracking-[-0.03em] text-white sm:text-6xl lg:text-[4.15rem]">
             Remain Faithful
@@ -139,25 +139,24 @@ export default function HomePage() {
       <section id="download" className="section scroll-mt-24">
         <div className="shell grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="surface p-8 sm:p-10">
-            <p className="kicker mb-4">iPhone · iOS 17+</p>
+            <p className="kicker mb-4">Coming soon to iPhone</p>
             <h2 className="font-serif text-4xl font-bold text-white sm:text-5xl">Get started</h2>
             <p className="mt-4 max-w-[42ch] text-lg leading-relaxed text-ink-soft">
-              Free forever. Always-on Family Controls filtering, optional Deep Scan, and partners you choose. Android is planned.
+              Remain Faithful is coming soon to iPhone (iOS 17+). Leave your email and we will write when you can download it. Android is planned, with no launch date.
             </p>
             <dl className="mt-8 grid gap-5 sm:grid-cols-3">
-              <Spec term="Platform" detail="iPhone, iOS 17+" />
+              <Spec term="Platform" detail="iOS 17+" />
               <Spec term="Price" detail="Free forever" />
               <Spec term="Privacy" detail="Screen stays on device" />
             </dl>
-            <div className="mt-8 flex flex-col gap-2 sm:flex-row">
+            <div className="mt-8">
+              <WaitlistForm variant="default" buttonText="Get updates" />
+            </div>
+            <div className="mt-6">
               <Link href="/how-it-works" className="btn-ghost">
                 How it works
                 <Arrow />
               </Link>
-              <a href="#waitlist" className="btn-ghost">
-                Android notify
-                <Arrow />
-              </a>
             </div>
           </div>
           <PhoneFrame
@@ -288,7 +287,7 @@ export default function HomePage() {
             <p className="kicker mb-4">Updates</p>
             <h2 className="font-serif text-4xl font-bold text-white sm:text-5xl">Write your name down.</h2>
             <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-ink-soft">
-              Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.
+              Remain Faithful is coming soon to iPhone (iOS 17+). Leave your email for updates and Android notify.
             </p>
           </div>
           <div className="surface p-6 sm:p-8">
