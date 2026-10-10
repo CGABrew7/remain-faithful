@@ -52,7 +52,7 @@ export default function AboutPage() {
 
           <div className="max-w-3xl mx-auto space-y-6 text-ink-soft leading-relaxed">
             <p>
-              My name is Jeff Brewer. I attend Headwaters Church in Fort Wayne, Indiana, where I serve in youth and high school ministry. While several generations of my family served as pastors, God led me down a different path. Instead of an M.Div., He gave me an MBA and a career building and leading businesses, many of them rooted in technology.
+              My name is Jeff Brewer. I serve in youth and high school ministry at my local church. While several generations of my family served as pastors, God led me down a different path. Instead of an M.Div., He gave me an MBA and a career building and leading businesses, many of them rooted in technology.
             </p>
             <p>
               Like many who grew up alongside the internet, I learned firsthand that marriage does not automatically solve struggles with purity. For years, I became skilled at appearing accountable while still hiding parts of the truth. Everything changed when I finally became completely honest with a trusted accountability partner. Real freedom began with real honesty.
@@ -79,8 +79,6 @@ export default function AboutPage() {
                 <p className="font-semibold text-ink">Jeff Brewer</p>
                 <p className="text-sm text-ink-soft">
                   Husband · Father of five · Foster &amp; adoptive parent · Business leader · Follower of Christ
-                  <br />
-                  Fort Wayne, Indiana · Headwaters Church
                 </p>
               </div>
             </div>

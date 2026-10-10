@@ -100,7 +100,6 @@ export default function Footer() {
 
         <div className="flex flex-col gap-2 pt-8 text-sm text-ink-faint sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 Remain Faithful — Free forever. Open source.</p>
-          <p>Fort Wayne</p>
         </div>
       </div>
     </footer>

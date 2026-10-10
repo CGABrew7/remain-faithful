@@ -92,7 +92,7 @@ export default function HomePage() {
 
       <section className="shell grid items-center gap-8 pb-16 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-24 lg:pt-32">
         <div className="lg:col-start-1 lg:row-start-1">
-          <p className="kicker rise">Fort Wayne · iPhone (iOS 17+)</p>
+          <p className="kicker rise">Free · iPhone (iOS 17+)</p>
           <Ornament className="rise rise-2 mb-6 mt-5" />
           <h1 className="rise rise-2 font-serif text-[2.75rem] font-bold leading-[1.04] tracking-[-0.03em] text-white sm:text-6xl lg:text-[4.15rem]">
             Remain Faithful
