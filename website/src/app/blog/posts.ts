@@ -143,7 +143,7 @@ And it points to Christ. The aim is holiness and joy in God. A clean record is n
 
 Pick one believer you trust and tell him or her the truth this week. Be specific. If no one comes to mind, ask your pastor to help you find someone. Set a regular time to meet or call. Open the Bible together, confess, pray, and keep showing up.
 
-We built Remain Faithful to help with one part of this. It is a free, open-source, donation-funded iPhone app for adults who want to pursue sexual purity together. You choose one partner or a group of 3 to 12 people. When something concerning happens on your phone, they get a short alert with a category and severity level. They never see screenshots or the content itself. It is for adults holding themselves accountable. It is not a parental-control tool. The app is available for iPhone (iOS 17+). It can help start an honest conversation, and it cannot replace a friend, a pastor, or a local church.
+We built Remain Faithful to help with one part of this. It is a free, open-source, donation-funded iPhone app for adults who want to pursue sexual purity together. You choose one partner or a group of 3 to 12 people. When something concerning happens on your phone, they get a short alert with a category and severity level. They never see screenshots or the content itself. It is for adults holding themselves accountable. It is not a parental-control tool. The app is coming soon to iPhone (iOS 17+). It can help start an honest conversation, and it cannot replace a friend, a pastor, or a local church.
 
 Our hope rests on Christ. He carried our sin to the cross, and he has given us his people so we do not carry our burdens alone. You were never meant to fight alone.
 
@@ -241,7 +241,7 @@ You'll see a 6-character invite code. Screenshot it or write it down.
 
 Share the invite code however makes sense for your group: group chat, in person, email. Include these instructions:
 
-> *Remain Faithful is available for iPhone (iOS 17+). Create an account with your name and email. Tap Group → Join Group → enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose.*
+> *Remain Faithful is coming soon to iPhone (iOS 17+). When it is live, create an account with your name and email. Tap Group, then Join Group, and enter code: [YOUR CODE]. Read and accept the covenant. Then authorize Family Controls so always-on filtering can block the apps and categories you choose.*
 
 That's it. The app walks them through the rest.
 

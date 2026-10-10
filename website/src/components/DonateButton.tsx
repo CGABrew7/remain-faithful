@@ -81,8 +81,8 @@ export default function DonateButton() {
         <span className="sr-only"> (opens Stripe in a new tab)</span>
       </a>
 
-      <div className="text-center text-sm text-ink-soft max-w-sm leading-relaxed">
-        Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Processed securely via Stripe.
+      <div className="text-center text-sm text-ink-soft max-w-lg leading-relaxed">
+        Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Woodfield Foundation Inc. is a 501(c)(3) private foundation, EIN 39-2184435. Processed securely via Stripe.
       </div>
     </div>
   )

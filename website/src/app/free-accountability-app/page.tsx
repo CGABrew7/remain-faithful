@@ -101,7 +101,7 @@ export default function FreeAccountabilityApp() {
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">How Remain Faithful Is Funded</h2>
             <p className="text-ink-soft leading-relaxed mb-4">
-              Remain Faithful is a project of the Woodfield Foundation, a registered 501(c)(3) nonprofit organization. Donations are tax-deductible. The model is simple: people who find the app valuable donate voluntarily. People who cannot afford to donate use it free.
+              Remain Faithful is a project of the Woodfield Foundation, a registered 501(c)(3) nonprofit organization. Donations are tax-deductible. Woodfield Foundation Inc. is a 501(c)(3) private foundation, EIN 39-2184435. The model is simple: people who find the app valuable donate voluntarily. People who cannot afford to donate use it free.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 mb-6">
               {[
