@@ -177,7 +177,6 @@ How to test the core flow
 3. Choose a harmless category or app, enable Block Selected Apps.
 4. Confirm the iOS shield appears if that app is opened.
 5. Invite flow: Group tab → New Group or partner invite. Alerts show metadata only.
-6. Donate opens Stripe Checkout in Safari. No StoreKit purchase is required to use the app.
 
 Contact for review questions: jeff@hanokventures.co or support@remainfaithful.com
 

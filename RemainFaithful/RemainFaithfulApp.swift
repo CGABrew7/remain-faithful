@@ -200,9 +200,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                                              category: category,
                                              event: event)
             completionHandler([.sound])
-        } else if type == "DONATION_THANKS" {
-            UserDefaults.standard.set(true, forKey: "hasDonated")
-            completionHandler([.banner, .sound])
         } else {
             completionHandler([.banner, .sound, .badge])
         }

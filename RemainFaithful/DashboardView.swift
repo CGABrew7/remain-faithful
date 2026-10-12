@@ -228,8 +228,6 @@ private let sampleEvents: [ActivityEvent] = [
 
 struct DashboardView: View {
     @AppStorage("userName")                  private var userName             = ""
-    @AppStorage("hasDonated")                private var hasDonated           = false
-    @AppStorage("donateBannerLastDismissed") private var donateBannerLastDismissed: Double = 0
     @EnvironmentObject private var appState: AppState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ObservedObject private var tour = TourController.shared
@@ -243,13 +241,6 @@ struct DashboardView: View {
     @State private var eventsLoadError:  String?
     @State private var isBroadcasting       = false
     @State private var showAppUsagePrompt   = false
-
-    private var shouldShowDonateBanner: Bool {
-        guard !hasDonated else { return false }
-        guard donateBannerLastDismissed > 0 else { return true }
-        let days = (Date().timeIntervalSince1970 - donateBannerLastDismissed) / 86_400
-        return days >= 7
-    }
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -302,18 +293,6 @@ struct DashboardView: View {
                         .tourAnchor(.homeFlags)
                     panicButton
                         .tourAnchor(.homeSupport)
-                    if shouldShowDonateBanner {
-                        DonateBanner(
-                            onDonate: {
-                                if let url = URL(string: "https://www.remainfaithful.com/#donate") {
-                                    UIApplication.shared.open(url)
-                                }
-                                donateBannerLastDismissed = Date().timeIntervalSince1970
-                            },
-                            onDismiss: { donateBannerLastDismissed = Date().timeIntervalSince1970 }
-                        )
-                        .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
-                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -859,62 +838,6 @@ private struct ActivityRow: View {
         }
         .padding(14)
         .background(card)
-    }
-}
-
-// MARK: - Donate Banner
-
-private struct DonateBanner: View {
-    let onDonate:  () -> Void
-    let onDismiss: () -> Void
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color.rfGold.opacity(0.14))
-                    .frame(width: 36, height: 36)
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.rfGold)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Support Remain Faithful")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                Text("This app runs on generous support.")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.45))
-            }
-
-            Spacer(minLength: 4)
-
-            Button(action: onDonate) {
-                Text("Give")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color(red: 0.05, green: 0.09, blue: 0.22))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Capsule().fill(Color.rfGold))
-            }
-
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color.white.opacity(0.35))
-                    .padding(6)
-                    .background(Circle().fill(Color.white.opacity(0.07)))
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.04))
-                .overlay(RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.rfGold.opacity(0.22), lineWidth: 1))
-        )
     }
 }
 

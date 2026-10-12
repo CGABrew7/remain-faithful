@@ -53,7 +53,6 @@ struct SettingsView: View {
                     screenTimeSection
                     protectionSection
                     privacySection
-                    supportUsSection
                     supportSection
                     dangerZone
                 }
@@ -337,36 +336,6 @@ struct SettingsView: View {
             SRow(icon: "list.bullet.rectangle",
                  tint: Color.rfGold,
                  label: "View My Activity Log") { showActivityLog = true }
-        }
-    }
-
-    // MARK: - Support Us (donations)
-
-    private var supportUsSection: some View {
-        SettingsSection(title: "SUPPORT US") {
-            Button {
-                if let url = URL(string: "https://www.remainfaithful.com/#donate") {
-                    UIApplication.shared.open(url)
-                }
-            } label: {
-                HStack(spacing: 14) {
-                    iconBadge("heart.fill", tint: Color(red: 0.90, green: 0.25, blue: 0.48))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Support Remain Faithful")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.white)
-                        Text("Keep RF free — one-time or monthly")
-                            .font(.system(size: 12))
-                            .foregroundStyle(Color.white.opacity(0.38))
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.20))
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-            }
         }
     }
 
