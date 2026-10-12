@@ -58,7 +58,7 @@ This file is the paste-ready App Store Connect package plus the steps only Jeff 
 
 7. **Screenshots**  
    Required: 6.7" (iPhone 16 Pro Max / 15 Pro Max) and 6.1" (iPhone 16 / 15). Optional 5.5".  
-   Capture from TestFlight: Onboarding, Dashboard (protection on), Group / partner invite, App Restrictions (FamilyActivityPicker after auth), Alert detail (metadata only), Donate.
+   Capture from TestFlight: Onboarding, Dashboard (protection on), Group / partner invite, App Restrictions (FamilyActivityPicker after auth), Alert detail (metadata only).
 
 8. **Submit for Review**  
    Only after TestFlight protection checklist is green and Family Controls distribution entitlement is approved.
@@ -74,7 +74,7 @@ Remain Faithful
 Free peer accountability
 
 ### Promotional text (170 characters, optional)
-Always-on app blocking. Partners get a category and time — never screenshots. Free forever, sustained by tax-deductible gifts.
+Always-on app blocking. Partners get a category and time, never screenshots. Free forever.
 
 ### Description
 
@@ -106,7 +106,7 @@ PROTECTION THAT HOLDS
 
 FREE FOREVER
 
-No subscription. No premium tier. No ads. Optional donations are processed by Woodfield Foundation and help keep servers and outreach running.
+No subscription. No premium tier. No ads.
 
 Remain Faithful is for adults 18+. It is a covenant tool, not surveillance, and not a substitute for pastoral care or counseling.
 
@@ -116,7 +116,7 @@ accountability,purity,faithful,christian,screen time,blocker,partner,church,marr
 Count check: accountability,purity,faithful,christian,screen time,blocker,partner,church,marriage,recovery = 99 characters.
 
 ### What’s New (1.0.0)
-First public release. Always-on Screen Time blocking, partner and group alerts, on-device Deep Scan, Partner PIN, and tax-deductible donations to keep the app free.
+First public release. Always-on Screen Time blocking, partner and group alerts, on-device Deep Scan, and Partner PIN.
 
 ### Support URL
 https://www.remainfaithful.com
@@ -136,7 +136,7 @@ Secondary: Health & Fitness
 Reason: frequent/intense mature/suggestive themes discussed in the context of avoiding them. No pornography is shown in the app.
 
 ### Pricing
-Free. No In-App Purchases required. Donations are optional and processed outside the app via Stripe (Safari).
+Free. No In-App Purchases.
 
 ---
 
@@ -198,7 +198,6 @@ Run this on a physical iPhone before Submit.
 - [ ] Heartbeat posts while Deep Scan / monitoring is active
 - [ ] After HEARTBEAT_SILENCE_MINUTES (default 30) of no heartbeat, partner receives `heartbeat_silence`
 - [ ] Alert detail in partner UI shows category / severity / time / summary — never a screenshot
-- [ ] Donate preset $10 opens Woodfield Stripe Checkout
 - [ ] Sign in with Apple works
 - [ ] Delete Account in Settings cascades server-side
 
@@ -211,7 +210,6 @@ Run this on a physical iPhone before Submit.
 3. App Restrictions — Screen Time approved, apps selected, Block enabled
 4. Group — invite code + member list (3–12)
 5. Alert — metadata card, no screenshot, “Start a conversation” prompt
-6. Donate — $10, Woodfield / tax-deductible line visible
 
 Do not show explicit content, blocked-site pages, or any real person’s alert about adult content in screenshots. Use a generic “Restricted app opened” fixture if needed.
 
