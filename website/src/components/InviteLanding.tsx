@@ -11,7 +11,7 @@ const copy: Record<InviteVariant, { kicker: string; title: string; lede: string;
     steps: [
       {
         title: 'Get the app',
-        body: 'Remain Faithful is available for iPhone (iOS 17+). Open the App Store on your iPhone and search for Remain Faithful.',
+        body: 'Remain Faithful is coming soon to iPhone (iOS 17+). Leave your email on the homepage and we will write when you can download it.',
       },
       {
         title: 'Create your account with this email',
@@ -30,7 +30,7 @@ const copy: Record<InviteVariant, { kicker: string; title: string; lede: string;
     steps: [
       {
         title: 'Get the app',
-        body: 'Remain Faithful is available for iPhone (iOS 17+). Open the App Store on your iPhone and search for Remain Faithful.',
+        body: 'Remain Faithful is coming soon to iPhone (iOS 17+). Leave your email on the homepage and we will write when you can download it.',
       },
       {
         title: 'Create your account with this email',
@@ -49,7 +49,7 @@ const copy: Record<InviteVariant, { kicker: string; title: string; lede: string;
     steps: [
       {
         title: 'Get the app',
-        body: 'Remain Faithful is available for iPhone (iOS 17+). Open the App Store on your iPhone and search for Remain Faithful.',
+        body: 'Remain Faithful is coming soon to iPhone (iOS 17+). Leave your email on the homepage and we will write when you can download it.',
       },
       {
         title: 'Ask to be invited by email',
@@ -101,7 +101,10 @@ export default function InviteLanding({ variant }: { variant: InviteVariant }) {
           </p>
 
           <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/how-it-works" className="btn-wax">
+            <Link href="/#waitlist" className="btn-wax">
+              Get updates
+            </Link>
+            <Link href="/how-it-works" className="btn-ghost">
               How it works
             </Link>
             <Link href="/privacy-architecture" className="btn-ghost">

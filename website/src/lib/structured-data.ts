@@ -92,7 +92,7 @@ export const homepageFaqSchema = {
       name: 'How is this different from other accountability apps?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
+        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. The iOS app, backend, and website source are public on GitHub, so you can read how filtering, alerts, and privacy work.',
       },
     },
     {
@@ -100,7 +100,7 @@ export const homepageFaqSchema = {
       name: 'Does this work on Android?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
+        text: 'Remain Faithful is coming soon to iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
       },
     },
     {

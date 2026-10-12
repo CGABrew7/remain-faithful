@@ -88,7 +88,7 @@ export default function PrivacyPage() {
               <li>Any visual content from your screen</li>
             </ul>
             <p>
-              When Deep Scan flags a non-DRM frame, alert metadata is uploaded: category, severity, timestamp, and a short system-generated summary string. Screenshots, OCR text, and raw screen content never leave the device. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.
+              When Deep Scan flags a non-DRM frame, alert metadata is uploaded: category, severity, timestamp, and a short system-generated summary string. Screenshots, OCR text, and raw screen content never leave the device. The iOS app, backend, and website source are public on GitHub, so you can read how filtering, alerts, and privacy work.
             </p>
           </Section>
 

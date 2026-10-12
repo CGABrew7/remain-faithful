@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: '%s | Remain Faithful',
   },
   description:
-    'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, built on trust, not surveillance. Available for iPhone (iOS 17+).',
+    'Free peer accountability for Christians committed to purity. On-device AI, privacy-first, built on trust, not surveillance. Coming soon to iPhone (iOS 17+).',
   keywords: [
     'accountability app',
     'purity',

@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     q: 'Does this work on Android?',
-    a: 'Not yet. The current app requires iOS 17 or later due to its reliance on Apple-specific frameworks (ReplayKit, Vision, SensitiveContentAnalysis). Android support is planned for late 2026 or early 2027 but is not yet available.',
+    a: 'Remain Faithful is coming soon to iPhone (iOS 17+). It uses Apple frameworks (ReplayKit, Vision, SensitiveContentAnalysis). Android support is planned for late 2026 or early 2027.',
   },
   {
     q: 'What is the broadcast extension?',
@@ -334,7 +334,7 @@ export default function HowItWorksPage() {
       <section className="py-16 border-t border-hairline">
         <div className="max-w-xl mx-auto px-4 text-center">
           <h2 className="font-serif text-2xl font-bold text-ink mb-4">Ready to start?</h2>
-          <p className="text-ink-soft mb-8">Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.</p>
+          <p className="text-ink-soft mb-8">Remain Faithful is coming soon to iPhone (iOS 17+). Leave your email for updates and Android notify.</p>
           <a
             href="/#download"
             className="btn-wax"
