@@ -211,10 +211,6 @@ export const guideParts: GuidePart[] = [
             does: 'Can show up after you use an app you chose to monitor. Start Broadcast Scan shows how to turn on Deep Scan. The X hides it.',
           },
           {
-            name: 'Support Remain Faithful (banner) and Give',
-            does: 'Give opens the donation page on our website in Safari. The X hides the banner for a week.',
-          },
-          {
             name: 'Number on the Home icon',
             does: 'How many new alerts you have. It clears when you open Home.',
           },
@@ -438,10 +434,6 @@ export const guideParts: GuidePart[] = [
         intro: 'The rest of the Settings tab.',
         buttons: [
           { name: 'View My Activity Log', does: 'Your full history of flagged activity.' },
-          {
-            name: 'Support Remain Faithful',
-            does: 'Opens the donation page on our website in Safari. The app stays free either way.',
-          },
           { name: 'How It Works', does: 'A short three-step summary of how the app works, with a link to this guide.' },
           { name: 'Replay App Tour', does: 'Walks through the main buttons again, starting on Home. You can skip any step.' },
           { name: 'Contact Support', does: 'Opens an email to support@remainfaithful.com.' },
