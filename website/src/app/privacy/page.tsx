@@ -133,7 +133,7 @@ export default function PrivacyPage() {
               <li><strong className="text-ink">Access your data:</strong> Settings → View My Activity Log shows your flagged activity in the app. For anything else, email support@remainfaithful.com. There is no separate export button.</li>
               <li><strong className="text-ink">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
               <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings, then Delete Account. The account, alerts, and donation rows tied to the account are removed then.</li>
-              <li><strong className="text-ink">Change protection:</strong> you can change App Restrictions and turn off App Lockout in Settings. Turning off App Lockout sends your partners a notice. Stopping Deep Scan notifies partners only when App Lockout is on.</li>
+              <li><strong className="text-ink">Change protection:</strong> you can change App Restrictions and turn off App Lockout in Settings. Pausing or turning off monitoring notifies your partners. Turning off App Lockout also sends a notice.</li>
             </ul>
             <p>
               For data requests or concerns, contact{' '}

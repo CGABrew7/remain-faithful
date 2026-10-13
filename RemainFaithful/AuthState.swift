@@ -35,6 +35,7 @@ final class AuthState: ObservableObject {
         if let data = keychain.getData("currentUser"),
            let user = try? JSONDecoder().decode(StoredUser.self, from: data) {
             currentUser = user
+            sharedDefaults?.set(user.id, forKey: "authUserID")
         }
     }
 
@@ -47,6 +48,7 @@ final class AuthState: ObservableObject {
         inMemoryToken = token
         keychain.set(token, for: "authToken")
         sharedDefaults?.set(token, forKey: "authToken")
+        sharedDefaults?.set(user.id, forKey: "authUserID")
         sharedDefaults?.set(false, forKey: "extensionAuthFailed")
         let stored = StoredUser(id: user.id, name: user.name, email: user.email, createdAt: user.createdAt)
         if let data = try? JSONEncoder().encode(stored) {
@@ -88,6 +90,7 @@ final class AuthState: ObservableObject {
         }
         UserDefaults.standard.set(user.name,  forKey: "userName")
         UserDefaults.standard.set(user.email, forKey: "userEmail")
+        sharedDefaults?.set(user.id, forKey: "authUserID")
         DispatchQueue.main.async { self.currentUser = updated }
     }
 
@@ -96,6 +99,7 @@ final class AuthState: ObservableObject {
         keychain.delete("authToken")
         keychain.delete("currentUser")
         sharedDefaults?.removeObject(forKey: "authToken")
+        sharedDefaults?.removeObject(forKey: "authUserID")
         UserDefaults.standard.removeObject(forKey: Self.primaryGroupIDKey)
         DispatchQueue.main.async {
             self.currentUser = nil

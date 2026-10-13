@@ -193,7 +193,7 @@ Run this on a physical iPhone before Submit.
 - [ ] Turning blocking off sends `shielding_disabled` to partner
 - [ ] Revoking Screen Time in iOS Settings sends `family_controls_revoked`
 - [ ] Deep Scan starts only after system broadcast permission
-- [ ] Stopping Deep Scan with App Lockout on re-applies shield + `deep_scan_stopped`
+- [ ] Pausing or stopping Deep Scan sends `deep_scan_stopped` even when App Lockout is off. Lockout still re-applies the shield.
 - [ ] Partner PIN required to change protected settings; wrong PIN alerts partner
 - [ ] Heartbeat posts while Deep Scan / monitoring is active
 - [ ] After HEARTBEAT_SILENCE_MINUTES (default 30) of no heartbeat, partner receives `heartbeat_silence`

@@ -67,6 +67,19 @@ func (h *H) MarkAlertDiscussed(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
+// listedAlertCategory is the event.category GET /alerts returns when a protection
+// row has no content event. The list query uses the same fallback:
+// events.category, otherwise alert_type (including selection_cleared), otherwise "protection".
+func listedAlertCategory(eventCategory, alertType string) string {
+	if eventCategory != "" {
+		return eventCategory
+	}
+	if alertType != "" {
+		return alertType
+	}
+	return "protection"
+}
+
 // ListAlerts returns all alerts sent to the authenticated user.
 // GET /alerts
 func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {

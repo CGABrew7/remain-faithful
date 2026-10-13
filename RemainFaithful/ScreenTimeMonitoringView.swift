@@ -196,6 +196,13 @@ struct ScreenTimeMonitoringView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
+
+            Text(PauseNotice.text)
+                .font(.footnote)
+                .foregroundStyle(Color.white.opacity(0.75))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 14)
         }
     }
 
