@@ -45,7 +45,7 @@ struct RemoteEvent: Decodable {
 struct UserStats: Decodable {
     let streakDays: Int
     let bestStreak: Int
-    let week: [Bool]
+    let week: [StreakDayInput]
     enum CodingKeys: String, CodingKey {
         case streakDays = "streak_days"
         case bestStreak = "best_streak"
@@ -55,14 +55,34 @@ struct UserStats: Decodable {
 
 struct RemoteAlert: Decodable, Identifiable {
     let id: Int
-    let eventId: Int
+    let eventId: Int?
     let seen: Bool
     let createdAt: String
-    let event: RemoteEvent
+    let event: RemoteEvent?
+    /// "content" or "protection" when the server sends a kind. Optional today.
+    let kind: String?
+    let protectionType: String?
+    let summary: String?
+
     enum CodingKeys: String, CodingKey {
-        case id, seen, event
+        case id, seen, event, kind, summary
         case eventId = "event_id"
         case createdAt = "created_at"
+        case protectionType = "protection_type"
+        case alertType = "type"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(Int.self, forKey: .id)
+        eventId = try c.decodeIfPresent(Int.self, forKey: .eventId)
+        seen = (try? c.decode(Bool.self, forKey: .seen)) ?? false
+        createdAt = (try? c.decode(String.self, forKey: .createdAt)) ?? ""
+        event = try c.decodeIfPresent(RemoteEvent.self, forKey: .event)
+        kind = try c.decodeIfPresent(String.self, forKey: .kind)
+        protectionType = try c.decodeIfPresent(String.self, forKey: .protectionType)
+            ?? c.decodeIfPresent(String.self, forKey: .alertType)
+        summary = try c.decodeIfPresent(String.self, forKey: .summary)
     }
 }
 
@@ -188,8 +208,14 @@ final class APIClient {
               expiry.timeIntervalSinceNow < 3600 else { return }
         let resp: [String: String] = try await post("/auth/refresh", body: [String: String]())
         if let newToken = resp["token"] {
-            KeychainHelper.shared.set(newToken, for: "authToken")
+            AuthState.shared.updateToken(newToken)
         }
+    }
+
+    /// Writes the API host into the app group so extensions can upload and heartbeat.
+    func publishSharedConfig() {
+        UserDefaults(suiteName: "group.com.remainfaithful.app")?
+            .set(apiBase, forKey: "apiBaseURL")
     }
 
     // MARK: - Users
@@ -238,6 +264,12 @@ final class APIClient {
         try await postVoid("/alerts/mark-seen", body: [String: String]())
     }
 
+    /// POST /alerts/{id}/seen — mark one alert when the person opens it.
+    /// A 404 means the route is not deployed yet; the caller ignores that.
+    func markAlertSeen(alertID: Int) async throws {
+        try await postVoid("/alerts/\(alertID)/seen", body: [String: String]())
+    }
+
     func markAlertDiscussed(alertID: Int) async throws {
         try await patchVoid("/alerts/\(alertID)/discussed")
     }
@@ -263,10 +295,16 @@ final class APIClient {
     }
 
     /// Verify a protection PIN entered by the monitored user.
-    /// POST /protection/pin/verify  body: {"pin": "1234"}  → {"success": bool}
-    func verifyPartnerPIN(pin: String) async throws -> Bool {
-        let resp: [String: Bool] = try await post("/protection/pin/verify", body: ["pin": pin])
-        return resp["success"] ?? false
+    /// POST /protection/pin/verify  body: {"pin": "1234"}
+    /// → {"success": bool, "reason": "no_pin" | "wrong_pin"}
+    /// Older servers omit `reason`.
+    func verifyPartnerPIN(pin: String) async throws -> PINCheck {
+        struct Body: Decodable {
+            let success: Bool
+            let reason: String?
+        }
+        let resp: Body = try await post("/protection/pin/verify", body: ["pin": pin])
+        return PINCheck.from(success: resp.success, reason: resp.reason)
     }
 
     /// Set (or overwrite) the protection PIN for a monitored user — called from the partner's device.
@@ -395,19 +433,41 @@ final class APIClient {
                            body: ["partner_email": partnerEmail, "type": type])
     }
 
-    /// Invite a partner by email — creates the relationship if they already have
-    /// an account, otherwise sends them an email with a sign-up deep link.
-    func invitePartner(email: String) async throws {
-        try await postVoid("/relationships/invite", body: ["email": email])
+    /// Invite a partner by email.
+    /// Response status: "pending" / "connected" (waiting to accept),
+    /// "invited" (no account yet), or "accepted".
+    func invitePartner(email: String) async throws -> PartnerInviteResult {
+        struct Body: Decodable { let status: String? }
+        let body: Body = try await post("/relationships/invite", body: ["email": email])
+        return PartnerInviteResult.from(status: body.status ?? "")
+    }
+
+    /// POST /relationships/{id}/accept — the invited partner accepts.
+    func acceptRelationship(id: Int) async throws {
+        try await postVoid("/relationships/\(id)/accept", body: [String: String]())
+    }
+
+    /// POST /relationships/{id}/decline — the invited partner declines.
+    func declineRelationship(id: Int) async throws {
+        try await postVoid("/relationships/\(id)/decline", body: [String: String]())
     }
 
     func listRelationships() async throws -> [RemoteRelationship] {
         try await get("/relationships")
     }
 
-    /// Send an email-based group invite (invitee may not have an account yet).
-    func groupEmailInvite(groupID: Int, email: String) async throws {
-        try await postVoid("/groups/\(groupID)/email-invite", body: ["email": email])
+    /// Send an email-based group invite.
+    /// status is "added", "already_member", or "invited".
+    func groupEmailInvite(groupID: Int, email: String) async throws -> GroupInviteOutcome {
+        struct Body: Decodable { let status: String? }
+        let body: Body = try await post(
+            "/groups/\(groupID)/email-invite",
+            body: ["email": email]
+        )
+        if let outcome = GroupInviteOutcome.from(status: body.status ?? "") {
+            return outcome
+        }
+        return .invited
     }
 
     // MARK: - Primitives

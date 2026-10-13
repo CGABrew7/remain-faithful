@@ -17,6 +17,7 @@ struct SettingsView: View {
     @ObservedObject private var fcManager      = FamilyControlsManager.shared
     @ObservedObject private var lockoutManager = AppLockoutManager.shared
     @ObservedObject private var pinManager     = PartnerPINManager.shared
+    @ObservedObject private var selection      = ActivitySelectionManager.shared
 
     @State private var showScreenTime       = false
     @State private var showCovenant         = false
@@ -32,6 +33,7 @@ struct SettingsView: View {
     // PIN gate — shared across all gated actions in this view.
     @State private var showPINGate          = false
     @State private var pendingGatedAction:  (() -> Void)? = nil
+    @State private var showSignOutConfirm   = false
 
     private var initials: String {
         let parts = userName.components(separatedBy: " ").filter { !$0.isEmpty }
@@ -69,20 +71,20 @@ struct SettingsView: View {
         .sheet(isPresented: $showPINGate) {
             PINEntryView(
                 title: "Partner PIN Required",
-                subtitle: "Your accountability partner has secured this action with a PIN."
+                subtitle: "Your partner set this PIN. They are the one who knows it."
             ) { pin in
-                let success = await PartnerPINManager.shared.verifyPIN(pin)
-                if success {
+                let result = await PartnerPINManager.shared.verifyPIN(pin)
+                if result.succeeded {
                     await MainActor.run {
                         pendingGatedAction?()
                         pendingGatedAction = nil
                         showPINGate = false
                     }
-                } else {
+                } else if result == .wrong {
                     let name = UserDefaults.standard.string(forKey: "userName") ?? "User"
                     await PartnerPINManager.shared.notifyWrongAttempt(userName: name)
                 }
-                return success
+                return result
             } onCancel: {
                 pendingGatedAction = nil
                 showPINGate = false
@@ -120,7 +122,7 @@ struct SettingsView: View {
                         try await APIClient.shared.leaveAllGroups()
                         UserDefaults.standard.removeObject(forKey: "primaryGroupID")
                     } catch {
-                        actionError = error.localizedDescription
+                        actionError = UserFacingError.message(for: error)
                     }
                 }
             }
@@ -203,13 +205,13 @@ struct SettingsView: View {
     // MARK: - Screen Time
 
     private var screenTimeSection: some View {
-        SettingsSection(title: "SCREEN TIME") {
+        SettingsSection(title: "BLOCKING") {
             Button { withPINGate { showScreenTime = true } } label: {
                 HStack(spacing: 14) {
                     iconBadge("hand.raised.fill",
                               tint: Color(red: 0.52, green: 0.36, blue: 0.92))
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("App Restrictions")
+                        Text("Blocking")
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.white)
                         Text(screenTimeStatusLabel)
@@ -230,7 +232,13 @@ struct SettingsView: View {
 
     private var screenTimeStatusLabel: String {
         switch fcManager.authorizationStatus {
-        case .approved:      return "Authorized"
+        case .approved:
+            let count = selection.selection.applicationTokens.count
+                + selection.selection.categoryTokens.count
+            if count == 0 { return "No apps selected" }
+            if selection.isShieldingEnabled { return "Blocking \(selection.selectionSummary)" }
+            if selection.isMonitoringEnabled { return "Alerts on · \(selection.selectionSummary)" }
+            return "Apps chosen · monitoring off"
         case .denied:        return "Denied — tap to review"
         case .notDetermined: return "Tap to set up"
         @unknown default:    return "Unknown"
@@ -254,21 +262,22 @@ struct SettingsView: View {
             HStack(spacing: 14) {
                 iconBadge("lock.shield.fill", tint: Color(red: 0.52, green: 0.36, blue: 0.92))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("App Lockout (Deep Scan)")
+                    Text("Keep apps blocked unless Deep Scan is running")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
                     Text(lockoutManager.isEnabled
-                         ? "Shields lift only while Deep Scan is active"
-                         : "Off — optional hardening")
+                         ? "Blocking lifts only while Deep Scan is running"
+                         : "Off — apps stay blocked only by your normal Blocking setting.")
                         .font(.system(size: 12))
                         .foregroundStyle(lockoutManager.isEnabled
                                          ? Color(red: 0.52, green: 0.36, blue: 0.92).opacity(0.80)
                                          : Color.white.opacity(0.38))
                 }
                 Spacer()
-                Toggle("", isOn: lockoutToggleBinding)
+                Toggle("Keep apps blocked unless Deep Scan is running", isOn: lockoutToggleBinding)
                     .labelsHidden()
                     .tint(Color.rfGold)
+                    .accessibilityLabel("Keep apps blocked unless Deep Scan is running")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -400,22 +409,37 @@ struct SettingsView: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: 16))
 
-            Button {
+            RFButton(title: "Sign Out", role: .destructive) {
+                showSignOutConfirm = true
+            }
+            .confirmationDialog(
+                "Sign out?",
+                isPresented: $showSignOutConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Sign Out", role: .destructive) {
+                    withPINGate { performSignOut() }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Signing out stops monitoring on this phone. Your partners will be told. Blocking on this phone is separate from the account and turns off until you sign back in.")
+            }
+        }
+    }
+
+    private func performSignOut() {
+        Task {
+            await ProtectionAlerts.deliver(
+                type: "signed_out",
+                detail: "Signed out. Monitoring on this phone has stopped."
+            )
+            await MainActor.run {
+                ActivitySelectionManager.shared.resetForSignOut()
+                AppLockoutManager.shared.clearLocally()
+                ProtectionAlerts.dropCurrentUser()
                 AuthState.shared.clearSession()
-                userName  = ""
+                userName = ""
                 userEmail = ""
-            } label: {
-                Text("Sign Out")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Self.red)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Self.red.opacity(0.10))
-                            .overlay(RoundedRectangle(cornerRadius: 14)
-                                .stroke(Self.red.opacity(0.20), lineWidth: 1))
-                    )
             }
         }
     }
@@ -684,7 +708,7 @@ private struct DeleteAccountSheet: View {
         } catch {
             await MainActor.run {
                 isLoading = false
-                errorMsg  = error.localizedDescription
+                errorMsg  = UserFacingError.message(for: error)
             }
         }
     }
@@ -832,7 +856,7 @@ private struct ManagePartnersView: View {
                         try await APIClient.shared.deleteRelationship(id: p.relationshipID)
                         await MainActor.run { partners.removeAll { $0.id == p.id } }
                     } catch {
-                        await MainActor.run { errorMsg = error.localizedDescription }
+                        await MainActor.run { errorMsg = UserFacingError.message(for: error) }
                     }
                 }
             }
@@ -847,7 +871,7 @@ private struct ManagePartnersView: View {
                     do {
                         try await APIClient.shared.removeRelationshipPIN(relationshipID: p.relationshipID)
                     } catch {
-                        await MainActor.run { errorMsg = error.localizedDescription }
+                        await MainActor.run { errorMsg = UserFacingError.message(for: error) }
                         return
                     }
                     try? await APIClient.shared.sendProtectionAlert(
@@ -889,9 +913,9 @@ private struct ManagePartnersView: View {
             }
 
             if !isLoadingPartners && partners.isEmpty {
-                Text("No partners yet. Invite someone below.")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.white.opacity(0.45))
+                Text("No partners yet. Invite someone below. They must accept before alerts start.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.white.opacity(0.72))
                     .padding(.vertical, 12)
             } else {
                 VStack(spacing: 0) {
@@ -920,8 +944,15 @@ private struct ManagePartnersView: View {
                                     }
                                 }
                                 Text(partner.email)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color.white.opacity(0.42))
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.white.opacity(0.66))
+                                if partner.status.lowercased() != "accepted" {
+                                    Text(partner.isMonitoringThem
+                                         ? "Waiting for you to accept"
+                                         : "Waiting for \(partner.name) to accept")
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(Color.rfGold)
+                                }
                             }
                             Spacer()
                             Button {
@@ -929,8 +960,10 @@ private struct ManagePartnersView: View {
                             } label: {
                                 Image(systemName: partner.isPrimary ? "star.fill" : "star")
                                     .font(.system(size: 15))
-                                    .foregroundStyle(partner.isPrimary ? Color.rfGold : Color.white.opacity(0.30))
+                                    .foregroundStyle(partner.isPrimary ? Color.rfGold : Color.white.opacity(0.55))
+                                    .frame(width: 44, height: 44)
                             }
+                            .accessibilityLabel(partner.isPrimary ? "Primary partner" : "Make primary partner")
                             .padding(.trailing, 2)
                             // PIN management — only visible when the current user is monitoring this person
                             if partner.isMonitoringThem {
@@ -944,10 +977,11 @@ private struct ManagePartnersView: View {
                                 } label: {
                                     Image(systemName: partner.pinSet ? "lock.fill" : "lock.open.fill")
                                         .font(.system(size: 14))
-                                        .foregroundStyle(partner.pinSet ? Color.rfGold : Color.white.opacity(0.35))
-                                        .padding(7)
+                                        .foregroundStyle(partner.pinSet ? Color.rfGold : Color.white.opacity(0.55))
+                                        .frame(width: 44, height: 44)
                                         .background(Circle().fill(Color.white.opacity(0.07)))
                                 }
+                                .accessibilityLabel(partner.pinSet ? "Partner PIN is set" : "Set partner PIN")
                                 .padding(.trailing, 2)
                             }
                             Button {
@@ -955,15 +989,27 @@ private struct ManagePartnersView: View {
                                 showRemoveConfirm = true
                             } label: {
                                 Text("Remove")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.footnote.weight(.semibold))
                                     .foregroundStyle(red)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
+                                    .frame(minWidth: 44, minHeight: 44)
                                     .background(Capsule().fill(red.opacity(0.12)))
                             }
+                            .accessibilityLabel("Remove \(partner.name)")
                         }
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 8)
                         .padding(.horizontal, 16)
+                        if partner.isMonitoringThem && partner.status.lowercased() != "accepted" {
+                            HStack(spacing: 10) {
+                                RFButton(title: "Accept") {
+                                    respondToInvite(partner, accept: true)
+                                }
+                                RFButton(title: "Decline", role: .secondary) {
+                                    respondToInvite(partner, accept: false)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                        }
                         if partner.id != partners.last?.id {
                             Divider().overlay(Color.white.opacity(0.07)).padding(.leading, 70)
                         }
@@ -1013,8 +1059,9 @@ private struct ManagePartnersView: View {
 
             if let err = errorMsg {
                 Text(err)
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                    .font(.subheadline)
+                    .foregroundStyle(sentSuccess ? Color(red: 0.55, green: 0.85, blue: 0.55) : Color(red: 0.95, green: 0.55, blue: 0.50))
+                    .fixedSize(horizontal: false, vertical: true)
                     .transition(.opacity)
             }
 
@@ -1022,7 +1069,7 @@ private struct ManagePartnersView: View {
                 HStack(spacing: 10) {
                     Image(systemName: sentSuccess ? "checkmark.circle.fill" : "paperplane.fill")
                         .font(.system(size: 16))
-                    Text(sentSuccess ? "Invitation Sent!" : "Send Invitation")
+                    Text(sentSuccess ? "Sent" : "Send Invitation")
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundStyle(sentSuccess ? green : Color.rfNavy)
@@ -1078,7 +1125,7 @@ private struct ManagePartnersView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMsg = error.localizedDescription
+                    errorMsg = UserFacingError.message(for: error)
                     isSettingPrimary = false
                 }
             }
@@ -1093,18 +1140,41 @@ private struct ManagePartnersView: View {
         let email = inviteEmail
         Task {
             do {
-                try await APIClient.shared.invitePartner(email: email)
+                let result = try await APIClient.shared.invitePartner(email: email)
                 await MainActor.run {
                     withAnimation { sentSuccess = true }
+                    errorMsg = result.message
                     isSending = false
                     inviteEmail = ""
                 }
-                // Reload partner list to include the new connection if they had an account.
                 await loadPartners()
             } catch {
                 await MainActor.run {
-                    errorMsg = error.localizedDescription
+                    errorMsg = UserFacingError.message(for: error)
                     isSending = false
+                }
+            }
+        }
+    }
+
+    private func respondToInvite(_ partner: PartnerItem, accept: Bool) {
+        errorMsg = nil
+        Task {
+            do {
+                if accept {
+                    try await APIClient.shared.acceptRelationship(id: partner.relationshipID)
+                } else {
+                    try await APIClient.shared.declineRelationship(id: partner.relationshipID)
+                }
+                await loadPartners()
+            } catch {
+                await MainActor.run {
+                    let raw = (error as? APIError)?.errorDescription?.lowercased() ?? ""
+                    if raw.contains("404") || raw.contains("not found") {
+                        errorMsg = "Accept and decline aren't available from the server yet. Try again after the next update."
+                    } else {
+                        errorMsg = UserFacingError.message(for: error)
+                    }
                 }
             }
         }
@@ -1163,14 +1233,17 @@ private struct GroupInviteSheet: View {
                     .animation(.easeInOut(duration: 0.18), value: emailFocused)
 
                     if let err = errorMsg {
-                        Text(err).font(.system(size: 13)).foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                        Text(err)
+                            .font(.subheadline)
+                            .foregroundStyle(sentSuccess ? Color(red: 0.55, green: 0.85, blue: 0.55) : Color(red: 0.95, green: 0.55, blue: 0.50))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Button(action: sendInvite) {
                         HStack(spacing: 10) {
                             Image(systemName: sentSuccess ? "checkmark.circle.fill" : "paperplane.fill")
                                 .font(.system(size: 16))
-                            Text(sentSuccess ? "Invitation Sent!" : "Send Invitation")
+                            Text(sentSuccess ? "Sent" : "Send Invitation")
                                 .font(.system(size: 16, weight: .semibold))
                         }
                         .foregroundStyle(sentSuccess ? green : Color.rfNavy)
@@ -1200,15 +1273,16 @@ private struct GroupInviteSheet: View {
         let email = inviteEmail
         Task {
             do {
-                try await APIClient.shared.groupEmailInvite(groupID: group.id, email: email)
+                let outcome = try await APIClient.shared.groupEmailInvite(groupID: group.id, email: email)
                 await MainActor.run {
                     withAnimation { sentSuccess = true }
+                    errorMsg = outcome.message
                     isSending = false
                     inviteEmail = ""
                 }
             } catch {
                 await MainActor.run {
-                    errorMsg = error.localizedDescription
+                    errorMsg = UserFacingError.message(for: error)
                     isSending = false
                 }
             }
@@ -1248,13 +1322,7 @@ private struct EditProfileSheet: View {
                             .foregroundStyle(Color.white.opacity(0.45))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
@@ -1273,19 +1341,11 @@ private struct EditProfileSheet: View {
                         Text(err).font(.system(size: 13)).foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
                     }
 
-                    Button(action: save) {
-                        HStack(spacing: 10) {
-                            if isSaving { ProgressView().tint(Color.rfNavy).scaleEffect(0.9) }
-                            Text(isSaving ? "Saving…" : "Save Changes")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                        .foregroundStyle(canSave ? Color.rfNavy : Color.white.opacity(0.35))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(RoundedRectangle(cornerRadius: 14)
-                            .fill(canSave ? Color.rfGold : Color.white.opacity(0.08)))
-                    }
-                    .disabled(!canSave)
+                    RFButton(
+                        title: isSaving ? "Saving…" : "Save Changes",
+                        isEnabled: canSave && !isSaving,
+                        action: save
+                    )
                 }
                 .padding(24)
                 Spacer()
@@ -1315,7 +1375,7 @@ private struct EditProfileSheet: View {
                 dismiss()
             } catch {
                 await MainActor.run {
-                    saveError = error.localizedDescription
+                    saveError = UserFacingError.message(for: error)
                     isSaving = false
                 }
             }
@@ -1413,7 +1473,7 @@ private struct ManageGroupsView: View {
                             }
                         }
                     } catch {
-                        await MainActor.run { leaveError = error.localizedDescription }
+                        await MainActor.run { leaveError = UserFacingError.message(for: error) }
                     }
                 }
             }
@@ -1582,7 +1642,7 @@ private struct ManageGroupsView: View {
                 }
             } catch {
                 await MainActor.run {
-                    createError = error.localizedDescription
+                    createError = UserFacingError.message(for: error)
                     isCreating = false
                 }
             }
@@ -1617,8 +1677,8 @@ private struct HowItWorksView: View {
          "Choose Your Partners",
          "Invite a trusted friend or join a small group of men who will walk honestly alongside you. Accountability works because you choose people who genuinely care."),
         ("shield.fill",
-         "Start Monitoring",
-         "Remain Faithful quietly monitors your screen activity in the background. When something concerning is detected, your partners are notified — no hiding, no excuses."),
+         "Turn on Alerts and Blocking",
+         "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking shows Apple’s Screen Time shield. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."),
         ("checkmark.shield.fill",
          "Stay Accountable",
          "Review your activity together, have honest conversations, and spur one another toward freedom. Iron sharpens iron — and so one man sharpens another."),
@@ -1640,13 +1700,7 @@ private struct HowItWorksView: View {
                             .foregroundStyle(Color.rfGold.opacity(0.75))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
@@ -1806,13 +1860,7 @@ private struct SettingsCovenantSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                     .accessibilityLabel("Close")
                 }
                 .padding(.horizontal, 24)
@@ -1892,13 +1940,7 @@ private struct ActivityLogSheet: View {
                             .foregroundStyle(Color.white.opacity(0.45))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)

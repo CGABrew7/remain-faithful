@@ -35,18 +35,10 @@ struct ScreenTimeMonitoringView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.6))
-                        .padding(8)
-                        .background(Circle().fill(Color.white.opacity(0.08)))
-                }
+                RFCloseButton { dismiss() }
             }
             ToolbarItem(placement: .principal) {
-                Text("App Restrictions")
+                Text("Blocking")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.white)
             }
@@ -129,7 +121,7 @@ struct ScreenTimeMonitoringView: View {
                             tint: Color(red: 0.52, green: 0.36, blue: 0.92))
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Choose Apps to Restrict")
+                        Text("Choose apps")
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.white)
                         Text(selManager.selectionSummary)
@@ -158,15 +150,15 @@ struct ScreenTimeMonitoringView: View {
                             ? Color(red: 0.28, green: 0.56, blue: 0.95)
                             : Color.white.opacity(0.35))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Monitor App Usage")
+                    Text("Alerts")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
-                    Text("Alert partner after 1 min of daily use")
+                    Text("Tell your partner after 1 minute of use, once a day")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.white.opacity(0.45))
                 }
                 Spacer()
-                Toggle("", isOn: Binding(
+                Toggle("Alerts", isOn: Binding(
                     get: { selManager.isMonitoringEnabled },
                     set: { selManager.setMonitoringEnabled($0) }
                 ))
@@ -186,16 +178,16 @@ struct ScreenTimeMonitoringView: View {
                             : Color.white.opacity(0.35))
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Block Selected Apps")
+                    Text("Blocking")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
-                    Text("Shows iOS Screen Time shield on launch")
+                    Text("Shows Apple's Screen Time shield when the app opens")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.white.opacity(0.45))
                 }
                 Spacer()
 
-                Toggle("", isOn: Binding(
+                Toggle("Blocking", isOn: Binding(
                     get:  { selManager.isShieldingEnabled },
                     set:  { selManager.setShieldingEnabled($0) }
                 ))
@@ -216,7 +208,7 @@ struct ScreenTimeMonitoringView: View {
                 .foregroundStyle(Color.rfGold.opacity(0.75))
                 .padding(.top, 1)
 
-            Text("Monitoring alerts your partner after 1 minute of daily use. Blocking shows an iOS Screen Time shield — the user can request an override from within the blocked app.")
+            Text("Alerts tell your partner after one minute of use, once a day. Blocking shows Apple's Screen Time shield. You can still ask Apple for an override inside the blocked app. Deep Scan does not see protected video such as Netflix.")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.white.opacity(0.45))
                 .fixedSize(horizontal: false, vertical: true)
@@ -237,7 +229,7 @@ struct ScreenTimeMonitoringView: View {
 
     private var authStatusLabel: String {
         switch fcManager.authorizationStatus {
-        case .approved:      return "Authorized"
+        case .approved:      return "Allowed — choose apps next"
         case .denied:        return "Denied"
         case .notDetermined: return "Not yet enabled"
         @unknown default:    return "Unknown"
@@ -249,7 +241,7 @@ struct ScreenTimeMonitoringView: View {
         case .denied:
             return "Screen Time access was denied. Tap above to open iOS Settings and re-enable it under Screen Time > Remain Faithful."
         default:
-            return "Remain Faithful needs Screen Time access to block selected apps. A system prompt will appear."
+            return "Remain Faithful needs Screen Time access for Alerts and Blocking. Your partner cannot browse your phone. If you skip it, monitoring stays off."
         }
     }
 }

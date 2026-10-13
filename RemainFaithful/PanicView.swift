@@ -55,13 +55,7 @@ struct PanicView: View {
     private var dismissBar: some View {
         HStack {
             Spacer()
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(0.40))
-                    .padding(10)
-                    .background(Circle().fill(Color.white.opacity(0.08)))
-            }
+            RFCloseButton { dismiss() }
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
@@ -208,12 +202,12 @@ But when you are tempted, he will also provide a way out so that you can endure 
 
     private var groupAlertButton: some View {
         let sent = alertSent
-        let blue  = Color(red: 0.28, green: 0.56, blue: 0.95)
-        let green = Color(red: 0.20, green: 0.78, blue: 0.45)
-        let tint  = sent ? green : blue
 
         return VStack(spacing: 10) {
-        Button {
+        RFButton(
+            title: sent ? "Alert Sent" : (isSending ? "Sending…" : "Alert Partners and Group"),
+            isEnabled: !sent && !isSending
+        ) {
             guard !isSending, !sent else { return }
             isSending = true
             sendError = nil
@@ -227,29 +221,11 @@ But when you are tempted, he will also provide a way out so that you can endure 
                 } catch {
                     await MainActor.run {
                         isSending = false
-                        sendError = error.localizedDescription
+                        sendError = UserFacingError.message(for: error)
                     }
                 }
             }
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: sent ? "checkmark.circle.fill" : "bell.badge.fill")
-                    .font(.system(size: 16))
-                Text(sent ? "Alert Sent" : (isSending ? "Sending…" : "Alert Partners and Group"))
-                    .font(.system(size: 16, weight: .semibold))
-            }
-            .foregroundStyle(tint)
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(tint.opacity(0.12))
-                    .overlay(RoundedRectangle(cornerRadius: 14)
-                        .stroke(tint.opacity(0.35), lineWidth: 1.5))
-            )
         }
-        .disabled(sent || isSending)
-        .animation(.easeInOut(duration: 0.25), value: sent)
         if let sendError {
             Text(sendError)
                 .font(.system(size: 13))
@@ -262,19 +238,7 @@ But when you are tempted, he will also provide a way out so that you can endure 
     // MARK: - Close
 
     private var closeButton: some View {
-        Button { dismiss() } label: {
-            Text("I'm okay, close this")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.60))
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(0.07))
-                        .overlay(RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1))
-                )
-        }
+        RFButton(title: "I'm okay, close this", role: .secondary) { dismiss() }
     }
 }
 

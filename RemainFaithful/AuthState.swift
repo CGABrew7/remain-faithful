@@ -47,6 +47,7 @@ final class AuthState: ObservableObject {
         inMemoryToken = token
         keychain.set(token, for: "authToken")
         sharedDefaults?.set(token, forKey: "authToken")
+        sharedDefaults?.set(false, forKey: "extensionAuthFailed")
         let stored = StoredUser(id: user.id, name: user.name, email: user.email, createdAt: user.createdAt)
         if let data = try? JSONEncoder().encode(stored) {
             keychain.setData(data, for: "currentUser")
@@ -55,6 +56,16 @@ final class AuthState: ObservableObject {
             self.currentUser = stored
             self.isAuthenticated = true
         }
+    }
+
+    /// Refresh writes the same token to memory, Keychain, and the app group
+    /// the broadcast extension reads. A Keychain-only write leaves Deep Scan
+    /// on a token that dies after about a day.
+    func updateToken(_ token: String) {
+        inMemoryToken = token
+        keychain.set(token, for: "authToken")
+        sharedDefaults?.set(token, forKey: "authToken")
+        sharedDefaults?.set(false, forKey: "extensionAuthFailed")
     }
 
     func updateProfile(name: String, email: String) {

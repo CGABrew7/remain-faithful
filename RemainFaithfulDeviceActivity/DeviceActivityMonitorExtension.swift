@@ -20,6 +20,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
         logger.info("Interval started: \(activity.rawValue)")
+        Task { await postHeartbeat() }
     }
 
     override func intervalDidEnd(for activity: DeviceActivityName) {
@@ -50,6 +51,24 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         // Attempt direct backend POST — same pattern as the broadcast extension.
         Task { await post(id: id, timestamp: timestamp, summary: summary) }
+        Task { await postHeartbeat() }
+    }
+
+    /// A heartbeat while Screen Time monitoring is scheduled, so silence means
+    /// monitoring stopped rather than "Deep Scan is off". No screen content.
+    private func postHeartbeat() async {
+        guard let apiBase = defaults?.string(forKey: "apiBaseURL"),
+              let token = defaults?.string(forKey: "authToken"),
+              let url = URL(string: apiBase + "/heartbeat") else { return }
+        var req = URLRequest(url: url, timeoutInterval: 10)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": "monitoring"])
+        if let (_, resp) = try? await URLSession.shared.data(for: req),
+           let http = resp as? HTTPURLResponse, http.statusCode == 401 {
+            defaults?.set(true, forKey: "extensionAuthFailed")
+        }
     }
 
     // MARK: - Queue (app group UserDefaults)

@@ -67,7 +67,11 @@ struct RemainFaithfulApp: App {
             .environmentObject(appState)
             .environmentObject(authState)
             .task {
+                APIClient.shared.publishSharedConfig()
                 try? await APIClient.shared.refreshTokenIfNeeded()
+                await ProtectionAlerts.flush()
+                await sendMonitoringHeartbeat()
+                FamilyControlsManager.shared.noteRevocationIfNeeded()
                 // Drain any events queued by the broadcast extension while the app was closed.
                 await EventProcessor.shared.processPendingEvents()
                 if AuthState.shared.isAuthenticated {
@@ -83,6 +87,11 @@ struct RemainFaithfulApp: App {
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active, AuthState.shared.isAuthenticated else { return }
+                Task {
+                    try? await APIClient.shared.refreshTokenIfNeeded()
+                    await ProtectionAlerts.flush()
+                    await sendMonitoringHeartbeat()
+                }
                 NotificationService.shared.ensureRegisteredIfAuthorized()
                 // Re-sync lockout shield — catches the case where the broadcast ended
                 // while the app was in the background and the Darwin notification was
@@ -96,13 +105,22 @@ struct RemainFaithfulApp: App {
                 // Shield can no longer be applied — also clear any lockout state.
                 ActivitySelectionManager.shared.clearShielding()
                 Task {
-                    try? await APIClient.shared.sendProtectionAlert(
+                    ProtectionAlerts.send(
                         type: "family_controls_revoked",
-                        detail: "Screen Time authorization was revoked — monitoring shields are off."
+                        detail: "Screen Time access was turned off. Alerts and Blocking are off."
                     )
                 }
             }
         }
+    }
+
+    /// Heartbeat while Alerts or Blocking are on, even when Deep Scan is off.
+    /// The extension posts its own heartbeat during a broadcast.
+    private func sendMonitoringHeartbeat() async {
+        let mgr = ActivitySelectionManager.shared
+        guard mgr.isMonitoringEnabled || mgr.isShieldingEnabled else { return }
+        guard APIClient.shared.isAuthenticated else { return }
+        try? await APIClient.shared.heartbeat(screen: "monitoring")
     }
 }
 
