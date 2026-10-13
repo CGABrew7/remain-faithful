@@ -41,3 +41,4 @@ backend/.env.*
 website/.env
 website/.env.*
 !**/.env.example
+.vercel
