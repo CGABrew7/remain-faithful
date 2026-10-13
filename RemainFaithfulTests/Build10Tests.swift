@@ -69,6 +69,8 @@ final class Build10Tests: XCTestCase {
         XCTAssertEqual(EventCategory(apiString: "not_a_real_category"), .unknown)
         XCTAssertEqual(EventCategory(apiString: "signed_out"), .tamper)
         XCTAssertEqual(EventCategory(apiString: "shielding_disabled"), .tamper)
+        XCTAssertEqual(EventCategory(apiString: "selection_cleared"), .tamper)
+        XCTAssertEqual(EventCategory(apiString: "deep_scan_stopped"), .tamper)
         let event = ActivityEvent.from(notificationPayload: [
             "notification_type": "CONTENT_FLAGGED",
             "category": "app_usage",

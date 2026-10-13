@@ -33,13 +33,13 @@ final class HonestyAndTourTests: XCTestCase {
         XCTAssertFalse(steps.contains { $0.anchor == .groupInvite })
     }
 
-    func testPauseNoticeMatchesLockout() {
+    func testPauseNoticeAlwaysNotifiesPartners() {
         XCTAssertEqual(
-            PauseNotice.text(lockoutEnabled: true),
-            "Pausing will notify your accountability partners")
-        XCTAssertEqual(
-            PauseNotice.text(lockoutEnabled: false),
-            "Pausing does not notify your partners")
+            PauseNotice.text,
+            "Pausing or turning off monitoring notifies your partners")
+        XCTAssertFalse(PauseNotice.text.localizedCaseInsensitiveContains("does not notify"))
+        XCTAssertFalse(PauseNotice.text.contains("—"))
+        XCTAssertFalse(PauseNotice.text.contains("–"))
     }
 
     func testFeedbackLeavesDeviceFieldsOutUnlessAsked() {
