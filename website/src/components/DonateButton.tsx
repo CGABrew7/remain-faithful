@@ -29,7 +29,7 @@ export default function DonateButton() {
           type="button"
           aria-pressed={!recurring}
           onClick={() => setRecurring(false)}
-          className={`min-h-10 rounded-[var(--radius-control)] px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
+          className={`min-h-11 rounded-[var(--radius-control)] px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
             !recurring ? 'bg-wax text-paper' : 'text-ink-soft hover:text-white'
           }`}
         >
@@ -39,7 +39,7 @@ export default function DonateButton() {
           type="button"
           aria-pressed={recurring}
           onClick={() => setRecurring(true)}
-          className={`min-h-10 rounded-[var(--radius-control)] px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
+          className={`min-h-11 rounded-[var(--radius-control)] px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
             recurring ? 'bg-wax text-paper' : 'text-ink-soft hover:text-white'
           }`}
         >
