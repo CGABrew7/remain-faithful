@@ -17,7 +17,8 @@ struct MonitoringPresentation: Equatable {
     let title: String
     let detail: String
     let deepScanLine: String
-    let actionTitle: String
+    /// Setup actions only. When Alerts or Blocking are already on, Home has no Deep Scan button.
+    let actionTitle: String?
     /// True when Alerts or Blocking is on. Deep Scan alone does not count.
     let coreIsOn: Bool
 
@@ -70,7 +71,7 @@ struct MonitoringPresentation: Equatable {
             title: "Monitoring on",
             detail: parts.joined(separator: " · "),
             deepScanLine: deepScan,
-            actionTitle: deepScanOn ? "Deep Scan is running" : "How Deep Scan works",
+            actionTitle: nil,
             coreIsOn: true
         )
     }
@@ -84,6 +85,22 @@ struct MonitoringPresentation: Equatable {
         }
         return "Deep Scan is off. It is optional and separate from Alerts and Blocking."
     }
+}
+
+// MARK: - Deep Scan onboarding
+//
+// Explained once during setup. Home does not repeat a "How Deep Scan works" button.
+
+enum DeepScanOnboarding {
+    static let title = "Deep Scan"
+    static let subtitle = "Optional. It does not replace Alerts or Blocking."
+    static let summary = "Deep Scan looks at the screen on this phone, only while you have it running. You start it yourself. Alerts and Blocking do not change."
+    static let steps = [
+        "Swipe down from the top-right corner to open Control Center.",
+        "If you do not see Screen Recording, open Settings, then Control Center, and add Screen Recording.",
+        "Touch and hold Screen Recording, choose Remain Faithful, then tap Start Broadcast.",
+    ]
+    static let limits = "Protected video such as Netflix is not visible. Stopping or pausing Deep Scan notifies your partners."
 }
 
 // MARK: - Streak week

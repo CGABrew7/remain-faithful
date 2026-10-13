@@ -23,6 +23,8 @@ func TestIsClientProtectionAlertType(t *testing.T) {
 		"pin_removed",
 		"pin_changed",
 		"family_controls_revoked",
+		"signed_out",
+		"selection_cleared",
 	}
 	for _, typ := range iosTypes {
 		if !isClientProtectionAlertType(typ) {
@@ -57,8 +59,9 @@ func TestProtectionAlertBodyKnownTypesIgnoreDetail(t *testing.T) {
 		alertType string
 		want      string
 	}{
-		{"deep_scan_stopped", "Alex stopped Deep Scan — apps are re-shielded"},
-		{"lockout_broadcast_stopped", "Alex stopped Deep Scan — apps are re-shielded"},
+		{"deep_scan_stopped", "Alex stopped Deep Scan"},
+		{"lockout_broadcast_stopped", "Alex stopped Deep Scan"},
+		{"selection_cleared", "Alex removed every chosen app"},
 		{"wrong_pin_attempt", "Alex entered an incorrect Partner PIN"},
 		{"pin_wrong_attempt", "Alex entered an incorrect Partner PIN"},
 		{"monitoring_disabled", "Alex turned off activity monitoring"},
@@ -78,6 +81,21 @@ func TestProtectionAlertBodyKnownTypesIgnoreDetail(t *testing.T) {
 		if strings.Contains(got, "UNBOUNDED") || strings.Contains(got, "xxxx") {
 			t.Errorf("%s: body leaked client detail: %q", tc.alertType, got)
 		}
+	}
+}
+
+func TestListedAlertCategoryUsesProtectionType(t *testing.T) {
+	if got := listedAlertCategory("", "selection_cleared"); got != "selection_cleared" {
+		t.Fatalf("selection_cleared category = %q", got)
+	}
+	if got := listedAlertCategory("", "deep_scan_stopped"); got != "deep_scan_stopped" {
+		t.Fatalf("deep_scan_stopped category = %q", got)
+	}
+	if got := listedAlertCategory("adult_content", "selection_cleared"); got != "adult_content" {
+		t.Fatalf("content category should win, got %q", got)
+	}
+	if got := listedAlertCategory("", ""); got != "protection" {
+		t.Fatalf("empty category = %q", got)
 	}
 }
 

@@ -119,7 +119,7 @@ Pending lists only include invites from the last 7 days addressed to the signed-
 
 Client types the server accepts:
 
-`monitoring_disabled`, `shielding_disabled`, `lockout_disabled`, `deep_scan_stopped`, `wrong_pin_attempt`, `pin_removed`, `pin_changed`, `family_controls_revoked`, `signed_out`.
+`monitoring_disabled`, `shielding_disabled`, `lockout_disabled`, `deep_scan_stopped`, `wrong_pin_attempt`, `pin_removed`, `pin_changed`, `family_controls_revoked`, `signed_out`, `selection_cleared`.
 
 `signed_out` is new. Send it when the user signs out, before the token is cleared, so partners get a stored alert.
 

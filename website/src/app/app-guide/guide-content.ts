@@ -38,7 +38,7 @@ export const guideParts: GuidePart[] = [
     label: 'Getting started',
     title: 'Getting started',
     summary:
-      'The first time you open the app, it walks you through four short screens. Setup takes a few minutes.',
+      'The first time you open the app, it walks you through a few short screens: your account, a partner, Screen Time, Deep Scan, and the apps you choose.',
     screens: [
       {
         id: 'welcome',
@@ -140,23 +140,39 @@ export const guideParts: GuidePart[] = [
       },
       {
         id: 'turn-on-monitoring',
-        title: 'Turn on monitoring',
-        where: 'Last setup screen',
+        title: 'Allow Screen Time',
+        where: 'After you invite a partner, or skip that step',
         intro:
-          'This screen explains the two ways the app keeps watch: App Monitoring and Deep Scan.',
+          'This screen is for Alerts and Blocking. Deep Scan is the next screen, explained once.',
         buttons: [
           {
-            name: 'Enable App Monitoring',
-            does: "Opens Apple's Screen Time permission box. You approve it on your own phone.",
-            why: 'The app needs this permission to watch and block the apps you choose. Without it, those features stay off.',
+            name: 'Allow Screen Time',
+            does: "Opens Apple's Screen Time permission box. You approve it on your own phone. If it is approved, this screen moves on.",
+            why: 'The app needs this permission so Alerts and Blocking can use the apps you choose. If you skip it, monitoring stays off until you allow it in Settings.',
           },
           {
-            name: 'Get Started',
-            does: 'Finishes setup. If you skipped the permission, this button says Continue Without Monitoring instead. Either way, iOS then asks if the app can send you notifications.',
-            why: 'Say yes to notifications. That is how you hear about partner alerts.',
+            name: 'Skip for now',
+            does: 'Moves on without Screen Time permission. Monitoring stays off.',
+          },
+          {
+            name: 'Continue',
+            does: 'Shows when Screen Time is already allowed. Opens the Deep Scan screen.',
           },
         ],
-        note: 'The small line at the bottom says Deep Scan starts from Control Center. The Deep Scan section below shows how.',
+      },
+      {
+        id: 'deep-scan-setup',
+        title: 'Deep Scan',
+        where: 'After Screen Time, before you choose apps',
+        intro:
+          'One short screen explains optional Deep Scan. Home does not keep a Deep Scan button after this.',
+        buttons: [
+          {
+            name: 'Continue',
+            does: 'Moves on to choosing apps. This button does not start Deep Scan. You start it later from Control Center.',
+          },
+        ],
+        note: 'The screen says what Deep Scan does, how to open Control Center, and how to add Screen Recording in Settings if it is missing. It also says protected video such as Netflix is not visible, and that stopping or pausing Deep Scan notifies your partners.',
       },
     ],
   },
@@ -181,12 +197,8 @@ export const guideParts: GuidePart[] = [
         ],
         buttons: [
           {
-            name: 'Monitoring is paused (banner)',
-            does: 'Shows when Deep Scan is not running. Tap it to see the four steps for starting Deep Scan from Control Center.',
-          },
-          {
-            name: 'Monitoring Active (green card)',
-            does: 'Shows while Deep Scan is running. It is just a status card. You start and stop Deep Scan from Control Center. While it is running, the line under it says whether pausing will notify your partners. That notice goes out only when App Lockout is on.',
+            name: 'Monitoring status (card)',
+            does: 'Shows whether Alerts and Blocking are on. Deep Scan is a smaller line. There is no Deep Scan button on this card. You start and stop Deep Scan from Control Center. Pausing or turning off monitoring notifies your partners. If setup is unfinished, the card has one button: Allow Screen Time, Choose apps, or Turn monitoring on.',
           },
           {
             name: 'Verse of the Day',
@@ -208,7 +220,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitored app used today (banner)',
-            does: 'Can show up after you use an app you chose to monitor. Start Broadcast Scan shows how to turn on Deep Scan. The X hides it.',
+            does: 'Can show up after you use an app you chose to monitor. It says Alerts and Blocking stay as you set them, and that Deep Scan is optional. The X hides it. It does not open Deep Scan steps.',
           },
           {
             name: 'Number on the Home icon',
@@ -223,17 +235,16 @@ export const guideParts: GuidePart[] = [
       {
         id: 'deep-scan',
         title: 'Starting Deep Scan',
-        where: 'Tap "Monitoring is paused" on Home',
+        where: 'Explained once during setup. Home has no Deep Scan button.',
         intro:
-          'Deep Scan is optional. You turn it on yourself for times you want closer watch, like travel or a hard season.',
+          'Deep Scan is optional. You turn it on yourself from Control Center when you want a closer look. Setup walks through this once.',
         buttons: [
           {
-            name: 'The four steps',
-            does: 'Swipe down from the top-right corner to open Control Center. Press and hold the Screen Recording button. Pick Remain Faithful from the list. Tap Start Broadcast.',
+            name: 'How you start it',
+            does: 'Swipe down from the top-right corner to open Control Center. If Screen Recording is missing, open Settings, then Control Center, and add Screen Recording. Touch and hold Screen Recording, choose Remain Faithful, then tap Start Broadcast.',
           },
-          { name: 'Got it', does: 'Closes the steps.' },
         ],
-        note: 'While Deep Scan runs, your phone checks what is on screen, on the phone itself. iOS shows its red recording indicator so you always know it is on. Streaming apps like Netflix, Disney+, and Hulu show up black to Deep Scan, so it cannot check them. Screenshots and the text on your screen never leave your phone.',
+        note: 'While Deep Scan runs, your phone checks what is on screen, on the phone itself. iOS shows its red recording indicator so you always know it is on. Streaming apps like Netflix, Disney+, and Hulu show up black to Deep Scan, so it cannot check them. Stopping or pausing Deep Scan notifies your partners. Screenshots and the text on your screen never leave your phone.',
       },
       {
         id: 'alert-detail',
@@ -418,7 +429,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'App Lockout (Deep Scan)',
-            does: 'Optional. When on, the apps you chose stay blocked unless Deep Scan is running. If you stop Deep Scan, the block comes back and your partners get a notice. The Home card says so only while this is on. Turning App Lockout off also sends a notice.',
+            does: 'Optional. When on, the apps you chose stay blocked unless Deep Scan is running. If you stop Deep Scan, the block comes back. Pausing or turning off monitoring notifies your partners, whether or not this is on. Turning App Lockout off also sends a notice.',
           },
           {
             name: 'Partner PIN',

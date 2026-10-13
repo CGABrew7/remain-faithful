@@ -43,8 +43,8 @@ enum EventCategory: String {
         case "gaming":        self = .gaming
         case "monitoring_disabled", "shielding_disabled", "signed_out",
              "family_controls_revoked", "deep_scan_stopped", "lockout_disabled",
-             "heartbeat_silence", "wrong_pin_attempt", "pin_removed", "pin_changed",
-             "protection", "tamper":
+             "selection_cleared", "heartbeat_silence", "wrong_pin_attempt",
+             "pin_removed", "pin_changed", "protection", "tamper":
             self = .tamper
         default:
             self = .unknown
@@ -360,7 +360,6 @@ struct DashboardView: View {
     @State private var isBroadcasting       = false
     @State private var showAppUsagePrompt   = false
     @State private var showBlockingSetup    = false
-    @State private var showDeepScanHelp     = false
     @ObservedObject private var selection = ActivitySelectionManager.shared
     @ObservedObject private var familyControls = FamilyControlsManager.shared
 
@@ -394,10 +393,6 @@ struct DashboardView: View {
                     }
                     if showAppUsagePrompt && !isBroadcasting {
                         AppUsagePromptBanner(
-                            onStart:   {
-                                ActivitySelectionManager.shared.clearAppUsagePrompt()
-                                showAppUsagePrompt = false
-                            },
                             onDismiss: {
                                 ActivitySelectionManager.shared.clearAppUsagePrompt()
                                 withAnimation(.easeOut(duration: 0.2)) { showAppUsagePrompt = false }
@@ -471,9 +466,6 @@ struct DashboardView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showBlockingSetup) {
             NavigationStack { ScreenTimeMonitoringView() }
-        }
-        .sheet(isPresented: $showDeepScanHelp) {
-            BroadcastInstructionsSheet()
         }
         .task { await loadEvents() }
         .task {
@@ -578,7 +570,7 @@ struct DashboardView: View {
         case .noApps, .off:
             showBlockingSetup = true
         case .on:
-            showDeepScanHelp = true
+            break
         }
     }
 
@@ -662,7 +654,6 @@ struct DashboardView: View {
 private struct StatusCard: View {
     let presentation: MonitoringPresentation
     let onAction: () -> Void
-    @ObservedObject private var lockout = AppLockoutManager.shared
     @State private var pulse: CGFloat = 1.0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -703,18 +694,18 @@ private struct StatusCard: View {
                         .font(.footnote)
                         .foregroundStyle(Color.white.opacity(0.66))
                         .fixedSize(horizontal: false, vertical: true)
-                    if presentation.coreIsOn {
-                        Text(PauseNotice.text(lockoutEnabled: lockout.isEnabled))
-                            .font(.footnote.weight(.medium))
-                            .foregroundStyle(Self.amber)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    Text(PauseNotice.text)
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(Self.amber)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
             }
-            .padding(.bottom, 16)
+            .padding(.bottom, presentation.actionTitle == nil ? 0 : 16)
 
-            RFButton(title: presentation.actionTitle, action: onAction)
+            if let actionTitle = presentation.actionTitle {
+                RFButton(title: actionTitle, action: onAction)
+            }
         }
         .padding(20)
         .background(
@@ -737,9 +728,9 @@ private struct StatusCard: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(presentation.title). \(presentation.detail). \(presentation.deepScanLine)")
-        .accessibilityHint(presentation.actionTitle)
-        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("\(presentation.title). \(presentation.detail). \(presentation.deepScanLine). \(PauseNotice.text)")
+        .accessibilityHint(presentation.actionTitle ?? "")
+        .accessibilityAddTraits(presentation.actionTitle == nil ? AccessibilityTraits() : .isButton)
         .onAppear {
             // Reduce Motion keeps the ring static rather than pulsing forever.
             guard !reduceMotion else { return }
@@ -1121,42 +1112,34 @@ private struct ActivityRow: View {
 // MARK: - Optional Deep Scan prompt
 
 private struct AppUsagePromptBanner: View {
-    let onStart:   () -> Void
     let onDismiss: () -> Void
-
-    @State private var showInstructions = false
 
     private let blue   = Color(red: 0.28, green: 0.56, blue: 0.95)
     private let bgFill = Color(red: 0.07, green: 0.13, blue: 0.28)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(blue.opacity(0.18))
-                        .frame(width: 38, height: 38)
-                    Image(systemName: "apps.iphone")
-                        .font(.system(size: 16))
-                        .foregroundStyle(blue)
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("An app you chose was used")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
-                    Text("Alerts and Blocking stay as you set them. Deep Scan is optional.")
-                        .font(.footnote)
-                        .foregroundStyle(Color.white.opacity(0.75))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 0)
-                RFCloseButton(action: onDismiss)
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(blue.opacity(0.18))
+                    .frame(width: 38, height: 38)
+                Image(systemName: "apps.iphone")
+                    .font(.body)
+                    .foregroundStyle(blue)
             }
-
-            RFButton(title: "How Deep Scan works", role: .secondary) {
-                onStart()
-                showInstructions = true
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("An app you chose was used")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Alerts and Blocking stay as you set them. Deep Scan is optional.")
+                    .font(.footnote)
+                    .foregroundStyle(Color.white.opacity(0.75))
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            Spacer(minLength: 0)
+            RFCloseButton(action: onDismiss)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -1168,88 +1151,6 @@ private struct AppUsagePromptBanner: View {
                         .stroke(blue.opacity(0.35), lineWidth: 1.5)
                 )
         )
-        .sheet(isPresented: $showInstructions) {
-            BroadcastInstructionsSheet()
-        }
-    }
-}
-
-private struct BroadcastInstructionsSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    private let steps: [(String, String)] = [
-        ("1", "Swipe down from the top-right corner to open Control Center."),
-        ("2", "Tap and hold the Screen Recording button (circle inside a circle)."),
-        ("3", "Select \u{201C}Remain Faithful\u{201D} from the list of broadcast receivers."),
-        ("4", "Tap “Start Broadcast”. Deep Scan starts. Alerts and Blocking do not change."),
-    ]
-
-    var body: some View {
-        ZStack {
-            Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
-            VStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.18))
-                    .frame(width: 40, height: 4)
-                    .padding(.top, 12)
-                    .padding(.bottom, 20)
-
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Deep Scan")
-                            .font(.system(size: 20, weight: .bold, design: .serif))
-                            .foregroundStyle(.white)
-                        Text("Optional. It does not replace Alerts or Blocking.")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.white.opacity(0.75))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer()
-                    RFCloseButton { dismiss() }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
-
-                Divider().overlay(Color.white.opacity(0.08))
-                    .padding(.bottom, 24)
-
-                VStack(spacing: 16) {
-                    ForEach(steps, id: \.0) { step in
-                        HStack(alignment: .top, spacing: 16) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.rfGold.opacity(0.14))
-                                    .frame(width: 32, height: 32)
-                                Text(step.0)
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundStyle(Color.rfGold)
-                            }
-                            Text(step.1)
-                                .font(.system(size: 14))
-                                .foregroundStyle(Color.white.opacity(0.80))
-                                .lineSpacing(3)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Spacer(minLength: 0)
-                        }
-                    }
-                }
-                .padding(.horizontal, 24)
-
-                Text("Protected video such as Netflix is not visible. Only an alert category and a heartbeat leave this phone.")
-                    .font(.footnote)
-                    .foregroundStyle(Color.white.opacity(0.75))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 16)
-
-                Spacer()
-
-                RFButton(title: "Got it") { dismiss() }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 36)
-            }
-        }
-        .presentationDetents([.medium, .large])
     }
 }
 

@@ -8,7 +8,8 @@ private let lockoutLogger = Logger(subsystem: "com.remainfaithful.app", category
 //
 // When enabled, the selected apps remain shielded via ManagedSettings except
 // while the ReplayKit broadcast (Deep Scan) is active. When Deep Scan stops,
-// the shield re-applies and the accountability partner is notified.
+// the shield re-applies. Partners are notified on every pause or stop, even
+// when this lockout is off.
 //
 // Cross-process IPC: the broadcast extension posts a Darwin notification whenever
 // isBroadcasting changes. This manager observes that notification and immediately
@@ -90,20 +91,31 @@ final class AppLockoutManager: ObservableObject {
     func handleBroadcastStateChange() {
         let isBroadcasting = defaults?.bool(forKey: "isBroadcasting") ?? false
         DispatchQueue.main.async {
-            guard self.isEnabled else { return }
-            if isBroadcasting {
-                ActivitySelectionManager.shared.clearShielding()
-                lockoutLogger.info("Lockout (Darwin): broadcast started — shield lifted")
-            } else {
-                ActivitySelectionManager.shared.applyShielding()
-                lockoutLogger.info("Lockout (Darwin): broadcast ended — shield re-applied")
-                Task {
-                    try? await APIClient.shared.sendProtectionAlert(
-                        type: "deep_scan_stopped",
-                        detail: "Deep Scan ended — app lockout shields re-applied."
-                    )
+            if self.isEnabled {
+                if isBroadcasting {
+                    ActivitySelectionManager.shared.clearShielding()
+                    lockoutLogger.info("Lockout (Darwin): broadcast started, shield lifted")
+                } else {
+                    ActivitySelectionManager.shared.applyShielding()
+                    lockoutLogger.info("Lockout (Darwin): broadcast ended, shield re-applied")
                 }
             }
+            // Partners are told whether or not lockout is on. The extension
+            // claims the same notice first so a live app does not send it twice.
+            if !isBroadcasting {
+                self.sendDeepScanStoppedIfUnclaimed()
+            }
         }
+    }
+
+    private func sendDeepScanStoppedIfUnclaimed() {
+        let now = Date().timeIntervalSince1970
+        let last = defaults?.double(forKey: "lastDeepScanNoticeAt") ?? 0
+        if now - last < 2 { return }
+        defaults?.set(now, forKey: "lastDeepScanNoticeAt")
+        ProtectionAlerts.send(
+            type: "deep_scan_stopped",
+            detail: "Deep Scan stopped."
+        )
     }
 }

@@ -68,12 +68,8 @@ enum TourContent {
 }
 
 enum PauseNotice {
-    /// A partner notice goes out only when App Lockout is on and Deep Scan stops.
-    static func text(lockoutEnabled: Bool) -> String {
-        lockoutEnabled
-            ? "Pausing will notify your accountability partners"
-            : "Pausing does not notify your partners"
-    }
+    /// Partners are told whenever monitoring is paused or reduced, lockout or not.
+    static let text = "Pausing or turning off monitoring notifies your partners"
 }
 
 extension Notification.Name {
