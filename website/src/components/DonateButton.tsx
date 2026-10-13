@@ -24,12 +24,12 @@ export default function DonateButton() {
 
   return (
     <div className="flex flex-col items-stretch sm:items-center gap-5">
-      <div className="inline-flex items-center gap-1 self-center rounded-full border border-white/10 bg-[#0C1D4C]/40 p-1">
+      <div className="inline-flex items-center gap-1 self-center rounded-[calc(var(--radius-control)+4px)] border border-white/10 bg-[#0C1D4C]/40 p-1">
         <button
           type="button"
           aria-pressed={!recurring}
           onClick={() => setRecurring(false)}
-          className={`min-h-10 rounded-full px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
+          className={`min-h-10 rounded-[var(--radius-control)] px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
             !recurring ? 'bg-wax text-paper' : 'text-ink-soft hover:text-white'
           }`}
         >
@@ -39,7 +39,7 @@ export default function DonateButton() {
           type="button"
           aria-pressed={recurring}
           onClick={() => setRecurring(true)}
-          className={`min-h-10 rounded-full px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
+          className={`min-h-10 rounded-[var(--radius-control)] px-5 py-2 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
             recurring ? 'bg-wax text-paper' : 'text-ink-soft hover:text-white'
           }`}
         >
@@ -54,7 +54,7 @@ export default function DonateButton() {
             type="button"
             aria-pressed={selected === a.value}
             onClick={() => setSelected(a.value)}
-            className={`h-11 min-w-16 rounded-full px-3 text-sm tabular-nums transition-[color,background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.96] ${
+            className={`h-11 min-w-16 rounded-[var(--radius-control)] px-3 text-sm tabular-nums transition-[color,background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.96] ${
               selected === a.value
                 ? 'bg-wax text-paper'
                 : 'border border-white/10 text-ink-soft hover:text-white'
