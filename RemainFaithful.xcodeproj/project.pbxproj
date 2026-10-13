@@ -37,6 +37,7 @@
 		C0FFEE8B0000000000000006 /* HonestyAndTourTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE8B0000000000000005 /* HonestyAndTourTests.swift */; };
 		B10D00000000000000000001 /* Build10Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000002 /* Build10Models.swift */; };
 		B10D00000000000000000003 /* RFButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000004 /* RFButton.swift */; };
+		B10D00000000000000000009 /* RFTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D0000000000000000000A /* RFTheme.swift */; };
 		B10D00000000000000000005 /* ProtectionAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000006 /* ProtectionAlerts.swift */; };
 		B10D00000000000000000007 /* Build10Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000008 /* Build10Tests.swift */; };
 		CF1000000000000000000039 /* PanicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003A /* PanicView.swift */; };
@@ -157,6 +158,7 @@
 		C0FFEE8B0000000000000005 /* HonestyAndTourTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonestyAndTourTests.swift; sourceTree = "<group>"; };
 		B10D00000000000000000002 /* Build10Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build10Models.swift; sourceTree = "<group>"; };
 		B10D00000000000000000004 /* RFButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFButton.swift; sourceTree = "<group>"; };
+		B10D0000000000000000000A /* RFTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFTheme.swift; sourceTree = "<group>"; };
 		B10D00000000000000000006 /* ProtectionAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectionAlerts.swift; sourceTree = "<group>"; };
 		B10D00000000000000000008 /* Build10Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build10Tests.swift; sourceTree = "<group>"; };
 		CF100000000000000000003A /* PanicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanicView.swift; sourceTree = "<group>"; };
@@ -321,6 +323,7 @@
 				80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */,
 				B10D00000000000000000002 /* Build10Models.swift */,
 				B10D00000000000000000004 /* RFButton.swift */,
+				B10D0000000000000000000A /* RFTheme.swift */,
 				B10D00000000000000000006 /* ProtectionAlerts.swift */,
 				EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */,
 			);
@@ -633,6 +636,7 @@
 				B9FBE0AAE00A1EEF84DD985F /* ScreenTimeMonitoringView.swift in Sources */,
 				B10D00000000000000000001 /* Build10Models.swift in Sources */,
 				B10D00000000000000000003 /* RFButton.swift in Sources */,
+				B10D00000000000000000009 /* RFTheme.swift in Sources */,
 				B10D00000000000000000005 /* ProtectionAlerts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

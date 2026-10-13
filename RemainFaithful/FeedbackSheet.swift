@@ -234,7 +234,7 @@ struct FeedbackSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                .tint(Color.rfGold)
+                .toggleStyle(RFToggleStyle())
                 .accessibilityHint("Off by default. Turns on only the version, model, and iOS version shown here.")
 
                 if let errorText {
@@ -254,7 +254,8 @@ struct FeedbackSheet: View {
 
                 RFButton(
                     title: isSending ? "Sending…" : "Send",
-                    isEnabled: submission.canSend && !isSending,
+                    isEnabled: submission.canSend,
+                    isLoading: isSending,
                     action: send
                 )
                 .accessibilityLabel("Send")

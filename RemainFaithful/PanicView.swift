@@ -172,9 +172,9 @@ But when you are tempted, he will also provide a way out so that you can endure 
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(0.055))
+                        .fill(Color.white.opacity(0.06))
                         .overlay(RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                            .strokeBorder(RFStroke.lit, lineWidth: 1))
                 )
             } else if partnerLoaded {
                 Text("Add an accountability partner to use this feature")
@@ -185,9 +185,9 @@ But when you are tempted, he will also provide a way out so that you can endure 
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white.opacity(0.055))
+                            .fill(Color.white.opacity(0.06))
                             .overlay(RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                                .strokeBorder(RFStroke.lit, lineWidth: 1))
                     )
             } else {
                 ProgressView()
@@ -206,7 +206,8 @@ But when you are tempted, he will also provide a way out so that you can endure 
         return VStack(spacing: 10) {
         RFButton(
             title: sent ? "Alert Sent" : (isSending ? "Sending…" : "Alert Partners and Group"),
-            isEnabled: !sent && !isSending
+            isEnabled: !sent,
+            isLoading: isSending
         ) {
             guard !isSending, !sent else { return }
             isSending = true

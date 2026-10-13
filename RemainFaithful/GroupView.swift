@@ -483,7 +483,8 @@ private struct RenameGroupSheet: View {
 
                 RFButton(
                     title: isSaving ? "Saving…" : "Save",
-                    isEnabled: !name.trimmingCharacters(in: .whitespaces).isEmpty && !isSaving,
+                    isEnabled: !name.trimmingCharacters(in: .whitespaces).isEmpty,
+                    isLoading: isSaving,
                     action: saveAndDismiss
                 )
                 .padding(.horizontal, 24)
@@ -573,10 +574,10 @@ private struct MemberRow: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.055))
+                .fill(Color.white.opacity(0.06))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .strokeBorder(RFStroke.lit, lineWidth: 1)
                 )
         )
     }
@@ -661,9 +662,9 @@ private struct MemberDetailView: View {
                         .padding(20)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.white.opacity(0.055))
+                                .fill(Color.white.opacity(0.06))
                                 .overlay(RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                                    .strokeBorder(RFStroke.lit, lineWidth: 1))
                         )
 
                         // Recent flags
@@ -765,10 +766,13 @@ private struct MemberDetailView: View {
             defer { alertsLoading = false }
             guard member.userId != 0 else { return }
             if let alerts = try? await APIClient.shared.listAlerts() {
+                // Protection alerts carry no event, so unwrap first and keep
+                // only this member's content alerts.
                 memberAlerts = alerts
-                    .filter { $0.event.userId == member.userId }
+                    .compactMap(\.event)
+                    .filter { $0.userId == member.userId }
                     .prefix(10)
-                    .compactMap { ActivityEvent.from(remote: $0.event) }
+                    .compactMap { ActivityEvent.from(remote: $0) }
             }
         }
     }
@@ -838,8 +842,8 @@ private struct MemberDetailView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.055))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.08), lineWidth: 1))
+                .fill(Color.white.opacity(0.06))
+                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(RFStroke.lit, lineWidth: 1))
         )
     }
 }
@@ -879,7 +883,7 @@ private struct CovenantButton: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.055))
+                    .fill(Color.white.opacity(0.06))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(Color.rfGold.opacity(0.14), lineWidth: 1)
@@ -1026,7 +1030,7 @@ private struct EditCovenantSheet: View {
 
                 RFButton(
                     title: isSaving ? "Saving…" : "Save Covenant",
-                    isEnabled: !isSaving,
+                    isLoading: isSaving,
                     action: save
                 )
                 .padding(.horizontal, 24)
@@ -1219,8 +1223,8 @@ private struct InviteSheet: View {
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.055))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.08), lineWidth: 1))
+                        .fill(Color.white.opacity(0.06))
+                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(RFStroke.lit, lineWidth: 1))
                 )
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
@@ -1320,7 +1324,8 @@ private struct CreateGroupSheet: View {
 
                 RFButton(
                     title: isCreating ? "Creating…" : "Create Group",
-                    isEnabled: !isCreating && !groupName.trimmingCharacters(in: .whitespaces).isEmpty
+                    isEnabled: !groupName.trimmingCharacters(in: .whitespaces).isEmpty,
+                    isLoading: isCreating
                 ) {
                     Task { await createGroup() }
                 }

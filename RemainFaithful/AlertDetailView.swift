@@ -254,9 +254,9 @@ struct AlertDetailView: View {
 
     private var detailCard: some View {
         RoundedRectangle(cornerRadius: 16)
-            .fill(Color.white.opacity(0.055))
+            .fill(Color.white.opacity(0.06))
             .overlay(RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                .strokeBorder(RFStroke.lit, lineWidth: 1))
     }
 }
 

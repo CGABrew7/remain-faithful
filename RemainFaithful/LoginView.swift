@@ -166,6 +166,7 @@ struct LoginView: View {
         RFButton(
             title: isLoading ? "Signing in…" : "Sign In",
             isEnabled: canSubmit,
+            isLoading: isLoading,
             action: signIn
         )
     }
@@ -483,6 +484,7 @@ private struct ForgotPasswordSheet: View {
                         RFButton(
                             title: isLoading ? "Sending…" : "Send Reset Link",
                             isEnabled: canSend,
+                            isLoading: isLoading,
                             action: sendReset
                         )
                     }

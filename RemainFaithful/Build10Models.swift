@@ -150,6 +150,11 @@ enum StreakWeek {
         let date = calendar.date(byAdding: .day, value: -daysAgo, to: start) ?? start
         let formatter = DateFormatter()
         formatter.calendar = calendar
+        // Pin the formatter to the calendar's zone and locale. Without this it
+        // falls back to the device's, and a day built in one zone is named in
+        // another — VoiceOver then reads the wrong weekday for a streak dot.
+        formatter.timeZone = calendar.timeZone
+        formatter.locale = calendar.locale ?? .current
         formatter.dateFormat = "EEEE"
         return formatter.string(from: date)
     }

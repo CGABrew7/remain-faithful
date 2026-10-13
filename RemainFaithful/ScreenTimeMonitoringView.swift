@@ -162,8 +162,8 @@ struct ScreenTimeMonitoringView: View {
                     get: { selManager.isMonitoringEnabled },
                     set: { selManager.setMonitoringEnabled($0) }
                 ))
-                .labelsHidden()
-                .tint(Color(red: 0.28, green: 0.56, blue: 0.95))
+                .toggleStyle(RFToggleStyle(showsLabel: false))
+                .accessibilityLabel("Alerts")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -191,8 +191,8 @@ struct ScreenTimeMonitoringView: View {
                     get:  { selManager.isShieldingEnabled },
                     set:  { selManager.setShieldingEnabled($0) }
                 ))
-                .labelsHidden()
-                .tint(Color(red: 0.90, green: 0.30, blue: 0.30))
+                .toggleStyle(RFToggleStyle(showsLabel: false))
+                .accessibilityLabel("Blocking")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -258,31 +258,16 @@ private struct STSection<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color.rfGold.opacity(0.75))
-                .kerning(1.2)
-                .padding(.leading, 4)
-
+        VStack(alignment: .leading, spacing: RFMetrics.labelGap) {
+            RFSectionHeader(title: title)
             VStack(spacing: 0) { content }
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.055))
-                        .overlay(RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1))
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .rfGroupedCard()
         }
     }
 }
 
 private struct STDivider: View {
-    var body: some View {
-        Divider()
-            .overlay(Color.white.opacity(0.07))
-            .padding(.leading, 64)
-    }
+    var body: some View { RFRowDivider(inset: 64) }
 }
 
 private func stBadge(_ name: String, tint: Color) -> some View {

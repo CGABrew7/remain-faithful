@@ -168,7 +168,7 @@ struct SettingsView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.055))
+                .fill(Color.white.opacity(0.06))
                 .overlay(RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.rfGold.opacity(0.14), lineWidth: 1))
         )
@@ -275,8 +275,7 @@ struct SettingsView: View {
                 }
                 Spacer()
                 Toggle("Keep apps blocked unless Deep Scan is running", isOn: lockoutToggleBinding)
-                    .labelsHidden()
-                    .tint(Color.rfGold)
+                    .toggleStyle(RFToggleStyle(showsLabel: false))
                     .accessibilityLabel("Keep apps blocked unless Deep Scan is running")
             }
             .padding(.horizontal, 16)
@@ -462,11 +461,7 @@ struct SettingsView: View {
 
     // MARK: - Helpers
 
-    private var rowDivider: some View {
-        Divider()
-            .overlay(Color.white.opacity(0.07))
-            .padding(.leading, 64)
-    }
+    private var rowDivider: some View { RFRowDivider(inset: 64) }
 }
 
 // MARK: - Section wrapper
@@ -481,21 +476,10 @@ private struct SettingsSection<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color.rfGold.opacity(0.75))
-                .kerning(1.2)
-                .padding(.leading, 4)
-
+        VStack(alignment: .leading, spacing: RFMetrics.labelGap) {
+            RFSectionHeader(title: title)
             VStack(spacing: 0) { content }
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.055))
-                        .overlay(RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1))
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .rfGroupedCard()
         }
     }
 }
@@ -1017,8 +1001,8 @@ private struct ManagePartnersView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.055))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
+                        .fill(Color.white.opacity(0.06))
+                        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(RFStroke.lit, lineWidth: 1))
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             }
@@ -1343,7 +1327,8 @@ private struct EditProfileSheet: View {
 
                     RFButton(
                         title: isSaving ? "Saving…" : "Save Changes",
-                        isEnabled: canSave && !isSaving,
+                        isEnabled: canSave,
+                        isLoading: isSaving,
                         action: save
                     )
                 }
@@ -1553,8 +1538,8 @@ private struct ManageGroupsView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.055))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
+                        .fill(Color.white.opacity(0.06))
+                        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(RFStroke.lit, lineWidth: 1))
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             }
@@ -1777,7 +1762,7 @@ private struct HowItWorksView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.055))
+                .fill(Color.white.opacity(0.06))
                 .overlay(RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.rfGold.opacity(0.14), lineWidth: 1))
         )
@@ -2055,7 +2040,7 @@ private struct LogRow: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.055))
+                .fill(Color.white.opacity(0.06))
                 .overlay(RoundedRectangle(cornerRadius: 14)
                     .stroke(Color.white.opacity(0.07), lineWidth: 1))
         )

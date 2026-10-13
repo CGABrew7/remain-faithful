@@ -1,13 +1,8 @@
 import SwiftUI
 import FamilyControls
 
-// MARK: - Color palette
-
-extension Color {
-    static let rfNavy    = Color(red: 0.07, green: 0.13, blue: 0.30)
-    static let rfNavyMid = Color(red: 0.11, green: 0.19, blue: 0.40)
-    static let rfGold    = Color(red: 0.82, green: 0.67, blue: 0.30)
-}
+// The navy and gold palette now lives in RFTheme.swift alongside the shared
+// surface, button and toggle styles. Values are unchanged.
 
 // MARK: - Container
 
@@ -340,6 +335,7 @@ private struct CreateAccountStep: View {
             RFButton(
                 title: isLoading ? "Creating account…" : "Get Started",
                 isEnabled: canSubmit,
+                isLoading: isLoading,
                 action: submit
             )
             .padding(.bottom, 52)
@@ -449,6 +445,7 @@ private struct InvitePartnerStep: View {
                     RFButton(
                         title: isSending ? "Sending…" : "Send Invitation",
                         isEnabled: canSend,
+                        isLoading: isSending,
                         action: sendInvite
                     )
                 }
@@ -552,7 +549,7 @@ private struct MonitoringSetupStep: View {
                 if fcManager.authorizationStatus != .approved {
                     RFButton(
                         title: didRequestScreenTime ? "Waiting for permission…" : "Allow Screen Time",
-                        isEnabled: !didRequestScreenTime
+                        isLoading: didRequestScreenTime
                     ) {
                         didRequestScreenTime = true
                         Task {
@@ -606,9 +603,9 @@ private struct MonitoringSetupStep: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.055))
+                .fill(Color.white.opacity(0.06))
                 .overlay(RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                    .strokeBorder(RFStroke.lit, lineWidth: 1))
         )
     }
 }

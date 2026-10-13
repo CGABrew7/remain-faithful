@@ -634,6 +634,7 @@ private struct StatusCard: View {
     let onAction: () -> Void
     @ObservedObject private var lockout = AppLockoutManager.shared
     @State private var pulse: CGFloat = 1.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let green   = Color(red: 0.18, green: 0.82, blue: 0.48)
     private static let amber   = Color(red: 0.95, green: 0.72, blue: 0.22)
@@ -655,6 +656,7 @@ private struct StatusCard: View {
                     Circle()
                         .fill(accent)
                         .frame(width: 11, height: 11)
+                        .shadow(color: accent.opacity(0.9), radius: 5)
                 }
                 .frame(width: 44, height: 44)
                 .accessibilityHidden(true)
@@ -686,18 +688,31 @@ private struct StatusCard: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(presentation.coreIsOn ? Self.bgOn : Self.bgOff)
+                // Lit top edge over the accent rim, matching RFSurface.
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(accent.opacity(0.28), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [accent.opacity(0.55), accent.opacity(0.18)],
+                                startPoint: .top, endPoint: .bottom
+                            ),
+                            lineWidth: 1
+                        )
                 )
+                .compositingGroup()
+                .shadow(color: .black.opacity(0.26), radius: 3,  x: 0, y: 2)
+                .shadow(color: .black.opacity(0.20), radius: 18, x: 0, y: 10)
         )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(presentation.title). \(presentation.detail). \(presentation.deepScanLine)")
         .accessibilityHint(presentation.actionTitle)
         .accessibilityAddTraits(.isButton)
         .onAppear {
+            // Reduce Motion keeps the ring static rather than pulsing forever.
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
                 pulse = 1.55
             }
@@ -1261,14 +1276,7 @@ private struct PartnerFlagBanner: View {
 
 // MARK: - Shared card background
 
-private var card: some View {
-    RoundedRectangle(cornerRadius: 16)
-        .fill(Color.white.opacity(0.055))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
-        )
-}
+private var card: some View { RFSurface() }
 
 #Preview {
     @Previewable @State var showPanic = false
