@@ -4,6 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of Service for Remain Faithful, the free, privacy-first accountability app.',
+  alternates: { canonical: 'https://remainfaithful.com/terms' },
 }
 
 export default function TermsPage() {

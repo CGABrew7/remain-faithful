@@ -215,7 +215,7 @@ Getting a group up and running in Remain Faithful takes about fifteen minutes fo
 
 Don't send someone a link to an app without context. The conversation matters. Here's what to cover:
 
-- **What the app does:** Always-on filtering blocks the apps and categories you choose and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app.
+- **What the app does:** You choose the apps and categories to block. They stay blocked all day. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan is separate. It does not name the app.
 - **What partners see:** Alert metadata: timestamp, category, severity, and a short system-generated summary. Not your screen, not your browsing history.
 - **The covenant:** Both parties commit to honesty, grace, and confidentiality. You'll see this in the app.
 - **It's voluntary:** Anyone can disable monitoring at any time. This is a choice, not a surveillance program.

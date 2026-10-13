@@ -121,7 +121,7 @@ final class NotificationService: NSObject {
         let type = userInfo["notification_type"] as? String ?? ""
 
         switch type {
-        case NotificationType.contentFlagged:
+        case NotificationType.contentFlagged, NotificationType.protectionAlert:
             if let event = ActivityEvent.from(notificationPayload: userInfo) {
                 AppState.shared.navigate(to: .alertDetail(event))
             } else {
@@ -134,9 +134,12 @@ final class NotificationService: NSObject {
         case NotificationType.appDeleted,
              NotificationType.monitoringPaused,
              NotificationType.monitoringResumed,
-             NotificationType.streakMilestone,
-             NotificationType.protectionAlert:
-            AppState.shared.navigate(to: .dashboard)
+             NotificationType.streakMilestone:
+            if let event = ActivityEvent.from(notificationPayload: userInfo) {
+                AppState.shared.navigate(to: .alertDetail(event))
+            } else {
+                AppState.shared.navigate(to: .dashboard)
+            }
 
         default:
             AppState.shared.navigate(to: .dashboard)

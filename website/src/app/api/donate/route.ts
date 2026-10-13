@@ -1,9 +1,18 @@
 import Stripe from 'stripe'
 import { checkoutReturnUrls } from '@/lib/checkout-urls'
+import { clientAddress, tooMany } from '@/lib/backend'
 
 export async function POST(request: Request) {
   try {
-    const { amount, recurring } = await request.json()
+    if (tooMany(clientAddress(request))) {
+      return Response.json({ error: 'Too many attempts. Wait a minute and try again.' }, { status: 429 })
+    }
+
+    const body = await request.json()
+    if (typeof body?.company === 'string' && body.company.trim() !== '') {
+      return Response.json({ url: null })
+    }
+    const { amount, recurring } = body
 
     if (!amount || typeof amount !== 'number' || amount < 1 || amount > 10000) {
       return Response.json({ error: 'Invalid amount' }, { status: 400 })

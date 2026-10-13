@@ -35,9 +35,10 @@ const relatedMap: Record<string, string[]> = {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
-  const post = posts.find((p) => p.slug === params.slug)
+  const { slug } = await params
+  const post = posts.find((p) => p.slug === slug)
   if (!post) return {}
   const displayTitle = blogTitles[post.slug] || post.title
   return {
@@ -141,8 +142,9 @@ function renderBody(body: string, rich = false) {
   return elements
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = posts.find((p) => p.slug === params.slug)
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const post = posts.find((p) => p.slug === slug)
   if (!post) notFound()
 
   const relatedSlugs = relatedMap[post.slug] || []

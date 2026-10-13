@@ -24,20 +24,22 @@ func (h *H) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	var id int64
 	var name, email, createdAt string
+	var emailVerified bool
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT id, name, email, created_at FROM users WHERE id = $1`,
+		`SELECT id, name, email, created_at, email_verified FROM users WHERE id = $1`,
 		userID,
-	).Scan(&id, &name, &email, &createdAt)
+	).Scan(&id, &name, &email, &createdAt, &emailVerified)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"id":         id,
-		"name":       name,
-		"email":      email,
-		"created_at": createdAt,
+		"id":             id,
+		"name":           name,
+		"email":          email,
+		"created_at":     createdAt,
+		"email_verified": emailVerified,
 	})
 }
 
@@ -66,24 +68,74 @@ func (h *H) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var id int64
-	var name, email, createdAt string
-	err := h.DB.QueryRowContext(r.Context(),
-		`UPDATE users SET name = $1, email = $2 WHERE id = $3
-		 RETURNING id, name, email, created_at`,
-		req.Name, req.Email, userID,
-	).Scan(&id, &name, &email, &createdAt)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to update profile")
+	if !strings.Contains(req.Email, "@") {
+		writeError(w, http.StatusBadRequest, "valid email is required")
+		return
+	}
+	var current string
+	if err := h.DB.QueryRowContext(r.Context(), `SELECT email FROM users WHERE id = $1`, userID).Scan(&current); err != nil {
+		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
+	var id int64
+	var name, email, createdAt string
+	pending := ""
+	if req.Email == current {
+		err := h.DB.QueryRowContext(r.Context(),
+			`UPDATE users SET name = $1 WHERE id = $2
+			 RETURNING id, name, email, created_at`,
+			req.Name, userID,
+		).Scan(&id, &name, &email, &createdAt)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update profile")
+			return
+		}
+	} else {
+		var other int64
+		err := h.DB.QueryRowContext(r.Context(),
+			`SELECT id FROM users WHERE email = $1 AND id <> $2`, req.Email, userID,
+		).Scan(&other)
+		if err == nil {
+			writeError(w, http.StatusConflict, "that email cannot be used")
+			return
+		}
+		token, err := inviteToken()
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update profile")
+			return
+		}
+		err = h.DB.QueryRowContext(r.Context(), `
+			UPDATE users
+			SET name = $1,
+			    pending_email = $2,
+			    pending_email_token_hash = $3,
+			    pending_email_expires_at = NOW() + INTERVAL '24 hours'
+			WHERE id = $4
+			RETURNING id, name, email, created_at
+		`, req.Name, req.Email, hashToken(token), userID).Scan(&id, &name, &email, &createdAt)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update profile")
+			return
+		}
+		pending = req.Email
+		if h.Email != nil {
+			link := getAppBaseURL() + "/verify-email?token=" + token + "&purpose=change"
+			_ = h.Email.SendEmailChange(req.Email, name, link)
+		}
+	}
+
+	resp := map[string]any{
 		"id":         id,
 		"name":       name,
 		"email":      email,
 		"created_at": createdAt,
-	})
+	}
+	if pending != "" {
+		resp["pending_email"] = pending
+		resp["email_change"] = "pending"
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // DeleteMe permanently deletes the authenticated user and all their data.
@@ -313,10 +365,21 @@ func (h *H) GetUserStats(w http.ResponseWriter, r *http.Request) {
 
 	// 7-day week view (index 0 = 6 days ago, index 6 = today).
 	week := make([]bool, 7)
+	weekStates := make([]string, 7)
 	for i := range week {
 		day    := today.AddDate(0, 0, -(6 - i))
 		dayStr := day.Format("2006-01-02")
-		week[i] = !day.Before(createdDay) && !flagged[dayStr]
+		switch {
+		case day.Before(createdDay):
+			week[i] = false
+			weekStates[i] = "before_account"
+		case flagged[dayStr]:
+			week[i] = false
+			weekStates[i] = "flagged"
+		default:
+			week[i] = true
+			weekStates[i] = "clean"
+		}
 	}
 
 	// Best streak: longest clean run in the window max(365, streak+1) days back.
@@ -342,5 +405,6 @@ func (h *H) GetUserStats(w http.ResponseWriter, r *http.Request) {
 		"streak_days": streak,
 		"best_streak": best,
 		"week":        week,
+		"week_states": weekStates,
 	})
 }

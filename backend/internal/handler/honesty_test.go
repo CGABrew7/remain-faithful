@@ -26,6 +26,8 @@ type contactCall struct {
 
 func (e *capturingEmail) SendPasswordReset(string, string, string) error { return nil }
 func (e *capturingEmail) SendPartnerInvite(string, string, string) error { return nil }
+func (e *capturingEmail) SendVerifyEmail(string, string, string) error   { return nil }
+func (e *capturingEmail) SendEmailChange(string, string, string) error   { return nil }
 func (e *capturingEmail) SendGroupInvite(string, string, string, string) error {
 	return nil
 }

@@ -146,9 +146,9 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 		JOIN   users u ON u.id = gm.user_id
 		JOIN   LATERAL (
 		    SELECT
-		        COUNT(*) FILTER (WHERE e.timestamp > NOW() - INTERVAL '30 days') AS flags_last_30,
+		        COUNT(*) FILTER (WHERE e.timestamp > NOW() - INTERVAL '30 days' AND e.category <> 'clean') AS flags_last_30,
 		        COALESCE(
-		            (NOW()::date - MAX(e.timestamp)::date),
+		            (NOW()::date - (MAX(e.timestamp) FILTER (WHERE e.category <> 'clean'))::date),
 		            (NOW()::date - gm.joined_at::date)
 		        )                                                                  AS streak_days
 		    FROM events e

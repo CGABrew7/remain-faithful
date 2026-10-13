@@ -53,8 +53,12 @@ export default function WaitlistForm({
 
   if (variant === 'footer') {
     return (
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-wrap gap-2">
+        <label htmlFor="waitlist-footer-email" className="sr-only">
+          Email
+        </label>
         <input
+          id="waitlist-footer-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -67,9 +71,13 @@ export default function WaitlistForm({
           disabled={loading}
           className="btn-wax !py-2.5 whitespace-nowrap"
         >
-          {loading ? '…' : 'Join'}
+          {loading ? '...' : 'Join'}
         </button>
-        {error && <p className="text-xs text-wax mt-1">{error}</p>}
+        {error && (
+          <p className="form-error text-xs mt-1 w-full" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     )
   }
@@ -77,7 +85,11 @@ export default function WaitlistForm({
   if (variant === 'inline') {
     return (
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+        <label htmlFor="waitlist-inline-email" className="sr-only">
+          Email
+        </label>
         <input
+          id="waitlist-inline-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -90,9 +102,13 @@ export default function WaitlistForm({
           disabled={loading}
           className="btn-wax whitespace-nowrap"
         >
-          {loading ? 'Joining…' : buttonText}
+          {loading ? 'Joining...' : buttonText}
         </button>
-        {error && <p className="text-xs text-wax mt-2">{error}</p>}
+        {error && (
+          <p className="form-error text-xs mt-2" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     )
   }
@@ -107,31 +123,47 @@ export default function WaitlistForm({
       )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
-            required
-            className="input-field flex-1"
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            required
-            className="input-field flex-1"
-          />
+          <div className="flex-1">
+            <label htmlFor="waitlist-name" className="mb-2 block text-sm text-white">
+              Name
+            </label>
+            <input
+              id="waitlist-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              required
+              className="input-field w-full"
+            />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="waitlist-email" className="mb-2 block text-sm text-white">
+              Email
+            </label>
+            <input
+              id="waitlist-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              required
+              className="input-field w-full"
+            />
+          </div>
         </div>
         <button
           type="submit"
           disabled={loading}
           className="btn-wax w-full"
         >
-          {loading ? 'Joining…' : buttonText}
+          {loading ? 'Joining...' : buttonText}
         </button>
-        {error && <p className="text-xs text-wax">{error}</p>}
+        {error && (
+          <p className="form-error text-sm" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     </div>
   )

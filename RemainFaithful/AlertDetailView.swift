@@ -46,6 +46,19 @@ struct AlertDetailView: View {
             }
         }
         .navigationBarHidden(true)
+        .task {
+            guard let id = event.alertID else { return }
+            do {
+                try await APIClient.shared.markAlertSeen(alertID: id)
+                await MainActor.run {
+                    if AppState.shared.unreadAlertCount > 0 {
+                        AppState.shared.unreadAlertCount -= 1
+                    }
+                }
+            } catch {
+                // The seen route may not be deployed yet. The alert still opens.
+            }
+        }
     }
 
     // MARK: - Nav bar
@@ -56,11 +69,13 @@ struct AlertDetailView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 15, weight: .semibold))
-                    Text("Recent Flags")
+                    Text("Alerts")
                         .font(.system(size: 15, weight: .medium))
                 }
                 .foregroundStyle(Color.rfGold)
+                .frame(minHeight: 44)
             }
+            .accessibilityLabel("Back to Alerts")
             Spacer()
         }
         .padding(.horizontal, 20)
@@ -239,9 +254,9 @@ struct AlertDetailView: View {
 
     private var detailCard: some View {
         RoundedRectangle(cornerRadius: 16)
-            .fill(Color.white.opacity(0.055))
+            .fill(Color.white.opacity(0.06))
             .overlay(RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                .strokeBorder(RFStroke.lit, lineWidth: 1))
     }
 }
 

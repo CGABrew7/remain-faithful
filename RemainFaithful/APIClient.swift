@@ -45,23 +45,91 @@ struct RemoteEvent: Decodable {
 struct UserStats: Decodable {
     let streakDays: Int
     let bestStreak: Int
-    let week: [Bool]
+    let week: [StreakDayInput]
+    /// `before_account`, `clean`, or `flagged`. Empty on older servers.
+    let weekStates: [StreakDayInput]
     enum CodingKeys: String, CodingKey {
         case streakDays = "streak_days"
         case bestStreak = "best_streak"
         case week
+        case weekStates = "week_states"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        streakDays = try c.decode(Int.self, forKey: .streakDays)
+        bestStreak = try c.decode(Int.self, forKey: .bestStreak)
+        week = try c.decode([StreakDayInput].self, forKey: .week)
+        weekStates = (try? c.decode([StreakDayInput].self, forKey: .weekStates)) ?? []
     }
 }
 
 struct RemoteAlert: Decodable, Identifiable {
     let id: Int
-    let eventId: Int
+    let eventId: Int?
     let seen: Bool
     let createdAt: String
-    let event: RemoteEvent
+    let event: RemoteEvent?
+    /// "content" or "protection" when the server sends a kind. Optional today.
+    let kind: String?
+    let protectionType: String?
+    let summary: String?
+
     enum CodingKeys: String, CodingKey {
-        case id, seen, event
+        case id, seen, event, kind, summary
         case eventId = "event_id"
+        case createdAt = "created_at"
+        case protectionType = "protection_type"
+        case alertType = "type"
+        case contractAlertType = "alert_type"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(Int.self, forKey: .id)
+        eventId = try c.decodeIfPresent(Int.self, forKey: .eventId)
+        seen = (try? c.decode(Bool.self, forKey: .seen)) ?? false
+        createdAt = (try? c.decode(String.self, forKey: .createdAt)) ?? ""
+        event = try c.decodeIfPresent(RemoteEvent.self, forKey: .event)
+        kind = try c.decodeIfPresent(String.self, forKey: .kind)
+        let named = [
+            try c.decodeIfPresent(String.self, forKey: .contractAlertType),
+            try c.decodeIfPresent(String.self, forKey: .protectionType),
+            try c.decodeIfPresent(String.self, forKey: .alertType),
+        ]
+        protectionType = named.compactMap { $0 }.first { !$0.isEmpty }
+        summary = try c.decodeIfPresent(String.self, forKey: .summary)
+    }
+}
+
+struct PendingPartnerInvite: Decodable, Identifiable {
+    let id: Int
+    let inviterId: Int
+    let inviterName: String
+    let createdAt: String
+    let type: String
+    enum CodingKeys: String, CodingKey {
+        case id, type
+        case inviterId = "inviter_id"
+        case inviterName = "inviter_name"
+        case createdAt = "created_at"
+    }
+}
+
+struct PendingGroupInvite: Decodable, Identifiable {
+    let id: Int
+    let groupId: Int
+    let groupName: String
+    let inviterId: Int
+    let inviterName: String
+    let createdAt: String
+    let type: String
+    enum CodingKeys: String, CodingKey {
+        case id, type
+        case groupId = "group_id"
+        case groupName = "group_name"
+        case inviterId = "inviter_id"
+        case inviterName = "inviter_name"
         case createdAt = "created_at"
     }
 }
@@ -188,8 +256,14 @@ final class APIClient {
               expiry.timeIntervalSinceNow < 3600 else { return }
         let resp: [String: String] = try await post("/auth/refresh", body: [String: String]())
         if let newToken = resp["token"] {
-            KeychainHelper.shared.set(newToken, for: "authToken")
+            AuthState.shared.updateToken(newToken)
         }
+    }
+
+    /// Writes the API host into the app group so extensions can upload and heartbeat.
+    func publishSharedConfig() {
+        UserDefaults(suiteName: "group.com.remainfaithful.app")?
+            .set(apiBase, forKey: "apiBaseURL")
     }
 
     // MARK: - Users
@@ -238,6 +312,12 @@ final class APIClient {
         try await postVoid("/alerts/mark-seen", body: [String: String]())
     }
 
+    /// POST /alerts/{id}/seen — mark one alert when the person opens it.
+    /// A 404 means the route is not deployed yet; the caller ignores that.
+    func markAlertSeen(alertID: Int) async throws {
+        try await postVoid("/alerts/\(alertID)/seen", body: [String: String]())
+    }
+
     func markAlertDiscussed(alertID: Int) async throws {
         try await patchVoid("/alerts/\(alertID)/discussed")
     }
@@ -263,10 +343,37 @@ final class APIClient {
     }
 
     /// Verify a protection PIN entered by the monitored user.
-    /// POST /protection/pin/verify  body: {"pin": "1234"}  → {"success": bool}
-    func verifyPartnerPIN(pin: String) async throws -> Bool {
-        let resp: [String: Bool] = try await post("/protection/pin/verify", body: ["pin": pin])
-        return resp["success"] ?? false
+    /// POST /protection/pin/verify  body: {"pin": "1234"}
+    /// → success, or reason no_pin / wrong_pin. 429 reason is rate_limited.
+    /// A 429 still carries the reason, so this does not go through post(), which
+    /// drops the body of any non-2xx response.
+    func verifyPartnerPIN(pin: String) async throws -> PINCheck {
+        struct Body: Decodable {
+            let success: Bool
+            let reason: String?
+        }
+        do { try await refreshTokenIfNeeded() } catch { print("[APIClient] token refresh: \(error)") }
+        var req = try makeRequest("/protection/pin/verify", method: "POST")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONEncoder().encode(["pin": pin])
+        try attachToken(&req)
+        do {
+            let (data, resp) = try await session.data(for: req)
+            if let body = try? JSONDecoder().decode(Body.self, from: data) {
+                return PINCheck.from(success: body.success, reason: body.reason)
+            }
+            if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
+                throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+            }
+            throw APIError.decoding(DecodingError.dataCorrupted(
+                .init(codingPath: [], debugDescription: "PIN response")
+            ))
+        } catch let e as APIError {
+            throw e
+        } catch {
+            throw APIError.network(error)
+        }
     }
 
     /// Set (or overwrite) the protection PIN for a monitored user — called from the partner's device.
@@ -395,19 +502,61 @@ final class APIClient {
                            body: ["partner_email": partnerEmail, "type": type])
     }
 
-    /// Invite a partner by email — creates the relationship if they already have
-    /// an account, otherwise sends them an email with a sign-up deep link.
-    func invitePartner(email: String) async throws {
-        try await postVoid("/relationships/invite", body: ["email": email])
+    /// Invite a partner by email.
+    /// Response status: "pending" / "connected" (waiting to accept),
+    /// "invited" (no account yet), or "accepted".
+    func invitePartner(email: String) async throws -> PartnerInviteResult {
+        struct Body: Decodable { let status: String? }
+        let body: Body = try await post("/relationships/invite", body: ["email": email])
+        return PartnerInviteResult.from(status: body.status ?? "")
+    }
+
+    /// GET /relationships/invites/pending. `id` is the invite row, not relationships.id.
+    func listPendingPartnerInvites() async throws -> [PendingPartnerInvite] {
+        try await get("/relationships/invites/pending")
+    }
+
+    /// POST /relationships/invites/{id}/accept
+    func acceptPartnerInvite(id: Int) async throws {
+        try await postVoid("/relationships/invites/\(id)/accept", body: [String: String]())
+    }
+
+    /// POST /relationships/invites/{id}/decline
+    func declinePartnerInvite(id: Int) async throws {
+        try await postVoid("/relationships/invites/\(id)/decline", body: [String: String]())
+    }
+
+    /// GET /groups/invites/pending
+    func listPendingGroupInvites() async throws -> [PendingGroupInvite] {
+        try await get("/groups/invites/pending")
+    }
+
+    /// POST /groups/invites/{id}/accept
+    func acceptGroupInvite(id: Int) async throws {
+        try await postVoid("/groups/invites/\(id)/accept", body: [String: String]())
+    }
+
+    /// POST /groups/invites/{id}/decline
+    func declineGroupInvite(id: Int) async throws {
+        try await postVoid("/groups/invites/\(id)/decline", body: [String: String]())
     }
 
     func listRelationships() async throws -> [RemoteRelationship] {
         try await get("/relationships")
     }
 
-    /// Send an email-based group invite (invitee may not have an account yet).
-    func groupEmailInvite(groupID: Int, email: String) async throws {
-        try await postVoid("/groups/\(groupID)/email-invite", body: ["email": email])
+    /// Send an email-based group invite.
+    /// status is "added", "already_member", or "invited".
+    func groupEmailInvite(groupID: Int, email: String) async throws -> GroupInviteOutcome {
+        struct Body: Decodable { let status: String? }
+        let body: Body = try await post(
+            "/groups/\(groupID)/email-invite",
+            body: ["email": email]
+        )
+        if let outcome = GroupInviteOutcome.from(status: body.status ?? "") {
+            return outcome
+        }
+        return .invited
     }
 
     // MARK: - Primitives

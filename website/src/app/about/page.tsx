@@ -195,7 +195,7 @@ export default function AboutPage() {
             <div className="rounded-sm p-6 border border-hairline bg-paper-deep">
               <p className="text-xs text-wax font-semibold uppercase tracking-widest mb-3">How it actually works</p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                Always-on filtering uses Apple Family Controls in the adult self-monitor (.individual) authorization. You choose apps and categories to block. Partners are notified when a blocked category is attempted — they may receive a short system-generated summary in addition to category, severity, and timestamp.
+                You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary.
               </p>
               <p className="text-ink-soft leading-relaxed">
                 Optional Deep Scan can classify non-DRM screen frames on-device. It cannot see DRM-protected video. Screenshots, OCR text, and raw screen content do not leave the device; partners may receive a short system-generated summary. We do not show a fake code path here; the public repo is the source of truth.
@@ -210,11 +210,11 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-serif text-3xl font-bold text-ink mb-5">Why Donations, Not Subscriptions</h2>
           <p className="text-ink-soft leading-relaxed mb-8">
-            A subscription model creates a perverse incentive: we benefit when you stay subscribed, not necessarily when you succeed. Donations reverse this. We depend on users who find real value in the app, users who are succeeding. Server costs run approximately $4 per month per participant, so even a small donation goes a long way.
+            A subscription model creates a perverse incentive: we benefit when you stay subscribed, not necessarily when you succeed. Donations reverse this. We depend on users who find real value in the app, users who are succeeding. At friends-and-family size the stack is on the order of a few dozen dollars a month, not a fee per person.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 text-left mb-10">
             {[
-              { label: 'Server costs', amount: '~$80/mo', desc: 'Go backend, PostgreSQL, APNs relay' },
+              { label: 'Server costs', amount: 'A few dozen dollars', desc: 'Friends-and-family size, per month' },
               { label: 'Stripe fees', amount: '2.9% + 30¢', desc: 'Per donation transaction' },
               { label: 'Development', amount: 'Volunteer', desc: 'Founder donates time' },
             ].map((c) => (

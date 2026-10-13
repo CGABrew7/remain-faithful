@@ -8,7 +8,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata: Metadata = {
   title: 'How Remain Faithful Works: Always-On Filtering for iPhone',
-  description: 'Always-on Family Controls filtering, DeviceActivity usage monitoring, time-window shielding, and optional Deep Scan. Partners may receive a short system-generated summary plus category, timestamp, and severity — never screenshots or raw screen content.',
+  description: 'You choose apps and categories to block all day. If a chosen app is used for a minute, your partner can get one alert that day. Optional Deep Scan stays on your phone and cannot see DRM streaming.',
   alternates: { canonical: 'https://remainfaithful.com/how-it-works' },
 }
 
@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: 'What exactly gets monitored?',
-    a: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering: you choose apps and categories to block, they stay blocked through lock and reboot, and partners are notified when a blocked category is attempted. DeviceActivity monitors usage as category events — not screen content and not which specific app. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM frames. Deep Scan cannot see DRM-protected video or banking apps — Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM, not a Remain Faithful bug. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.',
+    a: 'You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan uses ReplayKit and on-device AI on non-DRM frames. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. Deep Scan cannot see DRM streaming. Screenshots and screen text stay on your phone.',
   },
   {
     q: 'How do I leave a group?',
@@ -39,7 +39,7 @@ const faqs = [
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'The broadcast extension is part of opt-in Deep Scan only. iOS ReplayKit allows a sandboxed extension to capture screen frames from non-DRM apps. The extension runs AI analysis entirely on-device and, when something is flagged, uploads alert metadata (category, severity, timestamp, and a short system-generated summary) — never the screen frame itself. Screenshots, OCR text, and raw screen content are never transmitted. Always-on filtering, usage monitoring, and time-window shielding use Apple\'s Family Controls and DeviceActivity frameworks — they do not use a broadcast extension and they do not see screen content.',
+    a: 'The broadcast extension is part of opt-in Deep Scan only. It looks at non-DRM frames on the phone. When something is flagged, the alert that leaves the phone is the category, severity, timestamp, and a short summary. Screenshots and screen text stay on the phone. The all-day block and the one-minute usage alert use Family Controls and DeviceActivity. They do not see the screen. Deep Scan cannot see DRM streaming.',
   },
 ]
 
@@ -171,8 +171,8 @@ export default function HowItWorksPage() {
               },
               {
                 step: '2',
-                title: 'Partners Are Notified on a Blocked Attempt',
-                body: 'When a blocked category is attempted, an alert is created. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app, not a bundle ID, and never screenshots or raw screen content.',
+                title: 'One alert after a minute of use',
+                body: 'If a chosen app is used for a minute, your partner can get one alert that day. It includes the category, a severity, a timestamp, and a short summary. It does not name the app. Screenshots and screen text stay on your phone.',
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
@@ -208,7 +208,7 @@ export default function HowItWorksPage() {
             <div className="ml-4 pb-1 pt-4">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
                 <span className="w-1.5 h-1.5 rounded-sm bg-wax" />
-                Layer 3 — Time-Window Shielding
+                Layer 3: blocked all day
               </span>
             </div>
 
@@ -217,9 +217,9 @@ export default function HowItWorksPage() {
                 4
               </div>
               <div>
-                <h3 className="font-semibold text-ink mb-1">Shield Chosen Apps During Hours You Set</h3>
+                <h3 className="font-semibold text-ink mb-1">Chosen apps stay blocked all day</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">
-                  You can restrict chosen apps to time windows — evenings, travel, or a season of struggle. Shielding uses the same Family Controls stack as always-on filtering. It does not see screen content.
+                  The apps and categories you choose stay blocked from the start of the day through the end. The block holds through the lock screen, reboot, and app restarts.
                 </p>
               </div>
             </div>

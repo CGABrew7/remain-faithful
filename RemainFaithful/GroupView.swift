@@ -244,26 +244,15 @@ struct GroupView: View {
                 Text("No Group Yet")
                     .font(.system(size: 22, weight: .bold, design: .serif))
                     .foregroundStyle(.white)
-                Text("You are not in any accountability groups.\nCreate one, or ask a member for an invite link.")
+                Text("You are not in any accountability groups. Create one, or ask a member to invite the email on your account. An invite link does not add you by itself.")
                     .font(.system(size: 14))
-                    .foregroundStyle(Color.white.opacity(0.50))
+                    .foregroundStyle(Color.white.opacity(0.78))
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
             }
             .padding(.horizontal, 32)
-            Button {
+            RFButton(title: "Create a Group") {
                 showCreateGroup = true
-            } label: {
-                HStack(spacing: 10) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 16))
-                    Text("Create a Group")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundStyle(Color.rfNavy)
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
             }
             .tourAnchor(.groupCreate)
             .padding(.horizontal, 40)
@@ -311,7 +300,7 @@ struct GroupView: View {
                                    streak: m.streakDays, health: health)
             }
         } catch {
-            loadError = error.localizedDescription
+            loadError = UserFacingError.message(for: error)
         }
     }
 
@@ -351,22 +340,8 @@ struct GroupView: View {
     private var inviteBar: some View {
         VStack(spacing: 0) {
             Divider().overlay(Color.white.opacity(0.07))
-            Button {
+            RFButton(title: "Invite Member") {
                 showInvite = true
-            } label: {
-                HStack(spacing: 10) {
-                    Image(systemName: "person.badge.plus")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text("Invite Member")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundStyle(Color.rfNavy)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.rfGold)
-                )
             }
             .padding(.horizontal, 20)
             .padding(.top, 14)
@@ -464,13 +439,7 @@ private struct RenameGroupSheet: View {
                             .foregroundStyle(Color.white.opacity(0.45))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
@@ -512,18 +481,12 @@ private struct RenameGroupSheet: View {
                         .padding(.bottom, 12)
                 }
 
-                Button(action: saveAndDismiss) {
-                        Text(isSaving ? "Saving…" : "Save")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.white.opacity(0.35) : Color.rfNavy)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.white.opacity(0.08) : Color.rfGold)
-                        )
-                }
-                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || isSaving)
+                RFButton(
+                    title: isSaving ? "Saving…" : "Save",
+                    isEnabled: !name.trimmingCharacters(in: .whitespaces).isEmpty,
+                    isLoading: isSaving,
+                    action: saveAndDismiss
+                )
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }
@@ -544,7 +507,7 @@ private struct RenameGroupSheet: View {
             } catch {
                 await MainActor.run {
                     isSaving = false
-                    errorText = error.localizedDescription
+                    errorText = UserFacingError.message(for: error)
                 }
             }
         }
@@ -611,10 +574,10 @@ private struct MemberRow: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.055))
+                .fill(Color.white.opacity(0.06))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .strokeBorder(RFStroke.lit, lineWidth: 1)
                 )
         )
     }
@@ -699,9 +662,9 @@ private struct MemberDetailView: View {
                         .padding(20)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.white.opacity(0.055))
+                                .fill(Color.white.opacity(0.06))
                                 .overlay(RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                                    .strokeBorder(RFStroke.lit, lineWidth: 1))
                         )
 
                         // Recent flags
@@ -718,9 +681,9 @@ private struct MemberDetailView: View {
                                 }
                                 .padding(.vertical, 12)
                             } else if memberAlerts.isEmpty {
-                                Text("No recent flags")
+                                Text("No alerts yet. This does not mean their Blocking is on.")
                                     .font(.system(size: 13))
-                                    .foregroundStyle(Color.white.opacity(0.35))
+                                    .foregroundStyle(Color.white.opacity(0.75))
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .padding(.vertical, 12)
                             } else {
@@ -735,21 +698,10 @@ private struct MemberDetailView: View {
                         // Action buttons
                         VStack(spacing: 12) {
                             if let phone = member.phone {
-                                Button {
+                                RFButton(title: "Call \(firstName)") {
                                     if let url = URL(string: "tel://\(phone)") {
                                         openURL(url)
                                     }
-                                } label: {
-                                    HStack(spacing: 10) {
-                                        Image(systemName: "phone.fill")
-                                            .font(.system(size: 16))
-                                        Text("Call \(firstName)")
-                                            .font(.system(size: 16, weight: .semibold))
-                                    }
-                                    .foregroundStyle(Color.rfNavy)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 54)
-                                    .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
                                 }
                             }
 
@@ -814,10 +766,13 @@ private struct MemberDetailView: View {
             defer { alertsLoading = false }
             guard member.userId != 0 else { return }
             if let alerts = try? await APIClient.shared.listAlerts() {
+                // Protection alerts carry no event, so unwrap first and keep
+                // only this member's content alerts.
                 memberAlerts = alerts
-                    .filter { $0.event.userId == member.userId }
+                    .compactMap(\.event)
+                    .filter { $0.userId == member.userId }
                     .prefix(10)
-                    .compactMap { ActivityEvent.from(remote: $0.event) }
+                    .compactMap { ActivityEvent.from(remote: $0) }
             }
         }
     }
@@ -836,7 +791,7 @@ private struct MemberDetailView: View {
             } catch {
                 await MainActor.run {
                     isSendingEncouragement = false
-                    encouragementError = error.localizedDescription
+                    encouragementError = UserFacingError.message(for: error)
                 }
             }
         }
@@ -845,13 +800,7 @@ private struct MemberDetailView: View {
     private var dismissBar: some View {
         HStack {
             Spacer()
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(0.40))
-                    .padding(10)
-                    .background(Circle().fill(Color.white.opacity(0.08)))
-            }
+            RFCloseButton { dismiss() }
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
@@ -893,8 +842,8 @@ private struct MemberDetailView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.055))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.08), lineWidth: 1))
+                .fill(Color.white.opacity(0.06))
+                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(RFStroke.lit, lineWidth: 1))
         )
     }
 }
@@ -934,7 +883,7 @@ private struct CovenantButton: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.055))
+                    .fill(Color.white.opacity(0.06))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(Color.rfGold.opacity(0.14), lineWidth: 1)
@@ -972,13 +921,7 @@ private struct CovenantSheet: View {
                             .foregroundStyle(Color.rfGold.opacity(0.75))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 20)
@@ -1057,13 +1000,7 @@ private struct EditCovenantSheet: View {
                             .foregroundStyle(Color(red: 0.95, green: 0.72, blue: 0.22))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
@@ -1091,17 +1028,11 @@ private struct EditCovenantSheet: View {
                     .padding(.top, 16)
                     .padding(.bottom, 16)
 
-                Button {
-                    save()
-                } label: {
-                    Text(isSaving ? "Saving…" : "Save Covenant")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color.rfNavy)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
-                }
-                .disabled(isSaving)
+                RFButton(
+                    title: isSaving ? "Saving…" : "Save Covenant",
+                    isLoading: isSaving,
+                    action: save
+                )
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }
@@ -1123,7 +1054,7 @@ private struct EditCovenantSheet: View {
             } catch {
                 await MainActor.run {
                     isSaving = false
-                    errorText = error.localizedDescription
+                    errorText = UserFacingError.message(for: error)
                 }
             }
         }
@@ -1139,6 +1070,7 @@ private struct InviteSheet: View {
     @FocusState private var emailFocused: Bool
     @State private var inviteEmail  = ""
     @State private var isSent       = false
+    @State private var sentDetail   = ""
     @State private var copied       = false
     @State private var inviteError: String?
 
@@ -1171,13 +1103,7 @@ private struct InviteSheet: View {
                             .foregroundStyle(Color.white.opacity(0.45))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
@@ -1225,7 +1151,7 @@ private struct InviteSheet: View {
                         HStack(spacing: 10) {
                             Image(systemName: isSent ? "checkmark.circle.fill" : "paperplane.fill")
                                 .font(.system(size: 16))
-                            Text(isSent ? "Invite Sent!" : "Send Invite")
+                            Text(isSent ? "Sent" : "Send Invite")
                                 .font(.system(size: 16, weight: .semibold))
                         }
                         .foregroundStyle(isSent ? green : Color.rfNavy)
@@ -1241,10 +1167,17 @@ private struct InviteSheet: View {
                     .animation(.easeInOut(duration: 0.2), value: isSent)
                     .padding(.horizontal, 24)
 
+                    if isSent && !sentDetail.isEmpty {
+                        Text(sentDetail)
+                            .font(.subheadline)
+                            .foregroundStyle(Color(red: 0.55, green: 0.85, blue: 0.55))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                    }
                     if let err = inviteError {
                         Text(err)
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                            .font(.subheadline)
+                            .foregroundStyle(Color(red: 0.95, green: 0.55, blue: 0.50))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
                             .transition(.opacity)
@@ -1290,8 +1223,8 @@ private struct InviteSheet: View {
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.055))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.08), lineWidth: 1))
+                        .fill(Color.white.opacity(0.06))
+                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(RFStroke.lit, lineWidth: 1))
                 )
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
@@ -1322,299 +1255,87 @@ private struct InviteSheet: View {
         let gid   = groupID
         Task {
             do {
-                // Same endpoint as Settings: adds existing users, emails a pending
-                // invite to people who don't have an account yet.
-                try await APIClient.shared.groupEmailInvite(groupID: gid, email: email)
+                let outcome = try await APIClient.shared.groupEmailInvite(groupID: gid, email: email)
                 await MainActor.run {
+                    inviteError = nil
+                    sentDetail = outcome.message
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { isSent = true }
                 }
             } catch {
                 await MainActor.run {
-                    inviteError = error.localizedDescription
+                    inviteError = UserFacingError.message(for: error)
                 }
             }
         }
     }
 }
 
-// MARK: - Create Group sheet (multi-step)
-
-private let defaultCovenant = """
-We, the members of this accountability group, covenant together before God and one another to:
-
-1. PURSUE PURITY — We commit to actively pursue sexual purity in thought, word, and deed.
-
-2. WALK IN HONESTY — We will be completely truthful about our struggles, failures, and victories.
-
-3. PRAY FAITHFULLY — We commit to pray regularly for each member of this group.
-
-4. RESPOND QUICKLY — When a brother sends an alert, we will respond promptly with encouragement and prayer.
-
-5. GUARD ONE ANOTHER — We take responsibility for one another's spiritual health.
-
-6. HOLD CONFIDENCE — What is shared in this group stays in this group.
-
-7. PRESS FORWARD — We refuse to be defined by our failures. We spur one another toward freedom in Christ.
-
-Signed and agreed upon this day, before God and this brotherhood.
-"""
+// MARK: - Create Group sheet
 
 private struct CreateGroupSheet: View {
     let onCreate: (String, String?) -> Void
     @AppStorage("primaryGroupID") private var primaryGroupID = 0
     @Environment(\.dismiss) private var dismiss
 
-    @State private var step         = 0          // 0=name, 1=covenant, 2=invite, 3=review
-    @State private var groupName    = ""
-    @State private var covenant     = defaultCovenant
-    @State private var inviteEmails: [String] = [""]  // at least one field
-    @State private var isCreating   = false
+    @State private var groupName = ""
+    @State private var isCreating = false
     @State private var createError: String?
+    @FocusState private var nameFocused: Bool
 
     var body: some View {
         ZStack {
             Color(red: 0.07, green: 0.11, blue: 0.24).ignoresSafeArea()
-            VStack(spacing: 0) {
-                // Drag indicator + step dots
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.18))
-                    .frame(width: 40, height: 4)
-                    .padding(.top, 12)
-                    .padding(.bottom, 16)
-
-                HStack(spacing: 7) {
-                    ForEach(0..<4) { i in
-                        Capsule()
-                            .fill(i == step ? Color.rfGold : Color.white.opacity(0.20))
-                            .frame(width: i == step ? 20 : 7, height: 7)
-                            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: step)
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Name your group")
+                            .font(.title2.bold())
+                            .fontDesign(.serif)
+                            .foregroundStyle(.white)
+                        Text("A name is enough. You can add a covenant later. Groups hold up to 12 people.")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.white.opacity(0.72))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    Spacer()
+                    RFCloseButton { dismiss() }
                 }
-                .padding(.bottom, 20)
 
-                // Step content
-                ZStack {
-                    if step == 0 { stepName }
-                    else if step == 1 { stepCovenant }
-                    else if step == 2 { stepInvite }
-                    else { stepReview }
-                }
-                .animation(.easeInOut(duration: 0.3), value: step)
-            }
-        }
-        .presentationDetents([.large])
-    }
-
-    // MARK: Step 0 — Name
-
-    @FocusState private var nameFocused: Bool
-
-    private var stepName: some View {
-        VStack(spacing: 0) {
-            sheetHeaderBlock(
-                title: "Name your group",
-                subtitle: "Choose a name that captures your brotherhood"
-            )
-
-            HStack(spacing: 12) {
-                Image(systemName: "person.3.fill")
-                    .font(.system(size: 15))
-                    .foregroundStyle(nameFocused ? Color.rfGold : Color.white.opacity(0.45))
-                    .frame(width: 22)
                 TextField("", text: $groupName,
-                          prompt: Text("e.g. Iron Brotherhood").foregroundColor(Color.white.opacity(0.38)))
+                          prompt: Text("Group name").foregroundColor(Color.white.opacity(0.55)))
                     .textInputAutocapitalization(.words)
                     .foregroundStyle(.white)
                     .focused($nameFocused)
-                    .submitLabel(.next)
-                    .onSubmit { if !groupName.trimmingCharacters(in: .whitespaces).isEmpty { step = 1 } }
-            }
-            .padding(.horizontal, 18)
-            .frame(height: 54)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(nameFocused ? 0.11 : 0.07))
-                    .overlay(RoundedRectangle(cornerRadius: 14)
-                        .stroke(nameFocused ? Color.rfGold : Color.white.opacity(0.10), lineWidth: 1.5))
-            )
-            .animation(.easeInOut(duration: 0.18), value: nameFocused)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+                    .submitLabel(.done)
+                    .padding(.horizontal, 18)
+                    .frame(minHeight: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white.opacity(0.08))
+                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.rfGold.opacity(0.4), lineWidth: 1))
+                    )
+                    .accessibilityLabel("Group name")
 
-            navButtons(
-                nextLabel: "Set Covenant",
-                nextEnabled: !groupName.trimmingCharacters(in: .whitespaces).isEmpty,
-                onNext: { step = 1 }
-            )
+                if let createError {
+                    Text(createError)
+                        .font(.subheadline)
+                        .foregroundStyle(Color(red: 0.95, green: 0.55, blue: 0.50))
+                }
+
+                RFButton(
+                    title: isCreating ? "Creating…" : "Create Group",
+                    isEnabled: !groupName.trimmingCharacters(in: .whitespaces).isEmpty,
+                    isLoading: isCreating
+                ) {
+                    Task { await createGroup() }
+                }
+                Spacer()
+            }
+            .padding(24)
         }
+        .presentationDetents([.medium, .large])
         .onAppear { nameFocused = true }
     }
-
-    // MARK: Step 1 — Covenant
-
-    private var stepCovenant: some View {
-        VStack(spacing: 0) {
-            sheetHeaderBlock(
-                title: "Group Covenant",
-                subtitle: "Edit the agreement your members will sign"
-            )
-
-            TextEditor(text: $covenant)
-                .scrollContentBackground(.hidden)
-                .background(Color.white.opacity(0.07))
-                .foregroundStyle(Color.white.opacity(0.85))
-                .font(.system(size: 13, design: .serif))
-                .lineSpacing(3)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.10), lineWidth: 1))
-                .frame(maxHeight: .infinity)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
-
-            navButtons(
-                backLabel: "Back",
-                nextLabel: "Invite Members",
-                nextEnabled: !covenant.trimmingCharacters(in: .whitespaces).isEmpty,
-                onBack: { step = 0 },
-                onNext: { step = 2 }
-            )
-        }
-    }
-
-    // MARK: Step 2 — Invite
-
-    private var stepInvite: some View {
-        VStack(spacing: 0) {
-            sheetHeaderBlock(
-                title: "Invite Members",
-                subtitle: "Enter emails — they'll receive an invitation link"
-            )
-
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 10) {
-                    ForEach(inviteEmails.indices, id: \.self) { i in
-                        HStack(spacing: 10) {
-                            Image(systemName: "envelope.fill")
-                                .font(.system(size: 14))
-                                .foregroundStyle(Color.white.opacity(0.40))
-                                .frame(width: 20)
-                            TextField("", text: $inviteEmails[i],
-                                      prompt: Text("Email address").foregroundColor(Color.white.opacity(0.32)))
-                                .keyboardType(.emailAddress)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .foregroundStyle(.white)
-                                .font(.system(size: 14))
-                            if inviteEmails.count > 1 {
-                                Button { inviteEmails.remove(at: i) } label: {
-                                    Image(systemName: "minus.circle.fill")
-                                        .foregroundStyle(Color(red: 0.90, green: 0.30, blue: 0.30).opacity(0.70))
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(height: 50)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white.opacity(0.07))
-                                .overlay(RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.09), lineWidth: 1))
-                        )
-                    }
-
-                    Button {
-                        inviteEmails.append("")
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "plus.circle")
-                                .font(.system(size: 14))
-                            Text("Add another email")
-                                .font(.system(size: 14))
-                        }
-                        .foregroundStyle(Color.rfGold.opacity(0.75))
-                    }
-                    .padding(.top, 4)
-                }
-                .padding(.horizontal, 24)
-            }
-            .frame(maxHeight: .infinity)
-            .padding(.bottom, 8)
-
-            navButtons(
-                backLabel: "Back",
-                nextLabel: "Review & Create",
-                nextEnabled: true,
-                onBack: { step = 1 },
-                onNext: { step = 3 }
-            )
-        }
-    }
-
-    // MARK: Step 3 — Review
-
-    private var stepReview: some View {
-        VStack(spacing: 0) {
-            sheetHeaderBlock(
-                title: "Review",
-                subtitle: "Confirm and create your group"
-            )
-
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
-                    reviewRow(icon: "person.3.fill", label: "Name", value: groupName)
-                    Divider().overlay(Color.white.opacity(0.08))
-                    reviewRow(icon: "doc.text.fill", label: "Covenant", value: "Custom group covenant set")
-
-                    let validEmails = inviteEmails.filter { $0.contains("@") }
-                    if !validEmails.isEmpty {
-                        Divider().overlay(Color.white.opacity(0.08))
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "envelope.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(Color.rfGold.opacity(0.7))
-                                Text("Inviting \(validEmails.count) member\(validEmails.count == 1 ? "" : "s")")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundStyle(.white)
-                            }
-                            ForEach(validEmails, id: \.self) { email in
-                                Text("• " + email)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color.white.opacity(0.55))
-                            }
-                        }
-                    }
-
-                    if let err = createError {
-                        Text(err)
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
-                            .transition(.opacity)
-                    }
-                }
-                .padding(20)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.055))
-                        .overlay(RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1))
-                )
-                .padding(.horizontal, 24)
-            }
-            .frame(maxHeight: .infinity)
-            .padding(.bottom, 8)
-
-            navButtons(
-                backLabel: "Back",
-                nextLabel: isCreating ? "Creating…" : "Create Group",
-                nextEnabled: !isCreating,
-                onBack: { step = 2 },
-                onNext: { Task { await createGroup() } }
-            )
-        }
-    }
-
-    // MARK: Create
 
     @MainActor
     private func createGroup() async {
@@ -1623,109 +1344,14 @@ private struct CreateGroupSheet: View {
         createError = nil
         let trimmed = groupName.trimmingCharacters(in: .whitespaces)
         do {
-            let group = try await APIClient.shared.createGroup(name: trimmed, covenant: covenant)
+            let group = try await APIClient.shared.createGroup(name: trimmed, covenant: "")
             primaryGroupID = group.id
-            let validEmails = inviteEmails.filter { $0.contains("@") && $0.contains(".") }
-            var failed: [String] = []
-            for email in validEmails {
-                do {
-                    try await APIClient.shared.groupEmailInvite(groupID: group.id, email: email)
-                } catch {
-                    failed.append(email)
-                }
-            }
-            let warning = failed.isEmpty
-                ? nil
-                : "The group was created. These invites did not send: \(failed.joined(separator: ", ")). You can try again from Invite Member."
-            onCreate(group.name, warning)
+            onCreate(group.name, nil)
             dismiss()
         } catch {
-            createError = error.localizedDescription
+            createError = UserFacingError.message(for: error)
         }
         isCreating = false
-    }
-
-    // MARK: Shared subviews
-
-    private func sheetHeaderBlock(title: String, subtitle: String) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 20, weight: .bold, design: .serif))
-                    .foregroundStyle(.white)
-                Text(subtitle)
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.white.opacity(0.45))
-            }
-            Spacer()
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(0.55))
-                    .padding(10)
-                    .background(Circle().fill(Color.white.opacity(0.09)))
-            }
-        }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 20)
-    }
-
-    private func reviewRow(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 14))
-                .foregroundStyle(Color.rfGold.opacity(0.7))
-                .frame(width: 20)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color.rfGold.opacity(0.65))
-                    .kerning(0.8)
-                Text(value)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
-        }
-    }
-
-    private func navButtons(
-        backLabel: String? = nil,
-        nextLabel: String,
-        nextEnabled: Bool,
-        onBack: (() -> Void)? = nil,
-        onNext: @escaping () -> Void
-    ) -> some View {
-        HStack(spacing: 12) {
-            if let backLabel, let onBack {
-                Button(action: onBack) {
-                    Text(backLabel)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.65))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color.white.opacity(0.08))
-                                .overlay(RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.white.opacity(0.12), lineWidth: 1))
-                        )
-                }
-            }
-            Button(action: onNext) {
-                Text(nextLabel)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(nextEnabled ? Color.rfNavy : Color.white.opacity(0.35))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(nextEnabled ? Color.rfGold : Color.white.opacity(0.08))
-                    )
-            }
-            .disabled(!nextEnabled)
-        }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 32)
     }
 }
 

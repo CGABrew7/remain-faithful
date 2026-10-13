@@ -15,7 +15,7 @@ import SwiftUI
 struct PINEntryView: View {
     let title:    String
     let subtitle: String
-    let onVerify: (String) async -> Bool
+    let onVerify: (String) async -> PINCheck
     let onCancel: () -> Void
 
     @State private var digits:         [Int]    = []
@@ -153,7 +153,10 @@ struct PINEntryView: View {
                 }
             }
             .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
             .frame(height: 62)
+            .accessibilityLabel(isDelete ? "Delete" : (isEmpty ? "" : key))
+            .accessibilityHidden(isEmpty)
             .background {
                 if !isEmpty {
                     RoundedRectangle(cornerRadius: 14)
@@ -195,15 +198,14 @@ struct PINEntryView: View {
         let pin = digits.map(String.init).joined()
         isVerifying = true
         Task {
-            let success = await onVerify(pin)
+            let result = await onVerify(pin)
             await MainActor.run {
                 isVerifying = false
-                if !success {
+                if !result.succeeded {
                     shake()
-                    withAnimation { errorMessage = "Incorrect PIN. Contact your accountability partner." }
+                    withAnimation { errorMessage = result.message }
                     digits = []
                 }
-                // On success the caller's onVerify closure closes the sheet.
             }
         }
     }

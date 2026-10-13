@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How Remain Faithful collects, uses, and protects your data. Screenshots, OCR text, and raw screen content stay on your device. Partners may receive a short system-generated summary.',
+  description: 'How Remain Faithful collects, uses, and protects your data. Screenshots and screen text stay on your phone. Partners can receive a short summary with the category.',
+  alternates: { canonical: 'https://remainfaithful.com/privacy' },
 }
 
 export default function PrivacyPage() {
@@ -18,7 +19,7 @@ export default function PrivacyPage() {
         <div className="prose-content space-y-12">
           <Section title="Our Commitment">
             <p className="font-semibold text-ink leading-relaxed">
-              Your name, email address, and personal information will never be shared, sold, or disclosed to any third party, at any time, for any reason. This is a permanent commitment.
+              We do not sell your name or email. Partners you accept can see the name and email on your account, plus alert metadata. Apple receives a device token so alerts can be delivered. Stripe processes donations on the website. Website analytics run only if you allow them.
             </p>
             <p>
               Remain Faithful is an accountability app for adults committed to purity. Because of the deeply personal nature of what this app does, we have designed our privacy model first and built the technology to match it. This policy describes exactly what data we collect, what stays on your device, and what your partners can see.
@@ -46,7 +47,7 @@ export default function PrivacyPage() {
             </Subsection>
 
             <Subsection title="Alert Metadata">
-              <p>When always-on filtering flags a blocked category, or when optional Deep Scan flags a non-DRM frame, an alert is generated. We store and transmit the following alert metadata:</p>
+              <p>If a chosen app is used for a minute, or if optional Deep Scan flags a non-DRM frame, an alert can be stored. The phone also sends a heartbeat while monitoring is on. That alert metadata is:</p>
               <ul>
                 <li>Timestamp of the alert</li>
                 <li>Content category (e.g., &quot;Adult Content&quot;, &quot;Explicit Text&quot;)</li>
@@ -60,7 +61,7 @@ export default function PrivacyPage() {
 
             <Subsection title="Usage Analytics">
               <p>
-                We use Google Analytics (GA4) to understand how users navigate the website. This is optional. You can opt out via your browser&apos;s Do Not Track setting or a GA opt-out extension. The app itself does not include analytics SDKs.
+                Website analytics stay off until you tap Allow analytics. The choice is saved in this browser. The iPhone app does not include analytics.
               </p>
             </Subsection>
 
@@ -105,10 +106,10 @@ export default function PrivacyPage() {
           <Section title="Data Retention">
             <p>We retain data for the following periods:</p>
             <ul>
-              <li><strong className="text-ink">Account data:</strong> retained while your account is active, deleted within 30 days of account deletion</li>
-              <li><strong className="text-ink">Alert history:</strong> kept while your account exists, and deleted when you delete your account. There is no separate retention window in Settings. Leaving a group notifies the other members. It does not delete your alert history.</li>
-              <li><strong className="text-ink">Partnership records:</strong> removed immediately when either partner ends the relationship</li>
-              <li><strong className="text-ink">Donation records:</strong> retained for 7 years per financial record-keeping obligations</li>
+              <li><strong className="text-ink">Account data:</strong> deleted when you delete the account</li>
+              <li><strong className="text-ink">Alert history:</strong> kept while your account exists, and deleted with the account. Older events and alerts are also removed after 365 days. Leaving a group notifies the other members. It does not delete your alert history.</li>
+              <li><strong className="text-ink">Partnership records:</strong> removed when either person ends the relationship</li>
+              <li><strong className="text-ink">Donation rows on your account:</strong> removed with the account. Stripe keeps its own payment records.</li>
             </ul>
           </Section>
 
@@ -131,7 +132,7 @@ export default function PrivacyPage() {
             <ul>
               <li><strong className="text-ink">Access your data:</strong> Settings → View My Activity Log shows your flagged activity in the app. For anything else, email support@remainfaithful.com. There is no separate export button.</li>
               <li><strong className="text-ink">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
-              <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings → Delete Account. This triggers immediate deletion of your account data and alerts, with confirmation within 30 days</li>
+              <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings, then Delete Account. The account, alerts, and donation rows tied to the account are removed then.</li>
               <li><strong className="text-ink">Change protection:</strong> you can change App Restrictions and turn off App Lockout in Settings. Turning off App Lockout sends your partners a notice. Stopping Deep Scan notifies partners only when App Lockout is on.</li>
             </ul>
             <p>
@@ -150,7 +151,7 @@ export default function PrivacyPage() {
 
           <Section title="Security">
             <p>
-              All data in transit is encrypted using TLS 1.3. Account passwords are hashed using bcrypt. JWT authentication tokens are stored in the iOS Keychain, not in UserDefaults or plain storage. We do not log sensitive data in our server logs.
+              The app and the server talk over HTTPS. Passwords are stored as bcrypt hashes. The session token is kept in the iOS Keychain and in the app group so Screen Time extensions can send events. Server logs do not include reset links or the address an email was sent to.
             </p>
           </Section>
 

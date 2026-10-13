@@ -193,12 +193,15 @@ func debugPushEnabled() bool {
 
 // clientIP extracts the real client IP, preferring the Fly-Client-IP header
 // set by Fly.io's edge proxy (which cannot be spoofed by the client).
+// In production a missing Fly header does not fall back to X-Forwarded-For.
 func clientIP(r *http.Request) string {
 	if ip := r.Header.Get("Fly-Client-IP"); ip != "" {
 		return ip
 	}
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		return strings.SplitN(xff, ",", 2)[0]
+	if os.Getenv("APP_ENV") != "production" {
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			return strings.TrimSpace(strings.SplitN(xff, ",", 2)[0])
+		}
 	}
 	host := r.RemoteAddr
 	if i := strings.LastIndex(host, ":"); i != -1 {
@@ -255,19 +258,29 @@ func routes(h *handler.H) http.Handler {
 	auth.HandleFunc("/google", h.GoogleSignIn).Methods(http.MethodPost)
 	auth.HandleFunc("/forgot-password", h.ForgotPassword).Methods(http.MethodPost)
 	auth.HandleFunc("/reset-password", h.ResetPassword).Methods(http.MethodPost)
+	auth.HandleFunc("/verify-email", h.VerifyEmail).Methods(http.MethodPost)
 
-	// Protected routes — JWT required
+	// Protected routes — JWT required, and the session version must still match.
 	api := r.NewRoute().Subrouter()
-	api.Use(rfauth.Middleware)
+	api.Use(rfauth.MiddlewareWithVersion(func(userID int64, claimVersion int) bool {
+		if h == nil {
+			return false
+		}
+		return h.TokenVersionAllowed(userID, claimVersion)
+	}))
 
 	api.HandleFunc("/users/me", h.GetMe).Methods(http.MethodGet)
 	api.HandleFunc("/users/me", h.UpdateMe).Methods(http.MethodPut)
 	api.HandleFunc("/users/me", h.DeleteMe).Methods(http.MethodDelete)
 	api.HandleFunc("/users/me/stats", h.GetUserStats).Methods(http.MethodGet)
-	api.HandleFunc("/relationships", h.CreateRelationship).Methods(http.MethodPost)
+	api.Handle("/relationships", authenticatedRateLimiter(10)(http.HandlerFunc(h.CreateRelationship))).Methods(http.MethodPost)
 	api.HandleFunc("/relationships", h.ListRelationships).Methods(http.MethodGet)
-	api.HandleFunc("/relationships/invite", h.InvitePartner).Methods(http.MethodPost)
+	api.Handle("/relationships/invite", authenticatedRateLimiter(10)(http.HandlerFunc(h.InvitePartner))).Methods(http.MethodPost)
 	api.HandleFunc("/relationships/accept-invite", h.AcceptPartnerInvite).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/decline-invite", h.DeclinePartnerInvite).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/invites/pending", h.ListPendingPartnerInvites).Methods(http.MethodGet)
+	api.HandleFunc("/relationships/invites/{id}/accept", h.AcceptPartnerInviteByID).Methods(http.MethodPost)
+	api.HandleFunc("/relationships/invites/{id}/decline", h.DeclinePartnerInviteByID).Methods(http.MethodPost)
 	api.HandleFunc("/relationships/{id}/primary", h.SetPrimaryPartner).Methods(http.MethodPut)
 	api.HandleFunc("/relationships/{id}/pin", h.SetRelationshipPIN).Methods(http.MethodPost)
 	api.HandleFunc("/relationships/{id}/pin", h.DeleteRelationshipPIN).Methods(http.MethodDelete)
@@ -281,12 +294,17 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/groups/leave-all", h.LeaveAllGroups).Methods(http.MethodPost)
 	api.HandleFunc("/groups", h.ListMyGroups).Methods(http.MethodGet)
 	api.HandleFunc("/groups", h.CreateGroup).Methods(http.MethodPost)
+	api.HandleFunc("/groups/invites/pending", h.ListPendingGroupInvites).Methods(http.MethodGet)
+	api.HandleFunc("/groups/accept-invite", h.AcceptGroupInvite).Methods(http.MethodPost)
+	api.HandleFunc("/groups/decline-invite", h.DeclineGroupInvite).Methods(http.MethodPost)
+	api.HandleFunc("/groups/invites/{id}/accept", h.AcceptGroupInviteByID).Methods(http.MethodPost)
+	api.HandleFunc("/groups/invites/{id}/decline", h.DeclineGroupInviteByID).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}", h.GetGroup).Methods(http.MethodGet)
 	api.HandleFunc("/groups/{id}", h.UpdateGroup).Methods(http.MethodPatch)
 	api.Handle("/groups/{id}/encouragement", authenticatedRateLimiter(10)(http.HandlerFunc(h.SendEncouragement))).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}/members/me", h.LeaveGroup).Methods(http.MethodDelete)
-	api.HandleFunc("/groups/{id}/invite", h.InviteMember).Methods(http.MethodPost)
-	api.HandleFunc("/groups/{id}/email-invite", h.GroupEmailInvite).Methods(http.MethodPost)
+	api.Handle("/groups/{id}/invite", authenticatedRateLimiter(10)(http.HandlerFunc(h.InviteMember))).Methods(http.MethodPost)
+	api.Handle("/groups/{id}/email-invite", authenticatedRateLimiter(10)(http.HandlerFunc(h.GroupEmailInvite))).Methods(http.MethodPost)
 	api.Handle("/events", authenticatedRateLimiter(30)(http.HandlerFunc(h.CreateEvent))).Methods(http.MethodPost)
 	api.HandleFunc("/events", h.ListEvents).Methods(http.MethodGet)
 	api.HandleFunc("/alerts", h.ListAlerts).Methods(http.MethodGet)
@@ -301,6 +319,7 @@ func routes(h *handler.H) http.Handler {
 		api.HandleFunc("/debug/test-push", h.SendTestPush).Methods(http.MethodPost)
 	}
 	api.HandleFunc("/auth/refresh", h.RefreshToken).Methods(http.MethodPost)
+	api.HandleFunc("/auth/resend-verification", h.ResendVerification).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session", h.CreateCheckoutSession).Methods(http.MethodPost)
 	api.HandleFunc("/donations/billing-portal", h.CreateBillingPortalSession).Methods(http.MethodPost)
 
@@ -547,6 +566,39 @@ func migrate(db *sql.DB) error {
 	-- within the same silence window. Reset implicitly when the user resumes
 	-- heartbeats (last_heartbeat_at advances past last_silence_alert_at).
 	ALTER TABLE relationships ADD COLUMN IF NOT EXISTS last_silence_alert_at TIMESTAMPTZ;
+
+	-- Existing accounts stay verified. New password signups insert FALSE explicitly.
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INT NOT NULL DEFAULT 1;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_email TEXT;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_email_token_hash TEXT;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_email_expires_at TIMESTAMPTZ;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_mail_count INT NOT NULL DEFAULT 0;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_mail_window TIMESTAMPTZ;
+
+	CREATE TABLE IF NOT EXISTS email_verifications (
+		user_id    BIGINT      PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+		token_hash TEXT        NOT NULL,
+		expires_at TIMESTAMPTZ NOT NULL,
+		created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	);
+
+	-- Protection and tamper rows have no events row. Build 9 still receives a nested event object.
+	ALTER TABLE alerts ALTER COLUMN event_id DROP NOT NULL;
+	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'event';
+	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS alert_type TEXT NOT NULL DEFAULT '';
+	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS summary TEXT NOT NULL DEFAULT '';
+	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS subject_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL;
+	CREATE INDEX IF NOT EXISTS idx_alerts_subject ON alerts(subject_user_id);
+
+	CREATE TABLE IF NOT EXISTS pin_verify_attempts (
+		user_id      BIGINT      PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+		failures     INT         NOT NULL DEFAULT 0,
+		window_start TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	);
+
+	CREATE INDEX IF NOT EXISTS idx_events_user_timestamp ON events(user_id, timestamp);
+	CREATE INDEX IF NOT EXISTS idx_users_last_heartbeat ON users(last_heartbeat_at);
 	`)
 	return err
 }

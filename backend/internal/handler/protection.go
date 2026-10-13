@@ -64,6 +64,7 @@ var clientProtectionAlertTypes = map[string]struct{}{
 	"pin_removed":             {}, // SettingsView
 	"pin_changed":             {}, // PINEntryView
 	"family_controls_revoked": {}, // RemainFaithfulApp
+	"signed_out":              {}, // SettingsView, build 10
 }
 
 // serverOnlyProtectionAlertTypes are generated internally (heartbeat sweep).
@@ -129,46 +130,91 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Respond immediately; push happens in background.
+	// Store the alert before acknowledging so a missed push still has a history row.
+	if err := h.storeAndPushProtection(userID, senderName, req.Type, false); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to record protection alert")
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-
-	go h.sendProtectionAlertToPartners(userID, senderName, req.Type, req.Detail)
 }
 
 // sendProtectionAlertToPartners fans out a PROTECTION_ALERT push to all
 // accepted partners of userID. It does not apply the HTTP client allowlist, so
 // internal callers (heartbeat sweep) may send server-only types.
 // Only metadata is sent — never screen content.
-func (h *H) sendProtectionAlertToPartners(userID int64, senderName, alertType, detail string) {
+// storeAndPushProtection writes one alert row per accepted partner and group
+// co-member, then pushes. detail from the client is ignored.
+// silenceDedup skips a recipient who already has this silence alert in the last 6 hours.
+func (h *H) storeAndPushProtection(userID int64, senderName, alertType string, silenceDedup bool) error {
 	ctx := context.Background()
+	ids, err := h.protectionRecipients(ctx, userID)
+	if err != nil {
+		log.Printf("[protection] query recipients user=%d: %v", userID, err)
+		return err
+	}
+	body := protectionAlertBody(senderName, alertType, "")
+	var deliver []int64
+	for _, pid := range ids {
+		if silenceDedup && h.recentSilenceAlert(ctx, userID, pid) {
+			continue
+		}
+		if _, err := h.DB.ExecContext(ctx, `
+			INSERT INTO alerts (event_id, recipient_user_id, kind, alert_type, summary, subject_user_id)
+			VALUES (NULL, $1, 'protection', $2, $3, $4)
+		`, pid, alertType, body, userID); err != nil {
+			log.Printf("[protection] insert alert user=%d recipient=%d: %v", userID, pid, err)
+			return err
+		}
+		deliver = append(deliver, pid)
+	}
+	if len(deliver) == 0 {
+		return nil
+	}
+	go h.pushProtection(userID, senderName, alertType, body, deliver)
+	return nil
+}
 
+func (h *H) protectionRecipients(ctx context.Context, userID int64) ([]int64, error) {
 	rows, err := h.DB.QueryContext(ctx, `
 		SELECT partner_id FROM relationships
 		WHERE user_id = $1 AND status = 'accepted'
+		UNION
+		SELECT DISTINCT gm2.user_id
+		FROM group_members gm1
+		JOIN group_members gm2
+		  ON gm2.group_id = gm1.group_id AND gm2.user_id != $1
+		WHERE gm1.user_id = $1
 	`, userID)
 	if err != nil {
-		log.Printf("[protection] query partners user=%d: %v", userID, err)
-		return
+		return nil, err
 	}
 	defer rows.Close()
-
-	var partnerIDs []int64
+	var ids []int64
+	seen := map[int64]bool{}
 	for rows.Next() {
 		var pid int64
-		if rows.Scan(&pid) == nil {
-			partnerIDs = append(partnerIDs, pid)
+		if rows.Scan(&pid) == nil && pid != userID && !seen[pid] {
+			seen[pid] = true
+			ids = append(ids, pid)
 		}
 	}
-	if len(partnerIDs) == 0 {
-		return
-	}
+	return ids, rows.Err()
+}
 
-	if detail != "" {
-		log.Printf("[protection] alert user=%d type=%s detail=%q", userID, alertType, truncateForLog(detail, 80))
-	}
+func (h *H) recentSilenceAlert(ctx context.Context, subject, recipient int64) bool {
+	var n int
+	_ = h.DB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM alerts
+		WHERE subject_user_id = $1 AND recipient_user_id = $2
+		  AND alert_type = 'heartbeat_silence'
+		  AND created_at > NOW() - INTERVAL '6 hours'
+	`, subject, recipient).Scan(&n)
+	return n > 0
+}
 
+func (h *H) pushProtection(userID int64, senderName, alertType, body string, partnerIDs []int64) {
+	ctx := context.Background()
 	// detail is never interpolated into the APNs body — only fixed copy per type.
-	body := protectionAlertBody(senderName, alertType, detail)
 	payload := map[string]any{
 		"aps": map[string]any{
 			"alert": map[string]string{
@@ -192,6 +238,11 @@ func (h *H) sendProtectionAlertToPartners(userID int64, senderName, alertType, d
 	}
 }
 
+// sendProtectionAlertToPartners is the internal entry used by the silence sweep.
+func (h *H) sendProtectionAlertToPartners(userID int64, senderName, alertType, _ string) {
+	_ = h.storeAndPushProtection(userID, senderName, alertType, alertType == "heartbeat_silence")
+}
+
 // protectionAlertBody returns fixed notification copy for the given alert type.
 // detail is ignored so client-supplied text cannot inflate the APNs body.
 // Screen content is never included — only metadata.
@@ -213,6 +264,10 @@ func protectionAlertBody(name, alertType, _ string) string {
 		return name + "'s protection PIN was changed"
 	case "family_controls_revoked":
 		return name + " revoked Family Controls authorization"
+	case "signed_out":
+		return name + " signed out"
+	case "app_removed":
+		return name + "'s app was removed from a device"
 	case "heartbeat_silence":
 		return name + "'s device has stopped sending heartbeats"
 	default:
@@ -259,11 +314,14 @@ func (h *H) GetPINStatus(w http.ResponseWriter, r *http.Request) {
 func (h *H) VerifyPIN(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
-	if pinVerifyRateLimit(userID) {
+	if denied, err := h.pinAttemptDenied(r.Context(), userID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check PIN attempts")
+		return
+	} else if denied {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Retry-After", "900")
 		w.WriteHeader(http.StatusTooManyRequests)
-		fmt.Fprint(w, `{"error":"too many PIN attempts — try again in 15 minutes","success":false}`)
+		fmt.Fprint(w, `{"error":"too many PIN attempts. Try again in 15 minutes","success":false,"reason":"rate_limited"}`)
 		return
 	}
 
@@ -279,21 +337,55 @@ func (h *H) VerifyPIN(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch the PIN hash. LIMIT 1 — in practice one accepted relationship has a PIN.
-	var pinHash string
-	err := h.DB.QueryRowContext(r.Context(), `
+	rows, err := h.DB.QueryContext(r.Context(), `
 		SELECT pin_hash FROM relationships
-		WHERE user_id = $1 AND status = 'accepted' AND pin_hash IS NOT NULL
-		LIMIT 1
-	`, userID).Scan(&pinHash)
+		WHERE user_id = $1 AND status = 'accepted' AND pin_hash IS NOT NULL AND pin_hash <> ''
+	`, userID)
 	if err != nil {
-		// No PIN set — nothing to compare against.
-		writeJSON(w, http.StatusOK, map[string]bool{"success": false})
+		writeError(w, http.StatusInternalServerError, "failed to look up PIN")
 		return
 	}
+	defer rows.Close()
+	var hashes []string
+	for rows.Next() {
+		var hash string
+		if rows.Scan(&hash) == nil && hash != "" {
+			hashes = append(hashes, hash)
+		}
+	}
+	if len(hashes) == 0 {
+		writeJSON(w, http.StatusOK, map[string]any{"success": false, "reason": "no_pin"})
+		return
+	}
+	for _, hash := range hashes {
+		if bcrypt.CompareHashAndPassword([]byte(hash), []byte(req.PIN)) == nil {
+			writeJSON(w, http.StatusOK, map[string]any{"success": true})
+			return
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": false, "reason": "wrong_pin"})
+}
 
-	success := bcrypt.CompareHashAndPassword([]byte(pinHash), []byte(req.PIN)) == nil
-	writeJSON(w, http.StatusOK, map[string]bool{"success": success})
+func (h *H) pinAttemptDenied(ctx context.Context, userID int64) (bool, error) {
+	var failures int
+	err := h.DB.QueryRowContext(ctx, `
+		INSERT INTO pin_verify_attempts (user_id, failures, window_start)
+		VALUES ($1, 1, NOW())
+		ON CONFLICT (user_id) DO UPDATE SET
+		  failures = CASE
+		    WHEN pin_verify_attempts.window_start < NOW() - INTERVAL '15 minutes' THEN 1
+		    ELSE pin_verify_attempts.failures + 1
+		  END,
+		  window_start = CASE
+		    WHEN pin_verify_attempts.window_start < NOW() - INTERVAL '15 minutes' THEN NOW()
+		    ELSE pin_verify_attempts.window_start
+		  END
+		RETURNING failures
+	`, userID).Scan(&failures)
+	if err != nil {
+		return false, err
+	}
+	return failures > 5, nil
 }
 
 // SetRelationshipPIN stores a bcrypt hash of the partner's chosen PIN.

@@ -21,6 +21,10 @@
   --gold-line: rgba(209, 171, 76, 0.45);
   --wax: #d1ab4c;
   --wax-deep: #b08e3a;
+  /* Gradient stops and destructive fill shared with the iOS app (RFTheme). */
+  --wax-light: #f2d685;
+  --wax-grad-deep: #b88c2e;
+  --danger: #9e2429;
   --dusk: #12214c;
   --dusk-mid: #1c3066;
   --shadow-border:
@@ -33,7 +37,8 @@
     0 22px 44px -24px rgba(0, 0, 0, 0.7);
   --track-caps: 0.16em;
   --radius-card: 20px;
-  --radius-control: 999px;
+  /* Matches RFMetrics.controlRadius (14pt) in the iOS app. */
+  --radius-control: 14px;
 }
 
 @layer base {
@@ -112,6 +117,7 @@
 
   .btn-wax:active:not(:disabled),
   .btn-ghost:active,
+  .btn-danger:active:not(:disabled),
   .surface:active,
   .tap-row:active {
     transform: none;
@@ -125,7 +131,7 @@
     top: -4rem;
     z-index: 80;
     padding: 0.6rem 1rem;
-    border-radius: 999px;
+    border-radius: var(--radius-control);
     background: #d1ab4c;
     color: #12214c;
     font-weight: 600;
@@ -160,42 +166,121 @@
     box-shadow: 0 0 0 3px rgba(209, 171, 76, 0.25);
   }
 
+  .form-error {
+    color: #ffc9c4;
+  }
+
+  /* Buttons share the iOS material: a gold gradient lit from above, a darker
+     gold rim to ground it, and a layered shadow (tight contact + wide ambient)
+     that collapses on press so the control sinks rather than just shrinking.
+     Gradient stops match RFTheme's rfGoldLight / rfGoldDeep exactly.
+     Navy on the gradient measures 10.9:1 at the top and 5.1:1 at the bottom. */
   .btn-wax {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     padding: 0.85rem 1.45rem;
-    background: #d1ab4c;
+    background: linear-gradient(180deg, var(--wax-light) 0%, var(--wax-grad-deep) 100%);
     color: #12214c;
     font-family: var(--font-source), system-ui, sans-serif;
     font-size: 0.95rem;
     font-weight: 600;
     letter-spacing: 0.01em;
     min-height: 2.75rem;
-    border-radius: 999px;
+    border: 1px solid rgba(184, 140, 46, 0.55);
+    border-radius: var(--radius-control);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      0 10px 24px -16px rgba(209, 171, 76, 0.9);
-    transition-property: filter, transform;
-    transition-duration: 150ms;
-    transition-timing-function: ease-out;
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      0 2px 3px -1px rgba(184, 140, 46, 0.42),
+      0 8px 18px -8px rgba(184, 140, 46, 0.5);
+    transition-property: filter, transform, box-shadow;
+    transition-duration: 160ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .btn-wax:hover {
-    filter: brightness(1.06);
+    filter: brightness(1.05);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 3px 5px -1px rgba(184, 140, 46, 0.45),
+      0 12px 24px -8px rgba(184, 140, 46, 0.55);
   }
 
   .btn-wax:active:not(:disabled) {
-    transform: scale(0.96);
+    transform: scale(0.975);
+    filter: brightness(0.96);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 1px 2px -1px rgba(184, 140, 46, 0.5),
+      0 3px 8px -4px rgba(184, 140, 46, 0.45);
+  }
+
+  .btn-wax:focus-visible {
+    outline: 2px solid #f6e2a4;
+    outline-offset: 3px;
   }
 
   .btn-wax:disabled {
-    opacity: 0.7;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    box-shadow: none;
     cursor: not-allowed;
   }
 
+  /* Secondary: navy face with a thin gold border, matching RFButton .secondary.
+     White on the navy face measures 12.4:1; the gold border 5.7:1. */
   .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.35rem;
+    color: #f6e2a4;
+    font-family: var(--font-source), system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    min-height: 2.75rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 60%),
+      var(--paper);
+    border: 1px solid rgba(209, 171, 76, 0.75);
+    border-radius: var(--radius-control);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 2px 3px -1px rgba(0, 0, 0, 0.3),
+      0 8px 18px -10px rgba(0, 0, 0, 0.4);
+    transition-property: background-color, border-color, transform, box-shadow;
+    transition-duration: 160ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--wax);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 3px 5px -1px rgba(0, 0, 0, 0.32),
+      0 12px 24px -10px rgba(0, 0, 0, 0.45);
+  }
+
+  .btn-ghost:active {
+    transform: scale(0.975);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 1px 2px -1px rgba(0, 0, 0, 0.35);
+  }
+
+  .btn-ghost:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Destructive, matching RFButton .destructive. White on the fill is 7.7:1. */
+  .btn-danger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -204,22 +289,39 @@
     color: #fff;
     font-family: var(--font-source), system-ui, sans-serif;
     font-size: 0.95rem;
-    font-weight: 500;
+    font-weight: 600;
     min-height: 2.75rem;
-    background: transparent;
-    border-radius: 999px;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-    transition-property: background-color, transform;
-    transition-duration: 150ms;
-    transition-timing-function: ease-out;
+    background: linear-gradient(180deg, var(--danger) 0%, rgba(158, 36, 41, 0.82) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-control);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 2px 3px -1px rgba(158, 36, 41, 0.42),
+      0 8px 18px -8px rgba(158, 36, 41, 0.5);
+    transition-property: filter, transform, box-shadow;
+    transition-duration: 160ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.06);
+  .btn-danger:hover {
+    filter: brightness(1.06);
   }
 
-  .btn-ghost:active {
-    transform: scale(0.96);
+  .btn-danger:active:not(:disabled) {
+    transform: scale(0.975);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 1px 2px -1px rgba(158, 36, 41, 0.5);
+  }
+
+  .btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost:focus-visible {
+    outline: 2px solid #f6e2a4;
+    outline-offset: 3px;
   }
 
   .kicker {
@@ -263,11 +365,18 @@
     padding-block: clamp(4rem, 9vh, 6.5rem);
   }
 
+  /* Cards use the same three depth cues as RFSurface in the app: a tinted
+     face, a hairline that reads brighter along the top edge, and a layered
+     shadow (tight contact + wide ambient). */
   .surface {
     background: linear-gradient(180deg, rgba(32, 54, 112, 0.62), rgba(18, 33, 76, 0.4));
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-card);
-    box-shadow: var(--shadow-border);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      var(--shadow-border),
+      0 2px 4px -2px rgba(0, 0, 0, 0.3),
+      0 14px 28px -18px rgba(0, 0, 0, 0.55);
   }
 
   .surface-link {

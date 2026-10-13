@@ -139,6 +139,8 @@ type recordingEmail struct {
 func (e *recordingEmail) SendPasswordReset(string, string, string) error           { return nil }
 func (e *recordingEmail) SendPartnerInvite(string, string, string) error           { return nil }
 func (e *recordingEmail) SendContact(string, string, string, string, string) error { return nil }
+func (e *recordingEmail) SendVerifyEmail(string, string, string) error             { return nil }
+func (e *recordingEmail) SendEmailChange(string, string, string) error             { return nil }
 func (e *recordingEmail) SendGroupInvite(to, _, _, acceptURL string) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -159,6 +161,13 @@ type inviteScenario struct {
 func (s inviteScenario) router() func(q string, args []any) ([]string, [][]driver.Value) {
 	return func(q string, _ []any) ([]string, [][]driver.Value) {
 		switch {
+		case strings.Contains(q, "relationship_invites WHERE inviter_id"):
+			return one("n", int64(0))
+		case strings.Contains(q, "SELECT user_id FROM group_members WHERE group_id"):
+			if s.alreadyMember {
+				return one("user_id", int64(42))
+			}
+			return none("user_id")
 		case strings.Contains(q, "SELECT role FROM group_members"):
 			if s.isMember {
 				return one("role", "admin")
@@ -254,23 +263,23 @@ func TestInviteMemberUnknownEmailCreatesPendingInvite(t *testing.T) {
 	}
 }
 
-func TestInviteMemberExistingUserAdded(t *testing.T) {
+func TestInviteMemberExistingUserStaysPendingUntilAccept(t *testing.T) {
 	rr, f, em := doInvite(t, inviteMember, inviteScenario{isMember: true, memberCount: 2, inviteeExists: true},
 		`{"user_email":"partner@example.com"}`)
 	if rr.Code != http.StatusCreated {
 		t.Fatalf("status = %d, want 201; body = %q", rr.Code, rr.Body.String())
 	}
 	body := decodeBody(t, rr)
-	if body["status"] != "added" || body["user_id"] != float64(42) {
+	if body["status"] != "invited" {
 		t.Fatalf("body = %v", body)
 	}
-	if len(f.ran("INSERT INTO group_members")) != 1 {
-		t.Fatalf("expected one group_members insert")
+	if len(f.ran("INSERT INTO group_members")) != 0 {
+		t.Fatal("existing user must not be inserted into group_members")
 	}
-	if len(f.ran("INSERT INTO group_invites")) != 0 {
-		t.Fatalf("existing user must not get a pending invite")
+	if len(f.ran("INSERT INTO group_invites")) != 1 {
+		t.Fatal("expected a pending group invite")
 	}
-	if len(em.groupInvite) != 1 || em.groupInvite[0] != "https://www.remainfaithful.com/invite?type=group" {
+	if len(em.groupInvite) != 1 || !strings.Contains(em.groupInvite[0], "/accept-invite?token=") {
 		t.Fatalf("emails = %v", em.groupInvite)
 	}
 }
@@ -402,7 +411,7 @@ func TestAcceptPendingGroupInvitesSkipsWhenGroupFull(t *testing.T) {
 	}
 }
 
-func TestRegisterRedeemsGroupInviteBeforeResponding(t *testing.T) {
+func TestRegisterDoesNotRedeemUntilEmailIsVerified(t *testing.T) {
 	f := &inviteFakeDB{query: redeemRouter(1, [][]driver.Value{{int64(5), int64(7)}})}
 	h := &H{DB: f.open(t)}
 	req := httptest.NewRequest(http.MethodPost, "/auth/register",
@@ -413,13 +422,15 @@ func TestRegisterRedeemsGroupInviteBeforeResponding(t *testing.T) {
 	if rr.Code != http.StatusCreated {
 		t.Fatalf("status = %d, want 201; body = %q", rr.Code, rr.Body.String())
 	}
-	// No goroutine: by the time Register returns the membership must exist.
-	ins := f.ran("INSERT INTO group_members")
-	if len(ins) != 1 || ins[0].args[1] != int64(99) {
-		t.Fatalf("member insert = %v", ins)
+	if len(f.ran("INSERT INTO group_members")) != 0 {
+		t.Fatal("unverified signup must not join a group")
 	}
-	if q := f.ran("FROM group_invites"); len(q) != 1 || q[0].args[0] != "new@example.com" {
-		t.Fatalf("lookup must use the normalized email: %v", q)
+	if len(f.ran("INSERT INTO email_verifications")) != 1 {
+		t.Fatal("expected a verification token row")
+	}
+	body := decodeBody(t, rr)
+	if body["email_verified"] != false {
+		t.Fatalf("email_verified = %v", body["email_verified"])
 	}
 }
 
@@ -438,7 +449,7 @@ func TestSocialSignupRedeemsOnlyRealEmails(t *testing.T) {
 		f := &inviteFakeDB{query: newUser}
 		h := &H{DB: f.open(t)}
 		req := httptest.NewRequest(http.MethodPost, "/auth/apple", nil)
-		if _, _, _, err := h.findOrCreateSocialUser(req, "apple_id", "sub123", "", "A"); err != nil {
+		if _, _, _, err := h.findOrCreateSocialUser(req, "apple_id", "sub123", "", "A", false); err != nil {
 			t.Fatalf("err = %v", err)
 		}
 		if len(f.ran("FROM group_invites")) != 0 || len(f.ran("FROM relationship_invites")) != 0 {
@@ -450,7 +461,7 @@ func TestSocialSignupRedeemsOnlyRealEmails(t *testing.T) {
 		f := &inviteFakeDB{query: newUser}
 		h := &H{DB: f.open(t)}
 		req := httptest.NewRequest(http.MethodPost, "/auth/google", nil)
-		if _, _, _, err := h.findOrCreateSocialUser(req, "google_id", "g1", "Real@Example.com", "A"); err != nil {
+		if _, _, _, err := h.findOrCreateSocialUser(req, "google_id", "g1", "Real@Example.com", "A", true); err != nil {
 			t.Fatalf("err = %v", err)
 		}
 		q := f.ran("FROM group_invites")

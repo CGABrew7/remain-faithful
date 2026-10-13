@@ -74,16 +74,18 @@ func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.DB.QueryContext(r.Context(), `
 		SELECT a.id,
-		       a.event_id,
+		       COALESCE(a.event_id, 0),
 		       a.seen,
 		       a.created_at,
-		       e.user_id,
-		       e.category,
-		       e.severity,
-		       e.summary,
-		       e.timestamp
+		       COALESCE(a.kind, 'event'),
+		       COALESCE(a.alert_type, ''),
+		       COALESCE(e.user_id, a.subject_user_id, 0),
+		       COALESCE(e.category, NULLIF(a.alert_type, ''), 'protection'),
+		       COALESCE(e.severity, CASE WHEN COALESCE(a.kind, 'event') = 'protection' THEN 'concerning' ELSE 'info' END),
+		       COALESCE(e.summary, a.summary, ''),
+		       COALESCE(e.timestamp, a.created_at)
 		FROM   alerts a
-		JOIN   events e ON e.id = a.event_id
+		LEFT   JOIN events e ON e.id = a.event_id
 		WHERE  a.recipient_user_id = $1
 		ORDER  BY a.created_at DESC
 		LIMIT  100
@@ -107,6 +109,8 @@ func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {
 		EventID   int64     `json:"event_id"`
 		Seen      bool      `json:"seen"`
 		CreatedAt string    `json:"created_at"`
+		Kind      string    `json:"kind"`
+		AlertType string    `json:"alert_type,omitempty"`
 		Event     eventInfo `json:"event"`
 	}
 
@@ -114,7 +118,7 @@ func (h *H) ListAlerts(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var a alert
 		if err := rows.Scan(
-			&a.ID, &a.EventID, &a.Seen, &a.CreatedAt,
+			&a.ID, &a.EventID, &a.Seen, &a.CreatedAt, &a.Kind, &a.AlertType,
 			&a.Event.UserID, &a.Event.Category, &a.Event.Severity,
 			&a.Event.Summary, &a.Event.Timestamp,
 		); err != nil {

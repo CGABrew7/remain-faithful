@@ -5,27 +5,49 @@ import SwiftUI
 enum EventCategory: String {
     case adultContent = "Adult Content"
     case gambling     = "Gambling"
+    case violence     = "Violence"
+    case selfHarm     = "Self-Harm"
+    case appUsage     = "App Use"
+    case clean        = "All Clear"
+    case tamper       = "Monitoring Change"
     case socialMedia  = "Social Media"
     case gaming       = "Gaming"
+    case unknown      = "Alert"
 
     var icon: String {
         switch self {
         case .adultContent: "eye.slash.fill"
         case .gambling:     "dollarsign.circle.fill"
+        case .violence:     "exclamationmark.triangle.fill"
+        case .selfHarm:     "heart.text.square.fill"
+        case .appUsage:     "apps.iphone"
+        case .clean:        "checkmark.shield.fill"
+        case .tamper:       "lock.slash.fill"
         case .socialMedia:  "bubble.left.and.bubble.right.fill"
         case .gaming:       "gamecontroller.fill"
+        case .unknown:      "bell.fill"
         }
     }
 
-    // Maps the string stored in the API back to an enum case.
-    // Accepts both the rawValue ("Adult Content") and snake_case ("adult_content").
-    init?(apiString: String) {
+    /// Never returns nil. An unrecognised server category becomes `.unknown`
+    /// so the row still shows.
+    init(apiString: String) {
         switch apiString.lowercased().replacingOccurrences(of: " ", with: "_") {
         case "adult_content": self = .adultContent
         case "gambling":      self = .gambling
+        case "violence":      self = .violence
+        case "self_harm":     self = .selfHarm
+        case "app_usage":     self = .appUsage
+        case "clean":         self = .clean
         case "social_media":  self = .socialMedia
         case "gaming":        self = .gaming
-        default:              return nil
+        case "monitoring_disabled", "shielding_disabled", "signed_out",
+             "family_controls_revoked", "deep_scan_stopped", "lockout_disabled",
+             "heartbeat_silence", "wrong_pin_attempt", "pin_removed", "pin_changed",
+             "protection", "tamper":
+            self = .tamper
+        default:
+            self = .unknown
         }
     }
 
@@ -33,8 +55,14 @@ enum EventCategory: String {
         switch self {
         case .adultContent: Color(red: 0.90, green: 0.25, blue: 0.30)
         case .gambling:     Color(red: 0.95, green: 0.58, blue: 0.12)
+        case .violence:     Color(red: 0.85, green: 0.28, blue: 0.22)
+        case .selfHarm:     Color(red: 0.95, green: 0.45, blue: 0.35)
+        case .appUsage:     Color(red: 0.28, green: 0.56, blue: 0.95)
+        case .clean:        Color(red: 0.20, green: 0.78, blue: 0.45)
+        case .tamper:       Color(red: 0.95, green: 0.62, blue: 0.10)
         case .socialMedia:  Color(red: 0.28, green: 0.56, blue: 0.95)
         case .gaming:       Color(red: 0.60, green: 0.30, blue: 0.90)
+        case .unknown:      Color.rfGold
         }
     }
 
@@ -67,6 +95,46 @@ enum EventCategory: String {
                 "Do you think gaming is helping you unwind, or helping you avoid something harder?",
                 "Late nights often point to something deeper. How's your sleep and your emotional state been?",
                 "What would a healthy rhythm with gaming look like for you?"
+            ]
+        case .violence:
+            return [
+                "What were you looking at, and how are you doing right now?",
+                "Was this something you went looking for, or did it show up in front of you?",
+                "What would help you step away from this the next time it appears?",
+                "How can I check in with you later today?"
+            ]
+        case .selfHarm:
+            return [
+                "Are you safe right now? I want to hear that from you.",
+                "You don't have to explain everything. What do you need in the next hour?",
+                "Who else can be with you — me, a pastor, or a counselor?",
+                "Can we stay in touch until this feels smaller?"
+            ]
+        case .appUsage:
+            return [
+                "You opened an app you asked to be watched. What was going on just before?",
+                "Was this a slip, or a choice you had already talked about?",
+                "What would make the next hour easier?",
+                "Do you want Blocking on for this app, or is an Alert enough?"
+            ]
+        case .clean:
+            return [
+                "What's been helping this week?",
+                "Is there a pressure point we should name before it grows?",
+                "How can I pray for you specifically?"
+            ]
+        case .tamper:
+            return [
+                "Monitoring changed on the phone. What happened?",
+                "Was this intentional, or did something else turn it off?",
+                "What do you want back on — Alerts, Blocking, or both?",
+                "When can we confirm it's on again?"
+            ]
+        case .unknown:
+            return [
+                "What does this alert mean on your end?",
+                "What was happening when it arrived?",
+                "What would a helpful next step look like today?"
             ]
         }
     }
@@ -138,19 +206,38 @@ struct ActivityEvent: Identifiable, Hashable {
         return fmt.string(from: eventDate)
     }
 
+    /// The server summary, plus one honest line. This does not invent a browsing
+    /// story, and it does not claim Deep Scan can see protected video.
     var extendedDescription: String {
-        switch category {
+        let summary = description.trimmingCharacters(in: .whitespacesAndNewlines)
+        let note = category.honestNote
+        if summary.isEmpty { return note }
+        if summary == note { return summary }
+        return summary + "\n\n" + note
+    }
+}
+
+private extension EventCategory {
+    var honestNote: String {
+        switch self {
         case .adultContent:
-            if description.contains("search") {
-                return "Search terms associated with adult content were detected during this session. The monitoring system logged the query for accountability review."
-            }
-            return "Adult content was detected during a web browsing session. The monitoring system flagged one or more pages containing explicit material."
+            return "This is the category your phone sent. It is not a copy of what was on screen. Deep Scan cannot see protected video such as Netflix."
         case .gambling:
-            return "A gambling or sports-betting website was visited during this session. The monitoring system flagged the domain as a gambling-related destination."
-        case .socialMedia:
-            return "Extended time was spent on social media platforms during this session. Usage exceeded typical daily thresholds and was flagged for review."
-        case .gaming:
-            return "A gaming session was detected that ran late into the night. Extended play during these hours is flagged as a potential accountability concern."
+            return "This is a gambling alert. The picture and the page stay on the phone."
+        case .violence:
+            return "This is a violence alert. Reach out. The screen itself was not uploaded."
+        case .selfHarm:
+            return "This is a self-harm alert. Check on them. The screen itself was not uploaded."
+        case .appUsage:
+            return "An app you chose was used for about a minute today. This is once a day, not every time the app opens."
+        case .clean:
+            return "Nothing in this check needed an alert."
+        case .tamper:
+            return "Alerts or Blocking changed on the phone. This is a notice, not screen content."
+        case .socialMedia, .gaming:
+            return "This is an older sample category. It is not a live screen capture."
+        case .unknown:
+            return "The phone sent an alert the app did not recognise. It is shown so it is not lost."
         }
     }
 }
@@ -159,27 +246,56 @@ struct ActivityEvent: Identifiable, Hashable {
 
 extension ActivityEvent {
     /// Converts a RemoteEvent from the API into a local ActivityEvent.
-    /// Returns nil if the category or severity value is unrecognised.
-    static func from(remote r: RemoteEvent) -> ActivityEvent? {
-        // Category: try rawValue first ("Adult Content"), then snake_case ("adult_content")
-        let cat = EventCategory(rawValue: r.category) ?? EventCategory(apiString: r.category)
-        guard let category = cat else { return nil }
-
-        // Severity: try title-cased rawValue ("Low"), then backend strings ("concerning" → .medium)
+    /// Unknown categories become `.unknown` instead of being dropped.
+    static func from(remote r: RemoteEvent, alertID: Int? = nil, discussed: Bool = false) -> ActivityEvent {
+        let category = EventCategory(rawValue: r.category) ?? EventCategory(apiString: r.category)
         let severity = FlagSeverity(rawValue: r.severity.capitalized) ?? FlagSeverity(apiString: r.severity) ?? .low
+        let minutesAgo = Self.minutesAgo(from: r.timestamp)
+        return ActivityEvent(alertID: alertID, category: category, severity: severity,
+                             description: r.summary, minutesAgo: minutesAgo, discussed: discussed)
+    }
 
-        // Parse ISO-8601 timestamp; try with and without fractional seconds
-        let fmt = ISO8601DateFormatter()
-        fmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let date = fmt.date(from: r.timestamp) ?? {
-            let f2 = ISO8601DateFormatter()
-            f2.formatOptions = [.withInternetDateTime]
-            return f2.date(from: r.timestamp) ?? Date()
-        }()
-        let minutesAgo = max(0, Int(Date().timeIntervalSince(date) / 60))
+    static func from(alert: RemoteAlert) -> ActivityEvent {
+        if alert.kind == "protection",
+           let raw = alert.protectionType, !raw.isEmpty {
+            let category = EventCategory(apiString: raw)
+            let summary = (alert.event?.summary ?? alert.summary ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let description = summary.isEmpty ? category.rawValue : summary
+            let stamp: String
+            if let event = alert.event, !event.timestamp.isEmpty {
+                stamp = event.timestamp
+            } else {
+                stamp = alert.createdAt
+            }
+            let severity: FlagSeverity
+            if let event = alert.event {
+                severity = FlagSeverity(rawValue: event.severity.capitalized)
+                    ?? FlagSeverity(apiString: event.severity)
+                    ?? .medium
+            } else {
+                severity = (raw == "self_harm" || category == .selfHarm) ? .high : .medium
+            }
+            return ActivityEvent(alertID: alert.id, category: category, severity: severity,
+                                 description: description, minutesAgo: minutesAgo(from: stamp))
+        }
+        if let event = alert.event {
+            return from(remote: event, alertID: alert.id, discussed: false)
+        }
+        let raw = alert.protectionType ?? alert.kind ?? "protection"
+        let category = EventCategory(apiString: raw)
+        let summary = alert.summary?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let description = (summary?.isEmpty == false) ? summary! : category.rawValue
+        let minutesAgo = Self.minutesAgo(from: alert.createdAt)
+        let severity: FlagSeverity = (raw == "self_harm" || category == .selfHarm) ? .high : .medium
+        return ActivityEvent(alertID: alert.id, category: category, severity: severity,
+                             description: description, minutesAgo: minutesAgo)
+    }
 
-        return ActivityEvent(category: category, severity: severity,
-                             description: r.summary, minutesAgo: minutesAgo)
+    static func minutesAgo(from timestamp: String) -> Int {
+        guard !timestamp.isEmpty else { return 0 }
+        let date = AccountDate.parse(timestamp) ?? Date()
+        return max(0, Int(Date().timeIntervalSince(date) / 60))
     }
 }
 
@@ -189,26 +305,26 @@ extension ActivityEvent {
     /// Reconstruct an ActivityEvent from an APNs notification userInfo dict so
     /// tapping a CONTENT_FLAGGED push can open AlertDetailView directly.
     static func from(notificationPayload p: [AnyHashable: Any]) -> ActivityEvent? {
-        guard let catStr = p["category"] as? String else { return nil }
-        let category = EventCategory(rawValue: catStr) ?? EventCategory(apiString: catStr)
-        guard let category else { return nil }
-
-        let severityStr = p["severity"] as? String ?? "low"
-        let severity    = FlagSeverity(rawValue: severityStr.capitalized) ?? FlagSeverity(apiString: severityStr) ?? .low
-        let description = p["summary"]  as? String ?? category.rawValue
-
-        var minutesAgo = 0
-        if let ts = p["timestamp"] as? String {
-            let fmt = ISO8601DateFormatter()
-            fmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            let date = fmt.date(from: ts) ?? {
-                let f2 = ISO8601DateFormatter()
-                f2.formatOptions = [.withInternetDateTime]
-                return f2.date(from: ts) ?? Date()
-            }()
-            minutesAgo = max(0, Int(Date().timeIntervalSince(date) / 60))
+        let type = p["notification_type"] as? String ?? ""
+        let catStr = (p["category"] as? String)
+            ?? (p["protection_type"] as? String)
+            ?? (p["type"] as? String)
+        if catStr == nil && type != NotificationType.contentFlagged && type != NotificationType.protectionAlert {
+            return nil
         }
-        let alertID = p["alert_id"] as? Int
+        // A content push with no category still has nothing to open.
+        if type == NotificationType.contentFlagged && catStr == nil { return nil }
+
+        let resolved = catStr ?? "tamper"
+        let category = EventCategory(rawValue: resolved) ?? EventCategory(apiString: resolved)
+        let severityStr = p["severity"] as? String ?? (category == .selfHarm ? "severe" : "concerning")
+        let severity = FlagSeverity(rawValue: severityStr.capitalized) ?? FlagSeverity(apiString: severityStr) ?? .low
+        let description = (p["summary"] as? String)
+            ?? (p["detail"] as? String)
+            ?? category.rawValue
+        let stamp = (p["timestamp"] as? String) ?? ""
+        let minutesAgo = stamp.isEmpty ? 0 : minutesAgo(from: stamp)
+        let alertID = (p["alert_id"] as? Int) ?? Int(p["alert_id"] as? String ?? "")
         return ActivityEvent(alertID: alertID, category: category, severity: severity,
                              description: description, minutesAgo: minutesAgo)
     }
@@ -234,13 +350,19 @@ struct DashboardView: View {
     @Binding var showPanic: Bool
 
     @State private var events:           [ActivityEvent]  = []
+    @State private var partnerAlerts:    [ActivityEvent]  = []
     @State private var streakDays:       Int              = 0
     @State private var streakBest:       Int              = 0
-    @State private var streakWeek:       [Bool]           = Array(repeating: false, count: 7)
+    @State private var streakMarks:      [StreakMark]     = Array(repeating: .beforeSignup, count: 7)
     @State private var isLoadingEvents   = false
     @State private var eventsLoadError:  String?
+    @State private var partnerLoadError: String?
     @State private var isBroadcasting       = false
     @State private var showAppUsagePrompt   = false
+    @State private var showBlockingSetup    = false
+    @State private var showDeepScanHelp     = false
+    @ObservedObject private var selection = ActivitySelectionManager.shared
+    @ObservedObject private var familyControls = FamilyControlsManager.shared
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -262,13 +384,13 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     headerRow
-                    if isBroadcasting {
-                        StatusCard(isBroadcasting: true)
-                            .tourAnchor(.homeStatus)
-                    } else {
-                        BroadcastPausedBanner()
-                            .tourAnchor(.homeStatus)
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                    StatusCard(
+                        presentation: monitoring,
+                        onAction: { handleStatusAction() }
+                    )
+                    .tourAnchor(.homeStatus)
+                    if monitoring.kind == .noApps {
+                        NoAppsBanner { showBlockingSetup = true }
                     }
                     if showAppUsagePrompt && !isBroadcasting {
                         AppUsagePromptBanner(
@@ -284,13 +406,25 @@ struct DashboardView: View {
                         .transition(.move(edge: .top).combined(with: .opacity))
                     }
                     VerseCard()
-                    StreakCard(days: streakDays, best: streakBest, week: streakWeek)
+                    StreakCard(days: streakDays, best: streakBest, marks: streakMarks)
                         .tourAnchor(.homeStreak)
-                    ActivitySection(events: events,
-                                    isLoading: isLoadingEvents,
-                                    error: eventsLoadError,
-                                    onRetry: { Task { await loadEvents() } })
-                        .tourAnchor(.homeFlags)
+                    ActivitySection(
+                        title: "Alerts",
+                        events: partnerAlerts,
+                        isLoading: isLoadingEvents,
+                        error: partnerLoadError,
+                        emptyTitle: partnerEmptyTitle,
+                        onRetry: { Task { await loadEvents() } }
+                    )
+                    ActivitySection(
+                        title: "Your activity",
+                        events: events,
+                        isLoading: isLoadingEvents,
+                        error: eventsLoadError,
+                        emptyTitle: ownEmptyTitle,
+                        onRetry: { Task { await loadEvents() } }
+                    )
+                    .tourAnchor(.homeFlags)
                     panicButton
                         .tourAnchor(.homeSupport)
                 }
@@ -324,8 +458,9 @@ struct DashboardView: View {
                 .zIndex(10)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
-                // Auto-dismiss after 6 seconds; reset if a new alert replaces this one
+                // Low and medium banners leave after 6 seconds. A severe alert stays until it is opened or dismissed.
                 .task(id: alert.id) {
+                    if alert.event?.severity == .high { return }
                     try? await Task.sleep(for: .seconds(6))
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                         appState.clearPartnerAlert()
@@ -334,6 +469,12 @@ struct DashboardView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $showBlockingSetup) {
+            NavigationStack { ScreenTimeMonitoringView() }
+        }
+        .sheet(isPresented: $showDeepScanHelp) {
+            BroadcastInstructionsSheet()
+        }
         .task { await loadEvents() }
         .task {
             // Poll broadcast status every 5 seconds while the view is active.
@@ -356,25 +497,88 @@ struct DashboardView: View {
     private func loadEvents() async {
         if appState.isDemoMode {
             events     = sampleEvents
+            partnerAlerts = [
+                ActivityEvent(alertID: 1, category: .appUsage, severity: .medium,
+                              description: "Chosen app used for about a minute", minutesAgo: 40),
+                ActivityEvent(alertID: 2, category: .selfHarm, severity: .high,
+                              description: "Self-harm content was flagged", minutesAgo: 90),
+            ]
             streakDays = 14
             streakBest = 21
-            streakWeek = [true, true, false, true, true, true, false]
+            streakMarks = [.beforeSignup, .beforeSignup, .clean, .clean, .flagged, .clean, .clean]
             return
         }
         guard APIClient.shared.isAuthenticated else { return }
         isLoadingEvents = true
         eventsLoadError = nil
+        partnerLoadError = nil
         defer { isLoadingEvents = false }
         do {
             async let remoteEvents = APIClient.shared.listEvents()
             async let stats        = APIClient.shared.getUserStats()
             let (remote, userStats) = try await (remoteEvents, stats)
-            events     = remote.compactMap { ActivityEvent.from(remote: $0) }
+            events     = remote.map { ActivityEvent.from(remote: $0) }
             streakDays = userStats.streakDays
             streakBest = userStats.bestStreak
-            streakWeek = userStats.week.count == 7 ? userStats.week : Array(repeating: false, count: 7)
+            let created = AccountDate.parse(AuthState.shared.currentUser?.createdAt)
+            let raw: [StreakDayInput]
+            if !userStats.weekStates.isEmpty {
+                raw = userStats.weekStates
+            } else if !userStats.week.isEmpty {
+                raw = userStats.week
+            } else {
+                raw = Array(repeating: StreakDayInput.flagged, count: 7)
+            }
+            streakMarks = StreakWeek.marks(raw: raw, accountCreated: created, today: Date())
         } catch {
             eventsLoadError = "Couldn't load activity. Tap to retry."
+        }
+        do {
+            let alerts = try await APIClient.shared.listAlerts()
+            partnerAlerts = alerts.map { ActivityEvent.from(alert: $0) }
+        } catch {
+            partnerLoadError = "Couldn't load alerts. Tap to retry."
+        }
+    }
+
+    private var monitoring: MonitoringPresentation {
+        let selected = selection.selection.applicationTokens.count
+            + selection.selection.categoryTokens.count
+        let signedOut = UserDefaults(suiteName: "group.com.remainfaithful.app")?
+            .bool(forKey: "extensionAuthFailed") ?? false
+        return MonitoringPresentation.make(
+            authorizationApproved: familyControls.authorizationStatus == .approved,
+            selectedCount: selected,
+            alertsOn: selection.isMonitoringEnabled,
+            blockingOn: selection.isShieldingEnabled,
+            deepScanOn: isBroadcasting,
+            extensionSignedOut: signedOut
+        )
+    }
+
+    private var setupUnfinished: Bool {
+        monitoring.kind == .needsPermission || monitoring.kind == .noApps || monitoring.kind == .off
+    }
+
+    private var ownEmptyTitle: String {
+        if setupUnfinished {
+            return "No alerts yet. Choose apps under Blocking if you have not finished setup."
+        }
+        return "No alerts yet."
+    }
+
+    private var partnerEmptyTitle: String {
+        "No alerts yet. This does not mean their Blocking is on."
+    }
+
+    private func handleStatusAction() {
+        switch monitoring.kind {
+        case .needsPermission:
+            Task { await familyControls.requestAuthorization() }
+        case .noApps, .off:
+            showBlockingSetup = true
+        case .on:
+            showDeepScanHelp = true
         }
     }
 
@@ -451,92 +655,134 @@ struct DashboardView: View {
 
 // MARK: - Status card
 //
-// Driven solely by isBroadcasting (the real broadcast state from EventProcessor).
-// The former MonitoringStatus toggle has been removed — it was a local-only state
-// that never affected the broadcast extension, which caused the card and the
-// BroadcastPausedBanner to display contradictory states simultaneously.
+// Composite of Screen Time permission, chosen apps, Alerts, and Blocking.
+// Deep Scan is a subtitle. The card never says monitoring is paused while
+// Alerts or Blocking are on.
 
 private struct StatusCard: View {
-    let isBroadcasting: Bool
+    let presentation: MonitoringPresentation
+    let onAction: () -> Void
     @ObservedObject private var lockout = AppLockoutManager.shared
     @State private var pulse: CGFloat = 1.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let green   = Color(red: 0.18, green: 0.82, blue: 0.48)
+    private static let amber   = Color(red: 0.95, green: 0.72, blue: 0.22)
     private static let bgOn    = LinearGradient(colors: [Color(red: 0.07, green: 0.40, blue: 0.26), Color(red: 0.05, green: 0.26, blue: 0.18)], startPoint: .topLeading, endPoint: .bottomTrailing)
     private static let bgOff   = LinearGradient(colors: [Color(red: 0.16, green: 0.20, blue: 0.32), Color(red: 0.11, green: 0.15, blue: 0.26)], startPoint: .topLeading, endPoint: .bottomTrailing)
 
+    private var accent: Color { presentation.coreIsOn ? Self.green : Self.amber }
+
     var body: some View {
-        VStack(spacing: 0) {
-            // Top row
+        VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 14) {
-                // Pulse ring + dot
                 ZStack {
-                    if isBroadcasting {
+                    if presentation.coreIsOn {
                         Circle()
-                            .fill(Self.green.opacity(0.22))
+                            .fill(accent.opacity(0.22))
                             .frame(width: 44, height: 44)
                             .scaleEffect(pulse)
                     }
                     Circle()
-                        .fill(isBroadcasting ? Self.green : Color(.systemGray3))
+                        .fill(accent)
                         .frame(width: 11, height: 11)
+                        .shadow(color: accent.opacity(0.9), radius: 5)
                 }
                 .frame(width: 44, height: 44)
+                .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(isBroadcasting ? "Monitoring Active" : "Monitoring Paused")
-                        .font(.system(size: 18, weight: .bold))
+                    Text(presentation.title)
+                        .font(.title3.weight(.bold))
                         .foregroundStyle(.white)
-                    Text(isBroadcasting
-                         ? "Your screen activity is being monitored"
-                         : "Activity recording is paused")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.white.opacity(0.6))
+                    Text(presentation.detail)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.white.opacity(0.72))
                         .fixedSize(horizontal: false, vertical: true)
-                    if isBroadcasting {
+                    Text(presentation.deepScanLine)
+                        .font(.footnote)
+                        .foregroundStyle(Color.white.opacity(0.66))
+                        .fixedSize(horizontal: false, vertical: true)
+                    if presentation.coreIsOn {
                         Text(PauseNotice.text(lockoutEnabled: lockout.isEnabled))
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color(red: 0.95, green: 0.72, blue: 0.22))
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(Self.amber)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-
                 Spacer(minLength: 0)
             }
-            .padding(.bottom, 18)
+            .padding(.bottom, 16)
 
-            Divider().overlay(Color.white.opacity(0.10))
-                .padding(.bottom, 14)
-
-            // Bottom row — display only; broadcast is started/stopped via Control Center.
-            HStack(spacing: 7) {
-                Image(systemName: isBroadcasting ? "shield.fill" : "shield.slash.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(isBroadcasting ? Self.green : Color(.systemGray3))
-                Text(isBroadcasting ? "Active session" : "Session ended")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.white.opacity(0.45))
-                Spacer(minLength: 0)
-            }
+            RFButton(title: presentation.actionTitle, action: onAction)
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(isBroadcasting ? Self.bgOn : Self.bgOff)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(presentation.coreIsOn ? Self.bgOn : Self.bgOff)
+                // Lit top edge over the accent rim, matching RFSurface.
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(
-                            isBroadcasting ? Self.green.opacity(0.25) : Color.white.opacity(0.07),
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [accent.opacity(0.55), accent.opacity(0.18)],
+                                startPoint: .top, endPoint: .bottom
+                            ),
                             lineWidth: 1
                         )
                 )
+                .compositingGroup()
+                .shadow(color: .black.opacity(0.26), radius: 3,  x: 0, y: 2)
+                .shadow(color: .black.opacity(0.20), radius: 18, x: 0, y: 10)
         )
-        .animation(.easeInOut(duration: 0.28), value: isBroadcasting)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(presentation.title). \(presentation.detail). \(presentation.deepScanLine)")
+        .accessibilityHint(presentation.actionTitle)
+        .accessibilityAddTraits(.isButton)
         .onAppear {
+            // Reduce Motion keeps the ring static rather than pulsing forever.
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
                 pulse = 1.55
             }
         }
+    }
+}
+
+private struct NoAppsBanner: View {
+    let onChoose: () -> Void
+
+    var body: some View {
+        Button(action: onChoose) {
+            HStack(spacing: 12) {
+                Image(systemName: "apps.iphone")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Color.rfGold)
+                    .frame(width: 44, height: 44)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("No apps selected")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                    Text("Choose apps to turn Alerts and Blocking on.")
+                        .font(.footnote)
+                        .foregroundStyle(Color.white.opacity(0.72))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(Color.white.opacity(0.55))
+            }
+            .padding(12)
+            .frame(minHeight: 44)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.rfGold.opacity(0.12))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.rfGold.opacity(0.45), lineWidth: 1))
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("No apps selected. Choose apps.")
     }
 }
 
@@ -545,9 +791,9 @@ private struct StatusCard: View {
 private struct StreakCard: View {
     let days: Int
     let best: Int
-    let week: [Bool]
+    let marks: [StreakMark]
 
-    private let dayLabels = ["S", "M", "T", "W", "T", "F", "S"]
+    private var dayLabels: [String] { StreakWeek.letters(count: marks.count, endingOn: Date()) }
     private let flagRed   = Color(red: 0.88, green: 0.25, blue: 0.28)
 
     var body: some View {
@@ -584,28 +830,55 @@ private struct StreakCard: View {
 
             // 7-day dots
             HStack(spacing: 0) {
-                ForEach(0..<7, id: \.self) { i in
+                ForEach(marks.indices, id: \.self) { i in
+                    let mark = marks[i]
+                    let letter = i < dayLabels.count ? dayLabels[i] : ""
                     VStack(spacing: 6) {
                         ZStack {
                             Circle()
-                                .fill(week[i]
-                                      ? Color.rfGold.opacity(0.18)
-                                      : flagRed.opacity(0.18))
+                                .fill(markFill(mark))
                                 .frame(width: 28, height: 28)
-                            Image(systemName: week[i] ? "checkmark" : "xmark")
+                            Image(systemName: markSymbol(mark))
                                 .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(week[i] ? Color.rfGold : flagRed)
+                                .foregroundStyle(markColor(mark))
                         }
-                        Text(dayLabels[i])
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.32))
+                        Text(letter)
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(Color.white.opacity(0.66))
                     }
                     .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(StreakWeek.dayName(index: i, count: marks.count, endingOn: Date())), \(mark.accessibilityName)")
                 }
             }
         }
         .padding(20)
         .background(card)
+    }
+
+    private func markFill(_ mark: StreakMark) -> Color {
+        switch mark {
+        case .clean: return Color.rfGold.opacity(0.18)
+        case .flagged: return flagRed.opacity(0.18)
+        case .beforeSignup: return Color.white.opacity(0.06)
+        }
+    }
+
+    private func markColor(_ mark: StreakMark) -> Color {
+        switch mark {
+        case .clean: return Color.rfGold
+        case .flagged: return flagRed
+        case .beforeSignup: return Color.white.opacity(0.35)
+        }
+    }
+
+    private func markSymbol(_ mark: StreakMark) -> String {
+        switch mark {
+        case .clean: return "checkmark"
+        case .flagged: return "xmark"
+        case .beforeSignup: return "circle"
+        }
     }
 }
 
@@ -714,16 +987,18 @@ private struct VerseCard: View {
 // MARK: - Activity feed
 
 private struct ActivitySection: View {
+    var title: String = "Alerts"
     let events:    [ActivityEvent]
     var isLoading: Bool   = false
     var error:     String? = nil
+    var emptyTitle: String = "No alerts yet."
     var onRetry:   (() -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Recent Flags")
-                    .font(.system(size: 16, weight: .semibold))
+                Text(title)
+                    .font(.headline)
                     .foregroundStyle(.white)
                 Spacer()
                 if isLoading {
@@ -788,9 +1063,10 @@ private struct ActivitySection: View {
             Image(systemName: "checkmark.shield.fill")
                 .font(.system(size: 34))
                 .foregroundStyle(Color(red: 0.20, green: 0.78, blue: 0.45))
-            Text("No flags yet — great work")
-                .font(.system(size: 15))
-                .foregroundStyle(Color.white.opacity(0.45))
+            Text(emptyTitle)
+                .font(.subheadline)
+                .foregroundStyle(Color.white.opacity(0.72))
+                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 36)
@@ -824,9 +1100,10 @@ private struct ActivityRow: View {
 
             VStack(alignment: .trailing, spacing: 5) {
                 Text(event.severity.rawValue.uppercased())
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.caption2.weight(.bold))
                     .kerning(0.5)
                     .foregroundStyle(event.severity.color)
+                    .accessibilityLabel("Severity \(event.severity.rawValue)")
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(Capsule().fill(event.severity.color.opacity(0.14)))
@@ -841,7 +1118,7 @@ private struct ActivityRow: View {
     }
 }
 
-// MARK: - Broadcast Paused Banner
+// MARK: - Optional Deep Scan prompt
 
 private struct AppUsagePromptBanner: View {
     let onStart:   () -> Void
@@ -864,35 +1141,22 @@ private struct AppUsagePromptBanner: View {
                         .foregroundStyle(blue)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Monitored app used today")
-                        .font(.system(size: 14, weight: .semibold))
+                    Text("An app you chose was used")
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
-                    Text("Start a broadcast scan to deepen accountability")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.55))
+                    Text("Alerts and Blocking stay as you set them. Deep Scan is optional.")
+                        .font(.footnote)
+                        .foregroundStyle(Color.white.opacity(0.75))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer()
-                Button(action: onDismiss) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.35))
-                        .padding(6)
-                        .background(Circle().fill(Color.white.opacity(0.08)))
-                }
+                Spacer(minLength: 0)
+                RFCloseButton(action: onDismiss)
             }
 
-            Button {
+            RFButton(title: "How Deep Scan works", role: .secondary) {
                 onStart()
                 showInstructions = true
-            } label: {
-                Text("Start Broadcast Scan")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(blue))
             }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -910,51 +1174,6 @@ private struct AppUsagePromptBanner: View {
     }
 }
 
-private struct BroadcastPausedBanner: View {
-    @State private var showInstructions = false
-
-    var body: some View {
-        Button { showInstructions = true } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.95, green: 0.62, blue: 0.10).opacity(0.18))
-                        .frame(width: 38, height: 38)
-                    Image(systemName: "shield.slash.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(Color(red: 0.95, green: 0.62, blue: 0.10))
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Monitoring is paused")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                    Text("Tap to resume accountability")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.55))
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(0.25))
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(red: 0.14, green: 0.18, blue: 0.30))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color(red: 0.95, green: 0.62, blue: 0.10).opacity(0.35), lineWidth: 1.5)
-                    )
-            )
-        }
-        .buttonStyle(.plain)
-        .sheet(isPresented: $showInstructions) {
-            BroadcastInstructionsSheet()
-        }
-    }
-}
-
 private struct BroadcastInstructionsSheet: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -962,7 +1181,7 @@ private struct BroadcastInstructionsSheet: View {
         ("1", "Swipe down from the top-right corner to open Control Center."),
         ("2", "Tap and hold the Screen Recording button (circle inside a circle)."),
         ("3", "Select \u{201C}Remain Faithful\u{201D} from the list of broadcast receivers."),
-        ("4", "Tap \u{201C}Start Broadcast\u{201D} — monitoring resumes immediately."),
+        ("4", "Tap “Start Broadcast”. Deep Scan starts. Alerts and Blocking do not change."),
     ]
 
     var body: some View {
@@ -977,21 +1196,16 @@ private struct BroadcastInstructionsSheet: View {
 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Resume Monitoring")
+                        Text("Deep Scan")
                             .font(.system(size: 20, weight: .bold, design: .serif))
                             .foregroundStyle(.white)
-                        Text("Start the broadcast from Control Center")
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color.white.opacity(0.45))
+                        Text("Optional. It does not replace Alerts or Blocking.")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.white.opacity(0.75))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
@@ -1021,21 +1235,21 @@ private struct BroadcastInstructionsSheet: View {
                 }
                 .padding(.horizontal, 24)
 
+                Text("Protected video such as Netflix is not visible. Only an alert category and a heartbeat leave this phone.")
+                    .font(.footnote)
+                    .foregroundStyle(Color.white.opacity(0.75))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
+
                 Spacer()
 
-                Button { dismiss() } label: {
-                    Text("Got it")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color.rfNavy)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(Color.rfGold))
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 36)
+                RFButton(title: "Got it") { dismiss() }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 36)
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -1072,13 +1286,7 @@ private struct PartnerFlagBanner: View {
 
                 Spacer(minLength: 4)
 
-                Button(action: onDismiss) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.45))
-                        .padding(8)
-                        .background(Circle().fill(Color.white.opacity(0.08)))
-                }
+                RFCloseButton(label: "Dismiss alert", action: onDismiss)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -1098,14 +1306,7 @@ private struct PartnerFlagBanner: View {
 
 // MARK: - Shared card background
 
-private var card: some View {
-    RoundedRectangle(cornerRadius: 16)
-        .fill(Color.white.opacity(0.055))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
-        )
-}
+private var card: some View { RFSurface() }
 
 #Preview {
     @Previewable @State var showPanic = false

@@ -3,8 +3,8 @@ import { Playfair_Display, Source_Sans_3 } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
-import Script from 'next/script'
 import { JsonLd } from '@/components/JsonLd'
+import AnalyticsConsent from '@/components/AnalyticsConsent'
 import { organizationSchema, websiteSchema } from '@/lib/structured-data'
 
 const playfair = Playfair_Display({
@@ -104,22 +104,7 @@ export default function RootLayout({
       <head />
       <body className="text-ink-soft font-sans">
         <a href="#main" className="skip">Skip to content</a>
-        {gaId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}');
-              `}
-            </Script>
-          </>
-        )}
+        <AnalyticsConsent gaId={gaId} />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <Nav />

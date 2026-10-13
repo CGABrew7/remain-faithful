@@ -9,19 +9,24 @@ import (
 )
 
 // Claims are the JWT payload fields we sign and verify.
+// TokenVersion is bumped to revoke outstanding sessions. Tokens issued
+// before this field existed omit it and decode as 0.
 type Claims struct {
-	UserID int64  `json:"user_id"`
-	Email  string `json:"email"`
+	UserID       int64  `json:"user_id"`
+	Email        string `json:"email"`
+	TokenVersion int    `json:"tv,omitempty"`
 	jwt.RegisteredClaims
 }
 
 const issuer = "remain-faithful"
 
 // Sign creates a signed JWT for the given user. Tokens expire after 24 hours.
-func Sign(userID int64, email string) (string, error) {
+// tokenVersion is copied into the token so a password reset can invalidate it.
+func Sign(userID int64, email string, tokenVersion int) (string, error) {
 	claims := Claims{
-		UserID: userID,
-		Email:  email,
+		UserID:       userID,
+		Email:        email,
+		TokenVersion: tokenVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

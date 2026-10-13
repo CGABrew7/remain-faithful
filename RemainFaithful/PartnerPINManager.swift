@@ -47,15 +47,15 @@ final class PartnerPINManager: ObservableObject {
 
     // MARK: - Verification
 
-    func verifyPIN(_ pin: String) async -> Bool {
-        guard APIClient.shared.isAuthenticated else { return false }
+    func verifyPIN(_ pin: String) async -> PINCheck {
+        guard APIClient.shared.isAuthenticated else { return .unavailable }
         do {
-            let success = try await APIClient.shared.verifyPartnerPIN(pin: pin)
-            if !success { pinLogger.notice("Wrong PIN attempt") }
-            return success
+            let result = try await APIClient.shared.verifyPartnerPIN(pin: pin)
+            if result == .wrong { pinLogger.notice("Wrong PIN attempt") }
+            return result
         } catch {
             pinLogger.error("PIN verification error: \(error.localizedDescription)")
-            return false
+            return .unavailable
         }
     }
 

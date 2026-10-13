@@ -32,7 +32,7 @@ export const softwareApplicationSchema = {
   featureList: [
     'Always-on Family Controls filtering with partner notify',
     'DeviceActivity usage monitoring as category events',
-    'Time-window shielding of chosen apps',
+    'Chosen apps stay blocked all day',
     'Optional on-device Deep Scan',
     'One-to-one or group accountability',
     'Covenant-based partner system',
@@ -141,7 +141,7 @@ export const howItWorksFaqSchema = {
       name: 'What exactly does Remain Faithful monitor?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful has four public layers. The credible core is always-on Family Controls filtering of chosen apps and categories, with partner notify when a blocked category is attempted. DeviceActivity monitors usage as category events, not screen content. Time-window shielding can restrict chosen apps during hours you set. Opt-in Deep Scan uses ReplayKit and on-device AI (Vision OCR, SensitiveContentAnalysis) on non-DRM screen frames. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app, screenshots, OCR text, or raw content.',
+        text: 'You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan classifies non-DRM frames on the phone. Screenshots and screen text stay on the phone. Deep Scan cannot see DRM streaming.',
       },
     },
     {

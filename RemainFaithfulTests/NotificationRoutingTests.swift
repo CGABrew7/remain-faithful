@@ -70,6 +70,46 @@ final class NotificationRoutingTests: XCTestCase {
         wait(for: [exp], timeout: 1)
     }
 
+    func testAppUsage_navigatesToAlertDetail() {
+        let info: [AnyHashable: Any] = [
+            "notification_type": "CONTENT_FLAGGED",
+            "category": "app_usage",
+            "summary": "Safari was used",
+        ]
+        let exp = expectation(description: "app usage opens the alert")
+        AppState.shared.$deepLink
+            .compactMap { $0 }
+            .first()
+            .sink { link in
+                if case .alertDetail(let event) = link, event.category == .appUsage {
+                    exp.fulfill()
+                }
+            }
+            .store(in: &cancellables)
+        NotificationService.shared.routeNotification(userInfo: info)
+        wait(for: [exp], timeout: 1)
+    }
+
+    func testProtectionAlert_navigatesToAlertDetail() {
+        let info: [AnyHashable: Any] = [
+            "notification_type": "PROTECTION_ALERT",
+            "protection_type": "monitoring_disabled",
+            "detail": "Alerts were turned off.",
+        ]
+        let exp = expectation(description: "protection alert opens the alert")
+        AppState.shared.$deepLink
+            .compactMap { $0 }
+            .first()
+            .sink { link in
+                if case .alertDetail(let event) = link, event.category == .tamper {
+                    exp.fulfill()
+                }
+            }
+            .store(in: &cancellables)
+        NotificationService.shared.routeNotification(userInfo: info)
+        wait(for: [exp], timeout: 1)
+    }
+
     // MARK: - PANIC_ALERT
 
     func testPanicAlert_navigatesToPanicView() {

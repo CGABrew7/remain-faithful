@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Group Setup Guide',
   description: 'A complete guide for pastors and ministry leaders on setting up a Remain Faithful accountability group.',
   robots: { index: false },
+  alternates: { canonical: 'https://remainfaithful.com/group-setup-guide' },
 }
 
 export default function GroupSetupGuidePage() {
@@ -49,7 +50,7 @@ export default function GroupSetupGuidePage() {
           {/* Section 1: What is Remain Faithful */}
           <GuideSection number="1" title="What Is Remain Faithful?">
             <p className="text-ink-soft leading-relaxed mb-4">
-              Remain Faithful (RF) is a free iOS app that provides peer accountability for adults committed to purity. Always-on Family Controls filtering blocks the apps and categories you choose and notifies partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods.
+              Remain Faithful (RF) is a free iOS app for adults who want peer accountability. You choose the apps and categories to block. They stay blocked all day. If a chosen app is used for a minute, the group can get one alert that day. Optional Deep Scan is separate and cannot see DRM streaming.
             </p>
             <p className="text-ink-soft leading-relaxed mb-6">
               Always-on filtering uses Apple Family Controls. It does not see screen content. Optional Deep Scan, if started, classifies non-DRM frames on-device. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.
@@ -155,7 +156,7 @@ export default function GroupSetupGuidePage() {
             </p>
             <div className="space-y-3 mb-6">
               {[
-                { label: 'What it does', text: 'Always-on filtering blocks chosen apps and categories and notifies the group when a blocked category is attempted. Optional Deep Scan adds on-device AI. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.' },
+                { label: 'What it does', text: 'You choose the apps and categories to block. They stay blocked all day. If a chosen app is used for a minute, the group can get one alert that day with the category and a short summary. Optional Deep Scan is separate. Screenshots and screen text stay on the phone.' },
                 { label: 'What you see', text: 'Alert metadata: timestamp, content category, severity, and a short system-generated summary. No screenshots. No browsing history. No raw screen content.' },
                 { label: 'The covenant', text: 'Everyone in the group, including you as leader, agrees to a covenant before gaining any access. This shapes how the group responds to alerts.' },
                 { label: 'It\'s voluntary', text: 'Monitoring can be paused or disabled at any time. Joining the group is a choice, not a requirement.' },
