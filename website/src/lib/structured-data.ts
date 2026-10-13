@@ -1,3 +1,5 @@
+import { COMPARE_UPDATED_ON } from '@/lib/competitor-pricing'
+
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -193,6 +195,7 @@ export function comparisonSchema(competitor: string) {
     name: `Remain Faithful vs ${competitor}: Detailed Comparison`,
     description: `An honest, detailed comparison of Remain Faithful and ${competitor} for Christian accountability.`,
     url: `https://remainfaithful.com/compare/${competitor.toLowerCase().replace(/\s+/g, '-')}`,
+    dateModified: COMPARE_UPDATED_ON,
     mainEntity: {
       '@type': 'ItemList',
       itemListElement: [

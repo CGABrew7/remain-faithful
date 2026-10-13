@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { comparisonSchema } from '@/lib/structured-data'
-import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
+import { COMPARE_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { UpdatedStamp } from '@/components/UpdatedStamp'
 
@@ -21,7 +21,7 @@ const pageFaqSchema = {
       name: 'Is Remain Faithful as effective as Covenant Eyes?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful and Covenant Eyes take different approaches. Covenant Eyes has 25 years of proven history and broad multi-platform coverage. Remain Faithful is newer but introduces on-device AI that keeps screen content entirely private, a covenant-based accountability model, and costs nothing. Effectiveness depends on what your situation requires.',
+        text: 'Remain Faithful is free and classifies on your iPhone. Screenshots never leave the device. Covenant Eyes, on its public Victory page, describes screenshot-based Screen Accountability on iOS, Android, Mac, and Windows, and says the mission started 25 years ago. The products take different approaches. Which one fits depends on the devices you need and whether a partner should see screenshots.',
       },
     },
     {
@@ -29,7 +29,7 @@ const pageFaqSchema = {
       name: 'Can I switch from Covenant Eyes to Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Cancel Covenant Eyes and set up Remain Faithful on iPhone (iOS 17+), then invite your partners. Remain Faithful is available for iPhone only; if your partners use Android, Windows, or Mac, Covenant Eyes may be the better fit for now.',
+        text: 'Yes. Cancel Covenant Eyes and set up Remain Faithful on iPhone (iOS 17+), then invite your partners. Remain Faithful is available for iPhone only. If your partners use Android, Windows, or Mac, Covenant Eyes covers those platforms and Remain Faithful does not yet.',
       },
     },
     {
@@ -37,7 +37,7 @@ const pageFaqSchema = {
       name: 'Does Remain Faithful work on the same devices as Covenant Eyes?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Covenant Eyes lists Screen Accountability on iOS, Android, Windows, and Mac. Their product page says Screen Accountability is not available on Chromebooks. Remain Faithful is available for iPhone (iOS 17+). Android is planned, with no launch date. If you need multi-platform coverage today, Covenant Eyes has the advantage.',
+        text: 'No. Covenant Eyes lists Screen Accountability on iOS 15.1+, Android 11+, Mac 11+, and Windows 10+. Their page says Screen Accountability is not available on Chromebooks, Kindle Fires, or Smart TVs. Remain Faithful is available for iPhone (iOS 17+). Android is planned, with no launch date. If you need those other platforms today, Covenant Eyes covers them and Remain Faithful does not.',
       },
     },
   ],
@@ -65,7 +65,7 @@ export default function CovenantEyesCompare() {
               Remain Faithful vs Covenant Eyes
             </h1>
             <p className="text-ink-soft text-lg leading-relaxed mb-4 text-pretty">
-              Both Remain Faithful and Covenant Eyes exist to help Christians pursue purity through accountability. They take different approaches: Covenant Eyes uses screenshot-based Screen Accountability sent to an ally; Remain Faithful classifies on-device and never transmits screenshots. This is an honest comparison so you can choose the right tool — not a claim that the products are feature-equivalent.
+              Remain Faithful is free. It classifies on your iPhone and never sends screenshots to a partner. Partners may receive a category, a severity, a timestamp, and a short system-generated summary. Covenant Eyes, on its public Victory page, describes screenshot-based Screen Accountability sent to an ally. This page is about that difference. It is not a claim that the products match.
             </p>
             <div className="p-5 rounded-sm border border-wax/25 bg-wax/5 text-sm text-ink-soft leading-relaxed">
               <strong className="text-wax">Disclosure:</strong> We built Remain Faithful, so we are biased. We will be transparent about where Covenant Eyes is stronger.
@@ -75,7 +75,7 @@ export default function CovenantEyesCompare() {
           {/* Comparison Table */}
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Side-by-Side Comparison</h2>
-            <p className="text-xs text-ink-faint mb-4">{COMPETITOR_PRICING_NOTE}</p>
+            <p className="text-xs text-ink-faint mb-4">{COMPARE_PRICING_NOTE}</p>
             <div className="overflow-x-auto rounded-sm border border-hairline">
               <table className="w-full text-sm">
                 <thead>
@@ -87,19 +87,19 @@ export default function CovenantEyesCompare() {
                 </thead>
                 <tbody>
                   {[
-                    ['Price', 'Free forever', '$18/mo or $198/yr (account, not per-user)'],
-                    ['Annual cost', '$0', '$198/yr (up to 10 members on one account)'],
-                    ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac'],
-                    ['Monitoring approach', 'On-device AI classification', 'Screen capture sent to an ally'],
-                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Yes. Screenshots sent to ally (they describe them as blurred/distorted; iOS lists Safari only).'],
-                    ['Where classification runs', 'Entirely on your device', 'Their stack analyzes captured screens'],
+                    ['Price', 'Free forever', '$18/month, $198/year, or $950 lifetime'],
+                    ['Who the price covers', '$0', 'One account: unlimited devices for up to 10 users in a family'],
+                    ['Platform', 'iOS 17+ (Android planned)', 'iOS 15.1+, Android 11+, Mac 11+, Windows 10+'],
+                    ['Monitoring approach', 'On-device AI classification', 'Screen Accountability: screenshots sent to an ally'],
+                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Yes. They say screenshots are sent to an ally, blurred, distorted, and encrypted, then deleted after 30 days. On iOS they list Safari only.'],
+                    ['Where classification runs', 'Entirely on your device', 'Screenshots are captured and sent to an ally'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Ally-based reports'],
-                    ['Church/group tools', 'Built-in group mode (up to 12)', 'Available with enterprise plan'],
-                    ['Content blocking', 'Yes, always-on Family Controls (adult self-monitor)', 'Yes, customizable filtering'],
-                    ['DRM streaming monitoring', 'No (iOS limitation)', 'No (iOS limitation)'],
-                    ['Established since', '2026', '2000'],
-                    ['User base', 'Available for iPhone (iOS 17+)', '1.7M+ people helped (verify on provider site)'],
+                    ['Household coverage', 'Built-in group mode (up to 12)', 'Public plans cover up to 10 users on one account'],
+                    ['Content blocking', 'Yes, always-on Family Controls (adult self-monitor)', 'Yes. They list blocking explicit domains and custom block/allow lists.'],
+                    ['DRM streaming monitoring', 'No (iOS limitation)', 'Not stated on their public Victory page'],
+                    ['Established since', '2026', 'Their site says the mission started 25 years ago'],
+                    ['User base', 'Available for iPhone (iOS 17+)', '1.7 million people, as stated on their site'],
                   ].map(([feature, rf, ce], i) => (
                     <tr key={i} className={`border-b border-hairline ${i % 2 === 0 ? 'bg-paper-deep' : 'bg-paper'}`}>
                       <td className="p-4 text-ink-soft font-medium">{feature}</td>
@@ -117,10 +117,10 @@ export default function CovenantEyesCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Covenant Eyes Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Platform coverage', body: 'Covenant Eyes lists Screen Accountability on iOS, Android, Windows, and Mac. Their product page says Screen Accountability is not available on Chromebooks, Kindle Fires, or Smart TVs. Remain Faithful is iOS only right now. If you or your partners use non-Apple devices, CE has the clear advantage.' },
-                { title: 'Track record', body: 'Covenant Eyes has been in operation since 2000 and publicly cites 1.7 million people helped (verify the current figure on their site). That is 25 years of proven history. Remain Faithful is newer and available for iPhone (iOS 17+). Maturity matters for trust.' },
-                { title: 'Content filtering', body: 'Covenant Eyes offers robust website and app blocking with granular category controls. Remain Faithful uses Apple Family Controls in the adult self-monitor (.individual) authorization to block chosen apps and categories. CE has a more mature filtering system overall.' },
-                { title: 'Enterprise and church administration', body: 'Covenant Eyes has mature organizational management tools designed for large-scale church or ministry deployments. For denominations or large organizations with IT requirements, CE has purpose-built infrastructure.' },
+                { title: 'Platform coverage', body: 'Covenant Eyes lists Screen Accountability and blocking on iOS 15.1+, Mac 11+, Android 11+, and Windows 10+. Their page says Screen Accountability is not available on Chromebooks, Kindle Fires, or Smart TVs. Remain Faithful is iPhone only (iOS 17+) right now. If you or your partners use those other platforms, Covenant Eyes covers them and Remain Faithful does not.' },
+                { title: 'Track record', body: 'Their site says the mission launched 25 years ago and cites 1.7 million people who have used Covenant Eyes. Remain Faithful is newer and available for iPhone (iOS 17+).' },
+                { title: 'Content blocking', body: 'Their device list includes blocking explicit domains and custom block/allow lists. On iOS they also say to couple that with Screen Time Limits and App Restrictions. Remain Faithful uses Apple Family Controls in the adult self-monitor (.individual) authorization to block chosen apps and categories.' },
+                { title: 'One account for a household', body: 'The public Victory pricing page says every plan covers unlimited devices for up to 10 individual users within a family. Remain Faithful includes group mode for up to 12 people and does not charge for it. That page does not list a separate enterprise price.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
                   <h3 className="font-semibold text-ink mb-2">{item.title}</h3>
@@ -135,8 +135,8 @@ export default function CovenantEyesCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Remain Faithful Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Price', body: 'Remain Faithful is free. Covenant Eyes publicly lists $18/month or $198/year for an account (up to 10 members) — not a per-user fee, and not multiplied by household size. There is no version of Covenant Eyes that is free; Remain Faithful is free without limitations. Verify current pricing on their site.' },
-                { title: 'Privacy: no screenshots ever leave your device', body: 'Covenant Eyes uses screenshot-based Screen Accountability: their site says Victory Shield takes screenshots and sends them to an ally (on iOS they list Safari only), and that those images are blurred, distorted, and encrypted. Remain Faithful classifies on-device. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. Your screen stays on your phone.' },
+                { title: 'Price', body: 'Remain Faithful is free. On 2026-10-13, the public Victory pricing page listed $18 per month, $198 per year (marked Popular), and a $950 one-time Lifetime payment (marked “Save 50% over 10 years”). The same page says all plans cover unlimited devices for up to 10 individual users within a family. That is an account price, not a per-person fee. The page also says to try it for 30 days, and a note excludes some in-app purchases from the money-back guarantee. Verify current amounts on their site.' },
+                { title: 'Privacy: screenshots stay on your iPhone', body: 'Remain Faithful classifies on-device. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. Covenant Eyes says Victory Shield takes screenshots and sends them to an ally. On iOS they list Safari only. They also say those images are blurred, distorted, and encrypted with AES 256-bit security, then deleted after 30 days.' },
                 { title: 'Partner protection', body: 'Covenant Eyes still sends screenshots to an ally, even when those images are described as blurred or distorted. Remain Faithful partners may receive a short system-generated summary in addition to category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content.' },
                 { title: 'Open source transparency', body: 'Anyone can read every line of Remain Faithful\'s code on GitHub and verify exactly what is and is not transmitted. Covenant Eyes is proprietary. For an app handling sensitive behavioral data, open source is a meaningful trust advantage.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds accountability in a biblical understanding of relationship rather than a surveillance model. Partners agree to respond with grace before they gain any access. This shapes how alerts are received and processed.' },
@@ -157,10 +157,9 @@ export default function CovenantEyesCompare() {
                 <ul className="space-y-2">
                   {[
                     'Need Windows, Mac, or Android coverage today',
-                    'Organizations with mature IT admin requirements',
-                    'Users who want multi-platform coverage and a proven 25-year track record',
-                    'Users whose partners prefer to see screenshots',
-                    'Large ministries needing enterprise management',
+                    'Want one paid account for up to 10 users in a family',
+                    'Want the multi-platform coverage and the 25-year history they state on their site',
+                    'Partners who prefer to see screenshots',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
                       <svg className="flex-shrink-0 mt-0.5 text-ink-soft" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -194,9 +193,9 @@ export default function CovenantEyesCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
-                { q: 'Is Remain Faithful as effective as Covenant Eyes?', a: 'Remain Faithful and Covenant Eyes take different approaches. Covenant Eyes has 25 years of proven history and broad multi-platform coverage. Remain Faithful is newer but introduces on-device AI that keeps screen content entirely private, a covenant-based accountability model, and costs nothing. Effectiveness depends on what your situation requires.' },
-                { q: 'Can I switch from Covenant Eyes to Remain Faithful?', a: 'Yes. Cancel Covenant Eyes and set up Remain Faithful on iPhone (iOS 17+), then invite your partners. Remain Faithful is available for iPhone only; if your partners use Android, Windows, or Mac, Covenant Eyes may be the better fit for now.' },
-                { q: 'Does Remain Faithful work on the same devices as Covenant Eyes?', a: 'No. Covenant Eyes lists Screen Accountability on iOS, Android, Windows, and Mac. Their product page says Screen Accountability is not available on Chromebooks. Remain Faithful is available for iPhone (iOS 17+). Android is planned, with no launch date. If you need multi-platform coverage today, Covenant Eyes has the advantage.' },
+                { q: 'Is Remain Faithful as effective as Covenant Eyes?', a: 'Remain Faithful is free and classifies on your iPhone. Screenshots never leave the device. Covenant Eyes, on its public Victory page, describes screenshot-based Screen Accountability on iOS, Android, Mac, and Windows, and says the mission started 25 years ago. The products take different approaches. Which one fits depends on the devices you need and whether a partner should see screenshots.' },
+                { q: 'Can I switch from Covenant Eyes to Remain Faithful?', a: 'Yes. Cancel Covenant Eyes and set up Remain Faithful on iPhone (iOS 17+), then invite your partners. Remain Faithful is available for iPhone only. If your partners use Android, Windows, or Mac, Covenant Eyes covers those platforms and Remain Faithful does not yet.' },
+                { q: 'Does Remain Faithful work on the same devices as Covenant Eyes?', a: 'No. Covenant Eyes lists Screen Accountability on iOS 15.1+, Android 11+, Mac 11+, and Windows 10+. Their page says Screen Accountability is not available on Chromebooks, Kindle Fires, or Smart TVs. Remain Faithful is available for iPhone (iOS 17+). Android is planned, with no launch date. If you need those other platforms today, Covenant Eyes covers them and Remain Faithful does not.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
                   <h3 className="font-semibold text-ink mb-3">{faq.q}</h3>

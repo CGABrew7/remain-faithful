@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { comparisonSchema } from '@/lib/structured-data'
-import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
+import { COMPARE_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { UpdatedStamp } from '@/components/UpdatedStamp'
 
@@ -21,7 +21,7 @@ const pageFaqSchema = {
       name: 'Does Accountable2You drain the battery?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, which has minimal battery impact.',
+        text: 'The Accountable2You pricing, features, and iOS pages checked on 2026-10-13 do not state a battery figure. Their iOS page says VPN technology records internet activity in Safari, Chrome, or any browser. Remain Faithful does not use a VPN. It uses Apple Family Controls for always-on filtering, with optional on-device classification.',
       },
     },
     {
@@ -29,7 +29,7 @@ const pageFaqSchema = {
       name: 'Can I switch from Accountable2You to Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Cancel Accountable2You, remove the VPN profile from your device, and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is available for iPhone only; if your partners use Android or Windows, Accountable2You has broader platform support.',
+        text: 'Yes. Cancel Accountable2You and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is iPhone only. Accountable2You lists iPhone, iPad, Android, Windows, Mac, Linux, and Chromebook. Their public pages checked on 2026-10-13 do not describe a required VPN-profile removal step.',
       },
     },
     {
@@ -65,7 +65,7 @@ export default function Accountable2YouCompare() {
               Remain Faithful vs Accountable2You
             </h1>
             <p className="text-ink-soft text-lg leading-relaxed mb-4 text-pretty">
-              Accountable2You takes a VPN-based approach to monitoring. Remain Faithful classifies on-device and never transmits screenshots. Accountable2You also says it does not capture screenshots — the honest difference is method and price, not a claim that Remain Faithful matches their browsing-history reports.
+              Remain Faithful is free. It classifies on your iPhone and never sends screenshots to a partner. On 2026-10-13, Accountable2You&apos;s public pricing page listed Personal at $11 per month or $121 per year ($10.08 per month, billed annually) and Family at $16 per month or $176 per year ($14.67 per month, billed annually). They say they do not capture screenshots. They do report browsing history, including Incognito, and full web page titles.
             </p>
             <div className="p-5 rounded-sm border border-wax/25 bg-wax/5 text-sm text-ink-soft leading-relaxed">
               <strong className="text-wax">Disclosure:</strong> We built Remain Faithful, so we are biased. We will be transparent about where Accountable2You is stronger.
@@ -75,7 +75,7 @@ export default function Accountable2YouCompare() {
           {/* Comparison Table */}
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Side-by-Side Comparison</h2>
-            <p className="text-xs text-ink-faint mb-4">{COMPETITOR_PRICING_NOTE}</p>
+            <p className="text-xs text-ink-faint mb-4">{COMPARE_PRICING_NOTE}</p>
             <div className="overflow-x-auto rounded-sm border border-hairline">
               <table className="w-full text-sm">
                 <thead>
@@ -87,18 +87,18 @@ export default function Accountable2YouCompare() {
                 </thead>
                 <tbody>
                   {[
-                    ['Price', 'Free forever', '$11/mo or $121/year Personal'],
-                    ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac, Linux, Chromebook'],
-                    ['Monitoring technology', 'Family Controls + optional on-device AI', 'VPN-based traffic monitoring'],
-                    ['Browsing history reported', 'No. No page titles or browsing history.', 'Yes. They report browsing history and activity, including Incognito.'],
-                    ['Battery impact', 'Minimal', 'Higher (VPN runs continuously)'],
-                    ['VPN required', 'No', 'Yes'],
-                    ['Where AI runs', 'Entirely on your device', 'Traffic routed through local VPN'],
+                    ['Price', 'Free forever', 'Personal: $11/month or $121/year ($10.08/month billed annually). Family: $16/month or $176/year ($14.67/month billed annually).'],
+                    ['Platform', 'iOS 17+ (Android planned)', 'iPhone, iPad, Android, Windows, Mac, Linux, Chromebook'],
+                    ['Monitoring technology', 'Family Controls + optional on-device AI', 'iOS page: VPN technology records browser activity. Features page: browsing history, app usage, and page titles.'],
+                    ['Browsing history reported', 'No. No page titles or browsing history.', 'Yes. Browsing history, including Incognito, and full web page titles.'],
+                    ['Screenshots shared?', 'Never. Category, severity, timestamp, and a short summary.', 'They say they do not capture screenshots.'],
+                    ['VPN', 'No', 'Named on their iOS page for recording browser activity.'],
+                    ['Where AI runs', 'Entirely on your device', 'Not described as on-device AI on the public pages we checked'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
-                    ['Partner data shared', 'Category, severity, timestamp, and a short system-generated summary', 'Activity reports and alerts (they say no screenshots)'],
+                    ['Partner data shared', 'Category, severity, timestamp, and a short system-generated summary', 'Activity reports and alerts. They say no screenshots. Partners can be set to full reports or alerts only.'],
                     ['Accountability model', 'Covenant-based partnership', 'Report-based accountability'],
-                    ['Group mode', 'Yes, up to 12 members', 'Yes'],
-                    ['DRM streaming monitoring', 'No (iOS limitation)', 'No'],
+                    ['Group / family', 'Yes, up to 12 members', 'Family: parent and child accounts, up to 20 installs. Personal: up to 6 installs.'],
+                    ['Content blocking', 'Yes, always-on Family Controls', 'Their pricing FAQ says they do not block websites or filter content.'],
                   ].map(([feature, rf, a2y], i) => (
                     <tr key={i} className={`border-b border-hairline ${i % 2 === 0 ? 'bg-paper-deep' : 'bg-paper'}`}>
                       <td className="p-4 text-ink-soft font-medium">{feature}</td>
@@ -116,9 +116,9 @@ export default function Accountable2YouCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Accountable2You Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Cross-platform coverage', body: 'Accountable2You lists Android, iOS, Windows, Mac, Linux, and Chromebook. Remain Faithful is currently iOS only. For people with mixed devices, A2Y provides unified coverage across platforms Remain Faithful does not ship on yet.' },
-                { title: 'Detailed web activity reporting', body: 'Accountable2You reports internet browsing history (including Incognito, per their site) plus app and device usage. If your accountability partner or pastor wants that granular visibility, A2Y provides more browsing detail than Remain Faithful\'s category-level alerts. Remain Faithful does not claim that same report.' },
-                { title: 'Established track record', body: 'Accountable2You has been in operation for years with a larger installed base. Remain Faithful is newer and available for iPhone (iOS 17+). For users who want a longer track record, A2Y has an advantage in maturity.' },
+                { title: 'Cross-platform coverage', body: 'Accountable2You lists iPhone, iPad, Android, Windows, Mac, Linux, and Chromebook. Remain Faithful is iPhone only right now. For mixed devices, Accountable2You covers platforms Remain Faithful does not ship on yet.' },
+                { title: 'Detailed web activity reporting', body: 'Their features page says reports include full web page titles, and that Incognito and private browsing are visible to partners. Their monitoring page says iOS app usage is limited compared with other platforms. If a partner wants that browsing detail, Accountable2You describes more of it than Remain Faithful’s category, severity, timestamp, and short summary.' },
+                { title: 'Family and personal install limits', body: 'The public pricing page lists a Family plan with up to 20 active installs, parent and child accounts, and time-monitoring alerts, and a Personal plan with up to 6 active installs and unlimited partners. Remain Faithful does not publish a paid family tier. Its group mode is included at no charge, up to 12 members.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
                   <h3 className="font-semibold text-ink mb-2">{item.title}</h3>
@@ -133,10 +133,10 @@ export default function Accountable2YouCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Remain Faithful Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Price', body: 'Remain Faithful is free. Accountable2You publicly lists $11 per month or $121 per year for the Personal plan. For individuals or churches deploying accountability tools at scale, free is a meaningful difference. Verify current pricing on their site.' },
-                { title: 'No VPN required: better battery life', body: 'Accountable2You routes traffic through a local VPN to monitor it. This has two downsides: it drains battery more quickly, and it can conflict with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, with optional on-device AI, minimal battery impact, and no VPN conflicts.' },
-                { title: 'On-device AI when you opt in', body: 'VPN-based monitoring cannot see inside encrypted HTTPS traffic or monitor what happens inside apps. Remain Faithful\'s optional Deep Scan classifies non-DRM screen frames on-device. It cannot see DRM-protected video or banking apps (Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames). Always-on filtering and usage monitoring do not look at screen content.' },
-                { title: 'Partner privacy: no browsing history', body: 'Accountable2You shares browsing-history and activity reports with partners, and they state they do not capture screenshots. Some find that level of detail helpful; others consider it overly exposing. Remain Faithful may share a short system-generated summary in addition to category, severity, and timestamp — not page titles, screenshots, or raw content — so a conversation can start without exposing browsing history.' },
+                { title: 'Price', body: 'Remain Faithful is free. On 2026-10-13, Accountable2You’s public pricing page listed Personal at $11 per month or $121 per year ($10.08 USD per month, billed annually) and Family at $16 per month or $176 per year ($14.67 USD per month, billed annually). The annual cards say “GET 1 MONTH FREE.” The page offers a 10-day free trial. Verify current amounts on their site.' },
+                { title: 'On-device classification, no VPN in Remain Faithful', body: 'Remain Faithful uses Apple Family Controls for always-on filtering, with optional on-device AI. Screenshots stay on the phone. Accountable2You’s iOS page says their VPN technology records internet activity in Safari, Chrome, or any browser. Their public pages checked that day do not state a battery figure. Their pricing FAQ says they do not block or filter content, and that they do not capture screenshots.' },
+                { title: 'On-device AI when you opt in', body: 'Remain Faithful’s optional Deep Scan classifies non-DRM screen frames on-device. It cannot see DRM-protected video or banking apps (Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames). Always-on filtering and usage monitoring do not look at screen content. Accountable2You’s public pages describe browsing history, page titles, and app usage. They do not describe on-device screen classification.' },
+                { title: 'What partners receive', body: 'Accountable2You’s features page says partners can see full web page titles and Incognito browsing, and their pricing FAQ says they do not capture screenshots. You can set a partner to full activity reports or alerts only. Remain Faithful may share a short system-generated summary in addition to category, severity, and timestamp. Partners do not receive page titles, screenshots, or raw screen content.' },
                 { title: 'Open source', body: 'Remain Faithful\'s entire codebase is publicly available for inspection. Accountable2You is proprietary. Anyone can verify what Remain Faithful does and does not transmit.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-wax/25 bg-paper-deep">
@@ -154,10 +154,9 @@ export default function Accountable2YouCompare() {
                 <h2 className="font-serif text-lg font-bold text-ink mb-4">Who Should Choose Accountable2You</h2>
                 <ul className="space-y-2">
                   {[
-                    'Need Android, Windows, Mac, Linux, or Chromebook coverage',
-                    'Partners want detailed browsing-history reports',
-                    'Happy to pay a yearly subscription for a proven solution',
-                    'No concerns about VPN battery drain or conflicts',
+                    'Need iPad, Android, Windows, Mac, Linux, or Chromebook coverage',
+                    'Partners want browsing-history reports and page titles',
+                    'The public Personal or Family price fits the household',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
                       <svg className="flex-shrink-0 mt-0.5 text-ink-soft" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -170,12 +169,11 @@ export default function Accountable2YouCompare() {
                 <h2 className="font-serif text-lg font-bold text-ink mb-4">Who Should Choose Remain Faithful</h2>
                 <ul className="space-y-2">
                   {[
-                    'iPhone users who want on-device AI at zero cost',
-                    'Anyone on a corporate or school VPN',
-                    'Those who want battery-efficient monitoring',
-                    'People who prefer category alerts over browsing-history logs',
+                    'iPhone users who want on-device classification at no cost',
+                    'People who do not want browsing history or page titles sent to a partner',
+                    'People who do not want screenshots sent to a partner',
                     'Those who value open-source verification',
-                    'Churches needing free group accountability tools',
+                    'Churches using the included group mode (up to 12)',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
                       <svg className="flex-shrink-0 mt-0.5 text-wax" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -192,8 +190,8 @@ export default function Accountable2YouCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
-                { q: 'Does Accountable2You drain the battery?', a: 'Accountable2You uses a VPN-based monitoring approach, which routes device traffic through a local VPN. This approach can increase battery drain and occasionally causes conflicts with corporate or school VPN configurations. Remain Faithful uses Apple Family Controls for always-on filtering, which has minimal battery impact.' },
-                { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'Yes. Cancel Accountable2You, remove the VPN profile from your device, and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is available for iPhone only; if your partners use Android or Windows, Accountable2You has broader platform support.' },
+                { q: 'Does Accountable2You drain the battery?', a: 'The Accountable2You pricing, features, and iOS pages checked on 2026-10-13 do not state a battery figure. Their iOS page says VPN technology records internet activity in Safari, Chrome, or any browser. Remain Faithful does not use a VPN. It uses Apple Family Controls for always-on filtering, with optional on-device classification.' },
+                { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'Yes. Cancel Accountable2You and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is iPhone only. Accountable2You lists iPhone, iPad, Android, Windows, Mac, Linux, and Chromebook. Their public pages checked on 2026-10-13 do not describe a required VPN-profile removal step.' },
                 { q: 'Does Remain Faithful log specific web page titles like Accountable2You?', a: 'No. Remain Faithful does not log or transmit web page titles or browsing history. Partners may receive a short system-generated summary in addition to category, severity, and timestamp when something is flagged — not page titles. Accountable2You reports browsing history and activity (including Incognito, per their site), which can expose more detail than some users want their partners to see.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
