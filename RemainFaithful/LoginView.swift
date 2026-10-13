@@ -28,7 +28,7 @@ struct LoginView: View {
     private let googleSignInEnabled = false
 
     private var canSubmit: Bool {
-        email.contains("@") && email.contains(".") && password.count >= 8 && !isLoading
+        email.contains("@") && email.contains(".") && !password.isEmpty && !isLoading
     }
 
     var body: some View {
@@ -77,7 +77,7 @@ struct LoginView: View {
         .animation(.easeInOut(duration: 0.2), value: errorMsg)
         .sheet(isPresented: $showForgotPassword) {
             ForgotPasswordSheet()
-                .presentationDetents([.height(340)])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.hidden)
         }
         .fullScreenCover(isPresented: $showCreateAccount) {
@@ -85,12 +85,8 @@ struct LoginView: View {
         }
         .overlay(alignment: .topLeading) {
             if showDismissButton {
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(Color.white.opacity(0.55))
-                        .padding(20)
-                }
+                RFCloseButton { dismiss() }
+                    .padding(8)
             }
         }
     }
@@ -110,13 +106,15 @@ struct LoginView: View {
                     .font(.system(size: 32, weight: .medium))
                     .foregroundStyle(Color.rfGold)
             }
+            .accessibilityHidden(true)
             VStack(spacing: 6) {
                 Text("Welcome Back")
-                    .font(.system(size: 30, weight: .bold, design: .serif))
+                    .font(.largeTitle.bold())
+                    .fontDesign(.serif)
                     .foregroundStyle(.white)
                 Text("Sign in to continue your journey")
-                    .font(.system(size: 15))
-                    .foregroundStyle(Color.white.opacity(0.55))
+                    .font(.body)
+                    .foregroundStyle(Color.white.opacity(0.72))
             }
         }
     }
@@ -165,24 +163,12 @@ struct LoginView: View {
     // MARK: - Sign In button
 
     private var signInButton: some View {
-        Button(action: signIn) {
-            Group {
-                if isLoading {
-                    ProgressView().tint(Color.rfNavy)
-                } else {
-                    Text("Sign In")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(canSubmit ? Color.rfNavy : Color.white.opacity(0.35))
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(canSubmit ? Color.rfGold : Color.white.opacity(0.08))
-            )
-        }
-        .disabled(!canSubmit)
+        RFButton(
+            title: isLoading ? "Signing in…" : "Sign In",
+            isEnabled: canSubmit,
+            isLoading: isLoading,
+            action: signIn
+        )
     }
 
     // MARK: - Forgot password
@@ -190,8 +176,9 @@ struct LoginView: View {
     private var forgotPasswordButton: some View {
         Button { showForgotPassword = true } label: {
             Text("Forgot Password?")
-                .font(.system(size: 14))
-                .foregroundStyle(Color.rfGold.opacity(0.80))
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color.rfGold)
+                .frame(minHeight: 44)
         }
     }
 
@@ -310,7 +297,7 @@ struct LoginView: View {
                 }
             } catch let e as APIError {
                 await MainActor.run {
-                    errorMsg  = e.errorDescription
+                    errorMsg  = UserFacingError.message(for: e)
                     isLoading = false
                 }
             } catch {
@@ -356,7 +343,7 @@ struct LoginView: View {
                     }
                 } catch {
                     await MainActor.run {
-                        errorMsg  = "Apple Sign In failed — \(error.localizedDescription)"
+                        errorMsg  = "Apple Sign In failed. \(UserFacingError.message(for: error))"
                         isLoading = false
                     }
                 }
@@ -383,7 +370,7 @@ struct LoginView: View {
         GIDSignIn.sharedInstance.signIn(withPresenting: rootVC) { result, error in
             if let error {
                 DispatchQueue.main.async {
-                    errorMsg  = "Google Sign In failed — \(error.localizedDescription)"
+                    errorMsg  = "Google Sign In failed. \(UserFacingError.message(for: error))"
                     isLoading = false
                 }
                 return
@@ -406,7 +393,7 @@ struct LoginView: View {
                     }
                 } catch {
                     await MainActor.run {
-                        errorMsg  = "Google Sign In failed — \(error.localizedDescription)"
+                        errorMsg  = "Google Sign In failed. \(UserFacingError.message(for: error))"
                         isLoading = false
                     }
                 }
@@ -445,13 +432,7 @@ private struct ForgotPasswordSheet: View {
                             .foregroundStyle(Color.white.opacity(0.45))
                     }
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.55))
-                            .padding(10)
-                            .background(Circle().fill(Color.white.opacity(0.09)))
-                    }
+                    RFCloseButton { dismiss() }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
@@ -467,10 +448,11 @@ private struct ForgotPasswordSheet: View {
                         Text("Check your email")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(.white)
-                        Text("If an account exists for \(email),\nyou'll receive a reset link shortly.")
-                            .font(.system(size: 14))
-                            .foregroundStyle(Color.white.opacity(0.55))
+                        Text("If an account exists for \(email), you'll get an email with a link to remainfaithful.com/reset-password. Open that page on this phone. The link works for one hour.")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.white.opacity(0.78))
                             .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.horizontal, 24)
                 } else {
@@ -499,18 +481,12 @@ private struct ForgotPasswordSheet: View {
                                 .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
                         }
 
-                        Button(action: sendReset) {
-                            Text(isLoading ? "Sending…" : "Send Reset Link")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(canSend ? Color.rfNavy : Color.white.opacity(0.35))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 54)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .fill(canSend ? Color.rfGold : Color.white.opacity(0.08))
-                                )
-                        }
-                        .disabled(!canSend)
+                        RFButton(
+                            title: isLoading ? "Sending…" : "Send Reset Link",
+                            isEnabled: canSend,
+                            isLoading: isLoading,
+                            action: sendReset
+                        )
                     }
                     .padding(.horizontal, 24)
                 }
@@ -534,7 +510,7 @@ private struct ForgotPasswordSheet: View {
                 await MainActor.run { sent = true }
             } catch {
                 await MainActor.run {
-                    errorMsg  = "Failed to send reset link — check your connection"
+                    errorMsg  = "Couldn't send the reset email. Check your connection and try again."
                     isLoading = false
                 }
             }
@@ -548,7 +524,7 @@ private extension View {
     func loginFieldStyle(isFocused: Bool) -> some View {
         self
             .padding(.horizontal, 18)
-            .frame(height: 56)
+            .frame(minHeight: 44)
             .background(
                 RoundedRectangle(cornerRadius: 14)
                     .fill(Color.white.opacity(isFocused ? 0.11 : 0.07))

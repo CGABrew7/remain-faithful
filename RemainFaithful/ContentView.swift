@@ -78,11 +78,6 @@ struct ContentView: View {
         .onReceive(appState.$deepLink.compactMap { $0 }) { link in
             handleDeepLink(link)
         }
-        // Mark alerts seen and clear badge when user lands on Home
-        .onChange(of: selectedTab) { _, newTab in
-            if newTab == 0 { markSeenAndClearBadge() }
-        }
-        // Refresh unread count each time the app comes to the foreground
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 Task { await presentTourIfNeeded(replay: false) }
@@ -91,8 +86,6 @@ struct ContentView: View {
             Task {
                 let count = (try? await APIClient.shared.alertUnreadCount()) ?? 0
                 appState.unreadAlertCount = count
-                // Auto-clear badge if user is already on Home tab
-                if selectedTab == 0 && count > 0 { markSeenAndClearBadge() }
             }
         }
         .onAppear {
@@ -161,11 +154,6 @@ struct ContentView: View {
         tourStep = 0
         tourVisible = true
         focusTourStep()
-    }
-
-    private func markSeenAndClearBadge() {
-        appState.resetUnreadCount()
-        Task { try? await APIClient.shared.markAlertsSeen() }
     }
 
     private func handleDeepLink(_ link: DeepLink) {

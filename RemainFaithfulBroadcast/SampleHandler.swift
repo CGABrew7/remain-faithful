@@ -141,15 +141,56 @@ private struct Tier1Rules {
         "\\b(gambling|wager|bovada|pokerstars|blackjack|roulette|murder.?video)\\b",
     ].compactMap { try? NSRegularExpression(pattern: $0, options: .caseInsensitive) }
 
-    static func matchesURL(_ domain: String) -> Bool {
+    private static let gamblingHosts: Set<String> = [
+        "bovada.lv", "bet365.com", "draftkings.com", "fanduel.com",
+        "pokerstars.com", "betmgm.com", "barstoolsportsbook.com",
+    ]
+    private static let violenceHosts: Set<String> = [
+        "bestgore.com", "liveleak.com",
+    ]
+
+    static func category(forDomain domain: String) -> ContentCategory? {
         let clean = domain.hasPrefix("www.") ? String(domain.dropFirst(4)) : domain
-        return urlBlocklist.contains { clean == $0 || clean.hasSuffix("." + $0) }
+        func listed(_ hosts: Set<String>) -> Bool {
+            hosts.contains { clean == $0 || clean.hasSuffix("." + $0) }
+        }
+        if listed(gamblingHosts) { return .gambling }
+        if listed(violenceHosts) { return .violence }
+        let adult = urlBlocklist.subtracting(gamblingHosts).subtracting(violenceHosts)
+        if listed(adult) { return .explicitSexual }
+        return nil
     }
 
-    static func matchesKeyword(in text: String) -> Bool {
+    /// Pattern 8 also matches "murder video". That phrase is violence, so it
+    /// is classified before the gambling group can claim it.
+    private static let murderVideoPattern = try? NSRegularExpression(
+        pattern: "\\bmurder.?video\\b",
+        options: .caseInsensitive
+    )
+
+    /// Self-harm is checked before violence, then gambling, then adult content,
+    /// so a suicide phrase is not stored as adult content.
+    static func categoryForKeyword(in text: String) -> ContentCategory? {
         let lower = text.lowercased()
         let range = NSRange(lower.startIndex..., in: lower)
-        return keywordPatterns.contains { $0.firstMatch(in: lower, options: [], range: range) != nil }
+        if let murderVideoPattern,
+           murderVideoPattern.firstMatch(in: lower, options: [], range: range) != nil {
+            return .violence
+        }
+        let groups: [(ContentCategory, [Int])] = [
+            (.selfHarm, [7]),
+            (.violence, [6]),
+            (.gambling, [5, 8]),
+            (.explicitSexual, [0, 1, 2, 3, 4]),
+        ]
+        for (category, indexes) in groups {
+            for index in indexes where keywordPatterns.indices.contains(index) {
+                if keywordPatterns[index].firstMatch(in: lower, options: [], range: range) != nil {
+                    return category
+                }
+            }
+        }
+        return nil
     }
 }
 
@@ -449,21 +490,22 @@ class SampleHandler: RPBroadcastSampleHandler {
             // handler, request, and all VN objects go out of scope here and are released
             return result
         }
-        logger.info("OCR: \(ocrText.count) chars — \(String(ocrText.prefix(80)).debugDescription)")
+        logger.info("OCR: \(ocrText.count) chars")
 
         // ——— TIER 1b: URL + keyword check on extracted text ———
         var tier1Triggered = false
         let domains = extractDomains(from: ocrText)
-        for domain in domains where Tier1Rules.matchesURL(domain) {
-            logger.warning("Tier 1 URL match: \(domain)")
-            await handleEvent(makeEvent(category: .explicitSexual, tier: 1, confidence: 1.0,
-                                        summary: "Blocked domain detected"))
+        for domain in domains {
+            guard let category = Tier1Rules.category(forDomain: domain) else { continue }
+            logger.warning("Tier 1 URL match category=\(category.rawValue, privacy: .public)")
+            await handleEvent(makeEvent(category: category, tier: 1, confidence: 1.0,
+                                        summary: summaryForTier1(category)))
             tier1Triggered = true
         }
-        if !tier1Triggered && Tier1Rules.matchesKeyword(in: ocrText) {
-            logger.warning("Tier 1 keyword match: \(String(ocrText.prefix(80)))")
-            await handleEvent(makeEvent(category: .explicitSexual, tier: 1, confidence: 0.95,
-                                        summary: "Explicit keyword detected in screen text"))
+        if !tier1Triggered, let category = Tier1Rules.categoryForKeyword(in: ocrText) {
+            logger.warning("Tier 1 keyword match category=\(category.rawValue, privacy: .public)")
+            await handleEvent(makeEvent(category: category, tier: 1, confidence: 0.95,
+                                        summary: summaryForTier1(category)))
             tier1Triggered = true
         }
 
@@ -558,11 +600,14 @@ class SampleHandler: RPBroadcastSampleHandler {
         req.httpBody = data
         do {
             let (_, resp) = try await URLSession.shared.data(for: req)
-            if let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) {
-                logger.info("Event uploaded: \(event.category) \(event.severity)")
-                return true
+            if let http = resp as? HTTPURLResponse {
+                if http.statusCode == 401 { noteExtensionSignedOut() }
+                if (200...299).contains(http.statusCode) {
+                    logger.info("Event uploaded: \(event.category) \(event.severity)")
+                    return true
+                }
+                logger.warning("Event upload HTTP \(http.statusCode)")
             }
-            logger.warning("Event upload HTTP \((resp as? HTTPURLResponse)?.statusCode ?? 0)")
             return false
         } catch {
             logger.warning("Event upload network error: \(error.localizedDescription)")
@@ -631,7 +676,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     private func flushContinuedActivity() async {
         let expired = await dedupStore.drainExpired()
         for (cat, _, count) in expired {
-            let category = ContentCategory(rawValue: cat) ?? .explicitSexual
+            guard let category = ContentCategory(rawValue: cat) else { continue }
             let summary  = continuedActivitySummary(category: category, count: count + 1)
             logger.info("Continued-activity: \(summary)")
             await postEvent(makeEvent(category: category, tier: 2, confidence: 0.85, summary: summary))
@@ -709,7 +754,23 @@ class SampleHandler: RPBroadcastSampleHandler {
         req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": screen])
         if let (_, resp) = try? await URLSession.shared.data(for: req),
            let http = resp as? HTTPURLResponse {
+            if http.statusCode == 401 { noteExtensionSignedOut() }
             logger.info("Heartbeat response: \(http.statusCode)")
+        }
+    }
+
+    private func noteExtensionSignedOut() {
+        sharedDefaults?.set(true, forKey: "extensionAuthFailed")
+        logger.error("Extension token rejected. Deep Scan uploads have stopped until the app signs in again.")
+    }
+
+    private func summaryForTier1(_ category: ContentCategory) -> String {
+        switch category {
+        case .explicitSexual: return "Adult content flagged on screen"
+        case .gambling: return "Gambling flagged on screen"
+        case .violence: return "Violence flagged on screen"
+        case .selfHarm: return "Self-harm content flagged on screen"
+        case .clean: return "Content reviewed"
         }
     }
 

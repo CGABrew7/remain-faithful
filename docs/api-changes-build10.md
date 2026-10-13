@@ -115,7 +115,7 @@ Pending lists only include invites from the last 7 days addressed to the signed-
 
 ## Alerts and protection
 
-`POST /protection/alerts` body is unchanged: `{ "alert_type": "...", "detail": "..." }`. `detail` is not copied into the push body.
+`POST /protection/alerts` body is `{ "type": "...", "detail": "..." }`. The JSON key is `type` (what build 9 already sends). The stored column and the `GET /alerts` field stay `alert_type`. `detail` is not copied into the push body.
 
 Client types the server accepts:
 

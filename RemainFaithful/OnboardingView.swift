@@ -1,12 +1,8 @@
 import SwiftUI
+import FamilyControls
 
-// MARK: - Color palette
-
-extension Color {
-    static let rfNavy    = Color(red: 0.07, green: 0.13, blue: 0.30)
-    static let rfNavyMid = Color(red: 0.11, green: 0.19, blue: 0.40)
-    static let rfGold    = Color(red: 0.82, green: 0.67, blue: 0.30)
-}
+// The navy and gold palette now lives in RFTheme.swift alongside the shared
+// surface, button and toggle styles. Values are unchanged.
 
 // MARK: - Container
 
@@ -22,8 +18,8 @@ struct OnboardingView: View {
     @State private var email    = ""
     @State private var password = ""
 
-    // Total visible steps (step 0 = welcome, hidden from dots)
-    private let totalSteps = 4
+    // Welcome is step 0 and is hidden from the dots.
+    private let totalSteps = 5
 
     var body: some View {
         ZStack {
@@ -54,8 +50,11 @@ struct OnboardingView: View {
                     case 2:
                         InvitePartnerStep(onContinue: advance, onSkip: advance)
                             .transition(.push(from: .trailing))
+                    case 3:
+                        MonitoringSetupStep(onContinue: advance, onSkip: advance)
+                            .transition(.push(from: .trailing))
                     default:
-                        MonitoringSetupStep {
+                        AppPickerStep {
                             hasCompletedOnboarding = true
                         }
                         .transition(.push(from: .trailing))
@@ -66,12 +65,8 @@ struct OnboardingView: View {
         }
         .overlay(alignment: .topLeading) {
             if showDismissButton {
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(Color.white.opacity(0.55))
-                        .padding(20)
-                }
+                RFCloseButton { dismiss() }
+                    .padding(8)
             }
         }
         .fullScreenCover(isPresented: $showLogin) {
@@ -117,12 +112,15 @@ private struct WelcomeStep: View {
                     .font(.system(size: 54, weight: .medium))
                     .foregroundStyle(Color.rfGold)
             }
+            .accessibilityHidden(true)
             .padding(.bottom, 44)
 
             Text("Remain Faithful")
-                .font(.system(size: 36, weight: .bold, design: .serif))
+                .font(.largeTitle.bold())
+                .fontDesign(.serif)
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
 
             // Decorative rule
             HStack(spacing: 12) {
@@ -142,8 +140,9 @@ private struct WelcomeStep: View {
                 .lineSpacing(5)
 
             Text("\"But you must remain faithful to the things you have been taught.\"  —  2 Timothy 3:14")
-                .font(.system(size: 12, weight: .regular, design: .serif))
-                .foregroundStyle(Color.white.opacity(0.38))
+                .font(.footnote)
+                .fontDesign(.serif)
+                .foregroundStyle(Color.white.opacity(0.72))
                 .multilineTextAlignment(.center)
                 .padding(.top, 24)
 
@@ -186,13 +185,16 @@ private struct CreateAccountStep: View {
     @FocusState private var focused: Field?
     @State private var isLoading  = false
     @State private var errorMsg: String?
+    @State private var isAdult = false
+    @State private var showPassword = false
 
     private enum Field { case name, email, password }
 
     private var canSubmit: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty
             && email.contains("@") && email.contains(".")
-            && password.count >= 8
+            && PasswordRules.isMet(password)
+            && isAdult
             && !isLoading
     }
 
@@ -249,17 +251,58 @@ private struct CreateAccountStep: View {
                 HStack(spacing: 12) {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 15))
-                        .foregroundStyle(focused == .password ? Color.rfGold : Color.white.opacity(0.45))
+                        .foregroundStyle(focused == .password ? Color.rfGold : Color.white.opacity(0.55))
                         .frame(width: 22)
-                    SecureField("", text: $password,
-                                prompt: Text("Password (8+ characters)").foregroundColor(Color.white.opacity(0.38)))
-                        .textContentType(.password)
-                        .foregroundStyle(.white)
-                        .focused($focused, equals: .password)
-                        .submitLabel(.done)
-                        .accessibilityIdentifier("password-field")
+                    Group {
+                        if showPassword {
+                            TextField("", text: $password,
+                                      prompt: Text("Password").foregroundColor(Color.white.opacity(0.55)))
+                        } else {
+                            SecureField("", text: $password,
+                                        prompt: Text("Password").foregroundColor(Color.white.opacity(0.55)))
+                        }
+                    }
+                    .textContentType(.newPassword)
+                    .foregroundStyle(.white)
+                    .focused($focused, equals: .password)
+                    .submitLabel(.done)
+                    .accessibilityIdentifier("password-field")
+                    Button {
+                        showPassword.toggle()
+                    } label: {
+                        Image(systemName: showPassword ? "eye.slash" : "eye")
+                            .frame(width: 44, height: 44)
+                    }
+                    .foregroundStyle(Color.white.opacity(0.72))
+                    .accessibilityLabel(showPassword ? "Hide password" : "Show password")
                 }
                 .fieldStyle(isFocused: focused == .password)
+
+                Text(PasswordRules.helper(password))
+                    .font(.footnote)
+                    .foregroundStyle(PasswordRules.isMet(password) ? Color(red: 0.55, green: 0.85, blue: 0.55) : Color.white.opacity(0.72))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityLabel(PasswordRules.helper(password))
+
+                Button {
+                    isAdult.toggle()
+                } label: {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: isAdult ? "checkmark.square.fill" : "square")
+                            .font(.title3)
+                            .foregroundStyle(isAdult ? Color.rfGold : Color.white.opacity(0.72))
+                            .frame(width: 44, height: 44)
+                        Text("I am 18 or older, and I am setting this up for myself.")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.white.opacity(0.85))
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 10)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("I am 18 or older, and I am setting this up for myself")
+                .accessibilityValue(isAdult ? "Checked" : "Unchecked")
             }
 
             // Inline API error
@@ -272,18 +315,27 @@ private struct CreateAccountStep: View {
                     .transition(.opacity)
             }
 
-            Text("By continuing you agree to our Terms of Service\nand Privacy Policy.")
-                .font(.system(size: 11))
-                .foregroundStyle(Color.white.opacity(0.30))
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 16)
+            VStack(spacing: 4) {
+                Text("By continuing you agree to our")
+                    .foregroundStyle(Color.white.opacity(0.72))
+                HStack(spacing: 6) {
+                    Link("Terms of Service", destination: URL(string: "https://remainfaithful.com/terms")!)
+                    Text("and")
+                        .foregroundStyle(Color.white.opacity(0.72))
+                    Link("Privacy Policy", destination: URL(string: "https://remainfaithful.com/privacy")!)
+                }
+            }
+            .font(.footnote)
+            .tint(Color.rfGold)
+            .multilineTextAlignment(.center)
+            .padding(.top, 16)
 
             Spacer()
 
             RFButton(
                 title: isLoading ? "Creating account…" : "Get Started",
                 isEnabled: canSubmit,
+                isLoading: isLoading,
                 action: submit
             )
             .padding(.bottom, 52)
@@ -305,11 +357,7 @@ private struct CreateAccountStep: View {
                 await MainActor.run { onComplete() }
             } catch let e as APIError {
                 await MainActor.run {
-                    if case .server(let msg) = e {
-                        errorMsg = msg
-                    } else {
-                        errorMsg = e.localizedDescription
-                    }
+                    errorMsg = UserFacingError.message(for: e)
                     isLoading = false
                 }
             } catch {
@@ -331,13 +379,13 @@ private struct InvitePartnerStep: View {
     @FocusState private var emailFocused: Bool
     @State private var partnerEmail = ""
     @State private var isSending    = false
-    @State private var didSend      = false
+    @State private var resultMessage: String?
     @State private var errorMsg: String?
 
     private let green = Color(red: 0.20, green: 0.78, blue: 0.45)
 
     private var canSend: Bool {
-        partnerEmail.contains("@") && partnerEmail.contains(".") && !isSending && !didSend
+        partnerEmail.contains("@") && partnerEmail.contains(".") && !isSending && resultMessage == nil
     }
 
     var body: some View {
@@ -356,7 +404,7 @@ private struct InvitePartnerStep: View {
 
             stepHeader(
                 title: "Invite your\naccountability partner",
-                subtitle: "Accountability works best with a trusted friend"
+                subtitle: "If someone already invited you, accept it in Settings after you sign in. You don't have to invite them back."
             )
             .padding(.bottom, 32)
 
@@ -368,7 +416,7 @@ private struct InvitePartnerStep: View {
                         .frame(width: 22)
                     TextField("", text: $partnerEmail,
                               prompt: Text("Partner's email address")
-                                  .foregroundColor(Color.white.opacity(0.38)))
+                                  .foregroundColor(Color.white.opacity(0.72)))
                         .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -386,21 +434,30 @@ private struct InvitePartnerStep: View {
                         .transition(.opacity)
                 }
 
-                RFButton(
-                    title: didSend ? "Invitation Sent!" : (isSending ? "Sending…" : "Send Invitation"),
-                    isEnabled: didSend || canSend
-                ) {
-                    didSend ? onContinue() : sendInvite()
+                if let resultMessage {
+                    Text(resultMessage)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.white.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    RFButton(title: "Continue", action: onContinue)
+                } else {
+                    RFButton(
+                        title: isSending ? "Sending…" : "Send Invitation",
+                        isEnabled: canSend,
+                        isLoading: isSending,
+                        action: sendInvite
+                    )
                 }
-                .animation(.easeInOut(duration: 0.2), value: didSend)
             }
 
             Spacer()
 
             Button(action: onSkip) {
                 Text("Skip for now")
-                    .font(.system(size: 15))
-                    .foregroundStyle(Color.white.opacity(0.40))
+                    .font(.body)
+                    .foregroundStyle(Color.white.opacity(0.72))
+                    .frame(minHeight: 44)
             }
             .padding(.bottom, 48)
         }
@@ -416,15 +473,15 @@ private struct InvitePartnerStep: View {
         let addr = partnerEmail.trimmingCharacters(in: .whitespaces).lowercased()
         Task {
             do {
-                try await APIClient.shared.invitePartner(email: addr)
+                let result = try await APIClient.shared.invitePartner(email: addr)
                 await MainActor.run {
                     isSending = false
-                    didSend   = true
+                    resultMessage = result.message
                 }
             } catch {
                 await MainActor.run {
                     isSending = false
-                    errorMsg  = "Couldn't send invite. Check the email and try again."
+                    errorMsg = UserFacingError.message(for: error)
                 }
             }
         }
@@ -434,80 +491,91 @@ private struct InvitePartnerStep: View {
 // MARK: - Step 4: Monitoring setup
 
 private struct MonitoringSetupStep: View {
-    let onComplete: () -> Void
+    let onContinue: () -> Void
+    let onSkip: () -> Void
 
     @ObservedObject private var fcManager = FamilyControlsManager.shared
     @State private var didRequestScreenTime = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {
+                ZStack {
+                    Circle().fill(Color.rfGold.opacity(0.08)).frame(width: 110, height: 110)
+                    Circle().fill(Color.rfGold.opacity(0.13)).frame(width: 78, height: 78)
+                    Image(systemName: "shield.fill")
+                        .font(.system(size: 36))
+                        .foregroundStyle(Color.rfGold)
+                }
+                .accessibilityHidden(true)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
 
-            ZStack {
-                Circle().fill(Color.rfGold.opacity(0.08)).frame(width: 130, height: 130)
-                Circle().fill(Color.rfGold.opacity(0.13)).frame(width: 90, height: 90)
-                Image(systemName: "shield.fill")
-                    .font(.system(size: 40))
-                    .foregroundStyle(Color.rfGold)
-            }
-            .padding(.bottom, 36)
-
-            stepHeader(
-                title: "Turn on\nmonitoring",
-                subtitle: "Two layers work together to keep you accountable"
-            )
-            .padding(.bottom, 32)
-
-            VStack(spacing: 12) {
-                tierRow(
-                    icon: "apps.iphone",
-                    tint: Color(red: 0.28, green: 0.56, blue: 0.95),
-                    title: "App Monitoring",
-                    detail: "Alerts your partner after 1 minute of use in any app you choose."
+                stepHeader(
+                    title: "Allow Screen Time",
+                    subtitle: "Two things to set up now: Alerts and Blocking. Deep Scan is optional."
                 )
-                tierRow(
-                    icon: "eye.fill",
-                    tint: Color.rfGold,
-                    title: "Deep Scan",
-                    detail: "Visual monitoring during screen broadcasts detects sensitive content in real time."
-                )
-            }
-            .padding(.horizontal, 4)
-            .padding(.bottom, 28)
+                .padding(.bottom, 20)
 
-            if fcManager.authorizationStatus != .approved {
-                RFButton(
-                    title: didRequestScreenTime ? "Waiting for permission…" : "Enable App Monitoring",
-                    isEnabled: !didRequestScreenTime
-                ) {
-                    didRequestScreenTime = true
-                    Task { await fcManager.requestAuthorization() }
+                Text("Remain Faithful needs Apple’s Screen Time permission so Alerts and Blocking can use the apps you choose. Your partner cannot browse your phone. Only an alert category and a heartbeat leave this device — not photos, messages, or the screen itself. If you skip this, monitoring stays off. You can turn it on later in Settings.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.white.opacity(0.78))
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, 16)
+
+                VStack(spacing: 12) {
+                    tierRow(
+                        icon: "bell.fill",
+                        tint: Color(red: 0.28, green: 0.56, blue: 0.95),
+                        title: "Alerts",
+                        detail: "Your partner is told after about one minute of use in an app you choose, once a day."
+                    )
+                    tierRow(
+                        icon: "hand.raised.fill",
+                        tint: Color.rfGold,
+                        title: "Blocking",
+                        detail: "Chosen apps show Apple’s Screen Time shield. You can still ask Apple for an override."
+                    )
                 }
                 .padding(.bottom, 12)
+
+                Text("Deep Scan is separate. Start it from Control Center, then Screen Recording, then Remain Faithful. If you don’t see Screen Recording, open Settings, then Control Center, and add it. Protected video such as Netflix is not visible.")
+                    .font(.footnote)
+                    .foregroundStyle(Color.white.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, 20)
+
+                if fcManager.authorizationStatus != .approved {
+                    RFButton(
+                        title: didRequestScreenTime ? "Waiting for permission…" : "Allow Screen Time",
+                        isLoading: didRequestScreenTime
+                    ) {
+                        didRequestScreenTime = true
+                        Task {
+                            await fcManager.requestAuthorization()
+                            await MainActor.run {
+                                didRequestScreenTime = false
+                                if fcManager.authorizationStatus == .approved {
+                                    onContinue()
+                                }
+                            }
+                        }
+                    }
+                    .padding(.bottom, 12)
+
+                    RFButton(
+                        title: "Skip for now — monitoring stays off",
+                        role: .secondary,
+                        action: onSkip
+                    )
+                } else {
+                    RFButton(title: "Choose apps", action: onContinue)
+                }
             }
-
-            RFButton(
-                title: fcManager.authorizationStatus == .approved ? "Get Started" : "Continue Without Monitoring",
-                isEnabled: true
-            ) {
-                // Pass onComplete as completion so the root-view swap only
-                // happens after the permission dialog fully resolves. Calling
-                // onComplete() synchronously before the dialog dismisses causes
-                // iOS to drop the dialog (the presenting view hierarchy is gone).
-                NotificationService.shared.requestPermission(then: onComplete)
-            }
-
-            Text("Deep Scan starts from Control Center → Screen Recording → Remain Faithful")
-                .font(.system(size: 11))
-                .foregroundStyle(Color.white.opacity(0.30))
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 14)
-
-            Spacer()
+            .padding(.horizontal, 24)
+            .padding(.bottom, 28)
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
     }
 
     private func tierRow(icon: String, tint: Color, title: String, detail: String) -> some View {
@@ -525,8 +593,8 @@ private struct MonitoringSetupStep: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.white)
                 Text(detail)
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.white.opacity(0.50))
+                    .font(.subheadline)
+                    .foregroundStyle(Color.white.opacity(0.72))
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
@@ -535,46 +603,87 @@ private struct MonitoringSetupStep: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.055))
+                .fill(Color.white.opacity(0.06))
                 .overlay(RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1))
+                    .strokeBorder(RFStroke.lit, lineWidth: 1))
         )
     }
 }
 
 // MARK: - Shared helpers
 
+private struct AppPickerStep: View {
+    let onComplete: () -> Void
+
+    @ObservedObject private var fcManager = FamilyControlsManager.shared
+    @ObservedObject private var selection = ActivitySelectionManager.shared
+    @State private var showingPicker = false
+
+    private var selectedCount: Int {
+        selection.selection.applicationTokens.count + selection.selection.categoryTokens.count
+    }
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 16) {
+                stepHeader(
+                    title: "Choose apps",
+                    subtitle: "Select the apps you want included. You can change this later."
+                )
+                .frame(maxWidth: .infinity)
+
+                Text(selectedCount == 0
+                     ? "No apps selected yet."
+                     : selection.selectionSummary)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.white.opacity(0.85))
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                if fcManager.authorizationStatus == .approved {
+                    RFButton(title: "Choose apps") { showingPicker = true }
+                    RFButton(
+                        title: selectedCount == 0 ? "Save selected apps" : "Turn on Alerts",
+                        isEnabled: selectedCount > 0
+                    ) {
+                        selection.selectionDidChange()
+                        selection.setMonitoringEnabled(true)
+                        NotificationService.shared.requestPermission(then: onComplete)
+                    }
+                } else {
+                    Text("Screen Time access is still off, so the app list cannot open. Monitoring stays off until you allow it.")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.white.opacity(0.78))
+                    RFButton(title: "Allow Screen Time") {
+                        Task { await fcManager.requestAuthorization() }
+                    }
+                }
+
+                RFButton(title: "I'll do this later", role: .secondary) {
+                    NotificationService.shared.requestPermission(then: onComplete)
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 24)
+        }
+        .familyActivityPicker(isPresented: $showingPicker, selection: $selection.selection)
+        .onChange(of: selection.selection) { _, _ in
+            selection.selectionDidChange()
+        }
+    }
+}
+
 private func stepHeader(title: String, subtitle: String) -> some View {
     VStack(spacing: 10) {
         Text(title)
-            .font(.system(size: 32, weight: .bold, design: .serif))
+            .font(.largeTitle.bold())
+            .fontDesign(.serif)
             .foregroundStyle(.white)
             .multilineTextAlignment(.center)
             .lineSpacing(2)
         Text(subtitle)
-            .font(.system(size: 15))
-            .foregroundStyle(Color.white.opacity(0.55))
-    }
-}
-
-private struct RFButton: View {
-    let title: String
-    var isEnabled: Bool = true
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(isEnabled ? Color.rfNavy : Color.white.opacity(0.35))
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(isEnabled ? Color.rfGold : Color.white.opacity(0.08))
-                )
-        }
-        .disabled(!isEnabled)
+            .font(.body)
+            .foregroundStyle(Color.white.opacity(0.72))
+            .multilineTextAlignment(.center)
     }
 }
 
@@ -582,7 +691,7 @@ private extension View {
     func fieldStyle(isFocused: Bool) -> some View {
         self
             .padding(.horizontal, 18)
-            .frame(height: 56)
+            .frame(minHeight: 44)
             .background(
                 RoundedRectangle(cornerRadius: 14)
                     .fill(Color.white.opacity(isFocused ? 0.11 : 0.07))

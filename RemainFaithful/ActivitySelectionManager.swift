@@ -64,13 +64,10 @@ final class ActivitySelectionManager: ObservableObject {
             applyShielding()
         } else {
             clearShielding()
-            // Notify accountability partner that app blocking was turned off.
-            Task {
-                try? await APIClient.shared.sendProtectionAlert(
-                    type: "shielding_disabled",
-                    detail: "App blocking was turned off."
-                )
-            }
+            ProtectionAlerts.send(
+                type: "shielding_disabled",
+                detail: "Blocking was turned off."
+            )
         }
     }
 
@@ -94,14 +91,32 @@ final class ActivitySelectionManager: ObservableObject {
     // the API is 1 minute — sub-minute values are rejected at startMonitoring time.
 
     func setMonitoringEnabled(_ enabled: Bool) {
-        enabled ? startMonitoring() : stopMonitoring()
+        if enabled {
+            startMonitoring()
+        } else {
+            let wasOn = isMonitoringEnabled
+            stopMonitoring()
+            if wasOn {
+                ProtectionAlerts.send(
+                    type: "monitoring_disabled",
+                    detail: "Alerts were turned off."
+                )
+            }
+        }
     }
 
     func startMonitoring() {
         guard !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty else {
             logger.info("startMonitoring: no apps/categories selected — skipping")
+            let wasOn = isMonitoringEnabled
             isMonitoringEnabled = false
             defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
+            if wasOn {
+                ProtectionAlerts.send(
+                    type: "monitoring_disabled",
+                    detail: "Alerts stopped because no apps are selected."
+                )
+            }
             return
         }
 
@@ -148,6 +163,22 @@ final class ActivitySelectionManager: ObservableObject {
         isMonitoringEnabled = false
         defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
         logger.info("DeviceActivity monitoring stopped")
+    }
+
+    /// Stops Alerts and Blocking and drops this account's queued events.
+    /// Does not send a second protection notice; sign-out sends `signed_out`.
+    func resetForSignOut() {
+        activityCenter.stopMonitoring([.daily])
+        isMonitoringEnabled = false
+        isShieldingEnabled = false
+        defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
+        defaults?.set(false, forKey: "screenTimeShieldingEnabled")
+        clearShielding()
+        selection = FamilyActivitySelection()
+        defaults?.removeObject(forKey: "screenTimeSelection")
+        defaults?.removeObject(forKey: "pendingRawEvents")
+        defaults?.removeObject(forKey: "pendingEvents")
+        defaults?.removeObject(forKey: "lastAppUsageTimestamp")
     }
 
     // MARK: - Pending raw event drain
@@ -217,7 +248,7 @@ final class ActivitySelectionManager: ObservableObject {
     var selectionSummary: String {
         let apps = selection.applicationTokens.count
         let cats = selection.categoryTokens.count
-        guard apps > 0 || cats > 0 else { return "Nothing selected" }
+        guard apps > 0 || cats > 0 else { return "No apps selected" }
         var parts: [String] = []
         if apps > 0 { parts.append("\(apps) app\(apps == 1 ? "" : "s")") }
         if cats > 0 { parts.append("\(cats) categor\(cats == 1 ? "y" : "ies")") }

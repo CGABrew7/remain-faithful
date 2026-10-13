@@ -34,6 +34,12 @@ final class AppLockoutManager: ObservableObject {
 
     // MARK: - Enable / disable
 
+    /// Turns lockout off without a partner notice. Sign-out sends its own notice.
+    func clearLocally() {
+        isEnabled = false
+        defaults?.set(false, forKey: "appLockoutEnabled")
+    }
+
     func setEnabled(_ enabled: Bool) {
         isEnabled = enabled
         defaults?.set(enabled, forKey: "appLockoutEnabled")

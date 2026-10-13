@@ -35,6 +35,11 @@
 		C0FFEE8B0000000000000002 /* AppTour.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE8B0000000000000001 /* AppTour.swift */; };
 		C0FFEE8B0000000000000004 /* FeedbackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE8B0000000000000003 /* FeedbackSheet.swift */; };
 		C0FFEE8B0000000000000006 /* HonestyAndTourTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE8B0000000000000005 /* HonestyAndTourTests.swift */; };
+		B10D00000000000000000001 /* Build10Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000002 /* Build10Models.swift */; };
+		B10D00000000000000000003 /* RFButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000004 /* RFButton.swift */; };
+		B10D00000000000000000009 /* RFTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D0000000000000000000A /* RFTheme.swift */; };
+		B10D00000000000000000005 /* ProtectionAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000006 /* ProtectionAlerts.swift */; };
+		B10D00000000000000000007 /* Build10Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D00000000000000000008 /* Build10Tests.swift */; };
 		CF1000000000000000000039 /* PanicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003A /* PanicView.swift */; };
 		CF100000000000000000003B /* AlertDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003C /* AlertDetailView.swift */; };
 		CF100000000000000000003D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF100000000000000000003E /* APIClient.swift */; };
@@ -151,6 +156,11 @@
 		C0FFEE8B0000000000000001 /* AppTour.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTour.swift; sourceTree = "<group>"; };
 		C0FFEE8B0000000000000003 /* FeedbackSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSheet.swift; sourceTree = "<group>"; };
 		C0FFEE8B0000000000000005 /* HonestyAndTourTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonestyAndTourTests.swift; sourceTree = "<group>"; };
+		B10D00000000000000000002 /* Build10Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build10Models.swift; sourceTree = "<group>"; };
+		B10D00000000000000000004 /* RFButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFButton.swift; sourceTree = "<group>"; };
+		B10D0000000000000000000A /* RFTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFTheme.swift; sourceTree = "<group>"; };
+		B10D00000000000000000006 /* ProtectionAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectionAlerts.swift; sourceTree = "<group>"; };
+		B10D00000000000000000008 /* Build10Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build10Tests.swift; sourceTree = "<group>"; };
 		CF100000000000000000003A /* PanicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanicView.swift; sourceTree = "<group>"; };
 		CF100000000000000000003C /* AlertDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertDetailView.swift; sourceTree = "<group>"; };
 		CF100000000000000000003E /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
@@ -311,6 +321,10 @@
 				AB100000000000000000002A /* PartnerPINManager.swift */,
 				AB100000000000000000003A /* PINEntryView.swift */,
 				80CB81AE9CD4B3BF2B70DA65 /* ScreenTimeMonitoringView.swift */,
+				B10D00000000000000000002 /* Build10Models.swift */,
+				B10D00000000000000000004 /* RFButton.swift */,
+				B10D0000000000000000000A /* RFTheme.swift */,
+				B10D00000000000000000006 /* ProtectionAlerts.swift */,
 				EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */,
 			);
 			path = RemainFaithful;
@@ -343,6 +357,7 @@
 				CF5000000000000000000012 /* FallbackTextClassifierTests.swift */,
 				CF5000000000000000000013 /* NotificationRoutingTests.swift */,
 				C0FFEE8B0000000000000005 /* HonestyAndTourTests.swift */,
+				B10D00000000000000000008 /* Build10Tests.swift */,
 			);
 			path = RemainFaithfulTests;
 			sourceTree = "<group>";
@@ -619,6 +634,10 @@
 				AB100000000000000000002B /* PartnerPINManager.swift in Sources */,
 				AB100000000000000000003B /* PINEntryView.swift in Sources */,
 				B9FBE0AAE00A1EEF84DD985F /* ScreenTimeMonitoringView.swift in Sources */,
+				B10D00000000000000000001 /* Build10Models.swift in Sources */,
+				B10D00000000000000000003 /* RFButton.swift in Sources */,
+				B10D00000000000000000009 /* RFTheme.swift in Sources */,
+				B10D00000000000000000005 /* ProtectionAlerts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -639,6 +658,7 @@
 				CF5000000000000000000032 /* FallbackTextClassifierTests.swift in Sources */,
 				CF5000000000000000000033 /* NotificationRoutingTests.swift in Sources */,
 				C0FFEE8B0000000000000006 /* HonestyAndTourTests.swift in Sources */,
+				B10D00000000000000000007 /* Build10Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -688,7 +708,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -709,7 +729,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
@@ -737,7 +757,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -759,7 +779,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
@@ -903,7 +923,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.Debug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithful/Info.plist;
@@ -928,7 +948,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithful/Info.plist;
@@ -951,7 +971,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -974,7 +994,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

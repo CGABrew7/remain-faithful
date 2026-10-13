@@ -70,7 +70,7 @@ struct FeedbackSubmission: Equatable {
 enum AppDeviceLabel {
     static var appVersion: String {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "8"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "10"
         return "Remain Faithful \(version) (\(build))"
     }
 
@@ -145,14 +145,7 @@ struct FeedbackSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 12)
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.white.opacity(0.55))
-                    .padding(10)
-                    .background(Circle().fill(Color.white.opacity(0.09)))
-            }
-            .accessibilityLabel("Close")
+            RFCloseButton { dismiss() }
         }
         .padding(.horizontal, 24)
         .padding(.top, 22)
@@ -197,6 +190,12 @@ struct FeedbackSheet: View {
                                 summary = String(newValue.prefix(120))
                             }
                         }
+                    Text("\(summary.count) of 120")
+                        .font(.footnote)
+                        .foregroundStyle(summary.count >= 120
+                                         ? Color(red: 0.95, green: 0.55, blue: 0.45)
+                                         : Color.white.opacity(0.72))
+                        .accessibilityLabel("\(summary.count) of 120 characters")
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -216,6 +215,12 @@ struct FeedbackSheet: View {
                                 details = String(newValue.prefix(4000))
                             }
                         }
+                    Text("\(details.count) of 4000")
+                        .font(.footnote)
+                        .foregroundStyle(details.count >= 4000
+                                         ? Color(red: 0.95, green: 0.55, blue: 0.45)
+                                         : Color.white.opacity(0.72))
+                        .accessibilityLabel("\(details.count) of 4000 characters")
                 }
 
                 Toggle(isOn: $includeDevice) {
@@ -229,7 +234,7 @@ struct FeedbackSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                .tint(Color.rfGold)
+                .toggleStyle(RFToggleStyle())
                 .accessibilityHint("Off by default. Turns on only the version, model, and iOS version shown here.")
 
                 if let errorText {
@@ -247,21 +252,12 @@ struct FeedbackSheet: View {
                     .accessibilityLabel("Email support")
                 }
 
-                Button(action: send) {
-                    HStack {
-                        if isSending { ProgressView().tint(Color.rfNavy) }
-                        Text(isSending ? "Sending…" : "Send")
-                            .font(.body.weight(.semibold))
-                    }
-                    .foregroundStyle(submission.canSend ? Color.rfNavy : Color.white.opacity(0.35))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(submission.canSend ? Color.rfGold : Color.white.opacity(0.08))
-                    )
-                }
-                .disabled(!submission.canSend || isSending)
+                RFButton(
+                    title: isSending ? "Sending…" : "Send",
+                    isEnabled: submission.canSend,
+                    isLoading: isSending,
+                    action: send
+                )
                 .accessibilityLabel("Send")
 
                 Button {

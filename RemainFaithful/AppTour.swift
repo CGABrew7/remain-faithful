@@ -37,8 +37,8 @@ enum TourContent {
     /// Without one, the invite step is left out because that button is not on screen.
     static func steps(inGroup: Bool) -> [TourStep] {
         var steps: [TourStep] = [
-            TourStep(tab: 0, anchor: .homeStatus, title: "Deep Scan status",
-                     body: "This shows if Deep Scan is running. Tap it for the four steps to start it from Control Center."),
+            TourStep(tab: 0, anchor: .homeStatus, title: "Monitoring status",
+                     body: "This shows whether Alerts and Blocking are on. Deep Scan is the smaller line. It is optional."),
             TourStep(tab: 0, anchor: .homeStreak, title: "Your clean streak",
                      body: "Days in a row without a flag. The circles are this week."),
             TourStep(tab: 0, anchor: .homeFlags, title: "Recent flags",
@@ -50,16 +50,16 @@ enum TourContent {
             steps.append(TourStep(tab: 1, anchor: .groupMembers, title: "Your group",
                                    body: "Everyone's streak and how they're doing. Groups hold up to 12 people."))
             steps.append(TourStep(tab: 1, anchor: .groupInvite, title: "Invite someone",
-                                   body: "Type an email. They join when they sign up with that email."))
+                                   body: "Type an email. They join when they accept, or when they sign up with that email."))
         } else {
             steps.append(TourStep(tab: 1, anchor: .groupCreate, title: "Your group",
-                                   body: "Start a group here. It takes four short steps."))
+                                   body: "Start a group here. A name is enough. Groups hold up to 12 people."))
         }
         steps.append(contentsOf: [
             TourStep(tab: 2, anchor: .settingsPartners, title: "Your partners",
                      body: "Add partners and star your primary partner."),
-            TourStep(tab: 2, anchor: .settingsRestrictions, title: "Choose what to block",
-                     body: "Pick the apps that tempt you. Block them or alert your partner after one minute a day."),
+            TourStep(tab: 2, anchor: .settingsRestrictions, title: "Choose apps",
+                     body: "Pick the apps that tempt you. Blocking stops them from opening. Alerts tell your partner after one minute a day."),
             TourStep(tab: 2, anchor: .settingsFeedback, title: "Tell us what you think",
                      body: "Ideas, fixes, problems. We read every one."),
         ])
@@ -163,6 +163,7 @@ struct TourOverlay: View {
                     Text("Skip tour")
                         .font(.body)
                         .foregroundStyle(Color.white.opacity(0.9))
+                        .frame(minHeight: 44)
                 }
                 .accessibilityLabel("Skip tour")
                 .accessibilitySortPriority(1)
@@ -185,6 +186,7 @@ struct TourOverlay: View {
                     Button("Back", action: onBack)
                         .font(.body)
                         .foregroundStyle(Color.white.opacity(0.9))
+                        .frame(minHeight: 44)
                         .accessibilityLabel("Back")
                         .accessibilitySortPriority(2)
                 }
@@ -194,8 +196,19 @@ struct TourOverlay: View {
                         .font(.body.weight(.semibold))
                         .foregroundStyle(Color.rfNavy)
                         .padding(.horizontal, 22)
-                        .padding(.vertical, 10)
-                        .background(Capsule().fill(Color.rfGold))
+                        .frame(minHeight: 44)
+                        .background(
+                            Capsule().fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.95, green: 0.84, blue: 0.52),
+                                        Color(red: 0.72, green: 0.55, blue: 0.18)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                        )
                 }
                 .accessibilityLabel(isLast ? "Done" : "Next")
                 .accessibilitySortPriority(3)
