@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { comparisonSchema } from '@/lib/structured-data'
-import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
+import { COMPARE_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { UpdatedStamp } from '@/components/UpdatedStamp'
 
@@ -21,7 +21,7 @@ const pageFaqSchema = {
       name: 'Is Remain Faithful as effective as Ever Accountable?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Both apps use on-device AI, which is a meaningful shared strength. Ever Accountable has a more mature iOS implementation with four generations of development. Remain Faithful is newer but is entirely free, open source, and built on a covenant accountability model. Which is more effective depends on your specific situation.',
+        text: 'Remain Faithful is free and classifies on your iPhone. Screenshots never leave the device. Ever Accountable states 700,000+ installs on its public pages. A June 6, 2026 post on their site describes an AI on the iPhone that looks at the screen. Their how-it-works page says partners have access to browsing history. Which fits depends on what a partner should see, and on price.',
       },
     },
     {
@@ -29,7 +29,7 @@ const pageFaqSchema = {
       name: 'Does Ever Accountable also do on-device processing?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful, not a claim of feature parity. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $14.99/month or $129/year), what partners see (Remain Faithful never transmits screenshots), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.',
+        text: 'Ever Accountable’s June 6, 2026 post says an AI on the iPhone looks at the screen, using the phone’s screen-recording feature rather than making a video anyone watches. That is their description, not a claim that the products match. Remain Faithful is free, never transmits screenshots, and is open source. Their plans page lists $14.99 per month or $129 per year for one reporting user. Their how-it-works page says partners have access to browsing history.',
       },
     },
     {
@@ -65,7 +65,7 @@ export default function EverAccountableCompare() {
               Remain Faithful vs Ever Accountable
             </h1>
             <p className="text-ink-soft text-lg leading-relaxed mb-4 text-pretty">
-              Both apps use on-device AI. That is a shared strength, not feature parity. They still differ on what partners see: Ever Accountable&apos;s public how-it-works copy says partners get a report of screens, apps, and websites viewed; Remain Faithful never transmits screenshots. Here is an honest comparison of the rest.
+              Remain Faithful is free. It classifies on your iPhone and never sends screenshots to a partner. Ever Accountable&apos;s public plans page lists $14.99 per month or $129 per year for one reporting user. Their how-it-works page says partners have access to browsing history. A June 6, 2026 post on their site describes an AI on the iPhone that looks at the screen. Those are different sharing models.
             </p>
             <div className="p-5 rounded-sm border border-wax/25 bg-wax/5 text-sm text-ink-soft leading-relaxed">
               <strong className="text-wax">Disclosure:</strong> We built Remain Faithful, so we are biased. We will be transparent about where Ever Accountable is stronger.
@@ -75,7 +75,7 @@ export default function EverAccountableCompare() {
           {/* Comparison Table */}
           <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Side-by-Side Comparison</h2>
-            <p className="text-xs text-ink-faint mb-4">{COMPETITOR_PRICING_NOTE}</p>
+            <p className="text-xs text-ink-faint mb-4">{COMPARE_PRICING_NOTE}</p>
             <div className="overflow-x-auto rounded-sm border border-hairline">
               <table className="w-full text-sm">
                 <thead>
@@ -87,16 +87,17 @@ export default function EverAccountableCompare() {
                 </thead>
                 <tbody>
                   {[
-                    ['Price', 'Free forever', '$14.99/mo or $129/year'],
-                    ['Platform', 'iOS 17+ (Android planned)', 'iOS, Android, Windows, Mac, Chromebook, Kindle'],
-                    ['Monitoring approach', 'On-device AI classification', 'On-device AI classification'],
-                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Yes. Their how-it-works copy says partners can see screens, apps, and websites viewed.'],
-                    ['Where AI runs', 'Entirely on your device', 'On-device'],
+                    ['Price', 'Free forever', '$14.99/month or $129/year ($10.75/month)'],
+                    ['Who the price covers', 'Free forever', 'One reporting user; unlimited devices and partners'],
+                    ['Platform', 'iOS 17+ (Android planned)', 'Android, iOS, Windows, Mac, Chromebook, and Kindle'],
+                    ['Monitoring approach', 'On-device AI. Screenshots never leave the phone.', 'How-it-works lists Screenshot Accountability and browsing-history reports. A June 6, 2026 post describes on-phone AI for iPhone.'],
+                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'How-it-works says partners have browsing history and will see blacklisted or questionable content. The device table lists Screenshot Accountability on each platform they name.'],
+                    ['Where AI runs', 'Entirely on your device', 'Their June 6, 2026 post says an AI on the iPhone looks at the screen.'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Partner-based report sharing'],
-                    ['Professional coach option', 'No', 'Yes, paid add-on'],
-                    ['App maturity', 'Available for iPhone (iOS 17+)', '4th-generation iOS app, 700K+ installs'],
-                    ['DRM streaming monitoring', 'No (iOS limitation)', 'No (iOS limitation)'],
+                    ['Professional coach option', 'No', 'Optional. Essential $99/month or Premium $197/month on the plans page.'],
+                    ['Installs they publish', 'Available for iPhone (iOS 17+)', '700,000+ installs, stated on their site'],
+                    ['DRM streaming monitoring', 'No (iOS limitation)', 'Not stated on the public pages we checked'],
                   ].map(([feature, rf, ea], i) => (
                     <tr key={i} className={`border-b border-hairline ${i % 2 === 0 ? 'bg-paper-deep' : 'bg-paper'}`}>
                       <td className="p-4 text-ink-soft font-medium">{feature}</td>
@@ -114,9 +115,9 @@ export default function EverAccountableCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Ever Accountable Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'More mature iOS implementation', body: 'Ever Accountable is on its fourth generation of iOS development with over 700,000 installs. That level of real-world testing produces a more polished, battle-tested app. Remain Faithful is newer and available for iPhone (iOS 17+).' },
-                { title: 'Multi-platform coverage', body: 'Ever Accountable lists iOS, Android, Windows, Mac, Chromebook, and Kindle. Remain Faithful is iOS only right now. If your accountability partner uses Android, Windows, or Mac, Ever Accountable serves them. Remain Faithful does not yet.' },
-                { title: 'Professional accountability coach option', body: 'Ever Accountable offers a paid add-on to connect with a professional accountability coach. Remain Faithful is peer-only; it does not offer a coached accountability option.' },
+                { title: 'Install base they publish', body: 'Ever Accountable states 700,000+ installs on its public pages. A June 6, 2026 post says they rebuilt the iPhone app four times over six years. Remain Faithful is newer and available for iPhone (iOS 17+).' },
+                { title: 'Multi-platform coverage', body: 'Ever Accountable lists Android, iOS, Windows, Mac, Chromebook, and Kindle. Remain Faithful is iPhone only right now. If your accountability partner uses Android, Windows, or Mac, Ever Accountable serves them. Remain Faithful does not yet.' },
+                { title: 'Professional accountability coaching', body: 'Their plans page lists optional coaching: Essential at $99 per month (30 minutes) and Premium at $197 per month (2 hours; the 30-minute line is struck through). Remain Faithful is peer-only. It does not offer a coached plan.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
                   <h3 className="font-semibold text-ink mb-2">{item.title}</h3>
@@ -131,9 +132,9 @@ export default function EverAccountableCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">Where Remain Faithful Is Stronger</h2>
             <div className="space-y-4">
               {[
-                { title: 'Price', body: 'Remain Faithful is completely free. Ever Accountable publicly lists $14.99 per month or $129 per year for one reporting user. For ministries deploying accountability tools to dozens of people, free is a significant difference. Verify current pricing on their site.' },
+                { title: 'Price', body: 'Remain Faithful is free. On 2026-10-13, Ever Accountable’s public plans page listed $14.99 per month or $129 per year for one reporting user. The annual price is also shown as $10.75 per month, with a 28% discount label. The same page lists optional coaching at $99 per month (Essential) and $197 per month (Premium). Membership includes a 14-day trial link. Verify current amounts on their site.' },
                 { title: 'Open source transparency', body: 'Remain Faithful is fully open source. Anyone can read the code and verify that screenshots, OCR text, and raw screen content are never transmitted, and that partners may receive a short system-generated summary. Ever Accountable is proprietary. Both say they protect your privacy; only one lets you verify it.' },
-                { title: 'Partner protection', body: 'Ever Accountable\'s public how-it-works copy says a partner can see screens, apps, and websites the reporting user viewed. Remain Faithful partners may receive a short system-generated summary in addition to a category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content. That is a difference in what is shared — not a claim that the two products monitor the same things.' },
+                { title: 'What partners receive', body: 'Ever Accountable’s how-it-works page says partners have access to browsing history on phones, computers, and tablets, and that partners will see blacklisted or questionable content. Their device table lists Screenshot Accountability. Remain Faithful partners may receive a short system-generated summary in addition to a category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds Remain Faithful\'s accountability in a theological understanding of relationship. Partners agree to respond with grace before gaining access. This is designed to shape how alerts are received.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-wax/25 bg-paper-deep">
@@ -151,10 +152,10 @@ export default function EverAccountableCompare() {
                 <h2 className="font-serif text-lg font-bold text-ink mb-4">Who Should Choose Ever Accountable</h2>
                 <ul className="space-y-2">
                   {[
-                    'Need Android, Windows, or Mac coverage today',
-                    'Want a more mature, battle-tested iOS app',
-                    'Interested in professional accountability coaching',
-                    'Comfortable paying a yearly subscription for a proven solution',
+                    'Need Android, Windows, Mac, Chromebook, or Kindle coverage today',
+                    'Want the install base they publish (700,000+)',
+                    'Want the optional coaching plans listed on their site',
+                    'Are ready to pay the public monthly or yearly price',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
                       <svg className="flex-shrink-0 mt-0.5 text-ink-soft" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -188,8 +189,8 @@ export default function EverAccountableCompare() {
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
-                { q: 'Is Remain Faithful as effective as Ever Accountable?', a: 'Both apps use on-device AI, which is a meaningful shared strength. Ever Accountable has a more mature iOS implementation with four generations of development. Remain Faithful is newer but is entirely free, open source, and built on a covenant accountability model. Which is more effective depends on your specific situation.' },
-                { q: 'Does Ever Accountable also do on-device processing?', a: 'Yes. Ever Accountable also performs on-device AI analysis. This is a shared strength with Remain Faithful, not a claim of feature parity. The key differences are price (Remain Faithful is free, Ever Accountable publicly lists $14.99/month or $129/year), what partners see (Remain Faithful never transmits screenshots), open source transparency (Remain Faithful is fully open source, Ever Accountable is not), and the covenant-based model that Remain Faithful uses.' },
+                { q: 'Is Remain Faithful as effective as Ever Accountable?', a: 'Remain Faithful is free and classifies on your iPhone. Screenshots never leave the device. Ever Accountable states 700,000+ installs on its public pages. A June 6, 2026 post on their site describes an AI on the iPhone that looks at the screen. Their how-it-works page says partners have access to browsing history. Which fits depends on what a partner should see, and on price.' },
+                { q: 'Does Ever Accountable also do on-device processing?', a: 'Ever Accountable’s June 6, 2026 post says an AI on the iPhone looks at the screen, using the phone’s screen-recording feature rather than making a video anyone watches. That is their description, not a claim that the products match. Remain Faithful is free, never transmits screenshots, and is open source. Their plans page lists $14.99 per month or $129 per year for one reporting user. Their how-it-works page says partners have access to browsing history.' },
                 { q: 'Can I switch from Ever Accountable to Remain Faithful?', a: 'Yes. Cancel Ever Accountable and set up Remain Faithful on iPhone (iOS 17+). Invite your partners and walk through the covenant setup. Remain Faithful is available for iPhone only; if your partners use Android, Windows, or Mac, Ever Accountable has broader coverage.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
