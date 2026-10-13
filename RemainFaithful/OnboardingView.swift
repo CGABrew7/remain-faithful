@@ -19,7 +19,8 @@ struct OnboardingView: View {
     @State private var password = ""
 
     // Welcome is step 0 and is hidden from the dots.
-    private let totalSteps = 5
+    // 1 account, 2 invite, 3 Screen Time, 4 Deep Scan, 5 apps.
+    private let totalSteps = 6
 
     var body: some View {
         ZStack {
@@ -52,6 +53,9 @@ struct OnboardingView: View {
                             .transition(.push(from: .trailing))
                     case 3:
                         MonitoringSetupStep(onContinue: advance, onSkip: advance)
+                            .transition(.push(from: .trailing))
+                    case 4:
+                        DeepScanStep(onContinue: advance)
                             .transition(.push(from: .trailing))
                     default:
                         AppPickerStep {
@@ -513,7 +517,7 @@ private struct MonitoringSetupStep: View {
 
                 stepHeader(
                     title: "Allow Screen Time",
-                    subtitle: "Two things to set up now: Alerts and Blocking. Deep Scan is optional."
+                    subtitle: "Two things to set up now: Alerts and Blocking."
                 )
                 .padding(.bottom, 20)
 
@@ -538,13 +542,7 @@ private struct MonitoringSetupStep: View {
                         detail: "Chosen apps show Apple’s Screen Time shield. You can still ask Apple for an override."
                     )
                 }
-                .padding(.bottom, 12)
-
-                Text("Deep Scan is separate. Start it from Control Center, then Screen Recording, then Remain Faithful. If you don’t see Screen Recording, open Settings, then Control Center, and add it. Protected video such as Netflix is not visible.")
-                    .font(.footnote)
-                    .foregroundStyle(Color.white.opacity(0.72))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.bottom, 20)
+                .padding(.bottom, 20)
 
                 if fcManager.authorizationStatus != .approved {
                     RFButton(
@@ -570,7 +568,7 @@ private struct MonitoringSetupStep: View {
                         action: onSkip
                     )
                 } else {
-                    RFButton(title: "Choose apps", action: onContinue)
+                    RFButton(title: "Continue", action: onContinue)
                 }
             }
             .padding(.horizontal, 24)
@@ -607,6 +605,56 @@ private struct MonitoringSetupStep: View {
                 .overlay(RoundedRectangle(cornerRadius: 14)
                     .strokeBorder(RFStroke.lit, lineWidth: 1))
         )
+    }
+}
+
+// MARK: - Step 5: Deep Scan
+
+private struct DeepScanStep: View {
+    let onContinue: () -> Void
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 16) {
+                stepHeader(
+                    title: DeepScanOnboarding.title,
+                    subtitle: DeepScanOnboarding.subtitle
+                )
+                .frame(maxWidth: .infinity)
+
+                Text(DeepScanOnboarding.summary)
+                    .font(.body)
+                    .foregroundStyle(Color.white.opacity(0.82))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Array(DeepScanOnboarding.steps.enumerated()), id: \.offset) { index, line in
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text("\(index + 1).")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(Color.rfGold)
+                                .accessibilityHidden(true)
+                            Text(line)
+                                .font(.body)
+                                .foregroundStyle(Color.white.opacity(0.88))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+
+                Text(DeepScanOnboarding.limits)
+                    .font(.body)
+                    .foregroundStyle(Color.white.opacity(0.82))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                RFButton(title: "Continue", action: onContinue)
+                    .padding(.top, 8)
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 24)
+        }
     }
 }
 

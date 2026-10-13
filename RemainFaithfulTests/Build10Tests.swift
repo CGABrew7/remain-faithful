@@ -22,6 +22,46 @@ final class Build10Tests: XCTestCase {
         XCTAssertTrue(on.detail.contains("Alerts on"))
         XCTAssertTrue(on.detail.contains("Blocking off"))
         XCTAssertTrue(on.deepScanLine.contains("optional"))
+        XCTAssertNil(on.actionTitle)
+
+        let scanning = MonitoringPresentation.make(
+            authorizationApproved: true,
+            selectedCount: 2,
+            alertsOn: true,
+            blockingOn: true,
+            deepScanOn: true,
+            extensionSignedOut: false
+        )
+        XCTAssertNil(scanning.actionTitle)
+        XCTAssertEqual(
+            MonitoringPresentation.make(
+                authorizationApproved: false,
+                selectedCount: 0,
+                alertsOn: false,
+                blockingOn: false,
+                deepScanOn: false,
+                extensionSignedOut: false
+            ).actionTitle,
+            "Allow Screen Time"
+        )
+    }
+
+    func testDeepScanIsExplainedOnceInOnboardingCopy() {
+        let copy = ([
+            DeepScanOnboarding.title,
+            DeepScanOnboarding.subtitle,
+            DeepScanOnboarding.summary,
+            DeepScanOnboarding.limits,
+        ] + DeepScanOnboarding.steps).joined(separator: " ")
+        XCTAssertFalse(copy.contains("—"))
+        XCTAssertFalse(copy.contains("–"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("How Deep Scan works"))
+        XCTAssertTrue(copy.contains("Control Center"))
+        XCTAssertTrue(copy.contains("Screen Recording"))
+        XCTAssertTrue(copy.contains("Settings"))
+        XCTAssertTrue(copy.contains("Netflix"))
+        XCTAssertTrue(copy.contains("notifies your partners"))
+        XCTAssertTrue(copy.contains("does not replace Alerts or Blocking"))
     }
 
     func testNoAppsBeatsALeftoverToggle() {
