@@ -344,27 +344,7 @@ func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string,
 			var invalidErr *apns.ErrInvalidToken
 			if errors.As(err, &invalidErr) {
 				h.markTokenInactive(ctx, token)
-				// Notify partners that the app was deleted on that device.
-				deletedPayload := map[string]any{
-					"aps": map[string]any{
-						"alert": map[string]string{
-							"title": "Partner Update",
-							"body":  callerName + "'s app was removed from a device",
-						},
-						"sound": "default",
-					},
-					"notification_type": "APP_DELETED",
-					"sender_name":       callerName,
-				}
-				deleted := &apns.Notification{
-					DeviceToken: token,
-					PushType:    "alert",
-					Priority:    10,
-					Payload:     deletedPayload,
-				}
-				if sendErr := h.APNS.Send(ctx, deleted); sendErr != nil {
-					log.Printf("notifyPartners: send APP_DELETED: %v", sendErr)
-				}
+				h.notifyAppRemoved(ctx, token)
 				continue
 			}
 			log.Printf("notifyPartners: send to %s: %v", token, err)
@@ -398,7 +378,7 @@ func (h *H) notifyPartnerByID(ctx context.Context, partnerID int64, callerName s
 			var invalidErr *apns.ErrInvalidToken
 			if errors.As(err, &invalidErr) {
 				h.markTokenInactive(ctx, token)
-				log.Printf("[push] notifyPartnerByID: marked inactive token %.8s... for user=%d", token, partnerID)
+				h.notifyAppRemoved(ctx, token)
 				continue
 			}
 			log.Printf("[push] notifyPartnerByID: send to user=%d token=%.8s...: %v", partnerID, token, err)
@@ -407,6 +387,23 @@ func (h *H) notifyPartnerByID(ctx context.Context, partnerID int64, callerName s
 		}
 	}
 	log.Printf("[push] notifyPartnerByID: user=%d env=%s sent=%d", partnerID, env, sent)
+}
+
+// notifyAppRemoved tells the people who watch the owner of a rejected device
+// token. The notice goes to their active tokens, never back to the dead one.
+func (h *H) notifyAppRemoved(ctx context.Context, deadToken string) {
+	var ownerID int64
+	var ownerName string
+	err := h.DB.QueryRowContext(ctx, `
+		SELECT u.id, u.name
+		FROM device_tokens dt
+		JOIN users u ON u.id = dt.user_id
+		WHERE dt.token = $1
+	`, deadToken).Scan(&ownerID, &ownerName)
+	if err != nil {
+		return
+	}
+	_ = h.storeAndPushProtection(ownerID, ownerName, "app_removed", false)
 }
 
 // markTokenInactive sets is_active=FALSE for the given device token.

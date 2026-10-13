@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: 'How to join a Remain Faithful accountability group on iPhone.',
   robots: { index: false, follow: false },
   referrer: 'no-referrer',
+  alternates: { canonical: 'https://remainfaithful.com/join' },
 }
 
 // Shared from the app's Group tab invite sheet (www.remainfaithful.com/join/{groupId}).

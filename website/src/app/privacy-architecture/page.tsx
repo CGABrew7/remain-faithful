@@ -4,7 +4,8 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Privacy Architecture',
   description:
-    'How Remain Faithful protects privacy: on-device classification, no screenshots or OCR off-device, and a short system-generated summary that partners may receive with category, severity, and timestamp.',
+    'How Remain Faithful protects privacy: on-device classification, no screenshots or screen text off the phone, and a short summary partners may receive with category, severity, and timestamp.',
+  alternates: { canonical: 'https://remainfaithful.com/privacy-architecture' },
 }
 
 const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
@@ -66,7 +67,7 @@ export default function PrivacyArchitecturePage() {
               {
                 label: 'Always-on',
                 title: 'Family Controls filtering',
-                body: 'Selected apps and categories stay blocked through lock screen, reboot, and app restarts. Partners are notified when a blocked category is attempted.',
+                body: 'You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts.',
               },
               {
                 label: 'Always-on',
@@ -75,8 +76,8 @@ export default function PrivacyArchitecturePage() {
               },
               {
                 label: 'Always-on',
-                title: 'Time-window shielding',
-                body: 'You can restrict chosen apps to hours you set — evenings, travel, or a season of struggle. Shielding uses the same Family Controls stack. It does not see screen content.',
+                title: 'Blocked all day',
+                body: 'Chosen apps and categories stay blocked for the whole day. The block holds through the lock screen, reboot, and app restarts. It does not see screen content.',
               },
               {
                 label: 'Opt-in',
@@ -240,8 +241,8 @@ export default function PrivacyArchitecturePage() {
             {[
               { label: 'Your Device', sub: 'On-device classification; no screen content uploaded', icon: '📱' },
               { label: 'Alert Metadata', sub: 'Category, severity, timestamp, short summary', icon: '📋', connector: true },
-              { label: 'RF Server', sub: 'Encrypted at rest (AES-256)', icon: '🔐', connector: true },
-              { label: 'APNs', sub: 'Apple Push (TLS 1.3)', icon: '📡', connector: true },
+              { label: 'RF Server', sub: 'Alert metadata and a heartbeat', icon: '🔐', connector: true },
+              { label: 'APNs', sub: 'Apple push over HTTPS', icon: '📡', connector: true },
               { label: "Partner's Device", sub: 'Notification received', icon: '🔔', connector: true },
             ].map((node, i) => (
               <div key={i} className="flex md:flex-col items-center gap-3">
@@ -263,7 +264,7 @@ export default function PrivacyArchitecturePage() {
           </div>
 
           <p className="text-center text-sm text-ink-soft mt-8">
-            All communication between the app and server uses TLS 1.3. Data at rest is AES-256 encrypted. Always-on layers and optional Deep Scan upload alert metadata — category, severity, timestamp, and a short system-generated summary — never screenshots, OCR text, or raw screen content.
+            The app and server talk over HTTPS. What leaves the phone is event metadata and a heartbeat: category, severity, timestamp, a short summary, and a check-in while monitoring is on. Screenshots and screen text stay on the phone. Deep Scan cannot see DRM streaming.
           </p>
         </div>
       </section>
@@ -286,7 +287,7 @@ export default function PrivacyArchitecturePage() {
               },
               {
                 threat: 'What if data is intercepted in transit?',
-                answer: 'All communication between the app, server, and Apple Push Notification Service uses TLS 1.3. Interception would yield only encrypted ciphertext. All data in transit is encrypted end-to-end.',
+                answer: 'The app, the server, and Apple push talk over HTTPS. What can leave the phone is event metadata and a heartbeat, not screenshots or screen text.',
               },
               {
                 threat: 'What if a partner is malicious?',

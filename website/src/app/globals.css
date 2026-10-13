@@ -116,6 +116,12 @@
   .tap-row:active {
     transform: none;
   }
+
+  .btn-wax::after {
+    transition: none;
+    transform: none;
+    opacity: 0;
+  }
 }
 
 @layer components {
@@ -160,34 +166,64 @@
     box-shadow: 0 0 0 3px rgba(209, 171, 76, 0.25);
   }
 
+  .form-error {
+    color: #ffc9c4;
+  }
+
   .btn-wax {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     padding: 0.85rem 1.45rem;
-    background: #d1ab4c;
+    background: linear-gradient(180deg, #f6e2a4 0%, #e2c36a 42%, #c4963a 100%);
     color: #12214c;
     font-family: var(--font-source), system-ui, sans-serif;
     font-size: 0.95rem;
     font-weight: 600;
     letter-spacing: 0.01em;
-    min-height: 2.75rem;
-    border-radius: 999px;
+    min-height: 44px;
+    border-radius: 14px;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      0 10px 24px -16px rgba(209, 171, 76, 0.9);
-    transition-property: filter, transform;
-    transition-duration: 150ms;
-    transition-timing-function: ease-out;
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      inset 0 -1px 0 rgba(122, 84, 20, 0.35),
+      0 8px 18px -10px rgba(18, 33, 76, 0.55);
+    transition-property: transform, box-shadow;
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .btn-wax::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.55) 50%, transparent 68%);
+    transform: translateX(-120%);
+    pointer-events: none;
   }
 
   .btn-wax:hover {
-    filter: brightness(1.06);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.75),
+      inset 0 -1px 0 rgba(122, 84, 20, 0.28),
+      0 12px 22px -10px rgba(18, 33, 76, 0.5);
+  }
+
+  .btn-wax:hover::after {
+    transform: translateX(120%);
+    transition: transform 0.5s cubic-bezier(0.2, 0, 0, 1);
   }
 
   .btn-wax:active:not(:disabled) {
     transform: scale(0.96);
+  }
+
+  .btn-wax:focus-visible {
+    outline: 2px solid #f6e2a4;
+    outline-offset: 3px;
   }
 
   .btn-wax:disabled {
@@ -201,25 +237,31 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.85rem 1.35rem;
-    color: #fff;
+    color: #f6e2a4;
     font-family: var(--font-source), system-ui, sans-serif;
     font-size: 0.95rem;
-    font-weight: 500;
-    min-height: 2.75rem;
-    background: transparent;
-    border-radius: 999px;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-    transition-property: background-color, transform;
-    transition-duration: 150ms;
-    transition-timing-function: ease-out;
+    font-weight: 600;
+    min-height: 44px;
+    background: #12214c;
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 1px rgba(209, 171, 76, 0.85);
+    transition-property: background-color, box-shadow, transform;
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
 
   .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: #1a2d61;
+    box-shadow: inset 0 0 0 1px #f6e2a4;
   }
 
   .btn-ghost:active {
     transform: scale(0.96);
+  }
+
+  .btn-ghost:focus-visible {
+    outline: 2px solid #f6e2a4;
+    outline-offset: 3px;
   }
 
   .kicker {

@@ -3,15 +3,18 @@ import InviteLanding from '@/components/InviteLanding'
 
 export const metadata: Metadata = {
   title: 'Accept your invite',
-  description: 'How to accept a Remain Faithful group or partner invite on iPhone.',
+  description: 'Accept a Remain Faithful group or partner invite. Signing in alone does not accept it.',
   robots: { index: false, follow: false },
   referrer: 'no-referrer',
+  alternates: { canonical: 'https://remainfaithful.com/invite' },
 }
 
-// Emailed invite links land here: /invite?token=...&type=group|partner.
-// The token is never read or sent anywhere from the website; the app redeems
-// invites automatically when the invited email creates an account.
-export default function InvitePage({ searchParams }: { searchParams: { type?: string } }) {
-  const variant = searchParams?.type === 'partner' ? 'partner' : 'group'
-  return <InviteLanding variant={variant} />
+export default async function InvitePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; token?: string }>
+}) {
+  const query = await searchParams
+  const variant = query?.type === 'partner' ? 'partner' : 'group'
+  return <InviteLanding variant={variant} token={query?.token} />
 }

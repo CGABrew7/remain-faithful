@@ -43,7 +43,9 @@ func (h *H) CreateRelationship(w http.ResponseWriter, r *http.Request) {
 		req.PartnerEmail,
 	).Scan(&partnerID)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "no account found for that email")
+		// Same response shape as a stored invite so this route cannot be used
+		// to check whether an address is registered. Build 9 does not call it.
+		writeJSON(w, http.StatusCreated, map[string]any{"status": "invited"})
 		return
 	}
 	if partnerID == userID {
@@ -51,11 +53,15 @@ func (h *H) CreateRelationship(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if status, msg := h.preparePartnerInvite(r.Context(), userID, partnerID); status != 0 {
+		writeError(w, status, msg)
+		return
+	}
 	var id int64
 	var status, createdAt string
 	err = h.DB.QueryRowContext(r.Context(),
-		`INSERT INTO relationships (user_id, partner_id, type)
-		 VALUES ($1, $2, $3)
+		`INSERT INTO relationships (user_id, partner_id, type, status)
+		 VALUES ($1, $2, $3, 'pending')
 		 ON CONFLICT (user_id, partner_id) DO UPDATE SET type = EXCLUDED.type
 		 RETURNING id, status, created_at`,
 		userID, partnerID, req.Type,
@@ -207,10 +213,12 @@ func (h *H) DeleteRelationship(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var partnerID int64
+	var ownerID int64
 	err = h.DB.QueryRowContext(r.Context(),
-		`SELECT partner_id FROM relationships WHERE id = $1 AND user_id = $2`,
+		`SELECT user_id, partner_id FROM relationships
+		 WHERE id = $1 AND (user_id = $2 OR partner_id = $2)`,
 		id, userID,
-	).Scan(&partnerID)
+	).Scan(&ownerID, &partnerID)
 	if errors.Is(err, sql.ErrNoRows) {
 		writeError(w, http.StatusNotFound, "relationship not found")
 		return
@@ -222,8 +230,13 @@ func (h *H) DeleteRelationship(w http.ResponseWriter, r *http.Request) {
 
 	callerName, _ := h.lookupUserName(r.Context(), userID)
 
+	otherID := partnerID
+	if userID == partnerID {
+		otherID = ownerID
+	}
+	partnerID = otherID
 	res, err := h.DB.ExecContext(r.Context(),
-		`DELETE FROM relationships WHERE id = $1 AND user_id = $2`,
+		`DELETE FROM relationships WHERE id = $1 AND (user_id = $2 OR partner_id = $2)`,
 		id, userID,
 	)
 	if err != nil {

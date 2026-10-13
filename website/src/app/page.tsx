@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import Link from 'next/link'
+import AppStoreLink from '@/components/AppStoreLink'
 import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
 import FaqAccordion from '@/components/FaqAccordion'
@@ -101,9 +102,7 @@ export default function HomePage() {
             Free peer accountability for Christians committed to purity.
           </p>
           <div className="rise rise-4 mt-8 flex flex-col gap-3 sm:flex-row">
-            <a href="#download" className="btn-wax">
-              Get started
-            </a>
+            <AppStoreLink />
             <Link href="/how-it-works" className="btn-ghost">
               How it works
               <Arrow />
@@ -118,7 +117,7 @@ export default function HomePage() {
           />
         </div>
         <p className="max-w-[46ch] text-[1.05rem] leading-relaxed text-ink-soft lg:col-start-1">
-          Always-on filtering blocks the apps and categories you choose, and notifies your partners when a blocked category is attempted. Optional Deep Scan adds on-device AI for high-risk periods. Screenshots, OCR text, and raw screen content stay on your device. Partners receive a short system-generated summary.
+          You choose the apps and categories to block. They stay blocked all day, through the lock screen, a reboot, and an app restart. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan is separate. Screenshots and screen text stay on your phone. Deep Scan cannot see DRM streaming.
         </p>
       </section>
 
@@ -150,6 +149,7 @@ export default function HomePage() {
               <Spec term="Privacy" detail="Screen stays on device" />
             </dl>
             <div className="mt-8 flex flex-col gap-2 sm:flex-row">
+              <AppStoreLink />
               <Link href="/how-it-works" className="btn-ghost">
                 How it works
                 <Arrow />
@@ -194,7 +194,7 @@ export default function HomePage() {
             <Feature
               n="03"
               title="Always-on filtering"
-              body="Select the apps and categories you want blocked. They stay shielded continuously — through lock screen, reboot, and app restarts. Your partners are notified when a blocked category is attempted."
+              body="You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day."
             />
             <Feature
               n="04"
@@ -232,7 +232,7 @@ export default function HomePage() {
             <Step
               n="II"
               title="Enable filtering"
-              body="Always-on Family Controls blocks the apps and categories you choose and notifies partners when a blocked category is attempted. Optional Deep Scan is for high-risk periods."
+              body="You choose the apps and categories to block, and they stay blocked all day. If a chosen app is used for a minute, your partner can get one alert that day. Optional Deep Scan is separate."
             />
             <Step
               n="III"

@@ -99,17 +99,22 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, msg)
 		return
 	}
+	eventTime, msg := parseEventTimestamp(req.Timestamp, timeNow())
+	if msg != "" {
+		writeError(w, http.StatusBadRequest, msg)
+		return
+	}
 
 	// Step 1: insert the event — single auto-committed statement, independent of alert creation.
 	var eventID int64
 	var timestamp string
 	var err error
-	if req.Timestamp != "" {
+	if !eventTime.IsZero() {
 		err = h.DB.QueryRowContext(r.Context(),
 			`INSERT INTO events (user_id, category, severity, summary, timestamp)
 			 VALUES ($1, $2, $3, $4, $5::timestamptz)
 			 RETURNING id, timestamp`,
-			userID, req.Category, req.Severity, req.Summary, req.Timestamp,
+			userID, req.Category, req.Severity, req.Summary, eventTime,
 		).Scan(&eventID, &timestamp)
 	} else {
 		err = h.DB.QueryRowContext(r.Context(),
@@ -190,15 +195,20 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 		for _, pa := range capturedPartnerAlerts {
 			// Throttle: skip push if this partner already got one in the last 5 minutes.
-			var recentCount int
-			_ = h.DB.QueryRowContext(ctx, `
-				SELECT COUNT(*) FROM alerts
-				WHERE  recipient_user_id = $1
-				  AND  created_at > NOW() - INTERVAL '5 minutes'
-				  AND  id < $2
-			`, pa.partnerID, pa.alertID).Scan(&recentCount)
-			if recentCount > 0 {
-				continue
+			if capturedSeverity != "severe" {
+				var recentCount int
+				_ = h.DB.QueryRowContext(ctx, `
+					SELECT COUNT(*) FROM alerts a
+					JOIN events e ON e.id = a.event_id
+					WHERE a.recipient_user_id = $1
+					  AND e.user_id = $2
+					  AND e.severity <> 'severe'
+					  AND a.created_at > NOW() - INTERVAL '5 minutes'
+					  AND a.id < $3
+				`, pa.partnerID, userID, pa.alertID).Scan(&recentCount)
+				if recentCount > 0 {
+					continue
+				}
 			}
 			// Build a per-partner payload so alert_id is specific to this recipient.
 			payload := map[string]any{

@@ -68,7 +68,7 @@ export default function PilotForm() {
             required
             value={form.church}
             onChange={(e) => update('church', e.target.value)}
-            placeholder="Grace Community Church"
+            placeholder="Your congregation"
             className="input-field"
           />
         </Field>
@@ -124,7 +124,11 @@ export default function PilotForm() {
         />
       </Field>
 
-      {error && <p className="text-wax text-sm">{error}</p>}
+      {error && (
+        <p className="form-error text-sm" role="alert">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"

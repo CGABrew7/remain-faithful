@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import ShieldMark from './ShieldMark'
 import WaitlistForm from './WaitlistForm'
+import FooterDonateLink from './FooterDonateLink'
 
 const columns = [
   {
@@ -10,7 +11,6 @@ const columns = [
       { label: 'App Guide', href: '/app-guide' },
       { label: 'Privacy Architecture', href: '/privacy-architecture' },
       { label: 'Updates', href: '/#waitlist' },
-      { label: 'Donate', href: '/#donate' },
     ],
   },
   {
@@ -80,6 +80,11 @@ export default function Footer() {
                       </Link>
                     </li>
                   ))}
+                  {col.title === 'Product' && (
+                    <li>
+                      <FooterDonateLink />
+                    </li>
+                  )}
                 </ul>
               </div>
             ))}

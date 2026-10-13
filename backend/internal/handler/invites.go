@@ -48,7 +48,8 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If the invitee already has an account, create the relationship directly.
+	// If the invitee already has an account, keep the relationship pending
+	// until they accept. Never report "connected" for a pending row.
 	var inviteeID int64
 	if err := h.DB.QueryRowContext(r.Context(),
 		`SELECT id FROM users WHERE email = $1`, req.Email,
@@ -57,27 +58,60 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, "cannot add yourself as a partner")
 			return
 		}
+		if status, msg := h.preparePartnerInvite(r.Context(), userID, inviteeID); status != 0 {
+			writeError(w, status, msg)
+			return
+		}
 		var relID int64
-		var status, createdAt string
+		var status string
 		if err := h.DB.QueryRowContext(r.Context(),
-			`INSERT INTO relationships (user_id, partner_id, type)
-			 VALUES ($1, $2, 'partner')
-			 ON CONFLICT (user_id, partner_id) DO UPDATE SET type = EXCLUDED.type
-			 RETURNING id, status, created_at`,
+			`INSERT INTO relationships (user_id, partner_id, type, status)
+			 VALUES ($1, $2, 'partner', 'pending')
+			 ON CONFLICT (user_id, partner_id) DO UPDATE
+			   SET type = EXCLUDED.type
+			 RETURNING id, status`,
 			userID, inviteeID,
-		).Scan(&relID, &status, &createdAt); err != nil {
+		).Scan(&relID, &status); err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to create relationship")
 			return
 		}
-		token, _ := inviteToken()
+		if status == "accepted" {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"status":          "accepted",
+				"relationship_id": relID,
+			})
+			return
+		}
+		token, err := inviteToken()
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to generate invite token")
+			return
+		}
+		if _, err := h.DB.ExecContext(r.Context(),
+			`INSERT INTO relationship_invites (inviter_id, invitee_email, token)
+			 VALUES ($1, $2, $3)
+			 ON CONFLICT (inviter_id, invitee_email) DO UPDATE
+			   SET token = EXCLUDED.token, created_at = NOW(), status = 'pending'`,
+			userID, req.Email, token,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to store invite")
+			return
+		}
 		acceptURL := siteBase() + "/accept-invite?token=" + token + "&type=partner"
-		if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
-			log.Printf("[invite] partner email error (existing user) to=%s: %v", req.Email, sendErr)
+		if h.Email != nil {
+			if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
+				log.Printf("[invite] partner email error user=%d: %v", userID, sendErr)
+			}
 		}
 		writeJSON(w, http.StatusCreated, map[string]any{
-			"status":          "connected",
+			"status":          "pending",
 			"relationship_id": relID,
 		})
+		return
+	}
+
+	if status, msg := h.enforceInviteBudget(r.Context(), userID); status != 0 {
+		writeError(w, status, msg)
 		return
 	}
 
@@ -98,8 +132,10 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	acceptURL := siteBase() + "/invite?token=" + token + "&type=partner"
-	if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
-		log.Printf("[invite] partner email error to=%s: %v", req.Email, sendErr)
+	if h.Email != nil {
+		if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
+			log.Printf("[invite] partner email error user=%d: %v", userID, sendErr)
+		}
 	}
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"status": "invited",
@@ -278,35 +314,54 @@ func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, em
 		return groupInviteResult{}, &handlerError{http.StatusNotFound, "group not found"}
 	}
 
-	// If the invitee already has an account, add them directly.
+	// If the invitee already has an account, store a pending invite.
+	// They are not a member, and they do not see the roster, until they accept.
 	var inviteeID int64
 	if err := h.DB.QueryRowContext(ctx,
 		`SELECT id FROM users WHERE email = $1`, email,
 	).Scan(&inviteeID); err == nil {
-		var joinedAt string
+		var existing int64
 		err := h.DB.QueryRowContext(ctx,
-			`INSERT INTO group_members (group_id, user_id, role)
-			 VALUES ($1, $2, 'member')
-			 ON CONFLICT (group_id, user_id) DO NOTHING
-			 RETURNING joined_at`,
+			`SELECT user_id FROM group_members WHERE group_id = $1 AND user_id = $2`,
 			groupID, inviteeID,
-		).Scan(&joinedAt)
-		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("[invite] skipping email — invitee is already a member of group=%d", groupID)
+		).Scan(&existing)
+		if err == nil {
 			return groupInviteResult{outcome: groupInviteAlreadyMember, inviteeID: inviteeID}, nil
 		}
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to check membership"}
+		}
+		if status, msg := h.enforceInviteBudget(ctx, inviterID); status != 0 {
+			return groupInviteResult{}, &handlerError{status, msg}
+		}
+		token, err := inviteToken()
 		if err != nil {
-			return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to add member"}
+			return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to generate invite token"}
 		}
-		acceptURL := siteBase() + "/invite?type=group"
-		if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
-			log.Printf("[invite] group email error (existing user) group=%d: %v", groupID, sendErr)
+		if _, err := h.DB.ExecContext(ctx,
+			`INSERT INTO group_invites (inviter_id, group_id, invitee_email, token)
+			 VALUES ($1, $2, $3, $4)
+			 ON CONFLICT (group_id, invitee_email) DO UPDATE
+			   SET token = EXCLUDED.token, inviter_id = EXCLUDED.inviter_id, created_at = NOW(), status = 'pending'`,
+			inviterID, groupID, email, token,
+		); err != nil {
+			return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to store group invite"}
 		}
-		return groupInviteResult{outcome: groupInviteAdded, inviteeID: inviteeID, joinedAt: joinedAt}, nil
+		acceptURL := fmt.Sprintf("%s/accept-invite?token=%s&type=group", siteBase(), token)
+		if h.Email != nil {
+			if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
+				log.Printf("[invite] group email error group=%d: %v", groupID, sendErr)
+			}
+		}
+		return groupInviteResult{outcome: groupInviteInvited, inviteeID: inviteeID}, nil
+	}
+
+	if status, msg := h.enforceInviteBudget(ctx, inviterID); status != 0 {
+		return groupInviteResult{}, &handlerError{status, msg}
 	}
 
 	// No account yet — store a pending invite and send an email. The invite is
-	// redeemed automatically when this email registers (acceptPendingGroupInvites).
+	// redeemed when this email is verified (acceptPendingGroupInvites).
 	token, err := inviteToken()
 	if err != nil {
 		return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to generate invite token"}
@@ -321,10 +376,325 @@ func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, em
 		return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to store group invite"}
 	}
 	acceptURL := fmt.Sprintf("%s/invite?token=%s&type=group", siteBase(), token)
-	if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
-		log.Printf("[invite] group email error group=%d: %v", groupID, sendErr)
+	if h.Email != nil {
+		if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
+			log.Printf("[invite] group email error group=%d: %v", groupID, sendErr)
+		}
 	}
 	return groupInviteResult{outcome: groupInviteInvited}, nil
+}
+
+// preparePartnerInvite enforces the partner cap for a new row and the daily
+// invite email cap. An already-accepted partnership is left alone.
+func (h *H) preparePartnerInvite(ctx context.Context, userID, inviteeID int64) (int, string) {
+	var status string
+	err := h.DB.QueryRowContext(ctx,
+		`SELECT status FROM relationships WHERE user_id = $1 AND partner_id = $2`,
+		userID, inviteeID,
+	).Scan(&status)
+	if err == nil && status == "accepted" {
+		return 0, ""
+	}
+	if status != "pending" {
+		n, cerr := h.partnerCount(ctx, userID)
+		if cerr != nil {
+			return http.StatusInternalServerError, "could not check partner limit"
+		}
+		if n >= maxPartnersPerUser {
+			return http.StatusUnprocessableEntity, "you can have up to 10 partners"
+		}
+	}
+	return h.enforceInviteBudget(ctx, userID)
+}
+
+// ListPendingPartnerInvites returns partner invites addressed to the signed-in email.
+// GET /relationships/invites/pending
+func (h *H) ListPendingPartnerInvites(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	email, err := h.userEmail(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	rows, err := h.DB.QueryContext(r.Context(), `
+		SELECT i.id, i.inviter_id, u.name, i.created_at
+		FROM relationship_invites i
+		JOIN users u ON u.id = i.inviter_id
+		WHERE i.invitee_email = $1 AND i.status = 'pending'
+		  AND i.created_at > NOW() - INTERVAL '7 days'
+		ORDER BY i.created_at DESC
+	`, email)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to list invites")
+		return
+	}
+	defer rows.Close()
+	type item struct {
+		ID          int64  `json:"id"`
+		InviterID   int64  `json:"inviter_id"`
+		InviterName string `json:"inviter_name"`
+		CreatedAt   string `json:"created_at"`
+		Type        string `json:"type"`
+	}
+	out := []item{}
+	for rows.Next() {
+		var it item
+		it.Type = "partner"
+		if rows.Scan(&it.ID, &it.InviterID, &it.InviterName, &it.CreatedAt) == nil {
+			out = append(out, it)
+		}
+	}
+	writeJSON(w, http.StatusOK, out)
+}
+
+// ListPendingGroupInvites returns group invites addressed to the signed-in email.
+// GET /groups/invites/pending
+func (h *H) ListPendingGroupInvites(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	email, err := h.userEmail(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	rows, err := h.DB.QueryContext(r.Context(), `
+		SELECT i.id, i.group_id, g.name, i.inviter_id, u.name, i.created_at
+		FROM group_invites i
+		JOIN groups g ON g.id = i.group_id
+		JOIN users u ON u.id = i.inviter_id
+		WHERE i.invitee_email = $1 AND i.status = 'pending'
+		  AND i.created_at > NOW() - INTERVAL '7 days'
+		ORDER BY i.created_at DESC
+	`, email)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to list invites")
+		return
+	}
+	defer rows.Close()
+	type item struct {
+		ID          int64  `json:"id"`
+		GroupID     int64  `json:"group_id"`
+		GroupName   string `json:"group_name"`
+		InviterID   int64  `json:"inviter_id"`
+		InviterName string `json:"inviter_name"`
+		CreatedAt   string `json:"created_at"`
+		Type        string `json:"type"`
+	}
+	out := []item{}
+	for rows.Next() {
+		var it item
+		it.Type = "group"
+		if rows.Scan(&it.ID, &it.GroupID, &it.GroupName, &it.InviterID, &it.InviterName, &it.CreatedAt) == nil {
+			out = append(out, it)
+		}
+	}
+	writeJSON(w, http.StatusOK, out)
+}
+
+func (h *H) userEmail(ctx context.Context, userID int64) (string, error) {
+	var email string
+	err := h.DB.QueryRowContext(ctx, `SELECT email FROM users WHERE id = $1`, userID).Scan(&email)
+	return email, err
+}
+
+// AcceptPartnerInviteByID accepts a pending partner invite addressed to the caller.
+// POST /relationships/invites/{id}/accept
+func (h *H) AcceptPartnerInviteByID(w http.ResponseWriter, r *http.Request) {
+	h.decidePartnerInvite(w, r, true)
+}
+
+// DeclinePartnerInviteByID declines a pending partner invite.
+// POST /relationships/invites/{id}/decline
+func (h *H) DeclinePartnerInviteByID(w http.ResponseWriter, r *http.Request) {
+	h.decidePartnerInvite(w, r, false)
+}
+
+func (h *H) decidePartnerInvite(w http.ResponseWriter, r *http.Request, accept bool) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	inviteID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid invite id")
+		return
+	}
+	email, err := h.userEmail(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	var token string
+	var inviterID int64
+	err = h.DB.QueryRowContext(r.Context(), `
+		SELECT token, inviter_id FROM relationship_invites
+		WHERE id = $1 AND invitee_email = $2 AND status = 'pending'
+		  AND created_at > NOW() - INTERVAL '7 days'
+	`, inviteID, email).Scan(&token, &inviterID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "invite not found or expired")
+		return
+	}
+	if !accept {
+		_, _ = h.DB.ExecContext(r.Context(),
+			`UPDATE relationship_invites SET status = 'declined' WHERE id = $1`, inviteID)
+		_, _ = h.DB.ExecContext(r.Context(),
+			`DELETE FROM relationships WHERE user_id = $1 AND partner_id = $2 AND status = 'pending'`,
+			inviterID, userID)
+		writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
+		return
+	}
+	var relID int64
+	if err := h.DB.QueryRowContext(r.Context(),
+		`INSERT INTO relationships (user_id, partner_id, type, status)
+		 VALUES ($1, $2, 'partner', 'accepted')
+		 ON CONFLICT (user_id, partner_id) DO UPDATE SET status = 'accepted'
+		 RETURNING id`,
+		inviterID, userID,
+	).Scan(&relID); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to accept invite")
+		return
+	}
+	_, _ = h.DB.ExecContext(r.Context(),
+		`UPDATE relationship_invites SET status = 'accepted' WHERE id = $1`, inviteID)
+	writeJSON(w, http.StatusOK, map[string]any{"status": "accepted", "relationship_id": relID})
+}
+
+// DeclinePartnerInvite declines by the email token.
+// POST /relationships/decline-invite
+// Body: { "token": "..." }
+func (h *H) DeclinePartnerInvite(w http.ResponseWriter, r *http.Request) {
+	h.declineByToken(w, r, false)
+}
+
+// AcceptGroupInvite accepts a group invite token for the signed-in email.
+// POST /groups/accept-invite
+// Body: { "token": "..." }
+func (h *H) AcceptGroupInvite(w http.ResponseWriter, r *http.Request) {
+	h.decideGroupByToken(w, r, true)
+}
+
+// DeclineGroupInvite declines a group invite token.
+// POST /groups/decline-invite
+func (h *H) DeclineGroupInvite(w http.ResponseWriter, r *http.Request) {
+	h.decideGroupByToken(w, r, false)
+}
+
+// AcceptGroupInviteByID accepts a listed group invite.
+// POST /groups/invites/{id}/accept
+func (h *H) AcceptGroupInviteByID(w http.ResponseWriter, r *http.Request) {
+	h.decideGroupByID(w, r, true)
+}
+
+// DeclineGroupInviteByID declines a listed group invite.
+// POST /groups/invites/{id}/decline
+func (h *H) DeclineGroupInviteByID(w http.ResponseWriter, r *http.Request) {
+	h.decideGroupByID(w, r, false)
+}
+
+func (h *H) decideGroupByID(w http.ResponseWriter, r *http.Request, accept bool) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	inviteID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid invite id")
+		return
+	}
+	email, err := h.userEmail(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	var groupID int64
+	err = h.DB.QueryRowContext(r.Context(), `
+		SELECT group_id FROM group_invites
+		WHERE id = $1 AND invitee_email = $2 AND status = 'pending'
+		  AND created_at > NOW() - INTERVAL '7 days'
+	`, inviteID, email).Scan(&groupID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "invite not found or expired")
+		return
+	}
+	if !accept {
+		_, _ = h.DB.ExecContext(r.Context(), `UPDATE group_invites SET status = 'declined' WHERE id = $1`, inviteID)
+		writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
+		return
+	}
+	if err := h.joinGroupFromInvite(r.Context(), userID, inviteID, groupID); err != nil {
+		if errors.Is(err, errGroupFull) {
+			writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "failed to join group")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"status": "accepted", "group_id": groupID})
+}
+
+func (h *H) decideGroupByToken(w http.ResponseWriter, r *http.Request, accept bool) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	var req struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Token == "" {
+		writeError(w, http.StatusBadRequest, "token is required")
+		return
+	}
+	email, err := h.userEmail(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	var inviteID, groupID int64
+	err = h.DB.QueryRowContext(r.Context(), `
+		SELECT id, group_id FROM group_invites
+		WHERE token = $1 AND invitee_email = $2 AND status = 'pending'
+		  AND created_at > NOW() - INTERVAL '7 days'
+	`, req.Token, email).Scan(&inviteID, &groupID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "invite not found or expired")
+		return
+	}
+	if !accept {
+		_, _ = h.DB.ExecContext(r.Context(), `UPDATE group_invites SET status = 'declined' WHERE id = $1`, inviteID)
+		writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
+		return
+	}
+	if err := h.joinGroupFromInvite(r.Context(), userID, inviteID, groupID); err != nil {
+		if errors.Is(err, errGroupFull) {
+			writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "failed to join group")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"status": "accepted", "group_id": groupID})
+}
+
+func (h *H) declineByToken(w http.ResponseWriter, r *http.Request, _ bool) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	var req struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Token == "" {
+		writeError(w, http.StatusBadRequest, "token is required")
+		return
+	}
+	email, err := h.userEmail(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	var inviteID, inviterID int64
+	err = h.DB.QueryRowContext(r.Context(), `
+		SELECT id, inviter_id FROM relationship_invites
+		WHERE token = $1 AND invitee_email = $2 AND status = 'pending'
+		  AND created_at > NOW() - INTERVAL '7 days'
+	`, req.Token, email).Scan(&inviteID, &inviterID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "invite not found or expired")
+		return
+	}
+	_, _ = h.DB.ExecContext(r.Context(), `UPDATE relationship_invites SET status = 'declined' WHERE id = $1`, inviteID)
+	_, _ = h.DB.ExecContext(r.Context(),
+		`DELETE FROM relationships WHERE user_id = $1 AND partner_id = $2 AND status = 'pending'`,
+		inviterID, userID)
+	writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
 }
 
 // inviteToken generates a cryptographically random 32-byte hex token.

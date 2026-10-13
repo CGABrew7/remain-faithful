@@ -24,6 +24,8 @@ type EmailSender interface {
 	SendPartnerInvite(toEmail, inviterName, acceptURL string) error
 	SendGroupInvite(toEmail, inviterName, groupName, acceptURL string) error
 	SendContact(fromEmail, fromName, subject, message, toEmail string) error
+	SendVerifyEmail(toEmail, toName, verifyURL string) error
+	SendEmailChange(toEmail, toName, verifyURL string) error
 }
 
 // H holds shared dependencies for all HTTP handlers.

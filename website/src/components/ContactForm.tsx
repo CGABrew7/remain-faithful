@@ -33,7 +33,7 @@ export default function ContactForm() {
       setSubmitted(true)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
-      setError(msg + ' — or email us directly at jeff@hanokventures.co')
+      setError(msg + '. You can also email jeff@hanokventures.co')
     } finally {
       setLoading(false)
     }
@@ -43,7 +43,7 @@ export default function ContactForm() {
     return (
       <div className="py-10 border-t border-b border-hairline">
         <h3 className="font-serif text-xl font-medium text-ink mb-3">Message sent</h3>
-        <p className="text-ink-soft">We&apos;ll get back to you within 2–3 business days.</p>
+        <p className="text-ink-soft">We will get back to you within 2 to 3 business days.</p>
       </div>
     )
   }
@@ -52,10 +52,11 @@ export default function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
-          <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+          <label htmlFor="contact-name" className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
             Name <span className="text-wax">*</span>
           </label>
           <input
+            id="contact-name"
             type="text"
             required
             value={form.name}
@@ -65,10 +66,11 @@ export default function ContactForm() {
           />
         </div>
         <div>
-          <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+          <label htmlFor="contact-email" className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
             Email <span className="text-wax">*</span>
           </label>
           <input
+            id="contact-email"
             type="email"
             required
             value={form.email}
@@ -79,10 +81,11 @@ export default function ContactForm() {
         </div>
       </div>
       <div>
-        <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+        <label htmlFor="contact-subject" className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
           Subject <span className="text-wax">*</span>
         </label>
         <select
+          id="contact-subject"
           required
           value={form.subject}
           onChange={(e) => update('subject', e.target.value)}
@@ -97,10 +100,11 @@ export default function ContactForm() {
         </select>
       </div>
       <div>
-        <label className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
+        <label htmlFor="contact-message" className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
           Message <span className="text-wax">*</span>
         </label>
         <textarea
+          id="contact-message"
           required
           rows={5}
           value={form.message}
@@ -109,7 +113,11 @@ export default function ContactForm() {
           className="input-field resize-none"
         />
       </div>
-      {error && <p className="text-wax text-sm">{error}</p>}
+      {error && (
+        <p className="form-error text-sm" role="alert">
+          {error}
+        </p>
+      )}
       <button
         type="submit"
         disabled={loading}

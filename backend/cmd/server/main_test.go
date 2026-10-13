@@ -119,3 +119,24 @@ func TestAuthenticatedRateLimiterKeysByUser(t *testing.T) {
 		t.Fatalf("user 2 first: status %d, want 204 (separate bucket)", rr.Code)
 	}
 }
+
+func TestClientIPIgnoresForwardedForInProduction(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	req.RemoteAddr = "10.0.0.8:1234"
+	req.Header.Set("X-Forwarded-For", "1.2.3.4")
+
+	t.Setenv("APP_ENV", "production")
+	if got := clientIP(req); got == "1.2.3.4" {
+		t.Fatalf("production trusted X-Forwarded-For: %q", got)
+	}
+	req.Header.Set("Fly-Client-IP", "9.9.9.9")
+	if got := clientIP(req); got != "9.9.9.9" {
+		t.Fatalf("Fly-Client-IP = %q", got)
+	}
+
+	t.Setenv("APP_ENV", "development")
+	req.Header.Del("Fly-Client-IP")
+	if got := clientIP(req); got != "1.2.3.4" {
+		t.Fatalf("development X-Forwarded-For = %q", got)
+	}
+}

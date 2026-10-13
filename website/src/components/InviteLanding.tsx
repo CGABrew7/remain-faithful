@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import Ornament from '@/components/Ornament'
+import AppStoreLink from '@/components/AppStoreLink'
+import AcceptInviteForm from '@/components/AcceptInviteForm'
 
 export type InviteVariant = 'group' | 'partner' | 'link'
 
@@ -7,63 +9,69 @@ const copy: Record<InviteVariant, { kicker: string; title: string; lede: string;
   group: {
     kicker: 'Group invite',
     title: 'Join your accountability group',
-    lede: 'Someone you know invited you to their Remain Faithful group. Here is how to accept.',
+    lede: 'Someone you know invited you to their Remain Faithful group. Accept with the same email, then confirm that email.',
     steps: [
       {
         title: 'Get the app',
-        body: 'Remain Faithful is available for iPhone (iOS 17+). Open the App Store on your iPhone and search for Remain Faithful.',
+        body: 'Remain Faithful is on the App Store for iPhone (iOS 17+).',
       },
       {
         title: 'Create your account with this email',
-        body: 'Sign up using the same email address this invite was sent to. You join the group automatically when your account is created.',
+        body: 'Sign up with the same email this invite was sent to, then open the confirmation email. The group invite is accepted after you confirm. Signing in alone does not add you.',
       },
       {
-        title: 'Open the Group tab',
-        body: 'Your group and its members appear on the Group tab. Already have an account with this email? Sign in and open the Group tab.',
+        title: 'Already have an account',
+        body: 'Use the form on this page to sign in and accept. Opening the app does not accept the invite by itself.',
       },
     ],
   },
   partner: {
     kicker: 'Partner invite',
     title: 'Accept your partner invite',
-    lede: 'Someone you know asked you to be their accountability partner on Remain Faithful. Here is how to accept.',
+    lede: 'Someone you know asked you to be their accountability partner. Accept with the same email, then confirm that email.',
     steps: [
       {
         title: 'Get the app',
-        body: 'Remain Faithful is available for iPhone (iOS 17+). Open the App Store on your iPhone and search for Remain Faithful.',
+        body: 'Remain Faithful is on the App Store for iPhone (iOS 17+).',
       },
       {
         title: 'Create your account with this email',
-        body: 'Sign up using the same email address this invite was sent to. The partner invite is accepted when your account is created.',
+        body: 'Sign up with the same email this invite was sent to, then open the confirmation email. The partner invite is accepted after you confirm. Signing in alone does not connect you.',
       },
       {
-        title: 'Sign in and get started',
-        body: 'Already have an account with this email? Sign in to Remain Faithful on your iPhone.',
+        title: 'Already have an account',
+        body: 'Use the form on this page to sign in and accept. Opening the app does not accept the invite by itself.',
       },
     ],
   },
   link: {
     kicker: 'Group invite',
     title: 'You were invited to a group',
-    lede: 'Someone shared their Remain Faithful group with you. Group members are added by email, so here is how to join.',
+    lede: 'Someone shared their Remain Faithful group with you. This link does not add you to the group.',
     steps: [
       {
         title: 'Get the app',
-        body: 'Remain Faithful is available for iPhone (iOS 17+). Open the App Store on your iPhone and search for Remain Faithful.',
+        body: 'Remain Faithful is on the App Store for iPhone (iOS 17+).',
       },
       {
         title: 'Ask to be invited by email',
-        body: 'Send the person who shared this link the email address you will use. They can invite you from the Group tab with Invite Member.',
+        body: 'Send the person who shared this link the email address you will use. They invite you from the Group tab.',
       },
       {
-        title: 'Create your account with that email',
-        body: 'Sign up with the same email address. You join the group automatically when your account is created.',
+        title: 'Confirm that email',
+        body: 'Create the account with that email and confirm it. The invite stays pending until you accept. This page does not add you.',
       },
     ],
   },
 }
 
-export default function InviteLanding({ variant }: { variant: InviteVariant }) {
+export default function InviteLanding({
+  variant,
+  token,
+}: {
+  variant: InviteVariant
+  token?: string
+}) {
   const c = copy[variant]
   return (
     <section className="section pt-28 lg:pt-32">
@@ -100,12 +108,14 @@ export default function InviteLanding({ variant }: { variant: InviteVariant }) {
             Controls on their own iPhone. It is not parental controls.
           </p>
 
+          {token && variant !== 'link' && (
+            <AcceptInviteForm token={token} type={variant === 'group' ? 'group' : 'partner'} />
+          )}
+
           <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/how-it-works" className="btn-wax">
+            <AppStoreLink />
+            <Link href="/how-it-works" className="btn-ghost">
               How it works
-            </Link>
-            <Link href="/privacy-architecture" className="btn-ghost">
-              What partners can see
             </Link>
           </div>
         </div>

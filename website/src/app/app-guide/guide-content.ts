@@ -107,7 +107,7 @@ export const guideParts: GuidePart[] = [
           { name: 'Sign In', does: 'Signs you in with your email and password.' },
           {
             name: 'Forgot Password?',
-            does: 'Sends a reset link to your email. The link works for one hour.',
+            does: 'Sends a reset link to your email. Open the link, choose a new password, and the link works for one hour.',
           },
           {
             name: 'Sign in with Apple',

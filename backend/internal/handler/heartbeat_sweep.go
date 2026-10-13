@@ -48,23 +48,17 @@ type silenceRow struct {
 }
 
 func (h *H) sweepHeartbeatSilence(ctx context.Context, silenceMinutes int) {
-	// Find (user, partner) pairs where:
-	//   1. The user has sent at least one heartbeat (last_heartbeat_at IS NOT NULL).
-	//   2. The most recent heartbeat is older than the silence threshold.
-	//   3. No silence alert has been sent for this silence window on this
-	//      specific relationship (last_silence_alert_at IS NULL means never
-	//      alerted, or last_silence_alert_at < last_heartbeat_at means the
-	//      user resumed and has since gone silent again).
-	//   4. The relationship is accepted.
+	h.purgeOldEvents(ctx)
+	// Users who have never heartbeated are left alone. A null heartbeat is
+	// "not armed", not "monitoring is off".
+	// Recipients (accepted partners and group members) are chosen inside
+	// storeAndPushProtection. A recipient who already has a silence row from
+	// the last 6 hours is skipped, so a continued silence repeats slowly.
 	rows, err := h.DB.QueryContext(ctx, `
-		SELECT u.id, u.name, r.id, r.partner_id
+		SELECT u.id, u.name
 		FROM   users u
-		JOIN   relationships r ON r.user_id = u.id
 		WHERE  u.last_heartbeat_at IS NOT NULL
 		  AND  u.last_heartbeat_at < NOW() - INTERVAL '1 minute' * $1
-		  AND  r.status = 'accepted'
-		  AND  (r.last_silence_alert_at IS NULL
-		     OR r.last_silence_alert_at < u.last_heartbeat_at)
 	`, silenceMinutes)
 	if err != nil {
 		log.Printf("[heartbeat-sweep] query error: %v", err)
@@ -75,7 +69,7 @@ func (h *H) sweepHeartbeatSilence(ctx context.Context, silenceMinutes int) {
 	var targets []silenceRow
 	for rows.Next() {
 		var s silenceRow
-		if err := rows.Scan(&s.userID, &s.userName, &s.relID, &s.partnerID); err != nil {
+		if err := rows.Scan(&s.userID, &s.userName); err != nil {
 			continue
 		}
 		targets = append(targets, s)
@@ -85,20 +79,23 @@ func (h *H) sweepHeartbeatSilence(ctx context.Context, silenceMinutes int) {
 		return
 	}
 
-	log.Printf("[heartbeat-sweep] %d silence alert(s) to send", len(targets))
+	log.Printf("[heartbeat-sweep] %d silent user(s)", len(targets))
 
 	for _, t := range targets {
-		log.Printf("[heartbeat-sweep] silence alert user=%d partner=%d rel=%d", t.userID, t.partnerID, t.relID)
+		h.sendProtectionAlertToPartners(t.userID, t.userName, "heartbeat_silence", "")
+	}
+}
 
-		h.sendSilenceAlertToPartner(ctx, t.partnerID, t.userName, t.userID)
-
-		// Mark this relationship so we don't re-alert during the same silence window.
-		if _, err := h.DB.ExecContext(ctx,
-			`UPDATE relationships SET last_silence_alert_at = NOW() WHERE id = $1`,
-			t.relID,
-		); err != nil {
-			log.Printf("[heartbeat-sweep] update last_silence_alert_at rel=%d: %v", t.relID, err)
-		}
+func (h *H) purgeOldEvents(ctx context.Context) {
+	if _, err := h.DB.ExecContext(ctx,
+		`DELETE FROM events WHERE timestamp < NOW() - INTERVAL '365 days'`,
+	); err != nil {
+		log.Printf("[retention] events: %v", err)
+	}
+	if _, err := h.DB.ExecContext(ctx,
+		`DELETE FROM alerts WHERE created_at < NOW() - INTERVAL '365 days'`,
+	); err != nil {
+		log.Printf("[retention] alerts: %v", err)
 	}
 }
 

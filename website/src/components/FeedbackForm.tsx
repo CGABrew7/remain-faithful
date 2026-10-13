@@ -264,7 +264,7 @@ export default function FeedbackForm() {
       </div>
 
       {error && (
-        <p className="text-sm text-wax" role="alert">
+        <p className="form-error text-sm" role="alert">
           {error}
         </p>
       )}
