@@ -321,6 +321,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     override func broadcastPaused() {
         sharedDefaults?.set(false, forKey: "isBroadcasting")
+        noteDeepScanReduced()
         postBroadcastStateChanged()
     }
 
@@ -330,19 +331,12 @@ class SampleHandler: RPBroadcastSampleHandler {
     }
 
     override func broadcastFinished() {
-        let lockoutWasActive = sharedDefaults?.bool(forKey: "appLockoutEnabled") ?? false
         sharedDefaults?.set(false, forKey: "isBroadcasting")
+        noteDeepScanReduced()
         postBroadcastStateChanged()
         heartbeatTask?.cancel()
         retryTask?.cancel()
         logger.info("Broadcast finished — available: \(availableMemoryMB()) MB")
-        // If app lockout is enabled the main app's Darwin observer handles re-shielding.
-        // Also send a partner alert from this side in case the main app is suspended.
-        if lockoutWasActive {
-            Task.detached(priority: .utility) { [weak self] in
-                await self?.sendLockoutStoppedAlert()
-            }
-        }
     }
 
     // MARK: - Darwin notification helpers
@@ -357,20 +351,88 @@ class SampleHandler: RPBroadcastSampleHandler {
         )
     }
 
-    private func sendLockoutStoppedAlert() async {
+    /// Claims the notice, then POSTs it. A failure is written to the same
+    /// app-group queue the main app flushes after the network returns.
+    /// The claim stops the main app from sending the same pause twice.
+    private func noteDeepScanReduced() {
+        let now = Date().timeIntervalSince1970
+        let last = sharedDefaults?.double(forKey: "lastDeepScanNoticeAt") ?? 0
+        if now - last < 2 { return }
+        sharedDefaults?.set(now, forKey: "lastDeepScanNoticeAt")
+        sharedDefaults?.synchronize()
+        Task.detached(priority: .utility) { [weak self] in
+            await self?.postDeepScanStopped()
+        }
+    }
+
+    private func postDeepScanStopped() async {
+        let type = "deep_scan_stopped"
+        let detail = "Deep Scan stopped."
         guard let apiBase = sharedDefaults?.string(forKey: "apiBaseURL"),
               let token   = sharedDefaults?.string(forKey: "authToken"),
-              let url     = URL(string: apiBase + "/protection/alerts") else { return }
+              let url     = URL(string: apiBase + "/protection/alerts") else {
+            enqueueProtectionAlert(type: type, detail: detail)
+            return
+        }
         var req = URLRequest(url: url, timeoutInterval: 10)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         req.httpBody = try? JSONSerialization.data(withJSONObject: [
-            "type": "deep_scan_stopped",
-            "detail": "Deep Scan ended — app lockout shields re-applied.",
+            "type": type,
+            "detail": detail,
         ])
-        _ = try? await URLSession.shared.data(for: req)
-        logger.info("Lockout stop alert posted from broadcast extension")
+        do {
+            let (_, resp) = try await URLSession.shared.data(for: req)
+            if let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) {
+                logger.info("Deep Scan stop alert posted")
+                return
+            }
+            enqueueProtectionAlert(type: type, detail: detail)
+        } catch {
+            enqueueProtectionAlert(type: type, detail: detail)
+        }
+    }
+
+    /// Same JSON shape as ProtectionAlerts.Item in the main app.
+    private func enqueueProtectionAlert(type: String, detail: String) {
+        struct Item: Codable {
+            let userID: Int
+            let type: String
+            let detail: String
+        }
+        let key = "pendingProtectionAlerts"
+        let userID = queuedUserID()
+        var items: [Item] = []
+        if let data = sharedDefaults?.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([Item].self, from: data) {
+            items = decoded
+        }
+        items.append(Item(userID: userID, type: type, detail: detail))
+        if items.count > 40 { items = Array(items.suffix(40)) }
+        if let data = try? JSONEncoder().encode(items) {
+            sharedDefaults?.set(data, forKey: key)
+        }
+        logger.info("Deep Scan stop alert queued for reconnect")
+    }
+
+    /// Prefer the id the app published. Fall back to the unsigned `user_id`
+    /// claim already inside the session token so an offline queue is not anonymous.
+    private func queuedUserID() -> Int {
+        let stored = sharedDefaults?.integer(forKey: "authUserID") ?? 0
+        if stored != 0 { return stored }
+        guard let token = sharedDefaults?.string(forKey: "authToken") else { return 0 }
+        let parts = token.split(separator: ".")
+        guard parts.count == 3 else { return 0 }
+        var b64 = String(parts[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let rem = b64.count % 4
+        if rem != 0 { b64 += String(repeating: "=", count: 4 - rem) }
+        guard let data = Data(base64Encoded: b64),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let id = obj["user_id"] as? NSNumber else { return 0 }
+        return id.intValue
     }
 
     // MARK: - Frame processing

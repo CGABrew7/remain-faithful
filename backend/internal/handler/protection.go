@@ -65,6 +65,7 @@ var clientProtectionAlertTypes = map[string]struct{}{
 	"pin_changed":             {}, // PINEntryView
 	"family_controls_revoked": {}, // RemainFaithfulApp
 	"signed_out":              {}, // SettingsView, build 10
+	"selection_cleared":       {}, // ActivitySelectionManager, all chosen apps removed
 }
 
 // serverOnlyProtectionAlertTypes are generated internally (heartbeat sweep).
@@ -255,7 +256,9 @@ func protectionAlertBody(name, alertType, _ string) string {
 	case "lockout_disabled":
 		return name + " disabled App Lockout"
 	case "lockout_broadcast_stopped", "deep_scan_stopped":
-		return name + " stopped Deep Scan — apps are re-shielded"
+		return name + " stopped Deep Scan"
+	case "selection_cleared":
+		return name + " removed every chosen app"
 	case "pin_wrong_attempt", "wrong_pin_attempt":
 		return name + " entered an incorrect Partner PIN"
 	case "pin_removed":

@@ -186,7 +186,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitoring Active (green card)',
-            does: 'Shows while Deep Scan is running. It is just a status card. You start and stop Deep Scan from Control Center. While it is running, the line under it says whether pausing will notify your partners. That notice goes out only when App Lockout is on.',
+            does: 'Shows whether Alerts and Blocking are on. Deep Scan is a smaller line. You start and stop Deep Scan from Control Center. Pausing or turning off monitoring notifies your partners.',
           },
           {
             name: 'Verse of the Day',
@@ -418,7 +418,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'App Lockout (Deep Scan)',
-            does: 'Optional. When on, the apps you chose stay blocked unless Deep Scan is running. If you stop Deep Scan, the block comes back and your partners get a notice. The Home card says so only while this is on. Turning App Lockout off also sends a notice.',
+            does: 'Optional. When on, the apps you chose stay blocked unless Deep Scan is running. If you stop Deep Scan, the block comes back. Pausing or turning off monitoring notifies your partners, whether or not this is on. Turning App Lockout off also sends a notice.',
           },
           {
             name: 'Partner PIN',

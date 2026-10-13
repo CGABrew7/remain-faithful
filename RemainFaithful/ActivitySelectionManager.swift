@@ -47,12 +47,32 @@ final class ActivitySelectionManager: ObservableObject {
     // MARK: - Selection
 
     func selectionDidChange() {
+        let nowEmpty = selection.applicationTokens.isEmpty && selection.categoryTokens.isEmpty
+        let wasEmpty = persistedSelectionIsEmpty()
         if let data = try? JSONEncoder().encode(selection) {
             defaults?.set(data, forKey: "screenTimeSelection")
+        }
+        // Clearing every chosen app is a reduction, even if a toggle was already off.
+        if !wasEmpty && nowEmpty {
+            ProtectionAlerts.send(
+                type: "selection_cleared",
+                detail: "All chosen apps were removed."
+            )
+            if isMonitoringEnabled { stopMonitoring() }
+            if isShieldingEnabled { clearShielding() }
+            return
         }
         if isShieldingEnabled  { applyShielding() }
         // Restart monitoring with updated token set
         if isMonitoringEnabled { startMonitoring() }
+    }
+
+    private func persistedSelectionIsEmpty() -> Bool {
+        guard let data = defaults?.data(forKey: "screenTimeSelection"),
+              let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else {
+            return true
+        }
+        return saved.applicationTokens.isEmpty && saved.categoryTokens.isEmpty
     }
 
     // MARK: - Shielding (ManagedSettings)

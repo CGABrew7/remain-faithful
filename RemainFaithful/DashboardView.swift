@@ -43,8 +43,8 @@ enum EventCategory: String {
         case "gaming":        self = .gaming
         case "monitoring_disabled", "shielding_disabled", "signed_out",
              "family_controls_revoked", "deep_scan_stopped", "lockout_disabled",
-             "heartbeat_silence", "wrong_pin_attempt", "pin_removed", "pin_changed",
-             "protection", "tamper":
+             "selection_cleared", "heartbeat_silence", "wrong_pin_attempt",
+             "pin_removed", "pin_changed", "protection", "tamper":
             self = .tamper
         default:
             self = .unknown
@@ -662,7 +662,6 @@ struct DashboardView: View {
 private struct StatusCard: View {
     let presentation: MonitoringPresentation
     let onAction: () -> Void
-    @ObservedObject private var lockout = AppLockoutManager.shared
     @State private var pulse: CGFloat = 1.0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -703,12 +702,10 @@ private struct StatusCard: View {
                         .font(.footnote)
                         .foregroundStyle(Color.white.opacity(0.66))
                         .fixedSize(horizontal: false, vertical: true)
-                    if presentation.coreIsOn {
-                        Text(PauseNotice.text(lockoutEnabled: lockout.isEnabled))
-                            .font(.footnote.weight(.medium))
-                            .foregroundStyle(Self.amber)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    Text(PauseNotice.text)
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(Self.amber)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
             }
