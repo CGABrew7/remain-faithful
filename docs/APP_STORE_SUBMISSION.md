@@ -178,7 +178,7 @@ How to test the core flow
 4. Confirm the iOS shield appears if that app is opened.
 5. Invite flow: Group tab → New Group or partner invite. Alerts show metadata only.
 
-Contact for review questions: jeff@hanokventures.co or support@remainfaithful.com
+Contact for review questions: support@remainfaithful.com
 
 ---
 

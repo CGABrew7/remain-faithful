@@ -33,7 +33,7 @@ export default function ContactForm() {
       setSubmitted(true)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
-      setError(msg + '. You can also email jeff@hanokventures.co')
+      setError(msg + '. You can also email support@remainfaithful.com')
     } finally {
       setLoading(false)
     }
