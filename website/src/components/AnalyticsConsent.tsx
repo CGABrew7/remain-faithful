@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Script from 'next/script'
 
 const KEY = 'rf-analytics'
 
 export default function AnalyticsConsent({ gaId }: { gaId?: string }) {
+  const pathname = usePathname()
   const [choice, setChoice] = useState<'unknown' | 'allow' | 'deny'>('unknown')
 
   useEffect(() => {
@@ -13,7 +15,7 @@ export default function AnalyticsConsent({ gaId }: { gaId?: string }) {
     if (saved === 'allow' || saved === 'deny') setChoice(saved)
   }, [])
 
-  if (!gaId) return null
+  if (!gaId || pathname === '/admin' || pathname.startsWith('/admin/')) return null
 
   function choose(next: 'allow' | 'deny') {
     window.localStorage.setItem(KEY, next)

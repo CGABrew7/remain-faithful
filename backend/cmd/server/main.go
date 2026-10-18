@@ -71,6 +71,10 @@ func main() {
 	silenceMinutes := heartbeatSilenceMinutes()
 	go h.StartHeartbeatWatcher(ctx)
 	go h.StartHeartbeatSweep(ctx, silenceMinutes)
+	if err := h.PurgeOldPageviews(ctx); err != nil {
+		log.Printf("pageview retention: %v", err)
+	}
+	go h.StartPageviewRetention(ctx)
 
 	go func() {
 		log.Printf("listening on %s", srv.Addr)
@@ -223,6 +227,8 @@ func corsMiddleware(allowedOrigins []string) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if origin := r.Header.Get("Origin"); allowed[origin] {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+				w.Header().Add("Vary", "Origin")
 			}
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -242,6 +248,9 @@ func routes(h *handler.H) http.Handler {
 	r.Use(loggingMiddleware)
 	origins := strings.Split(getenv("ALLOWED_ORIGINS", "https://remainfaithful.com"), ",")
 	r.Use(corsMiddleware(origins))
+	// CORS middleware answers preflight only after a route matches.
+	// This catch-all lets every OPTIONS request reach that middleware.
+	r.PathPrefix("/").Methods(http.MethodOptions).HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 
 	// Health check (unauthenticated)
 	r.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
@@ -322,6 +331,21 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/auth/resend-verification", h.ResendVerification).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session", h.CreateCheckoutSession).Methods(http.MethodPost)
 	api.HandleFunc("/donations/billing-portal", h.CreateBillingPortalSession).Methods(http.MethodPost)
+
+	// Owner dashboard. Disabled (404) unless ADMIN_PASSWORD_HASH is set.
+	// These routes are not behind the user JWT.
+	owner := r.PathPrefix("/admin").Subrouter()
+	owner.HandleFunc("/login", h.AdminLogin).Methods(http.MethodPost)
+	owner.HandleFunc("/logout", h.AdminLogout).Methods(http.MethodPost)
+	owner.HandleFunc("/overview", h.AdminOverview).Methods(http.MethodGet)
+	owner.HandleFunc("/health", h.AdminHealth).Methods(http.MethodGet)
+	owner.HandleFunc("/account", h.AdminLookupAccount).Methods(http.MethodGet)
+	owner.HandleFunc("/account/resend-verification", h.AdminResendVerification).Methods(http.MethodPost)
+	owner.HandleFunc("/account/password-reset", h.AdminSendPasswordReset).Methods(http.MethodPost)
+	owner.HandleFunc("/account/delete", h.AdminDeleteAccount).Methods(http.MethodPost)
+
+	// Cookieless website analytics. The website adds country from Vercel headers.
+	r.HandleFunc("/analytics/collect", h.CollectAnalytics).Methods(http.MethodPost)
 
 	// Contact form — unauthenticated, rate-limited to 10 requests/minute per IP
 	// (same fixed-window limiter as /auth).
@@ -599,6 +623,31 @@ func migrate(db *sql.DB) error {
 
 	CREATE INDEX IF NOT EXISTS idx_events_user_timestamp ON events(user_id, timestamp);
 	CREATE INDEX IF NOT EXISTS idx_users_last_heartbeat ON users(last_heartbeat_at);
+
+	CREATE TABLE IF NOT EXISTS pageviews (
+		id              BIGSERIAL   PRIMARY KEY,
+		created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		event_name      TEXT        NOT NULL,
+		path            TEXT        NOT NULL DEFAULT '',
+		referrer_domain TEXT        NOT NULL DEFAULT '',
+		utm_source      TEXT        NOT NULL DEFAULT '',
+		utm_medium      TEXT        NOT NULL DEFAULT '',
+		utm_campaign    TEXT        NOT NULL DEFAULT '',
+		country         TEXT        NOT NULL DEFAULT '',
+		region          TEXT        NOT NULL DEFAULT '',
+		device_type     TEXT        NOT NULL DEFAULT '',
+		visitor_hash    TEXT        NOT NULL
+	);
+	CREATE INDEX IF NOT EXISTS idx_pageviews_created_at ON pageviews (created_at);
+	CREATE INDEX IF NOT EXISTS idx_pageviews_event_created ON pageviews (event_name, created_at);
+
+	CREATE TABLE IF NOT EXISTS admin_audit (
+		id         BIGSERIAL   PRIMARY KEY,
+		created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		action     TEXT        NOT NULL,
+		detail     TEXT        NOT NULL DEFAULT ''
+	);
+	CREATE INDEX IF NOT EXISTS idx_admin_audit_created_at ON admin_audit (created_at);
 	`)
 	return err
 }

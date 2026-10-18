@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from 'next'
+import { Suspense } from 'react'
 import { Playfair_Display, Source_Sans_3 } from 'next/font/google'
 import './globals.css'
-import Nav from '@/components/Nav'
-import Footer from '@/components/Footer'
 import { JsonLd } from '@/components/JsonLd'
 import AnalyticsConsent from '@/components/AnalyticsConsent'
+import PageBeacon from '@/components/PageBeacon'
+import SiteChrome from '@/components/SiteChrome'
 import { organizationSchema, websiteSchema } from '@/lib/structured-data'
 
 const playfair = Playfair_Display({
@@ -104,12 +105,13 @@ export default function RootLayout({
       <head />
       <body className="text-ink-soft font-sans">
         <a href="#main" className="skip">Skip to content</a>
+        <Suspense fallback={null}>
+          <PageBeacon />
+        </Suspense>
         <AnalyticsConsent gaId={gaId} />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
-        <Nav />
-        <main id="main" className="min-h-screen">{children}</main>
-        <Footer />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   )

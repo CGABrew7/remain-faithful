@@ -83,11 +83,11 @@ func (h *H) Register(w http.ResponseWriter, r *http.Request) {
 	h.sendEmailVerification(r.Context(), id, req.Email, req.Name)
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"id":              id,
-		"name":            req.Name,
-		"email":           req.Email,
-		"created_at":      createdAt,
-		"email_verified":  false,
+		"id":             id,
+		"name":           req.Name,
+		"email":          req.Email,
+		"created_at":     createdAt,
+		"email_verified": false,
 	})
 }
 
@@ -313,19 +313,30 @@ func (h *H) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
+	// Always respond 200 to prevent email enumeration.
+	_ = h.issuePasswordReset(r.Context(), req.Email)
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
 
+// issuePasswordReset stores a reset token and emails the link.
+// Results are "sent", "missing", "limited", or "failed".
+func (h *H) issuePasswordReset(ctx context.Context, email string) string {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" || h == nil || h.DB == nil {
+		return "missing"
+	}
 	var userID int64
 	var name string
 	var sentCount int
 	var windowStart sql.NullTime
-	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT id, name, reset_mail_count, reset_mail_window FROM users WHERE email = $1`, req.Email,
+	err := h.DB.QueryRowContext(ctx,
+		`SELECT id, name, reset_mail_count, reset_mail_window FROM users WHERE email = $1`, email,
 	).Scan(&userID, &name, &sentCount, &windowStart)
-	// Always respond 200 to prevent email enumeration.
+	if errors.Is(err, sql.ErrNoRows) {
+		return "missing"
+	}
 	if err != nil {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-		return
+		return "failed"
 	}
 	now := time.Now()
 	if !windowStart.Valid || now.Sub(windowStart.Time) >= time.Hour {
@@ -334,39 +345,37 @@ func (h *H) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		windowStart.Valid = true
 	}
 	if sentCount >= resetMailPerHour {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-		return
+		return "limited"
 	}
 
 	buf := make([]byte, 32)
 	if _, err := rand.Read(buf); err != nil {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-		return
+		return "failed"
 	}
 	token := hex.EncodeToString(buf)
 	expiresAt := now.Add(time.Hour)
 
-	_, err = h.DB.ExecContext(r.Context(), `
+	_, err = h.DB.ExecContext(ctx, `
 		INSERT INTO password_reset_tokens (user_id, token, expires_at)
 		VALUES ($1, $2, $3)
 		ON CONFLICT (user_id) DO UPDATE
 			SET token = EXCLUDED.token, expires_at = EXCLUDED.expires_at
 	`, userID, hashToken(token), expiresAt)
 	if err != nil {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-		return
+		return "failed"
 	}
-	_, _ = h.DB.ExecContext(r.Context(),
+	_, _ = h.DB.ExecContext(ctx,
 		`UPDATE users SET reset_mail_count = $1, reset_mail_window = $2 WHERE id = $3`,
 		sentCount+1, windowStart.Time, userID,
 	)
 
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s", getAppBaseURL(), token)
 	if h.Email != nil {
-		_ = h.Email.SendPasswordReset(req.Email, name, resetURL)
+		if err := h.Email.SendPasswordReset(email, name, resetURL); err != nil {
+			return "failed"
+		}
 	}
-
-	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	return "sent"
 }
 
 // ResetPassword validates a reset token and updates the password.

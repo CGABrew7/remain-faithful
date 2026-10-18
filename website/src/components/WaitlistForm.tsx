@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { trackEvent } from '@/lib/track'
 
 interface WaitlistFormProps {
   variant?: 'default' | 'inline' | 'footer'
@@ -32,6 +33,7 @@ export default function WaitlistForm({
         body: JSON.stringify({ name, email }),
       })
       if (!res.ok) throw new Error('Failed')
+      trackEvent('android_signup')
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')

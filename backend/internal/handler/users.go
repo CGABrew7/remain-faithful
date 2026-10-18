@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/apns"
+	rfauth "remain-faithful/backend/internal/auth"
 )
 
 // GetMe returns the authenticated user's profile.
@@ -61,7 +61,7 @@ func (h *H) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.Name  = strings.TrimSpace(req.Name)
+	req.Name = strings.TrimSpace(req.Name)
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
 	if req.Name == "" || req.Email == "" {
 		writeError(w, http.StatusBadRequest, "name and email are required")
@@ -158,27 +158,33 @@ func (h *H) DeleteMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Promote admins before this user's group_members row is cascade-deleted.
-	if err := h.promoteAdminsBeforeDeletion(r.Context(), userID); err != nil {
-		log.Printf("[delete] promote admins user=%d: %v", userID, err)
-	}
-
-	// Collect device tokens of notification targets before device_tokens
-	// rows are cascade-deleted along with the user.
-	tokens := h.collectDepartureTokens(r.Context(), userID)
-
-	if _, err := h.DB.ExecContext(r.Context(),
-		`DELETE FROM users WHERE id = $1`, userID,
-	); err != nil {
+	if err := h.deleteUserByID(r.Context(), userID, userName); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to delete account")
 		return
 	}
 
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
 
+// deleteUserByID removes an account the same way DELETE /users/me does:
+// promote a remaining group admin, tell partners, then delete the row.
+func (h *H) deleteUserByID(ctx context.Context, userID int64, userName string) error {
+	if err := h.promoteAdminsBeforeDeletion(ctx, userID); err != nil {
+		log.Printf("[delete] promote admins user=%d: %v", userID, err)
+	}
+
+	var tokens []string
+	if h.APNS != nil {
+		tokens = h.collectDepartureTokens(ctx, userID)
+	}
+
+	if _, err := h.DB.ExecContext(ctx, `DELETE FROM users WHERE id = $1`, userID); err != nil {
+		return err
+	}
 	if len(tokens) > 0 {
 		go h.sendDepartureNotifications(context.Background(), userName, tokens)
 	}
+	return nil
 }
 
 // promoteAdminsBeforeDeletion promotes the longest-tenured member to admin in
@@ -342,8 +348,8 @@ func (h *H) GetUserStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	now        := time.Now().UTC()
-	today      := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	now := time.Now().UTC()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	createdDay := time.Date(createdAt.Year(), createdAt.Month(), createdAt.Day(), 0, 0, 0, 0, time.UTC)
 
 	// Current streak: consecutive clean days from today backward to account creation.
@@ -367,7 +373,7 @@ func (h *H) GetUserStats(w http.ResponseWriter, r *http.Request) {
 	week := make([]bool, 7)
 	weekStates := make([]string, 7)
 	for i := range week {
-		day    := today.AddDate(0, 0, -(6 - i))
+		day := today.AddDate(0, 0, -(6 - i))
 		dayStr := day.Format("2006-01-02")
 		switch {
 		case day.Before(createdDay):

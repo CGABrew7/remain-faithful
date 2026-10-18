@@ -1,3 +1,7 @@
+'use client'
+
+import { trackEvent } from '@/lib/track'
+
 export const APP_STORE_URL = 'https://apps.apple.com/app/id6774615426'
 
 export default function AppStoreLink({
@@ -8,7 +12,11 @@ export default function AppStoreLink({
   children?: React.ReactNode
 }) {
   return (
-    <a href={APP_STORE_URL} className={className}>
+    <a
+      href={APP_STORE_URL}
+      className={className}
+      onClick={() => trackEvent('app_store_click')}
+    >
       {children}
     </a>
   )
