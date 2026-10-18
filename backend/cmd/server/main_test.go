@@ -3,9 +3,11 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	rfauth "remain-faithful/backend/internal/auth"
+	"remain-faithful/backend/internal/handler"
 )
 
 func TestDebugPushEnabled(t *testing.T) {
@@ -117,6 +119,62 @@ func TestAuthenticatedRateLimiterKeysByUser(t *testing.T) {
 	h.ServeHTTP(rr, reqFor(2))
 	if rr.Code != http.StatusNoContent {
 		t.Fatalf("user 2 first: status %d, want 204 (separate bucket)", rr.Code)
+	}
+}
+
+func TestCORSAllowsCredentialsForKnownOrigin(t *testing.T) {
+	t.Setenv("ALLOWED_ORIGINS", "https://www.remainfaithful.com,https://remainfaithful.com")
+	t.Setenv("JWT_SECRET", "test-secret-not-for-production")
+	router := routes(&handler.H{})
+
+	req := httptest.NewRequest(http.MethodOptions, "/admin/login", nil)
+	req.Header.Set("Origin", "https://www.remainfaithful.com")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNoContent {
+		t.Fatalf("preflight status %d", rr.Code)
+	}
+	if rr.Header().Get("Access-Control-Allow-Origin") != "https://www.remainfaithful.com" {
+		t.Fatalf("origin = %q", rr.Header().Get("Access-Control-Allow-Origin"))
+	}
+	if rr.Header().Get("Access-Control-Allow-Credentials") != "true" {
+		t.Fatal("credentials header missing")
+	}
+
+	req = httptest.NewRequest(http.MethodOptions, "/admin/login", nil)
+	req.Header.Set("Origin", "https://evil.example")
+	rr = httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if rr.Header().Get("Access-Control-Allow-Origin") != "" {
+		t.Fatalf("unexpected origin %q", rr.Header().Get("Access-Control-Allow-Origin"))
+	}
+	if rr.Header().Get("Access-Control-Allow-Credentials") != "" {
+		t.Fatal("credentials were allowed for an unknown origin")
+	}
+}
+
+func TestAdminRoutesDisabledWithoutHash(t *testing.T) {
+	t.Setenv("ADMIN_PASSWORD_HASH", "")
+	t.Setenv("JWT_SECRET", "test-secret-not-for-production")
+	router := routes(&handler.H{})
+	checks := []struct {
+		method string
+		path   string
+	}{
+		{http.MethodPost, "/admin/login"},
+		{http.MethodGet, "/admin/overview"},
+		{http.MethodGet, "/admin/health"},
+		{http.MethodGet, "/admin/account"},
+		{http.MethodPost, "/admin/account/delete"},
+	}
+	for _, c := range checks {
+		req := httptest.NewRequest(c.method, c.path, strings.NewReader(`{}`))
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+		if rr.Code != http.StatusNotFound {
+			t.Fatalf("%s %s status %d, want 404", c.method, c.path, rr.Code)
+		}
 	}
 }
 

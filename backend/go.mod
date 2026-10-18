@@ -10,3 +10,8 @@ require (
 )
 
 require github.com/stripe/stripe-go/v76 v76.25.0
+
+require (
+	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/term v0.22.0 // indirect
+)
