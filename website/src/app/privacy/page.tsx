@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ALERT_TRIGGER, FAQ_STREAMING } from '@/lib/product-copy'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -47,7 +48,7 @@ export default function PrivacyPage() {
             </Subsection>
 
             <Subsection title="Alert Metadata">
-              <p>If a chosen app is used for a minute, or if optional Deep Scan flags a non-DRM frame, an alert can be stored. The phone also sends a heartbeat while monitoring is on. That alert metadata is:</p>
+              <p>{ALERT_TRIGGER} Optional Deep Scan can also store an alert when it flags a frame. {FAQ_STREAMING} The phone also sends a heartbeat while protection is on. That alert metadata is:</p>
               <ul>
                 <li>Timestamp of the alert</li>
                 <li>Content category (e.g., &quot;Adult Content&quot;, &quot;Explicit Text&quot;)</li>
@@ -89,7 +90,7 @@ export default function PrivacyPage() {
               <li>Any visual content from your screen</li>
             </ul>
             <p>
-              When Deep Scan flags a non-DRM frame, alert metadata is uploaded: category, severity, timestamp, and a short system-generated summary string. Screenshots, OCR text, and raw screen content never leave the device. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.
+              When Deep Scan flags a frame, the same alert metadata listed above can be uploaded. Screenshots, OCR text, and raw screen content never leave the device. {FAQ_STREAMING} The iOS app, backend, and website source are public on GitHub.
             </p>
           </Section>
 
@@ -97,7 +98,7 @@ export default function PrivacyPage() {
             <p>Your accountability partners have access to:</p>
             <ul>
               <li>Your display name and account email (as provided by you when you initiated the partnership)</li>
-              <li>Alert metadata as described above: timestamp, category, severity level, and a short system-generated summary — not which app, and not a bundle ID</li>
+              <li>Alert metadata as described above: timestamp, category, severity level, and a short system-generated summary. Not which app, and not a bundle ID.</li>
               <li>Your streak count (aggregate, not individual events)</li>
             </ul>
             <p>Partners do not have access to your screen content, browsing history, or any data beyond alert metadata and account-level statistics you have explicitly made visible.</p>

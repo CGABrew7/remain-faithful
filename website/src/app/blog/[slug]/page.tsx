@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { posts } from '../posts'
-import WaitlistForm from '@/components/WaitlistForm'
+import AppStoreLink from '@/components/AppStoreLink'
 import { RelatedPosts } from '@/components/RelatedPosts'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { JsonLd } from '@/components/JsonLd'
@@ -206,12 +206,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               
             >
               <h3 className="font-serif text-xl font-bold text-ink mb-2">
-                Want more like this?
+                Get Android updates
               </h3>
               <p className="text-ink-soft text-sm mb-5">
-                Get the monthly accountability newsletter — practical guides, theological reflections, and updates from the Remain Faithful team.
+                Remain Faithful is on the App Store for iPhone. Leave your email on the home page and we will write when Android is ready.
               </p>
-              <WaitlistForm variant="inline" buttonText="Subscribe" />
+              <Link href="/#android-updates" className="btn-ghost text-sm">
+                Get Android updates
+              </Link>
             </div>
 
             {/* Download CTA */}
@@ -223,14 +225,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 Ready to start?
               </h3>
               <p className="text-ink-soft text-sm mb-5">
-                Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.
+                Free on iPhone (iOS 17+).
               </p>
-              <Link
-                href="/#download"
-                className="btn-wax text-sm"
-              >
-                Get started
-              </Link>
+              <AppStoreLink className="btn-wax text-sm" />
             </div>
 
             {relatedPosts.length > 0 && <RelatedPosts posts={relatedPosts} />}

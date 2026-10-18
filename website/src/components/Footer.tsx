@@ -1,6 +1,6 @@
 import Link from 'next/link'
+import AppStoreLink from './AppStoreLink'
 import ShieldMark from './ShieldMark'
-import WaitlistForm from './WaitlistForm'
 import FooterDonateLink from './FooterDonateLink'
 
 const columns = [
@@ -10,7 +10,7 @@ const columns = [
       { label: 'How It Works', href: '/how-it-works' },
       { label: 'App Guide', href: '/app-guide' },
       { label: 'Privacy Architecture', href: '/privacy-architecture' },
-      { label: 'Updates', href: '/#waitlist' },
+      { label: 'Get Android updates', href: '/#android-updates' },
     ],
   },
   {
@@ -48,9 +48,7 @@ export default function Footer() {
               Free forever, privacy-first, built for believers serious about purity.
             </p>
             <div className="mt-6 flex flex-col items-start gap-4">
-              <Link href="/#download" className="btn-wax">
-                Get started
-              </Link>
+              <AppStoreLink />
               <a
                 href="https://github.com/CGABrew7/remain-faithful"
                 target="_blank"
@@ -91,20 +89,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="grid items-end gap-6 border-b border-white/10 py-10 sm:grid-cols-2">
-          <div>
-            <h2 className="font-serif text-xl font-medium text-white">
-              Join the accountability newsletter
-            </h2>
-            <p className="mt-2 max-w-md text-ink-soft">
-              Monthly encouragement, guides, and updates from Remain Faithful.
-            </p>
-          </div>
-          <WaitlistForm variant="footer" buttonText="Subscribe" />
-        </div>
-
         <div className="flex flex-col gap-2 pt-8 text-sm text-ink-faint sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 Remain Faithful — Free forever. Open source.</p>
+          <p>© 2026 Remain Faithful. Free forever. Open source.</p>
         </div>
       </div>
     </footer>

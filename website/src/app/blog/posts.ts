@@ -1,3 +1,5 @@
+import { ALERT_TRIGGER, PRIVACY_POINTER } from '@/lib/product-copy'
+
 export interface Post {
   slug: string
   title: string
@@ -143,7 +145,7 @@ And it points to Christ. The aim is holiness and joy in God. A clean record is n
 
 Pick one believer you trust and tell him or her the truth this week. Be specific. If no one comes to mind, ask your pastor to help you find someone. Set a regular time to meet or call. Open the Bible together, confess, pray, and keep showing up.
 
-We built Remain Faithful to help with one part of this. It is a free, open-source, donation-funded iPhone app for adults who want to pursue sexual purity together. You choose one partner or a group of 3 to 12 people. When something concerning happens on your phone, they get a short alert with a category and severity level. They never see screenshots or the content itself. It is for adults holding themselves accountable. It is not a parental-control tool. The app is available for iPhone (iOS 17+). It can help start an honest conversation, and it cannot replace a friend, a pastor, or a local church.
+We built Remain Faithful to help with one part of this. It is a free, open-source, donation-funded iPhone app for adults who want to pursue sexual purity together. You choose one partner or a group of 3 to 12 people. ${ALERT_TRIGGER} ${PRIVACY_POINTER} It is for adults holding themselves accountable. The app is available for iPhone (iOS 17+). It can help start a conversation, and it cannot replace a friend, a pastor, or a local church.
 
 Our hope rests on Christ. He carried our sin to the cross, and he has given us his people so we do not carry our burdens alone. You were never meant to fight alone.
 
@@ -183,7 +185,7 @@ This sounds intrusive. But consider: this is exactly what covenant accountabilit
 
 Here's the other failure mode: some accountability systems work too well. A partner finds out, responds poorly, and the accountability seeker feels worse than they did before. They disengage from the relationship. They disengage from the community. The accountability infrastructure that was supposed to help them becomes the source of additional trauma.
 
-We built Remain Faithful with this failure mode in mind. The covenant model requires both parties to agree upfront to respond with grace. Partners see metadata — category, severity, timestamp, and a short system-generated summary — not screenshots, not OCR text, not a record of exactly what was on screen. That is enough information to open a conversation. It's not enough to enable judgment.
+We built Remain Faithful with this failure mode in mind. The covenant model requires both parties to agree upfront to respond with grace. ${PRIVACY_POINTER} That is enough information to open a conversation. It's not enough to enable judgment.
 
 The alert says: "Something happened." The conversation that follows determines what happens next.
 
@@ -215,8 +217,8 @@ Getting a group up and running in Remain Faithful takes about fifteen minutes fo
 
 Don't send someone a link to an app without context. The conversation matters. Here's what to cover:
 
-- **What the app does:** You choose the apps and categories to block. They stay blocked all day. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan is separate. It does not name the app.
-- **What partners see:** Alert metadata: timestamp, category, severity, and a short system-generated summary. Not your screen, not your browsing history.
+- **What the app does:** ${ALERT_TRIGGER}
+- **What partners see:** ${PRIVACY_POINTER}
 - **The covenant:** Both parties commit to honesty, grace, and confidentiality. You'll see this in the app.
 - **It's voluntary:** Anyone can disable monitoring at any time. This is a choice, not a surveillance program.
 
@@ -270,7 +272,7 @@ Plan a meeting within the first two weeks of launch. Use it to:
 False positives happen. The AI isn't perfect. If your partner gets an alert for something that wasn't what it looks like, that's a conversation, not a verdict. Talk about it.
 
 **"Can I see what my partner sees?"**
-No. The app doesn't share screen content. You see the same metadata your partners see: timestamp, category, severity, and a short system-generated summary.
+No. The app doesn't share screen content. ${PRIVACY_POINTER}
 
 **"What if I need to step away for a bit?"**
 Monitoring can be paused anytime from the Settings tab. Partners will see that monitoring is paused. That's its own form of transparency.
@@ -327,7 +329,7 @@ The credible core of Remain Faithful is always-on Family Controls filtering. Opt
 
 ## Deep Scan Uses ReplayKit (Opt-In Only)
 
-If you start a Deep Scan session, iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally — on the device's Neural Engine — and uploads alert metadata when a frame is flagged. That metadata contains the alert category, severity level, a timestamp, and a short system-generated summary — not which app. Screenshots, OCR text, and raw screen content never leave your device. Always-on filtering does not use ReplayKit and does not see screen content.
+If you start a Deep Scan session, iOS's ReplayKit framework creates a separate extension process for screen recording. The extension runs all classification locally, on the device's Neural Engine, and can upload an alert when a frame is flagged. ${PRIVACY_POINTER} Always-on filtering does not use ReplayKit and does not see screen content. Deep Scan cannot see DRM streaming.
 
 That's not a policy commitment. Anyone can verify it by reading the open-source code.
 

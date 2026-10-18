@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
-export default function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
+export default function FaqAccordion({ faqs }: { faqs: { q: string; a: ReactNode }[] }) {
   const [open, setOpen] = useState<number | null>(0)
   return (
     <div>
@@ -23,7 +23,7 @@ export default function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[
           </button>
           <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${open === i ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
             <div className="overflow-hidden">
-              <p className="pb-5 leading-relaxed text-ink-soft">{faq.a}</p>
+              <div className="pb-5 leading-relaxed text-ink-soft">{faq.a}</div>
             </div>
           </div>
         </div>

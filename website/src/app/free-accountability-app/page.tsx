@@ -76,7 +76,7 @@ export default function FreeAccountabilityApp() {
 
           {/* Why "free" usually isn't */}
           <section className="mb-14">
-            <h2 className="font-serif text-2xl font-bold text-ink mb-5">Why Most "Free" Accountability Apps Aren&apos;t Really Free</h2>
+            <h2 className="font-serif text-2xl font-bold text-ink mb-5">Why Most &quot;Free&quot; Accountability Apps Aren&apos;t Really Free</h2>
             <p className="text-ink-soft leading-relaxed mb-4">
               Most apps that advertise as free use one of three models, and none of them are actually free in any meaningful sense.
             </p>

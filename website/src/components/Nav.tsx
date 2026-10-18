@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import AppStoreLink from './AppStoreLink'
 import ShieldMark from './ShieldMark'
 
 const navLinks = [
@@ -59,9 +60,7 @@ export default function Nav() {
         </nav>
 
         <div className="hidden md:flex">
-          <Link href="/#download" className="btn-wax !px-4 !py-2">
-            Get started
-          </Link>
+          <AppStoreLink className="btn-wax !px-4 !py-2">App Store</AppStoreLink>
         </div>
 
         <button
@@ -106,9 +105,7 @@ export default function Nav() {
             </Link>
           ))}
           <div className="mt-3 border-t border-white/10 pt-4">
-            <Link href="/#download" className="btn-wax w-full">
-              Get started
-            </Link>
+            <AppStoreLink className="btn-wax w-full">App Store</AppStoreLink>
           </div>
         </nav>
       </div>

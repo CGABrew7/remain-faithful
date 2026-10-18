@@ -8,7 +8,7 @@ import { UpdatedStamp } from '@/components/UpdatedStamp'
 
 export const metadata: Metadata = {
   title: 'Remain Faithful vs Ever Accountable: Honest Comparison (2026)',
-  description: 'A detailed, honest comparison of Remain Faithful and Ever Accountable for Christian accountability. See how they differ on price, privacy, monitoring, and approach.',
+  description: 'A detailed comparison of Remain Faithful and Ever Accountable for Christian accountability. See how they differ on price, privacy, monitoring, and approach.',
   alternates: { canonical: 'https://remainfaithful.com/compare/ever-accountable' },
 }
 
@@ -91,7 +91,7 @@ export default function EverAccountableCompare() {
                     ['Who the price covers', 'Free forever', 'One reporting user; unlimited devices and partners'],
                     ['Platform', 'iOS 17+ (Android planned)', 'Android, iOS, Windows, Mac, Chromebook, and Kindle'],
                     ['Monitoring approach', 'On-device AI. Screenshots never leave the phone.', 'How-it-works lists Screenshot Accountability and browsing-history reports. A June 6, 2026 post describes on-phone AI for iPhone.'],
-                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'How-it-works says partners have browsing history and will see blacklisted or questionable content. The device table lists Screenshot Accountability on each platform they name.'],
+                    ['Screenshots shared with partners?', 'Never. See the privacy page.', 'How-it-works says partners have browsing history and will see blacklisted or questionable content. The device table lists Screenshot Accountability on each platform they name.'],
                     ['Where AI runs', 'Entirely on your device', 'Their June 6, 2026 post says an AI on the iPhone looks at the screen.'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Partner-based report sharing'],
@@ -133,8 +133,8 @@ export default function EverAccountableCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Price', body: 'Remain Faithful is free. On 2026-10-13, Ever Accountable’s public plans page listed $14.99 per month or $129 per year for one reporting user. The annual price is also shown as $10.75 per month, with a 28% discount label. The same page lists optional coaching at $99 per month (Essential) and $197 per month (Premium). Membership includes a 14-day trial link. Verify current amounts on their site.' },
-                { title: 'Open source transparency', body: 'Remain Faithful is fully open source. Anyone can read the code and verify that screenshots, OCR text, and raw screen content are never transmitted, and that partners may receive a short system-generated summary. Ever Accountable is proprietary. Both say they protect your privacy; only one lets you verify it.' },
-                { title: 'What partners receive', body: 'Ever Accountable’s how-it-works page says partners have access to browsing history on phones, computers, and tablets, and that partners will see blacklisted or questionable content. Their device table lists Screenshot Accountability. Remain Faithful partners may receive a short system-generated summary in addition to a category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content.' },
+                { title: 'Open source transparency', body: 'Remain Faithful is fully open source. Anyone can read the code and verify that screenshots, OCR text, and raw screen content are never transmitted, and the privacy page says what a partner can receive. Ever Accountable is proprietary. Both say they protect your privacy; only one lets you verify it.' },
+                { title: 'What partners receive', body: 'Ever Accountable’s how-it-works page says partners have access to browsing history on phones, computers, and tablets, and that partners will see blacklisted or questionable content. Their device table lists Screenshot Accountability. What a Remain Faithful partner can receive is on the privacy page. Partners never see screenshots, OCR text, or raw screen content.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds Remain Faithful\'s accountability in a theological understanding of relationship. Partners agree to respond with grace before gaining access. This is designed to shape how alerts are received.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-wax/25 bg-paper-deep">

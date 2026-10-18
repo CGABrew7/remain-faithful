@@ -7,12 +7,7 @@ import {
   woodfieldDonateUrl,
 } from '@/lib/donate-links'
 
-const AMOUNTS: { value: DonateAmount; impact: string }[] = [
-  { value: 5, impact: 'Supports one person for one week' },
-  { value: 10, impact: 'Supports outreach to 5 new churches' },
-  { value: 25, impact: 'Keeps the servers running for a month' },
-  { value: 50, impact: 'Sponsors a full small group for a month' },
-]
+const AMOUNTS: DonateAmount[] = [5, 10, 25, 50]
 
 export default function DonateButton() {
   const [selected, setSelected] = useState<DonateAmount>(10)
@@ -20,7 +15,6 @@ export default function DonateButton() {
 
   const interval: DonateInterval = recurring ? 'monthly' : 'one-time'
   const donateUrl = woodfieldDonateUrl(selected, interval)
-  const currentImpact = AMOUNTS.find((a) => a.value === selected)?.impact ?? ''
 
   return (
     <div className="flex flex-col items-stretch sm:items-center gap-5">
@@ -48,28 +42,22 @@ export default function DonateButton() {
       </div>
 
       <div className="flex flex-wrap justify-center gap-2">
-        {AMOUNTS.map((a) => (
+        {AMOUNTS.map((amount) => (
           <button
-            key={a.value}
+            key={amount}
             type="button"
-            aria-pressed={selected === a.value}
-            onClick={() => setSelected(a.value)}
+            aria-pressed={selected === amount}
+            onClick={() => setSelected(amount)}
             className={`h-11 min-w-16 rounded-[var(--radius-control)] px-3 text-sm tabular-nums transition-[color,background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.96] ${
-              selected === a.value
+              selected === amount
                 ? 'bg-wax text-paper'
                 : 'border border-white/10 text-ink-soft hover:text-white'
             }`}
           >
-            ${a.value}
+            ${amount}
           </button>
         ))}
       </div>
-
-      {currentImpact && (
-        <p className="text-center text-sm tabular-nums text-ink-faint">
-          ${selected} {currentImpact.toLowerCase()}
-        </p>
-      )}
 
       <a
         href={donateUrl}

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import ContactForm from '@/components/ContactForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { ALERT_TRIGGER, FAQ_STREAMING } from '@/lib/product-copy'
 
 export const metadata: Metadata = {
   title: 'About Remain Faithful | Built by Jeff Brewer',
@@ -99,7 +100,8 @@ export default function AboutPage() {
                 We wanted something that creates automatic, consistent signals, so that disclosure isn&apos;t a choice a struggling person has to summon the courage to make in their worst moment, while still preserving dignity and privacy.
               </p>
               <p className="text-ink-soft leading-relaxed">
-                The on-device AI model was the key insight. Screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary with category, severity, and timestamp — not surveillance. That changes everything about what&apos;s possible in this space.
+                The on-device model was the key insight. Screenshots and screen content stay on your phone.{' '}
+                <Link href="/privacy" className="text-wax hover:underline">The privacy policy</Link> says what a partner can receive.
               </p>
             </div>
             <div>
@@ -167,7 +169,7 @@ export default function AboutPage() {
                 Remain Faithful is open source. Every line of code (iOS app, Go backend, and this website) is publicly available on GitHub.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                For an app that handles intimate personal behavioral data, open source isn&apos;t optional. The iOS app, backend, and website source are public so you can inspect how the product is built. Design notes and audit markdown in the repository are historical working papers — not product promises.
+                For an app that handles intimate personal behavioral data, open source is not optional. The iOS app, backend, and website source are public so you can inspect how the product is built.
               </p>
               <p className="text-ink-soft leading-relaxed mb-6">
                 Security researchers, privacy advocates, and curious developers are welcome to inspect and contribute.
@@ -195,10 +197,11 @@ export default function AboutPage() {
             <div className="rounded-sm p-6 border border-hairline bg-paper-deep">
               <p className="text-xs text-wax font-semibold uppercase tracking-widest mb-3">How it actually works</p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary.
+                {ALERT_TRIGGER}
               </p>
               <p className="text-ink-soft leading-relaxed">
-                Optional Deep Scan can classify non-DRM screen frames on-device. It cannot see DRM-protected video. Screenshots, OCR text, and raw screen content do not leave the device; partners may receive a short system-generated summary. We do not show a fake code path here; the public repo is the source of truth.
+                {FAQ_STREAMING}{' '}
+                <Link href="/privacy" className="text-wax hover:underline">The privacy policy</Link> says what can leave the phone. The public repo is the source of truth.
               </p>
             </div>
           </div>

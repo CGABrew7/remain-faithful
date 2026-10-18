@@ -45,7 +45,7 @@ export default function WaitlistForm({
       <div className="py-4">
         <p className="text-wax font-serif text-lg">You&apos;re on the list.</p>
         <p className="text-ink-soft mt-1">
-          We&apos;ll write with updates.
+          We&apos;ll write when there is Android news.
         </p>
       </div>
     )
