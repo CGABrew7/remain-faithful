@@ -5,10 +5,12 @@ import PhoneFrame from '@/components/PhoneFrame'
 import { JsonLd } from '@/components/JsonLd'
 import { howItWorksFaqSchema } from '@/lib/structured-data'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { ALERT_TRIGGER, FAQ_STREAMING, PRIVACY_POINTER } from '@/lib/product-copy'
+import AppStoreLink from '@/components/AppStoreLink'
 
 export const metadata: Metadata = {
   title: 'How Remain Faithful Works: Always-On Filtering for iPhone',
-  description: 'You choose apps and categories to block all day. If a chosen app is used for a minute, your partner can get one alert that day. Optional Deep Scan stays on your phone and cannot see DRM streaming.',
+  description: 'Create an account, invite a trusted partner, and turn on protection. Free on iPhone for adults.',
   alternates: { canonical: 'https://remainfaithful.com/how-it-works' },
 }
 
@@ -19,7 +21,15 @@ const faqs = [
   },
   {
     q: 'Who sees my data?',
-    a: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), the severity level, and a short system-generated summary. They do not see which app, a bundle ID, screenshots, browsing history, or raw OCR text. Screenshots, OCR text, and raw screen content are never transmitted off your device.',
+    a: (
+      <>
+        Screenshots and screen content stay on the device. What a partner can receive is on the{' '}
+        <Link href="/privacy" className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-wax">
+          privacy page
+        </Link>
+        .
+      </>
+    ),
   },
   {
     q: 'Can I be anonymous?',
@@ -27,7 +37,7 @@ const faqs = [
   },
   {
     q: 'What exactly gets monitored?',
-    a: 'You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan uses ReplayKit and on-device AI on non-DRM frames. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. Deep Scan cannot see DRM streaming. Screenshots and screen text stay on your phone.',
+    a: `${ALERT_TRIGGER} ${FAQ_STREAMING}`,
   },
   {
     q: 'How do I leave a group?',
@@ -39,7 +49,7 @@ const faqs = [
   },
   {
     q: 'What is the broadcast extension?',
-    a: 'The broadcast extension is part of opt-in Deep Scan only. It looks at non-DRM frames on the phone. When something is flagged, the alert that leaves the phone is the category, severity, timestamp, and a short summary. Screenshots and screen text stay on the phone. The all-day block and the one-minute usage alert use Family Controls and DeviceActivity. They do not see the screen. Deep Scan cannot see DRM streaming.',
+    a: `${FAQ_STREAMING} ${PRIVACY_POINTER}`,
   },
 ]
 
@@ -172,7 +182,7 @@ export default function HowItWorksPage() {
               {
                 step: '2',
                 title: 'One alert after a minute of use',
-                body: 'If a chosen app is used for a minute, your partner can get one alert that day. It includes the category, a severity, a timestamp, and a short summary. It does not name the app. Screenshots and screen text stay on your phone.',
+                body: ALERT_TRIGGER,
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
@@ -200,7 +210,7 @@ export default function HowItWorksPage() {
               <div>
                 <h3 className="font-semibold text-ink mb-1">Category Events, Not Screen Content</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">
-                  DeviceActivity watches usage as category-level events in the background. It does not capture screen frames, page content, or which specific app was opened. Partners may still receive a short system-generated summary in addition to category, timestamp, and severity.
+                  DeviceActivity watches usage as category-level events in the background. It does not capture screen frames or page content. {ALERT_TRIGGER}
                 </p>
               </div>
             </div>
@@ -270,7 +280,7 @@ export default function HowItWorksPage() {
               <div>
                 <h3 className="font-semibold text-ink mb-1">Alert Delivered to Partners</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">
-                  When a layer flags something, you receive a notification first. Then a push notification goes to each partner with the alert category, severity level, timestamp, and a short system-generated summary. Partners do not receive which app, a bundle ID, screenshots, OCR text, or raw screen content.
+                  When a layer flags something, you receive a notification first. Then a push notification can go to each partner. {PRIVACY_POINTER}
                 </p>
               </div>
             </div>
@@ -334,13 +344,8 @@ export default function HowItWorksPage() {
       <section className="py-16 border-t border-hairline">
         <div className="max-w-xl mx-auto px-4 text-center">
           <h2 className="font-serif text-2xl font-bold text-ink mb-4">Ready to start?</h2>
-          <p className="text-ink-soft mb-8">Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.</p>
-          <a
-            href="/#download"
-            className="btn-wax"
-          >
-            Get started
-          </a>
+          <p className="text-ink-soft mb-8">Free on iPhone (iOS 17+).</p>
+          <AppStoreLink />
         </div>
       </section>
     </>

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import PrintButton from '@/components/PrintButton'
+import { ALERT_TRIGGER, FAQ_STREAMING } from '@/lib/product-copy'
 
 export const metadata: Metadata = {
   title: 'Group Setup Guide',
@@ -50,15 +52,15 @@ export default function GroupSetupGuidePage() {
           {/* Section 1: What is Remain Faithful */}
           <GuideSection number="1" title="What Is Remain Faithful?">
             <p className="text-ink-soft leading-relaxed mb-4">
-              Remain Faithful (RF) is a free iOS app for adults who want peer accountability. You choose the apps and categories to block. They stay blocked all day. If a chosen app is used for a minute, the group can get one alert that day. Optional Deep Scan is separate and cannot see DRM streaming.
+              Remain Faithful (RF) is a free iOS app for adults who want peer accountability. {ALERT_TRIGGER} {FAQ_STREAMING}
             </p>
             <p className="text-ink-soft leading-relaxed mb-6">
-              Always-on filtering uses Apple Family Controls. It does not see screen content. Optional Deep Scan, if started, classifies non-DRM frames on-device. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.
+              Always-on filtering uses Apple Family Controls. It does not see screen content. Screenshots and screen content stay on the device. What a partner can receive is on the <Link href="/privacy" className="text-wax hover:underline">privacy page</Link>.
             </p>
             <div className="grid sm:grid-cols-3 gap-4">
               {[
                 { title: 'Always Free', desc: 'No subscription, no paywalls. Sustained by voluntary donations.' },
-                { title: 'On-Device Privacy', desc: 'Screenshots and raw screen content stay on the user\'s device. Partners see metadata, which may include a short system-generated summary.' },
+                { title: 'On-Device Privacy', desc: 'Screenshots and screen content stay on the phone. The privacy page says what a partner can receive.' },
                 { title: 'Covenant-Based', desc: 'Every partner accepts a covenant before gaining any access.' },
               ].map((item) => (
                 <div key={item.title} className="p-4 rounded-sm border border-hairline bg-paper-deep">
@@ -91,15 +93,11 @@ export default function GroupSetupGuidePage() {
               className="rounded-sm p-6 border border-wax/25"
               
             >
-              <p className="text-sm text-ink font-semibold mb-2">What partners see when an alert fires:</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-                {['Timestamp', 'Category (e.g., "Adult Content")', 'Severity Level', 'Short system-generated summary'].map((item) => (
-                  <div key={item} className="text-center p-3 rounded-lg bg-paper border border-hairline">
-                    <p className="text-xs text-ink-soft">{item}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-ink-soft mt-3 text-center">Screenshots, OCR text, and raw screen content are not shared.</p>
+              <p className="text-sm text-ink font-semibold mb-2">What partners see when an alert fires</p>
+              <p className="text-sm text-ink-soft leading-relaxed">
+                Screenshots and screen content stay on the phone.{' '}
+                <Link href="/privacy" className="text-wax hover:underline">The privacy page</Link> says what a partner can receive.
+              </p>
             </div>
           </GuideSection>
 
@@ -123,7 +121,7 @@ export default function GroupSetupGuidePage() {
                 {
                   n: '3',
                   title: 'Choose Visibility Settings',
-                  desc: 'Members can share alerts with the whole group or with the leader only. Discuss with your group which setting fits your context before enabling. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app.',
+                  desc: 'Members can share alerts with the whole group or with the leader only. Discuss with your group which setting fits your context before enabling. The privacy page says what a partner can receive.',
                 },
                 {
                   n: '4',
@@ -156,8 +154,8 @@ export default function GroupSetupGuidePage() {
             </p>
             <div className="space-y-3 mb-6">
               {[
-                { label: 'What it does', text: 'You choose the apps and categories to block. They stay blocked all day. If a chosen app is used for a minute, the group can get one alert that day with the category and a short summary. Optional Deep Scan is separate. Screenshots and screen text stay on the phone.' },
-                { label: 'What you see', text: 'Alert metadata: timestamp, content category, severity, and a short system-generated summary. No screenshots. No browsing history. No raw screen content.' },
+                { label: 'What it does', text: ALERT_TRIGGER },
+                { label: 'What you see', text: 'Screenshots and screen content stay on the phone. The privacy page says what a partner can receive.' },
                 { label: 'The covenant', text: 'Everyone in the group, including you as leader, agrees to a covenant before gaining any access. This shapes how the group responds to alerts.' },
                 { label: 'It\'s voluntary', text: 'Monitoring can be paused or disabled at any time. Joining the group is a choice, not a requirement.' },
               ].map((item) => (
@@ -237,7 +235,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'Can I see what a member\'s screen looks like?',
-                  a: 'No. No one sees screenshots, screen recordings, or raw content from another member\'s device. You see alert metadata: timestamp, content category, severity level, and a short system-generated summary.',
+                  a: 'No. No one sees screenshots, screen recordings, or raw content from another member\'s device. The privacy page says what a partner can receive.',
                 },
                 {
                   q: 'What if a member doesn\'t want to share with the whole group?',
@@ -249,7 +247,7 @@ export default function GroupSetupGuidePage() {
                 },
                 {
                   q: 'Is the app open source?',
-                  a: 'Yes. The iOS app, Go backend, and this website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
+                  a: 'Yes. The iOS app, Go backend, and this website source are public on GitHub.',
                 },
               ].map((item, i) => (
                 <div key={i} className="p-5 rounded-sm border border-hairline bg-paper-deep">

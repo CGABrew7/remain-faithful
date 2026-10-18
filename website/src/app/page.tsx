@@ -10,14 +10,20 @@ import PhoneFrame from '@/components/PhoneFrame'
 import WaitlistForm from '@/components/WaitlistForm'
 import { JsonLd } from '@/components/JsonLd'
 import { softwareApplicationSchema, homepageFaqSchema } from '@/lib/structured-data'
+import {
+  ALERT_TRIGGER,
+  FAQ_SLIP,
+  FAQ_STREAMING,
+  PRIVACY_PROMISE,
+} from '@/lib/product-copy'
 
 export const metadata: Metadata = {
   title: 'Remain Faithful | Free Christian Accountability App for iPhone',
-  description: 'Free peer accountability for Christians committed to purity. Always-on Family Controls filtering with partner notify. Optional Deep Scan. Screenshots and raw screen content never leave your device. Partners may receive a short system-generated summary plus category, severity, and timestamp. 100% free, forever.',
+  description: 'A partner you trust stands with you. Free peer accountability for adults committed to purity, on iPhone. Screenshots and screen content stay on your phone.',
   keywords: ['free accountability app', 'Christian accountability app', 'purity app', 'accountability partner app', 'church accountability', 'iPhone accountability app', 'on-device AI', 'privacy-first accountability', 'open source accountability'],
   openGraph: {
     title: 'Remain Faithful | Free Christian Accountability App',
-    description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
+    description: 'A partner you trust stands with you. Free on iPhone. Screenshots stay on your phone.',
     url: 'https://remainfaithful.com',
     siteName: 'Remain Faithful',
     type: 'website',
@@ -25,7 +31,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Remain Faithful | Free Christian Accountability App',
-    description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first.',
+    description: 'A partner you trust stands with you. Free on iPhone. Screenshots stay on your phone.',
   },
   alternates: {
     canonical: 'https://remainfaithful.com',
@@ -34,30 +40,38 @@ export const metadata: Metadata = {
 
 const proof = [
   {
-    href: '/privacy-architecture',
+    href: '#privacy',
     kicker: 'Privacy',
-    title: 'Your screen stays on your device',
-    body: 'Screenshots, OCR text, and raw screen content stay on the phone. Partners receive alert metadata and a short system-generated summary.',
+    title: 'Your screen stays on your phone',
+    body: 'Screenshots and screen content stay on the device.',
     lead: true,
   },
   {
     href: '#download',
     kicker: 'iPhone',
-    title: 'Get started on iOS 17+',
-    body: 'Free forever. Always-on Family Controls filtering with partner notify. Android is planned.',
+    title: 'Free on the App Store',
+    body: 'For iPhone on iOS 17 or later. Android is not available yet.',
   },
   {
-    href: '/how-it-works',
+    href: '/app-guide',
     kicker: 'How it works',
-    title: 'Partners, then filtering',
-    body: 'Invite adult peers, authorize Family Controls, and receive alerts with category, severity, timestamp, and a short system-generated summary.',
+    title: 'Three short steps',
+    body: 'Create an account, invite a trusted partner, and turn on protection.',
   },
 ]
 
 const faqs = [
   {
     q: 'Can my accountability partners see what I was looking at?',
-    a: 'No. Remain Faithful never captures or shares screenshots. Partners receive a discreet alert with a category (like "Adult Content"), severity, timestamp, and a short system-generated summary — never screenshots, OCR text, or raw screen content. This protects partners from being exposed to harmful material.',
+    a: (
+      <>
+        No. Screenshots and screen content stay on your phone.{' '}
+        <a href="#privacy" className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-wax">
+          The privacy section
+        </a>{' '}
+        says what a partner can receive.
+      </>
+    ),
   },
   {
     q: 'Can my spouse be my accountability partner?',
@@ -69,16 +83,34 @@ const faqs = [
   },
   {
     q: 'What happens if I slip up?',
-    a: 'Your accountability partners receive a discreet alert. The goal is conversation, not condemnation. Every alert includes conversation starter prompts to help your partners respond with grace.',
+    a: FAQ_SLIP,
   },
   {
     q: 'How is this different from other accountability apps?',
-    a: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
+    a: (
+      <>
+        It is free, it is for adults who choose their own partners, and screenshots stay on the phone.{' '}
+        <a href="#privacy" className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-wax">
+          The privacy section
+        </a>{' '}
+        says what a partner can receive. The iOS app, backend, and website source are public on GitHub.
+      </>
+    ),
+  },
+  {
+    q: 'Can it see streaming video?',
+    a: FAQ_STREAMING,
   },
   {
     q: 'Does this work on Android?',
-    a: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
+    a: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email in Get Android updates on this page.',
   },
+]
+
+const steps = [
+  { n: '1', title: 'Create an account', body: 'Free, on your iPhone.' },
+  { n: '2', title: 'Invite a trusted partner', body: 'A friend, spouse, or mentor you choose.' },
+  { n: '3', title: 'Turn on protection', body: 'Choose the apps, then turn on Alerts or Blocking.' },
 ]
 
 export default function HomePage() {
@@ -91,7 +123,7 @@ export default function HomePage() {
         <DonationSuccessBanner />
       </Suspense>
 
-      <section className="shell grid items-center gap-8 pb-16 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-24 lg:pt-32">
+      <section className="shell grid items-center gap-8 pb-12 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-16 lg:pt-32">
         <div className="lg:col-start-1 lg:row-start-1">
           <p className="kicker rise">Free · iPhone (iOS 17+)</p>
           <Ornament className="rise rise-2 mb-6 mt-5" />
@@ -99,26 +131,45 @@ export default function HomePage() {
             Remain Faithful
           </h1>
           <p className="rise rise-3 mt-6 max-w-[22ch] font-serif text-2xl leading-snug text-white/90 sm:text-[1.7rem]">
-            Free peer accountability for Christians committed to purity.
+            A partner you trust stands with you.
           </p>
-          <div className="rise rise-4 mt-8 flex flex-col gap-3 sm:flex-row">
+          <p className="mt-4 max-w-[42ch] text-[1.05rem] leading-relaxed text-ink-soft">
+            Free peer accountability for adults committed to purity. You do not have to carry the hard moments alone.
+          </p>
+          <div className="rise rise-4 mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <AppStoreLink />
-            <Link href="/how-it-works" className="btn-ghost">
-              How it works
+            <Link href="/app-guide" className="btn-ghost">
+              See how it works
               <Arrow />
             </Link>
+            <a href="#android-updates" className="btn-ghost">
+              Get Android updates
+              <Arrow />
+            </a>
           </div>
         </div>
-        <div className="rise rise-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:justify-self-end">
+        <div className="rise rise-3 lg:col-start-2 lg:row-start-1 lg:justify-self-end">
           <PhoneFrame
             src="/screens/welcome.png"
             alt="Remain Faithful iPhone welcome screen: Remain Faithful, accountability between trusted friends, and Begin Your Journey."
             priority
           />
         </div>
-        <p className="max-w-[46ch] text-[1.05rem] leading-relaxed text-ink-soft lg:col-start-1">
-          You choose the apps and categories to block. They stay blocked all day, through the lock screen, a reboot, and an app restart. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan is separate. Screenshots and screen text stay on your phone. Deep Scan cannot see DRM streaming.
-        </p>
+      </section>
+
+      <section id="how-it-works" className="shell scroll-mt-24 pb-8" aria-labelledby="how-strip-heading">
+        <h2 id="how-strip-heading" className="font-serif text-3xl font-bold text-white sm:text-4xl">
+          How it works
+        </h2>
+        <ol className="stepper mt-6">
+          {steps.map((step) => (
+            <li key={step.n} className="surface p-6">
+              <p className="font-serif text-sm tabular-nums tracking-[0.14em] text-wax">{step.n}</p>
+              <h3 className="mt-3 font-serif text-2xl text-white">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">{step.body}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="shell pb-6" aria-label="What you get">
@@ -139,23 +190,23 @@ export default function HomePage() {
         <div className="shell grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="surface p-8 sm:p-10">
             <p className="kicker mb-4">iPhone · iOS 17+</p>
-            <h2 className="font-serif text-4xl font-bold text-white sm:text-5xl">Get started</h2>
+            <h2 className="font-serif text-4xl font-bold text-white sm:text-5xl">Get the app</h2>
             <p className="mt-4 max-w-[42ch] text-lg leading-relaxed text-ink-soft">
-              Free forever. Always-on Family Controls filtering, optional Deep Scan, and partners you choose. Android is planned.
+              Free on iPhone. Invite a partner you trust, turn on protection, and keep going together.
             </p>
             <dl className="mt-8 grid gap-5 sm:grid-cols-3">
               <Spec term="Platform" detail="iPhone, iOS 17+" />
               <Spec term="Price" detail="Free forever" />
-              <Spec term="Privacy" detail="Screen stays on device" />
+              <Spec term="Who it is for" detail="Adults, 18+" />
             </dl>
-            <div className="mt-8 flex flex-col gap-2 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <AppStoreLink />
-              <Link href="/how-it-works" className="btn-ghost">
-                How it works
+              <Link href="/app-guide" className="btn-ghost">
+                See how it works
                 <Arrow />
               </Link>
-              <a href="#waitlist" className="btn-ghost">
-                Android notify
+              <a href="#android-updates" className="btn-ghost">
+                Get Android updates
                 <Arrow />
               </a>
             </div>
@@ -188,13 +239,13 @@ export default function HomePage() {
             <Feature
               n="02"
               title="On-device privacy"
-              body="Optional Deep Scan classification runs locally using Apple's Vision and SensitiveContentAnalysis frameworks. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, timestamp, and severity — not which app, and not your screen."
-              href="/blog/on-device-privacy-explained"
+              body="Screenshots and screen content stay on your phone."
+              href="#privacy"
             />
             <Feature
               n="03"
-              title="Always-on filtering"
-              body="You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day."
+              title="Alerts and Blocking"
+              body="Alerts and Blocking are separate switches. The next section says when a partner is told."
             />
             <Feature
               n="04"
@@ -205,17 +256,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="band section" aria-labelledby="method-heading">
+      <section className="band section" aria-labelledby="alert-heading">
         <div className="shell">
           <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
             <div>
-              <p className="kicker mb-4">The method</p>
-              <h2 id="method-heading" className="font-serif text-4xl font-bold text-white sm:text-5xl">
-                Three steps to real accountability
+              <p className="kicker mb-4">Partner alerts</p>
+              <h2 id="alert-heading" className="font-serif text-4xl font-bold text-white sm:text-5xl">
+                What your partner hears
               </h2>
-              <p className="mt-4 max-w-[46ch] text-lg leading-relaxed text-ink-soft">
-                Invite adult peers, then authorize Family Controls so always-on filtering can run. Each person joins and authorizes on their own iPhone.
+              <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
+                {ALERT_TRIGGER}
               </p>
+              <Link href="/app-guide" className="btn-ghost mt-8">
+                See how it works
+                <Arrow />
+              </Link>
             </div>
             <PhoneFrame
               src="/screens/home.png"
@@ -223,58 +278,43 @@ export default function HomePage() {
             />
           </div>
 
-          <ol className="stepper mt-12">
-            <Step
-              n="I"
-              title="Choose your partners"
-              body="Invite trusted friends, a mentor, a spouse, or a small group. They accept a covenant before gaining any access."
-            />
-            <Step
-              n="II"
-              title="Enable filtering"
-              body="You choose the apps and categories to block, and they stay blocked all day. If a chosen app is used for a minute, your partner can get one alert that day. Optional Deep Scan is separate."
-            />
-            <Step
-              n="III"
-              title="Stay accountable"
-              body="A discreet alert carries category, severity, timestamp, and a short system-generated summary. The aim is an honest conversation."
-            />
-          </ol>
-          <Link href="/how-it-works" className="btn-ghost mt-8">
-            Read the full breakdown
-            <Arrow />
-          </Link>
-
-          <div className="mt-14 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div id="privacy" className="mt-14 scroll-mt-24 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="surface p-7 sm:p-8">
               <p className="kicker mb-4">Privacy</p>
-              <h3 className="font-serif text-3xl text-white">Screenshots stay on your device</h3>
+              <h3 className="font-serif text-3xl text-white">What leaves your phone</h3>
               <p className="mt-3 leading-relaxed text-ink-soft">
-                Classification runs on your iPhone. You approve every partner, set thresholds, and can pause or remove access.
+                {PRIVACY_PROMISE}
               </p>
-              <Link href="/privacy-architecture" className="btn-ghost mt-6">
-                Full Privacy Architecture
-                <Arrow />
-              </Link>
+              <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Link href="/privacy" className="btn-ghost">
+                  Privacy policy
+                  <Arrow />
+                </Link>
+                <Link href="/privacy-architecture" className="btn-ghost">
+                  Full Privacy Architecture
+                  <Arrow />
+                </Link>
+              </div>
             </div>
             <div className="split-panel">
               <div className="p-7 sm:p-8">
-                <h4 className="kicker mb-4">On your device</h4>
+                <h4 className="kicker mb-4">Stays on your phone</h4>
                 <ul className="space-y-2.5 text-sm leading-relaxed text-ink-soft">
-                  <li>Screenshots &amp; raw screen content</li>
-                  <li>Browsing history &amp; page content</li>
-                  <li>Passwords &amp; financial data</li>
+                  <li>Screenshots and screen content</li>
+                  <li>Browsing history and page content</li>
+                  <li>Passwords and financial data</li>
                   <li>Message content</li>
-                  <li>Photos &amp; videos</li>
+                  <li>Photos and videos</li>
                 </ul>
               </div>
               <div className="border-t border-white/10 p-7 sm:border-l sm:border-t-0 sm:p-8">
-                <h4 className="kicker mb-4">With partners</h4>
+                <h4 className="kicker mb-4">Can leave the phone</h4>
                 <ul className="space-y-2.5 text-sm leading-relaxed text-white">
-                  <li>Alert category</li>
-                  <li>Severity (Low / Medium / High)</li>
+                  <li>Category</li>
+                  <li>Severity</li>
                   <li>Timestamp</li>
-                  <li>Short system-generated summary</li>
+                  <li>A short system summary</li>
+                  <li>A heartbeat while protection is on</li>
                 </ul>
               </div>
             </div>
@@ -282,17 +322,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="waitlist" className="section scroll-mt-24">
-        <div className="shell grid items-center gap-10 lg:grid-cols-2">
+      <section id="android-updates" className="section scroll-mt-24">
+        <div id="waitlist" className="shell grid scroll-mt-24 items-center gap-10 lg:grid-cols-2">
           <div>
-            <p className="kicker mb-4">Updates</p>
-            <h2 className="font-serif text-4xl font-bold text-white sm:text-5xl">Write your name down.</h2>
+            <p className="kicker mb-4">Android</p>
+            <h2 className="font-serif text-4xl font-bold text-white sm:text-5xl">Get Android updates</h2>
             <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-ink-soft">
-              Remain Faithful is available for iPhone (iOS 17+). Leave your email for updates and Android notify.
+              Remain Faithful is on the App Store for iPhone. Leave your email and we will write when Android is ready. There is no launch date yet.
             </p>
           </div>
           <div className="surface p-6 sm:p-8">
-            <WaitlistForm variant="default" buttonText="Get updates" />
+            <WaitlistForm variant="default" buttonText="Get Android updates" />
           </div>
         </div>
       </section>
@@ -321,7 +361,7 @@ export default function HomePage() {
                 Keep Remain Faithful free
               </h2>
               <p className="mx-auto mt-4 max-w-[40ch] text-lg leading-relaxed text-ink-soft">
-                We&apos;re committed to never charging for accountability. Your donation funds server costs, development, and ministry outreach.
+                We are committed to never charging for accountability. Your donation funds server costs, development, and ministry outreach.
               </p>
               <div className="mt-10">
                 <DonateButton />
@@ -379,16 +419,6 @@ function Feature({
         {heading}
         <p className="mt-2 leading-relaxed text-ink-soft">{body}</p>
       </div>
-    </li>
-  )
-}
-
-function Step({ n, title, body }: { n: string; title: string; body: string }) {
-  return (
-    <li className="surface p-6">
-      <p className="font-serif text-sm tracking-[0.14em] text-wax">{n}</p>
-      <h3 className="mt-3 font-serif text-2xl text-white">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-ink-soft">{body}</p>
     </li>
   )
 }

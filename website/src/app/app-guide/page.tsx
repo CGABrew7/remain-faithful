@@ -35,9 +35,11 @@ export default function AppGuidePage() {
             <div className="rounded-sm border border-wax/30 bg-paper-deep p-6">
               <h2 className="font-serif text-lg font-semibold text-ink">What leaves your phone</h2>
               <p className="mt-2 text-[0.98rem] leading-relaxed text-ink-soft">
-                Only two things. Alert details (the type of alert, how serious it was, the time, and a
-                short summary the app writes) and a regular check-in that says the app is still
-                running. Screenshots and what is on your screen stay on your phone.
+                Screenshots and screen content stay on the device. What a partner can receive is on the{' '}
+                <Link href="/privacy" className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-wax">
+                  privacy page
+                </Link>
+                .
               </p>
             </div>
             <div className="rounded-sm border border-white/10 bg-paper-deep p-6">

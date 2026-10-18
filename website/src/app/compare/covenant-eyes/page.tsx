@@ -8,7 +8,7 @@ import { UpdatedStamp } from '@/components/UpdatedStamp'
 
 export const metadata: Metadata = {
   title: 'Remain Faithful vs Covenant Eyes: Honest Comparison (2026)',
-  description: 'A detailed, honest comparison of Remain Faithful and Covenant Eyes for Christian accountability. See how they differ on price, privacy, monitoring, and approach.',
+  description: 'A detailed comparison of Remain Faithful and Covenant Eyes for Christian accountability. See how they differ on price, privacy, monitoring, and approach.',
   alternates: { canonical: 'https://remainfaithful.com/compare/covenant-eyes' },
 }
 
@@ -65,7 +65,7 @@ export default function CovenantEyesCompare() {
               Remain Faithful vs Covenant Eyes
             </h1>
             <p className="text-ink-soft text-lg leading-relaxed mb-4 text-pretty">
-              Remain Faithful is free. It classifies on your iPhone and never sends screenshots to a partner. Partners may receive a category, a severity, a timestamp, and a short system-generated summary. Covenant Eyes, on its public Victory page, describes screenshot-based Screen Accountability sent to an ally. This page is about that difference. It is not a claim that the products match.
+              Remain Faithful is free. It classifies on your iPhone and never sends screenshots to a partner. What a partner can receive is on the privacy page. Covenant Eyes, on its public Victory page, describes screenshot-based Screen Accountability sent to an ally. This page is about that difference. It is not a claim that the products match.
             </p>
             <div className="p-5 rounded-sm border border-wax/25 bg-wax/5 text-sm text-ink-soft leading-relaxed">
               <strong className="text-wax">Disclosure:</strong> We built Remain Faithful, so we are biased. We will be transparent about where Covenant Eyes is stronger.
@@ -91,7 +91,7 @@ export default function CovenantEyesCompare() {
                     ['Who the price covers', '$0', 'One account: unlimited devices for up to 10 users in a family'],
                     ['Platform', 'iOS 17+ (Android planned)', 'iOS 15.1+, Android 11+, Mac 11+, Windows 10+'],
                     ['Monitoring approach', 'On-device AI classification', 'Screen Accountability: screenshots sent to an ally'],
-                    ['Screenshots shared with partners?', 'Never. Category, severity, timestamp, and a short system-generated summary.', 'Yes. They say screenshots are sent to an ally, blurred, distorted, and encrypted, then deleted after 30 days. On iOS they list Safari only.'],
+                    ['Screenshots shared with partners?', 'Never. See the privacy page.', 'Yes. They say screenshots are sent to an ally, blurred, distorted, and encrypted, then deleted after 30 days. On iOS they list Safari only.'],
                     ['Where classification runs', 'Entirely on your device', 'Screenshots are captured and sent to an ally'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
                     ['Accountability model', 'Covenant-based partnership or small group', 'Ally-based reports'],
@@ -136,8 +136,8 @@ export default function CovenantEyesCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Price', body: 'Remain Faithful is free. On 2026-10-13, the public Victory pricing page listed $18 per month, $198 per year (marked Popular), and a $950 one-time Lifetime payment (marked “Save 50% over 10 years”). The same page says all plans cover unlimited devices for up to 10 individual users within a family. That is an account price, not a per-person fee. The page also says to try it for 30 days, and a note excludes some in-app purchases from the money-back guarantee. Verify current amounts on their site.' },
-                { title: 'Privacy: screenshots stay on your iPhone', body: 'Remain Faithful classifies on-device. Screenshots, OCR text, and raw screen content are never transmitted. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. Covenant Eyes says Victory Shield takes screenshots and sends them to an ally. On iOS they list Safari only. They also say those images are blurred, distorted, and encrypted with AES 256-bit security, then deleted after 30 days.' },
-                { title: 'Partner protection', body: 'Covenant Eyes still sends screenshots to an ally, even when those images are described as blurred or distorted. Remain Faithful partners may receive a short system-generated summary in addition to category, severity, and timestamp. Partners never see screenshots, OCR text, or raw screen content.' },
+                { title: 'Privacy: screenshots stay on your iPhone', body: 'Remain Faithful classifies on-device. Screenshots, OCR text, and raw screen content are never transmitted. What a partner can receive is on the privacy page. Covenant Eyes says Victory Shield takes screenshots and sends them to an ally. On iOS they list Safari only. They also say those images are blurred, distorted, and encrypted with AES 256-bit security, then deleted after 30 days.' },
+                { title: 'Partner protection', body: 'Covenant Eyes still sends screenshots to an ally, even when those images are described as blurred or distorted. What a Remain Faithful partner can receive is on the privacy page. Partners never see screenshots, OCR text, or raw screen content.' },
                 { title: 'Open source transparency', body: 'Anyone can read every line of Remain Faithful\'s code on GitHub and verify exactly what is and is not transmitted. Covenant Eyes is proprietary. For an app handling sensitive behavioral data, open source is a meaningful trust advantage.' },
                 { title: 'Covenant model', body: 'The covenant framework grounds accountability in a biblical understanding of relationship rather than a surveillance model. Partners agree to respond with grace before they gain any access. This shapes how alerts are received and processed.' },
               ].map((item) => (

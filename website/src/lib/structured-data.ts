@@ -1,4 +1,12 @@
 import { COMPARE_UPDATED_ON } from '@/lib/competitor-pricing'
+import {
+  ALERT_TRIGGER,
+  FAQ_DIFFERENT,
+  FAQ_PARTNERS_SEE,
+  FAQ_SLIP,
+  FAQ_STREAMING,
+  PRIVACY_POINTER,
+} from '@/lib/product-copy'
 
 export const organizationSchema = {
   '@context': 'https://schema.org',
@@ -23,16 +31,15 @@ export const softwareApplicationSchema = {
   name: 'Remain Faithful',
   operatingSystem: 'iOS 17+',
   applicationCategory: 'LifestyleApplication',
-  description: 'Free peer accountability app for Christians committed to purity. Always-on Family Controls filtering with partner notify. Optional on-device Deep Scan. No screenshots ever leave your device. Partners may receive a short system-generated summary in addition to category, timestamp, and severity.',
+  description: 'Free peer accountability app for adults committed to purity. A partner you choose stands with you. Free on iPhone. Screenshots and screen content stay on the device.',
   offers: {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'USD',
   },
   featureList: [
-    'Always-on Family Controls filtering with partner notify',
-    'DeviceActivity usage monitoring as category events',
-    'Chosen apps stay blocked all day',
+    'Alerts: one partner alert that day after a chosen app or category is used for a minute',
+    'Blocking: Screen Time shield when a chosen app opens, with no alert from the open itself',
     'Optional on-device Deep Scan',
     'One-to-one or group accountability',
     'Covenant-based partner system',
@@ -62,7 +69,7 @@ export const homepageFaqSchema = {
       name: 'Can my accountability partners see what I was looking at?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Remain Faithful never captures or shares screenshots. Partners receive a discreet alert with a category (like "Adult Content"), severity, timestamp, and a short system-generated summary — never screenshots, OCR text, or raw screen content. This protects partners from being exposed to harmful material.',
+        text: FAQ_PARTNERS_SEE,
       },
     },
     {
@@ -86,7 +93,7 @@ export const homepageFaqSchema = {
       name: 'What happens if I slip up?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Your accountability partners receive a discreet alert. The goal is conversation, not condemnation. Every alert includes conversation starter prompts to help your partners respond with grace.',
+        text: FAQ_SLIP,
       },
     },
     {
@@ -94,7 +101,15 @@ export const homepageFaqSchema = {
       name: 'How is this different from other accountability apps?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is different in three key ways: the credible core is always-on Family Controls filtering with partner notify (Deep Scan is optional), it is 100% free forever, and screenshots, OCR text, and raw screen content never leave your device. Partners may receive a short system-generated summary in addition to category, severity, and timestamp. The iOS app, backend, and website source are public on GitHub. Design notes and audit markdown in that repo are historical working papers, not product promises.',
+        text: FAQ_DIFFERENT,
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can it see streaming video?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: FAQ_STREAMING,
       },
     },
     {
@@ -102,15 +117,7 @@ export const homepageFaqSchema = {
       name: 'Does this work on Android?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email for Android notify and updates.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Is Remain Faithful really free?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable.',
+        text: 'Remain Faithful is available for iPhone (iOS 17+). Android support is planned, with no launch date. Leave your email in Get Android updates on the home page.',
       },
     },
   ],
@@ -133,7 +140,7 @@ export const howItWorksFaqSchema = {
       name: 'Who sees my data when using Remain Faithful?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Your chosen accountability partners can see alert metadata: the timestamp, the category (e.g., "adult content"), the severity level, and a short system-generated summary. They do not see which app, a bundle ID, screenshots, browsing history, or raw OCR text. Screenshots, OCR text, and raw screen content are never transmitted off your device.',
+        text: PRIVACY_POINTER,
       },
     },
     {
@@ -141,7 +148,7 @@ export const howItWorksFaqSchema = {
       name: 'What exactly does Remain Faithful monitor?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'You choose the apps and categories to block. They stay blocked all day, through the lock screen, reboot, and app restarts. If a chosen app is used for a minute, your partner can get one alert that day with the category and a short summary. Optional Deep Scan classifies non-DRM frames on the phone. Screenshots and screen text stay on the phone. Deep Scan cannot see DRM streaming.',
+        text: `${ALERT_TRIGGER} ${FAQ_STREAMING}`,
       },
     },
     {
@@ -193,7 +200,7 @@ export function comparisonSchema(competitor: string) {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: `Remain Faithful vs ${competitor}: Detailed Comparison`,
-    description: `An honest, detailed comparison of Remain Faithful and ${competitor} for Christian accountability.`,
+    description: `A detailed comparison of Remain Faithful and ${competitor} for Christian accountability.`,
     url: `https://remainfaithful.com/compare/${competitor.toLowerCase().replace(/\s+/g, '-')}`,
     dateModified: COMPARE_UPDATED_ON,
     mainEntity: {

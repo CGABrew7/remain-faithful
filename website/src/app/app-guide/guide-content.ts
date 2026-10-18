@@ -408,11 +408,11 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitor App Usage',
-            does: 'When on, your partner gets an alert after you spend one minute in a chosen app in a day.',
+            does: 'If Alerts is on, your partner gets one alert that day after a chosen app or category is used for a minute.',
           },
           {
             name: 'Block Selected Apps',
-            does: 'When on, opening a chosen app shows the iOS Screen Time block screen instead.',
+            does: 'If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield and does not itself send an alert.',
             why: 'A block that is already in place does more than willpower in the moment.',
           },
         ],

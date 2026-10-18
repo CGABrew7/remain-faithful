@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import AppStoreLink from '@/components/AppStoreLink'
 import PhoneFrame from '@/components/PhoneFrame'
 import PilotForm from '@/components/PilotForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { ALERT_TRIGGER } from '@/lib/product-copy'
 
 export const metadata: Metadata = {
   title: 'Church & Ministry Accountability Program | Partners',
@@ -28,9 +30,7 @@ export default function PartnersPage() {
             Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and ministry programs — at no cost to your church.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
-            <a href="/#download" className="btn-wax">
-              Get started
-            </a>
+            <AppStoreLink />
             <a
               href="/group-setup-guide"
               target="_blank"
@@ -402,7 +402,7 @@ export default function PartnersPage() {
             <h3 className="font-semibold text-ink mb-3">A Note on Scale</h3>
             <p className="text-sm text-ink-soft leading-relaxed">
               Remain Faithful is free regardless of how many groups your church runs. Whether you have 2 groups or 20, there is no cost. Our model is donor-funded so that no church faces a barrier to adoption. If your church has found RF valuable, consider{' '}
-              <a href="/#donate" className="text-wax hover:underline">making a donation</a> to support the infrastructure for others.
+              <Link href="/#donate" className="text-wax hover:underline">making a donation</Link> to support the infrastructure for others.
             </p>
           </div>
         </div>
@@ -424,7 +424,7 @@ export default function PartnersPage() {
               { n: '1', title: 'Create Your Leader Account', desc: 'Create a leader account on iPhone (iOS 17+). Remain Faithful is available for iPhone. Your role as group leader is established at this step.' },
               { n: '2', title: 'Create a Group', desc: 'Tap Group tab → New Group. Give it a name (e.g., "Tuesday Accountability Group"), set your covenant expectations, and choose your leader visibility settings.' },
               { n: '3', title: 'Share the Invite Code', desc: 'Your group generates a 6-character invite code. Share it in your group chat, bulletin, or Sunday handout. Members join with that code.' },
-              { n: '4', title: 'Members Enable Filtering', desc: 'Each member authorizes Family Controls so always-on filtering can block chosen apps and categories. Deep Scan is optional and, if used later, asks for screen broadcast permission separately.' },
+              { n: '4', title: 'Members Enable Filtering', desc: `Each member authorizes Family Controls on their own iPhone. ${ALERT_TRIGGER}` },
               { n: '5', title: 'Stay Connected', desc: 'Members can alert you directly. Use RF as the backbone of your regular accountability conversations.' },
             ].map((step) => (
               <div key={step.n} className="flex gap-5 p-6 rounded-sm border border-hairline bg-paper-deep">

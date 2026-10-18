@@ -8,7 +8,7 @@ import { UpdatedStamp } from '@/components/UpdatedStamp'
 
 export const metadata: Metadata = {
   title: 'Remain Faithful vs Accountable2You: Honest Comparison (2026)',
-  description: 'A detailed, honest comparison of Remain Faithful and Accountable2You for Christian accountability. See how they differ on price, privacy, monitoring approach, and battery impact.',
+  description: 'A detailed comparison of Remain Faithful and Accountable2You for Christian accountability. See how they differ on price, privacy, monitoring approach, and battery impact.',
   alternates: { canonical: 'https://remainfaithful.com/compare/accountable2you' },
 }
 
@@ -37,7 +37,7 @@ const pageFaqSchema = {
       name: 'Does Remain Faithful log specific web page titles like Accountable2You?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Remain Faithful does not log or transmit web page titles or browsing history. Partners may receive a short system-generated summary in addition to category, severity, and timestamp when something is flagged — not page titles. Accountable2You reports browsing history and activity (including Incognito, per their site), which can expose more detail than some users want their partners to see.',
+        text: 'No. Remain Faithful does not log or transmit web page titles or browsing history. What a partner can receive is on the privacy page, not page titles. Accountable2You reports browsing history and activity (including Incognito, per their site), which can expose more detail than some users want their partners to see.',
       },
     },
   ],
@@ -91,11 +91,11 @@ export default function Accountable2YouCompare() {
                     ['Platform', 'iOS 17+ (Android planned)', 'iPhone, iPad, Android, Windows, Mac, Linux, Chromebook'],
                     ['Monitoring technology', 'Family Controls + optional on-device AI', 'iOS page: VPN technology records browser activity. Features page: browsing history, app usage, and page titles.'],
                     ['Browsing history reported', 'No. No page titles or browsing history.', 'Yes. Browsing history, including Incognito, and full web page titles.'],
-                    ['Screenshots shared?', 'Never. Category, severity, timestamp, and a short summary.', 'They say they do not capture screenshots.'],
+                    ['Screenshots shared?', 'Never. See the privacy page.', 'They say they do not capture screenshots.'],
                     ['VPN', 'No', 'Named on their iOS page for recording browser activity.'],
                     ['Where AI runs', 'Entirely on your device', 'Not described as on-device AI on the public pages we checked'],
                     ['Open source', 'Yes, full codebase on GitHub', 'No'],
-                    ['Partner data shared', 'Category, severity, timestamp, and a short system-generated summary', 'Activity reports and alerts. They say no screenshots. Partners can be set to full reports or alerts only.'],
+                    ['Partner data shared', 'See the privacy page', 'Activity reports and alerts. They say no screenshots. Partners can be set to full reports or alerts only.'],
                     ['Accountability model', 'Covenant-based partnership', 'Report-based accountability'],
                     ['Group / family', 'Yes, up to 12 members', 'Family: parent and child accounts, up to 20 installs. Personal: up to 6 installs.'],
                     ['Content blocking', 'Yes, always-on Family Controls', 'Their pricing FAQ says they do not block websites or filter content.'],
@@ -117,7 +117,7 @@ export default function Accountable2YouCompare() {
             <div className="space-y-4">
               {[
                 { title: 'Cross-platform coverage', body: 'Accountable2You lists iPhone, iPad, Android, Windows, Mac, Linux, and Chromebook. Remain Faithful is iPhone only right now. For mixed devices, Accountable2You covers platforms Remain Faithful does not ship on yet.' },
-                { title: 'Detailed web activity reporting', body: 'Their features page says reports include full web page titles, and that Incognito and private browsing are visible to partners. Their monitoring page says iOS app usage is limited compared with other platforms. If a partner wants that browsing detail, Accountable2You describes more of it than Remain Faithful’s category, severity, timestamp, and short summary.' },
+                { title: 'Detailed web activity reporting', body: 'Their features page says reports include full web page titles, and that Incognito and private browsing are visible to partners. Their monitoring page says iOS app usage is limited compared with other platforms. If a partner wants that browsing detail, Accountable2You describes more of it than Remain Faithful. See the privacy page for what a partner receives.' },
                 { title: 'Family and personal install limits', body: 'The public pricing page lists a Family plan with up to 20 active installs, parent and child accounts, and time-monitoring alerts, and a Personal plan with up to 6 active installs and unlimited partners. Remain Faithful does not publish a paid family tier. Its group mode is included at no charge, up to 12 members.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-hairline bg-paper-deep">
@@ -136,7 +136,7 @@ export default function Accountable2YouCompare() {
                 { title: 'Price', body: 'Remain Faithful is free. On 2026-10-13, Accountable2You’s public pricing page listed Personal at $11 per month or $121 per year ($10.08 USD per month, billed annually) and Family at $16 per month or $176 per year ($14.67 USD per month, billed annually). The annual cards say “GET 1 MONTH FREE.” The page offers a 10-day free trial. Verify current amounts on their site.' },
                 { title: 'On-device classification, no VPN in Remain Faithful', body: 'Remain Faithful uses Apple Family Controls for always-on filtering, with optional on-device AI. Screenshots stay on the phone. Accountable2You’s iOS page says their VPN technology records internet activity in Safari, Chrome, or any browser. Their public pages checked that day do not state a battery figure. Their pricing FAQ says they do not block or filter content, and that they do not capture screenshots.' },
                 { title: 'On-device AI when you opt in', body: 'Remain Faithful’s optional Deep Scan classifies non-DRM screen frames on-device. It cannot see DRM-protected video or banking apps (Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames). Always-on filtering and usage monitoring do not look at screen content. Accountable2You’s public pages describe browsing history, page titles, and app usage. They do not describe on-device screen classification.' },
-                { title: 'What partners receive', body: 'Accountable2You’s features page says partners can see full web page titles and Incognito browsing, and their pricing FAQ says they do not capture screenshots. You can set a partner to full activity reports or alerts only. Remain Faithful may share a short system-generated summary in addition to category, severity, and timestamp. Partners do not receive page titles, screenshots, or raw screen content.' },
+                { title: 'What partners receive', body: 'Accountable2You’s features page says partners can see full web page titles and Incognito browsing, and their pricing FAQ says they do not capture screenshots. You can set a partner to full activity reports or alerts only. What a partner can receive is on the privacy page. Partners do not receive page titles, screenshots, or raw screen content.' },
                 { title: 'Open source', body: 'Remain Faithful\'s entire codebase is publicly available for inspection. Accountable2You is proprietary. Anyone can verify what Remain Faithful does and does not transmit.' },
               ].map((item) => (
                 <div key={item.title} className="p-5 rounded-sm border border-wax/25 bg-paper-deep">
@@ -192,7 +192,7 @@ export default function Accountable2YouCompare() {
               {[
                 { q: 'Does Accountable2You drain the battery?', a: 'The Accountable2You pricing, features, and iOS pages checked on 2026-10-13 do not state a battery figure. Their iOS page says VPN technology records internet activity in Safari, Chrome, or any browser. Remain Faithful does not use a VPN. It uses Apple Family Controls for always-on filtering, with optional on-device classification.' },
                 { q: 'Can I switch from Accountable2You to Remain Faithful?', a: 'Yes. Cancel Accountable2You and set up Remain Faithful on iPhone (iOS 17+). Remain Faithful is iPhone only. Accountable2You lists iPhone, iPad, Android, Windows, Mac, Linux, and Chromebook. Their public pages checked on 2026-10-13 do not describe a required VPN-profile removal step.' },
-                { q: 'Does Remain Faithful log specific web page titles like Accountable2You?', a: 'No. Remain Faithful does not log or transmit web page titles or browsing history. Partners may receive a short system-generated summary in addition to category, severity, and timestamp when something is flagged — not page titles. Accountable2You reports browsing history and activity (including Incognito, per their site), which can expose more detail than some users want their partners to see.' },
+                { q: 'Does Remain Faithful log specific web page titles like Accountable2You?', a: 'No. Remain Faithful does not log or transmit web page titles or browsing history. What a partner can receive is on the privacy page, not page titles. Accountable2You reports browsing history and activity (including Incognito, per their site), which can expose more detail than some users want their partners to see.' },
               ].map((faq) => (
                 <div key={faq.q} className="rounded-sm border border-hairline bg-paper-deep p-6">
                   <h3 className="font-semibold text-ink mb-3">{faq.q}</h3>
