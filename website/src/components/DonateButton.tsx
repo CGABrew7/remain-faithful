@@ -70,7 +70,10 @@ export default function DonateButton() {
       </a>
 
       <div className="text-center text-sm text-ink-soft max-w-sm leading-relaxed">
-        Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Processed securely via Stripe.
+        <p>Donations are voluntary and non-refundable.</p>
+        <p className="mt-2">
+          Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Processed securely via Stripe.
+        </p>
       </div>
     </div>
   )
