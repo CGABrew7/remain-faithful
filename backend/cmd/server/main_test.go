@@ -178,6 +178,16 @@ func TestAdminRoutesDisabledWithoutHash(t *testing.T) {
 	}
 }
 
+func TestOversizedAuthBodyRejected(t *testing.T) {
+	body := `{"email":"a@b.co","password":"secretsecret","pad":"` + strings.Repeat("a", maxJSONBody) + `"}`
+	req := httptest.NewRequest(http.MethodPost, "/auth/login", strings.NewReader(body))
+	rr := httptest.NewRecorder()
+	routes(&handler.H{}).ServeHTTP(rr, req)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("status %d, want 400 for an oversized auth body", rr.Code)
+	}
+}
+
 func TestClientIPIgnoresForwardedForInProduction(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	req.RemoteAddr = "10.0.0.8:1234"

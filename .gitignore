@@ -32,6 +32,13 @@ node_modules/
 .vercel/
 *.tsbuildinfo
 
+# ── Keys and certificates — never commit private material ────────────────────
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+
 # ── Environment & secrets — never commit real values ─────────────────────────
 .env
 .env.local

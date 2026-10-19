@@ -1,0 +1,11 @@
+.git
+.gitignore
+**/.env
+**/.env.*
+*.pem
+*.key
+*.p8
+*.p12
+server
+*.test
+**/*_test.go

@@ -284,8 +284,7 @@ func verifyGoogleIDToken(ctx context.Context, idToken string, audiences []string
 		return googleIdentity{}, errors.New("missing sub")
 	}
 	aud := stringClaim(info["aud"])
-	azp := stringClaim(info["azp"])
-	if !audienceMatches(audiences, aud) && !audienceMatches(audiences, azp) {
+	if !audienceMatches(audiences, aud) {
 		return googleIdentity{}, errors.New("token audience does not match this app")
 	}
 	if exp := stringClaim(info["exp"]); exp != "" {

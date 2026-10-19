@@ -75,6 +75,8 @@ func (h *H) CreateBillingPortalSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Prefer the customer id stored for this account. FindOrCreateCustomer
+	// below adopts a listed customer only when its metadata names this user.
 	customerID := h.lookupStripeCustomerID(r.Context(), userID)
 	if customerID == "" {
 		email, _ := rfauth.EmailFromContext(r.Context())

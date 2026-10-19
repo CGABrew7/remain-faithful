@@ -195,9 +195,24 @@ func debugPushEnabled() bool {
 	return os.Getenv("APP_ENV") != "production"
 }
 
-// clientIP extracts the real client IP, preferring the Fly-Client-IP header
-// set by Fly.io's edge proxy (which cannot be spoofed by the client).
-// In production a missing Fly header does not fall back to X-Forwarded-For.
+// maxJSONBody bounds request bodies on every route, including auth and contact.
+const maxJSONBody = 1 << 20
+
+func limitRequestBody(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Body != nil {
+			r.Body = http.MaxBytesReader(w, r.Body, maxJSONBody)
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// clientIP is the address used for unauthenticated rate limits.
+// Fly's proxy adds Fly-Client-IP as the client address it accepted the
+// connection from: https://fly.io/docs/networking/request-headers/
+// That page recommends Fly-Client-IP when no other proxy sits in front of
+// Fly, and it says to treat X-Forwarded-For with caution. Production uses
+// Fly-Client-IP and does not fall back to X-Forwarded-For.
 func clientIP(r *http.Request) string {
 	if ip := r.Header.Get("Fly-Client-IP"); ip != "" {
 		return ip
@@ -245,6 +260,7 @@ func corsMiddleware(allowedOrigins []string) mux.MiddlewareFunc {
 func routes(h *handler.H) http.Handler {
 	r := mux.NewRouter()
 
+	r.Use(limitRequestBody)
 	r.Use(loggingMiddleware)
 	origins := strings.Split(getenv("ALLOWED_ORIGINS", "https://remainfaithful.com"), ",")
 	r.Use(corsMiddleware(origins))

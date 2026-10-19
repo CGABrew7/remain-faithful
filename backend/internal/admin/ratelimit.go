@@ -58,8 +58,11 @@ func ResetLoginLimits() {
 	loginMu.Unlock()
 }
 
-// ClientIP prefers the Fly edge address. In production it does not trust
-// X-Forwarded-For, matching the public API.
+// ClientIP prefers Fly-Client-IP. Fly's proxy adds that header as the address
+// it accepted the connection from and tells apps to prefer it over
+// X-Forwarded-For when Fly is the edge:
+// https://fly.io/docs/networking/request-headers/
+// Production does not fall back to X-Forwarded-For.
 func ClientIP(r *http.Request) string {
 	if ip := strings.TrimSpace(r.Header.Get("Fly-Client-IP")); ip != "" {
 		return ip

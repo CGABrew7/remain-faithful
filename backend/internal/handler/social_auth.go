@@ -180,8 +180,16 @@ func (h *H) findOrCreateSocialUser(r *http.Request, idCol, idVal, email, name st
 				return
 			}
 			if current == "" {
+				// An unverified password row has not proved it owns this mailbox.
+				// Drop that password and its sessions when the provider link lands.
+				// A row that was already verified keeps its password and sessions.
 				res, execErr := h.DB.ExecContext(ctx,
-					fmt.Sprintf(`UPDATE users SET %s = $1, email_verified = TRUE WHERE id = $2 AND (%s IS NULL OR %s = '')`, idCol, idCol, idCol),
+					fmt.Sprintf(`UPDATE users
+						SET %s = $1,
+						    email_verified = TRUE,
+						    password_hash = CASE WHEN email_verified THEN password_hash ELSE '' END,
+						    token_version = CASE WHEN email_verified THEN token_version ELSE token_version + 1 END
+						WHERE id = $2 AND (%s IS NULL OR %s = '')`, idCol, idCol, idCol),
 					idVal, userID,
 				)
 				if execErr != nil {

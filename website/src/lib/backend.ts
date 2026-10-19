@@ -43,7 +43,14 @@ export function tooMany(ip: string, limit = 10) {
 }
 
 export function clientAddress(request: Request) {
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
+  // Vercel sets x-real-ip to the client address it observed. The docs describe
+  // it as identical to x-forwarded-for after Vercel replaces that header, and
+  // x-vercel-forwarded-for as the same address when another proxy rewrites
+  // x-forwarded-for. The first forwarded hop is not used.
+  // https://vercel.com/docs/headers/request-headers
+  const real = request.headers.get('x-real-ip')?.split(',')[0]?.trim()
+  if (real) return real
+  const platform = request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
+  if (platform) return platform
   return 'local'
 }
