@@ -147,7 +147,10 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 // POST /relationships/accept-invite
 // Body: { "token": "..." }
 func (h *H) AcceptPartnerInvite(w http.ResponseWriter, r *http.Request) {
-	userID, _ := rfauth.UserIDFromContext(r.Context())
+	userID, acceptingEmail, ok := h.requireVerifiedMailbox(w, r)
+	if !ok {
+		return
+	}
 
 	var req struct {
 		Token string `json:"token"`
@@ -169,13 +172,6 @@ func (h *H) AcceptPartnerInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var acceptingEmail string
-	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT email FROM users WHERE id = $1`, userID,
-	).Scan(&acceptingEmail); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not verify your account")
-		return
-	}
 	if acceptingEmail != inviteeEmail {
 		writeError(w, http.StatusForbidden, "this invite was sent to a different email address")
 		return
@@ -411,9 +407,13 @@ func (h *H) preparePartnerInvite(ctx context.Context, userID, inviteeID int64) (
 // GET /relationships/invites/pending
 func (h *H) ListPendingPartnerInvites(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
-	email, err := h.userEmail(r.Context(), userID)
+	email, verified, err := h.userMailbox(r.Context(), userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	if !verified {
+		writeJSON(w, http.StatusOK, []any{})
 		return
 	}
 	rows, err := h.DB.QueryContext(r.Context(), `
@@ -451,9 +451,13 @@ func (h *H) ListPendingPartnerInvites(w http.ResponseWriter, r *http.Request) {
 // GET /groups/invites/pending
 func (h *H) ListPendingGroupInvites(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
-	email, err := h.userEmail(r.Context(), userID)
+	email, verified, err := h.userMailbox(r.Context(), userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return
+	}
+	if !verified {
+		writeJSON(w, http.StatusOK, []any{})
 		return
 	}
 	rows, err := h.DB.QueryContext(r.Context(), `
@@ -491,9 +495,31 @@ func (h *H) ListPendingGroupInvites(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *H) userEmail(ctx context.Context, userID int64) (string, error) {
-	var email string
-	err := h.DB.QueryRowContext(ctx, `SELECT email FROM users WHERE id = $1`, userID).Scan(&email)
+	email, _, err := h.userMailbox(ctx, userID)
 	return email, err
+}
+
+func (h *H) userMailbox(ctx context.Context, userID int64) (string, bool, error) {
+	var email string
+	var verified bool
+	err := h.DB.QueryRowContext(ctx, `SELECT email, email_verified FROM users WHERE id = $1`, userID).Scan(&email, &verified)
+	return email, verified, err
+}
+
+// requireVerifiedMailbox loads the caller's address and refuses the request
+// until that address is confirmed.
+func (h *H) requireVerifiedMailbox(w http.ResponseWriter, r *http.Request) (int64, string, bool) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	email, verified, err := h.userMailbox(r.Context(), userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return 0, "", false
+	}
+	if !verified {
+		writeError(w, http.StatusForbidden, "confirm your email before accepting an invite")
+		return 0, "", false
+	}
+	return userID, email, true
 }
 
 // AcceptPartnerInviteByID accepts a pending partner invite addressed to the caller.
@@ -515,10 +541,20 @@ func (h *H) decidePartnerInvite(w http.ResponseWriter, r *http.Request, accept b
 		writeError(w, http.StatusBadRequest, "invalid invite id")
 		return
 	}
-	email, err := h.userEmail(r.Context(), userID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not verify your account")
-		return
+	var email string
+	if accept {
+		var ok bool
+		userID, email, ok = h.requireVerifiedMailbox(w, r)
+		if !ok {
+			return
+		}
+	} else {
+		var err error
+		email, err = h.userEmail(r.Context(), userID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not verify your account")
+			return
+		}
 	}
 	var token string
 	var inviterID int64
@@ -595,10 +631,19 @@ func (h *H) decideGroupByID(w http.ResponseWriter, r *http.Request, accept bool)
 		writeError(w, http.StatusBadRequest, "invalid invite id")
 		return
 	}
-	email, err := h.userEmail(r.Context(), userID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not verify your account")
-		return
+	var email string
+	if accept {
+		var ok bool
+		userID, email, ok = h.requireVerifiedMailbox(w, r)
+		if !ok {
+			return
+		}
+	} else {
+		email, err = h.userEmail(r.Context(), userID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not verify your account")
+			return
+		}
 	}
 	var groupID int64
 	err = h.DB.QueryRowContext(r.Context(), `
@@ -635,10 +680,20 @@ func (h *H) decideGroupByToken(w http.ResponseWriter, r *http.Request, accept bo
 		writeError(w, http.StatusBadRequest, "token is required")
 		return
 	}
-	email, err := h.userEmail(r.Context(), userID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not verify your account")
-		return
+	var email string
+	var err error
+	if accept {
+		var ok bool
+		userID, email, ok = h.requireVerifiedMailbox(w, r)
+		if !ok {
+			return
+		}
+	} else {
+		email, err = h.userEmail(r.Context(), userID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not verify your account")
+			return
+		}
 	}
 	var inviteID, groupID int64
 	err = h.DB.QueryRowContext(r.Context(), `

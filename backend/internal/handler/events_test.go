@@ -23,6 +23,11 @@ func TestIsAllowedEventSummary(t *testing.T) {
 		"Monitored app category used for 1+ minute",
 		"Monitored app activity detected",
 		"App activity detected",
+		"Adult content flagged on screen",
+		"Gambling flagged on screen",
+		"Violence flagged on screen",
+		"Self-harm content flagged on screen",
+		"Content reviewed",
 	}
 	for _, s := range fixed {
 		if !isAllowedEventSummary(s) {

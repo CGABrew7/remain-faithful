@@ -41,10 +41,10 @@ func (h *H) StartHeartbeatSweep(ctx context.Context, silenceMinutes int) {
 }
 
 type silenceRow struct {
-	userID     int64
-	userName   string
-	relID      int64
-	partnerID  int64
+	userID    int64
+	userName  string
+	relID     int64
+	partnerID int64
 }
 
 func (h *H) sweepHeartbeatSilence(ctx context.Context, silenceMinutes int) {

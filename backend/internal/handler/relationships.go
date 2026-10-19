@@ -42,43 +42,26 @@ func (h *H) CreateRelationship(w http.ResponseWriter, r *http.Request) {
 		`SELECT id FROM users WHERE email = $1`,
 		req.PartnerEmail,
 	).Scan(&partnerID)
-	if err != nil {
-		// Same response shape as a stored invite so this route cannot be used
-		// to check whether an address is registered. Build 9 does not call it.
-		writeJSON(w, http.StatusCreated, map[string]any{"status": "invited"})
-		return
-	}
-	if partnerID == userID {
-		writeError(w, http.StatusBadRequest, "cannot add yourself as a partner")
-		return
-	}
-
-	if status, msg := h.preparePartnerInvite(r.Context(), userID, partnerID); status != 0 {
-		writeError(w, status, msg)
-		return
-	}
-	var id int64
-	var status, createdAt string
-	err = h.DB.QueryRowContext(r.Context(),
-		`INSERT INTO relationships (user_id, partner_id, type, status)
-		 VALUES ($1, $2, $3, 'pending')
-		 ON CONFLICT (user_id, partner_id) DO UPDATE SET type = EXCLUDED.type
-		 RETURNING id, status, created_at`,
-		userID, partnerID, req.Type,
-	).Scan(&id, &status, &createdAt)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) && !isNoRows(err) {
 		writeError(w, http.StatusInternalServerError, "failed to create relationship")
 		return
 	}
+	// Registered and unknown addresses get the same body. An existing row keeps
+	// its type and status; this insert does not rewrite them.
+	if err == nil && partnerID != userID {
+		if status, _ := h.preparePartnerInvite(r.Context(), userID, partnerID); status == 0 {
+			if _, insErr := h.DB.ExecContext(r.Context(), `
+				INSERT INTO relationships (user_id, partner_id, type, status)
+				VALUES ($1, $2, $3, 'pending')
+				ON CONFLICT (user_id, partner_id) DO NOTHING
+			`, userID, partnerID, req.Type); insErr != nil {
+				writeError(w, http.StatusInternalServerError, "failed to create relationship")
+				return
+			}
+		}
+	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{
-		"id":         id,
-		"user_id":    userID,
-		"partner_id": partnerID,
-		"type":       req.Type,
-		"status":     status,
-		"created_at": createdAt,
-	})
+	writeJSON(w, http.StatusCreated, map[string]any{"status": "invited"})
 }
 
 // ListRelationships returns all relationships the authenticated user has,

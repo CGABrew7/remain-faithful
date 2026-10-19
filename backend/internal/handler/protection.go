@@ -131,6 +131,19 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Sign-out is the app's server signal that this account left the device.
+	// Clear this account's tokens before the alert is stored.
+	if req.Type == "signed_out" {
+		if _, err := h.DB.ExecContext(r.Context(), `
+			UPDATE device_tokens
+			SET is_active = FALSE, updated_at = NOW()
+			WHERE user_id = $1
+		`, userID); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to record protection alert")
+			return
+		}
+	}
+
 	// Store the alert before acknowledging so a missed push still has a history row.
 	if err := h.storeAndPushProtection(userID, senderName, req.Type, false); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to record protection alert")
@@ -171,7 +184,9 @@ func (h *H) storeAndPushProtection(userID int64, senderName, alertType string, s
 	if len(deliver) == 0 {
 		return nil
 	}
-	go h.pushProtection(userID, senderName, alertType, body, deliver)
+	h.inBackground(func() {
+		h.pushProtection(userID, senderName, alertType, body, deliver)
+	})
 	return nil
 }
 

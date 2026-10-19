@@ -140,8 +140,59 @@ func (c *Client) CreateBillingPortalSession(ctx context.Context, customerID stri
 	return s.URL, nil
 }
 
-// FindOrCreateCustomer returns an existing Stripe customer for email, or
-// creates one tagged with user_id metadata.
+// listedCustomer is the part of a Stripe customer this package uses when
+// choosing a billing-portal customer.
+type listedCustomer struct {
+	ID     string
+	UserID string
+}
+
+// listCustomersByEmail and createCustomerForUser are the Stripe calls behind
+// FindOrCreateCustomer. Tests replace them so the suite does not dial Stripe.
+var listCustomersByEmail = func(ctx context.Context, email string) ([]listedCustomer, error) {
+	params := &stripe.CustomerListParams{Email: stripe.String(email)}
+	params.Limit = stripe.Int64(100)
+	params.Context = ctx
+	iter := customer.List(params)
+	var out []listedCustomer
+	for iter.Next() {
+		cust := iter.Customer()
+		if cust == nil || cust.ID == "" {
+			continue
+		}
+		out = append(out, listedCustomer{ID: cust.ID, UserID: cust.Metadata["user_id"]})
+	}
+	if err := iter.Err(); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+var createCustomerForUser = func(ctx context.Context, email string, userID int64) (string, error) {
+	create := &stripe.CustomerParams{Email: stripe.String(email)}
+	create.Context = ctx
+	create.AddMetadata("user_id", strconv.FormatInt(userID, 10))
+	cust, err := customer.New(create)
+	if err != nil {
+		return "", err
+	}
+	return cust.ID, nil
+}
+
+// customerIDForUser returns a listed customer only when its metadata user_id
+// is this account. An email match by itself is not enough.
+func customerIDForUser(listed []listedCustomer, userID int64) string {
+	want := strconv.FormatInt(userID, 10)
+	for _, c := range listed {
+		if c.ID != "" && c.UserID == want {
+			return c.ID
+		}
+	}
+	return ""
+}
+
+// FindOrCreateCustomer returns the Stripe customer already tagged for userID,
+// or creates one. It does not adopt a customer just because the email matches.
 func (c *Client) FindOrCreateCustomer(ctx context.Context, email string, userID int64) (string, error) {
 	if !c.Enabled() {
 		return "", fmt.Errorf("stripe not configured: set STRIPE_SECRET_KEY")
@@ -150,23 +201,16 @@ func (c *Client) FindOrCreateCustomer(ctx context.Context, email string, userID 
 		return "", fmt.Errorf("email required to find or create a Stripe customer")
 	}
 
-	list := &stripe.CustomerListParams{Email: stripe.String(email)}
-	list.Limit = stripe.Int64(1)
-	iter := customer.List(list)
-	if iter.Next() {
-		if cust := iter.Customer(); cust != nil && cust.ID != "" {
-			return cust.ID, nil
-		}
-	}
-	if err := iter.Err(); err != nil {
+	listed, err := listCustomersByEmail(ctx, email)
+	if err != nil {
 		return "", fmt.Errorf("stripe customer list: %w", err)
 	}
-
-	create := &stripe.CustomerParams{Email: stripe.String(email)}
-	create.AddMetadata("user_id", strconv.FormatInt(userID, 10))
-	cust, err := customer.New(create)
+	if id := customerIDForUser(listed, userID); id != "" {
+		return id, nil
+	}
+	id, err := createCustomerForUser(ctx, email, userID)
 	if err != nil {
 		return "", fmt.Errorf("stripe customer create: %w", err)
 	}
-	return cust.ID, nil
+	return id, nil
 }

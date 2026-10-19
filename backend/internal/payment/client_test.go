@@ -1,6 +1,7 @@
 package payment
 
 import (
+	"context"
 	"net/url"
 	"strings"
 	"testing"
@@ -74,6 +75,56 @@ func TestCheckoutSessionParamsSetsIdempotencyKey(t *testing.T) {
 	}
 	if params.SubscriptionData == nil || params.SubscriptionData.Metadata["user_id"] != "9" {
 		t.Fatal("subscription metadata user_id missing")
+	}
+}
+
+func TestFindOrCreateCustomerDoesNotUseForeignEmailMatch(t *testing.T) {
+	prevList, prevCreate := listCustomersByEmail, createCustomerForUser
+	t.Cleanup(func() {
+		listCustomersByEmail = prevList
+		createCustomerForUser = prevCreate
+	})
+	listCustomersByEmail = func(context.Context, string) ([]listedCustomer, error) {
+		return []listedCustomer{{ID: "cus_other", UserID: "99"}}, nil
+	}
+	created := false
+	createCustomerForUser = func(context.Context, string, int64) (string, error) {
+		created = true
+		return "cus_new", nil
+	}
+	c := &Client{enabled: true}
+	id, err := c.FindOrCreateCustomer(context.Background(), "ada@example.com", 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id != "cus_new" || !created {
+		t.Fatalf("id = %q created = %v, want a new customer", id, created)
+	}
+}
+
+func TestFindOrCreateCustomerUsesStoredMetadataUser(t *testing.T) {
+	prevList, prevCreate := listCustomersByEmail, createCustomerForUser
+	t.Cleanup(func() {
+		listCustomersByEmail = prevList
+		createCustomerForUser = prevCreate
+	})
+	listCustomersByEmail = func(context.Context, string) ([]listedCustomer, error) {
+		return []listedCustomer{
+			{ID: "cus_other", UserID: "99"},
+			{ID: "cus_mine", UserID: "5"},
+		}, nil
+	}
+	createCustomerForUser = func(context.Context, string, int64) (string, error) {
+		t.Fatal("create should not run when a listed customer is already tagged for this user")
+		return "", nil
+	}
+	c := &Client{enabled: true}
+	id, err := c.FindOrCreateCustomer(context.Background(), "ada@example.com", 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id != "cus_mine" {
+		t.Fatalf("id = %q, want cus_mine", id)
 	}
 }
 

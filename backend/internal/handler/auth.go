@@ -417,9 +417,15 @@ func (h *H) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback() //nolint
-	if _, err = tx.ExecContext(r.Context(),
-		`UPDATE users SET password_hash = $1, token_version = token_version + 1 WHERE id = $2`, string(hash), userID,
-	); err != nil {
+	if _, err = tx.ExecContext(r.Context(), `
+		UPDATE users
+		SET password_hash = $1,
+		    token_version = token_version + 1,
+		    pending_email = NULL,
+		    pending_email_token_hash = NULL,
+		    pending_email_expires_at = NULL
+		WHERE id = $2
+	`, string(hash), userID); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update password")
 		return
 	}

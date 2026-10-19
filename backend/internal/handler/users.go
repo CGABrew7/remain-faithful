@@ -178,6 +178,9 @@ func (h *H) deleteUserByID(ctx context.Context, userID int64, userName string) e
 		tokens = h.collectDepartureTokens(ctx, userID)
 	}
 
+	if _, err := h.DB.ExecContext(ctx, `DELETE FROM alerts WHERE subject_user_id = $1`, userID); err != nil {
+		return err
+	}
 	if _, err := h.DB.ExecContext(ctx, `DELETE FROM users WHERE id = $1`, userID); err != nil {
 		return err
 	}

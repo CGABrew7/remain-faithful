@@ -10,13 +10,17 @@ import (
 	"net/http"
 	"time"
 
-	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/apns"
+	rfauth "remain-faithful/backend/internal/auth"
 )
 
 // Heartbeat updates the authenticated user's last_heartbeat_at and screen state.
 // POST /heartbeat
-// Body: {"screen":"active"|"idle"}
+// Body: {"screen":"active"|"idle"|"monitoring"}
+// "monitoring" is the value the app sends while Alerts or Blocking are on,
+// including when Deep Scan is off. It refreshes last_heartbeat_at the same way
+// as active and idle. The shorter "active screen stopped" nudge still applies
+// only when the stored state is "active".
 func (h *H) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
@@ -27,8 +31,10 @@ func (h *H) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if req.Screen != "active" && req.Screen != "idle" {
-		writeError(w, http.StatusBadRequest, `screen must be "active" or "idle"`)
+	switch req.Screen {
+	case "active", "idle", "monitoring":
+	default:
+		writeError(w, http.StatusBadRequest, `screen must be "active", "idle", or "monitoring"`)
 		return
 	}
 
@@ -169,4 +175,3 @@ func (h *H) notifyUserDirect(ctx context.Context, userID int64, collapseID, titl
 		}
 	}
 }
-

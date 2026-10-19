@@ -32,6 +32,12 @@ var allowedEventSummaries = map[string]struct{}{
 	"Monitored app category used for 1+ minute":       {},
 	"Monitored app activity detected":                 {},
 	"App activity detected":                           {},
+	// SampleHandler.summaryForTier1
+	"Adult content flagged on screen":     {},
+	"Gambling flagged on screen":          {},
+	"Violence flagged on screen":          {},
+	"Self-harm content flagged on screen": {},
+	"Content reviewed":                    {},
 }
 
 // continuedActivitySummary matches SampleHandler.continuedActivitySummary:

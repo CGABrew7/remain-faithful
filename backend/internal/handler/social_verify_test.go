@@ -132,6 +132,24 @@ func TestVerifyGoogleRequiresAudienceAndVerifiedEmail(t *testing.T) {
 	}
 }
 
+func TestVerifyGoogleRejectsAuthorizedPartyWithoutAudience(t *testing.T) {
+	prev := postGoogleTokenInfo
+	t.Cleanup(func() { postGoogleTokenInfo = prev })
+	postGoogleTokenInfo = func(context.Context, string) (map[string]any, error) {
+		return map[string]any{
+			"sub":            "g-1",
+			"aud":            "other-client",
+			"azp":            "our-client",
+			"email":          "person@example.com",
+			"email_verified": true,
+			"exp":            "9999999999",
+		}, nil
+	}
+	if _, err := verifyGoogleIDToken(context.Background(), "tok", []string{"our-client"}, time.Now()); err == nil {
+		t.Fatal("token whose aud does not match was accepted")
+	}
+}
+
 func TestVerifyGoogleRejectsExpiredToken(t *testing.T) {
 	prev := postGoogleTokenInfo
 	t.Cleanup(func() { postGoogleTokenInfo = prev })

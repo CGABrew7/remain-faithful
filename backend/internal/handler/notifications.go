@@ -52,6 +52,14 @@ func (h *H) RegisterDeviceToken(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to register device token")
 		return
 	}
+	if _, err := h.DB.ExecContext(r.Context(), `
+		UPDATE device_tokens
+		SET is_active = FALSE, updated_at = NOW()
+		WHERE token = $1 AND user_id <> $2
+	`, req.Token, userID); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to register device token")
+		return
+	}
 
 	log.Printf("[push] registered token %.8s... user=%d env=%s", req.Token, userID, req.Environment)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -319,7 +327,7 @@ func partnershipEndedBody(name string) string {
 func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string, n *apns.Notification) {
 	env := h.APNS.Environment()
 	rows, err := h.DB.QueryContext(ctx, `
-		SELECT dt.token
+		SELECT dt.user_id, dt.token
 		FROM   relationships r
 		JOIN   device_tokens dt ON dt.user_id = r.partner_id
 		WHERE  r.user_id    = $1
@@ -334,8 +342,9 @@ func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string,
 	defer rows.Close()
 
 	for rows.Next() {
+		var ownerID int64
 		var token string
-		if err := rows.Scan(&token); err != nil {
+		if err := rows.Scan(&ownerID, &token); err != nil {
 			continue
 		}
 
@@ -344,7 +353,7 @@ func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string,
 			var invalidErr *apns.ErrInvalidToken
 			if errors.As(err, &invalidErr) {
 				h.markTokenInactive(ctx, token)
-				h.notifyAppRemoved(ctx, token)
+				h.notifyAppRemoved(ctx, ownerID)
 				continue
 			}
 			log.Printf("notifyPartners: send to %s: %v", token, err)
@@ -378,7 +387,7 @@ func (h *H) notifyPartnerByID(ctx context.Context, partnerID int64, callerName s
 			var invalidErr *apns.ErrInvalidToken
 			if errors.As(err, &invalidErr) {
 				h.markTokenInactive(ctx, token)
-				h.notifyAppRemoved(ctx, token)
+				h.notifyAppRemoved(ctx, partnerID)
 				continue
 			}
 			log.Printf("[push] notifyPartnerByID: send to user=%d token=%.8s...: %v", partnerID, token, err)
@@ -389,17 +398,11 @@ func (h *H) notifyPartnerByID(ctx context.Context, partnerID int64, callerName s
 	log.Printf("[push] notifyPartnerByID: user=%d env=%s sent=%d", partnerID, env, sent)
 }
 
-// notifyAppRemoved tells the people who watch the owner of a rejected device
-// token. The notice goes to their active tokens, never back to the dead one.
-func (h *H) notifyAppRemoved(ctx context.Context, deadToken string) {
-	var ownerID int64
+// notifyAppRemoved tells the people who watch ownerID that a device token for
+// that account was rejected. The owner comes from the send that failed.
+func (h *H) notifyAppRemoved(ctx context.Context, ownerID int64) {
 	var ownerName string
-	err := h.DB.QueryRowContext(ctx, `
-		SELECT u.id, u.name
-		FROM device_tokens dt
-		JOIN users u ON u.id = dt.user_id
-		WHERE dt.token = $1
-	`, deadToken).Scan(&ownerID, &ownerName)
+	err := h.DB.QueryRowContext(ctx, `SELECT name FROM users WHERE id = $1`, ownerID).Scan(&ownerName)
 	if err != nil {
 		return
 	}
