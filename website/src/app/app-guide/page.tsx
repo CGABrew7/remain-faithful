@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import FeaturePlate from '@/components/FeaturePlate'
 import PhoneFrame from '@/components/PhoneFrame'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { guideParts, type GuideScreen } from './guide-content'
@@ -136,12 +137,13 @@ export default function AppGuidePage() {
 
 function ScreenBlock({ screen }: { screen: GuideScreen }) {
   const hasShots = !!screen.shots && screen.shots.length > 0
+  const hasPlate = !!screen.plate
   return (
     <article id={screen.id} className="scroll-mt-24">
       <div
         className={
-          hasShots
-            ? 'grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_240px] xl:grid-cols-[minmax(0,1fr)_260px]'
+          hasShots || hasPlate
+            ? 'grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_20rem]'
             : ''
         }
       >
@@ -168,6 +170,15 @@ function ScreenBlock({ screen }: { screen: GuideScreen }) {
             </p>
           )}
         </div>
+
+        {hasPlate && screen.plate && (
+          <FeaturePlate
+            kicker={screen.plate.kicker}
+            title={screen.plate.title}
+            lines={screen.plate.lines}
+            caption={screen.plate.caption}
+          />
+        )}
 
         {hasShots && (
           <div
