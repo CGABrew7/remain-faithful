@@ -428,7 +428,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Block Selected Apps',
-            does: 'If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield and does not itself send an alert.',
+            does: 'If Blocking is on and you open an app you asked to block, your partner gets an alert that you opened an app you asked to block, and Apple\'s Screen Time shield appears. The app name is never sent.',
             why: 'A block that is already in place does more than willpower in the moment.',
           },
         ],
