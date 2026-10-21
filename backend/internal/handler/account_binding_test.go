@@ -344,6 +344,51 @@ func TestCreateRelationshipDoesNotRewriteExistingType(t *testing.T) {
 	}
 }
 
+func TestPhoneSignalsStoreCountsOnly(t *testing.T) {
+	db := newMemDB()
+	db.addUser(memUser{id: 1, name: "Ada", email: "ada@example.com", verified: true, supportTaps: 2})
+	h := &H{DB: db.open(t)}
+	rr := httptest.NewRecorder()
+	h.RecordPhoneSignals(rr, authed(http.MethodPost, "/users/me/signals",
+		`{"screen_time_granted":true,"monitored_app_count":4,"app_version":"1.0.2","support_taps":3}`, 1))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status %d body %s", rr.Code, rr.Body.String())
+	}
+	u, _ := db.user(1)
+	if u.heartbeat {
+		t.Fatal("phone signals must not count as a heartbeat")
+	}
+	if u.screenTime == nil || !*u.screenTime || u.appCount != 4 || u.appVersion != "1.0.2" || u.supportTaps != 3 {
+		t.Fatalf("signals = %+v", u)
+	}
+	rr = httptest.NewRecorder()
+	h.RecordPhoneSignals(rr, authed(http.MethodPost, "/users/me/signals",
+		`{"screen_time_granted":false,"monitored_app_count":0,"app_version":"1.0.2","support_taps":1}`, 1))
+	u, _ = db.user(1)
+	if u.supportTaps != 3 {
+		t.Fatalf("a lower tap count must stay, got %d", u.supportTaps)
+	}
+	if u.screenTime == nil || *u.screenTime {
+		t.Fatal("screen time no should be stored")
+	}
+	rr = httptest.NewRecorder()
+	h.RecordPhoneSignals(rr, authed(http.MethodPost, "/users/me/signals",
+		`{"screen_time_granted":true,"monitored_app_count":1,"app_version":"not a version!","support_taps":1}`, 1))
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("bad version status %d", rr.Code)
+	}
+}
+
+func TestBlockedAppOpenCopy(t *testing.T) {
+	if !isAllowedEventSummary("Blocked app opened") {
+		t.Fatal("blocked app open should be an allowed summary")
+	}
+	got := alertBody("Ada", "app_usage", "concerning", "Blocked app opened")
+	if got != "Ada opened an app they asked to block." {
+		t.Fatalf("body = %q", got)
+	}
+}
+
 func TestHeartbeatMonitoringUpdatesTimestamp(t *testing.T) {
 	db := newMemDB()
 	db.addUser(memUser{id: 1, name: "Ada", email: "ada@example.com", verified: true})

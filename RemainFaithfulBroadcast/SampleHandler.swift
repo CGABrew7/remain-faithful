@@ -19,6 +19,7 @@ struct DetectedEvent: Codable {
     let tier: Int         // 1, 2, or 3
     let confidence: Float
     var processed: Bool
+    var accountID: Int? = nil
 }
 
 // MARK: - Content category
@@ -773,9 +774,11 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     private func makeEvent(category: ContentCategory, tier: Int,
                            confidence: Float, summary: String) -> DetectedEvent {
-        DetectedEvent(id: UUID().uuidString, timestamp: Date().timeIntervalSince1970,
+        let account = sharedDefaults?.integer(forKey: "authUserID") ?? 0
+        return DetectedEvent(id: UUID().uuidString, timestamp: Date().timeIntervalSince1970,
                       category: category.rawValue, severity: category.severity(for: confidence),
-                      summary: summary, tier: tier, confidence: confidence, processed: false)
+                      summary: summary, tier: tier, confidence: confidence, processed: false,
+                      accountID: account > 0 ? account : nil)
     }
 
     private func buildSummary(category: ContentCategory, confidence: Float) -> String {

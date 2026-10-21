@@ -65,7 +65,7 @@ func TestRateHidesSmallSide(t *testing.T) {
 }
 
 func TestFunnelDoesNotRevealSmallStep(t *testing.T) {
-	steps := BuildFunnel(10, 2, 2, 1)
+	steps := BuildFunnel(10, 2, 2, 1, 1, 1)
 	b, err := json.Marshal(steps)
 	if err != nil {
 		t.Fatal(err)
@@ -96,24 +96,23 @@ func TestFunnelDoesNotRevealSmallStep(t *testing.T) {
 			t.Fatalf("%s drop-off leaked as %#v", step.Key, step.Drop)
 		}
 	}
-	for _, step := range steps {
-		if step.Key == "screen_time" || step.Key == "apps_chosen" {
-			if step.Status != "not_tracked_yet" || step.Count != nil {
-				t.Fatalf("%s should be an untracked gap", step.Key)
-			}
-		}
-	}
 	var screen, apps bool
 	for _, step := range steps {
-		if step.Key == "screen_time" && strings.Contains(step.Note, "Screen Time") {
-			screen = true
+		if step.Key == "screen_time" {
+			if step.Status != "tracked" || step.Count == nil {
+				t.Fatalf("screen time should be a count, %+v", step)
+			}
+			screen = strings.Contains(step.Note, "Screen Time")
 		}
-		if step.Key == "apps_chosen" && strings.Contains(step.Note, "app names") {
-			apps = true
+		if step.Key == "apps_chosen" {
+			if step.Status != "tracked" || step.Count == nil {
+				t.Fatalf("apps chosen should be a count, %+v", step)
+			}
+			apps = strings.Contains(step.Note, "App names")
 		}
 	}
 	if !screen || !apps {
-		t.Fatal("untracked steps should say what a later app build would send")
+		t.Fatal("funnel notes should describe Screen Time and chosen apps")
 	}
 }
 

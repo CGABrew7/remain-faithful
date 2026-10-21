@@ -344,11 +344,21 @@ function DashboardBody({
             ['Monitoring off or paused', overview.active.monitoring_off],
             ['Heartbeat silent', overview.active.heartbeat_silent],
             ['Never checked in', overview.active.never_checked_in],
+            ['Monitored apps', overview.active.monitored_apps],
           ]}
         />
+        <h3 className="mb-3 mt-6 font-serif text-xl text-white">App versions</h3>
+        {overview.active.app_versions.status === 'tracked' ? (
+          (overview.active.app_versions.versions ?? []).length === 0 ? (
+            <p className="text-sm text-ink-faint">No app versions reported yet.</p>
+          ) : (
+            <HBars rows={(overview.active.app_versions.versions ?? []).map((row) => ({ label: row.label, count: row.count }))} />
+          )
+        ) : (
+          <GapNote gap={{ status: 'not_tracked_yet', note: overview.active.app_versions.note ?? '' }} />
+        )}
         <div className="mt-4 space-y-3">
           <GapNote gap={overview.active.daily_history} />
-          <GapNote gap={overview.active.app_versions} />
         </div>
       </Section>
 
@@ -379,9 +389,14 @@ function DashboardBody({
         <DayBars points={overview.alerts.partner_alerts_by_day} />
         <h3 className="mb-3 mt-6 font-serif text-xl text-white">Monitoring paused or turned off</h3>
         <DayBars points={overview.alerts.monitoring_paused_by_day} />
-        <div className="mt-4">
-          <GapNote gap={overview.alerts.support_taps} />
-        </div>
+        <h3 className="mb-3 mt-6 font-serif text-xl text-white">I need support</h3>
+        {overview.alerts.support_taps.status === 'tracked' ? (
+          <p className="text-sm text-ink-soft">
+            Taps saved: <span className="tabular-nums text-wax">{fmt(overview.alerts.support_taps.count)}</span>
+          </p>
+        ) : (
+          <GapNote gap={{ status: 'not_tracked_yet', note: overview.alerts.support_taps.note ?? '' }} />
+        )}
       </Section>
 
       <Section title="Notifications and email" kicker="Delivery" delay={0.2}>

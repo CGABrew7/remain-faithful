@@ -1,5 +1,7 @@
 import SwiftUI
 import FamilyControls
+import AuthenticationServices
+import UIKit
 
 // The navy and gold palette now lives in RFTheme.swift alongside the shared
 // surface, button and toggle styles. Values are unchanged.
@@ -17,10 +19,12 @@ struct OnboardingView: View {
     @State private var name     = ""
     @State private var email    = ""
     @State private var password = ""
+    @State private var emailInviteSent = false
+    @State private var inviteLinkShared = false
 
     // Welcome is step 0 and is hidden from the dots.
-    // 1 account, 2 invite, 3 Screen Time, 4 Deep Scan, 5 apps.
-    private let totalSteps = 6
+    // 1 account, 2 invite, 3 Screen Time, 4 Deep Scan, 5 apps, 6 status.
+    private let totalSteps = 7
 
     var body: some View {
         ZStack {
@@ -49,16 +53,24 @@ struct OnboardingView: View {
                         }
                         .transition(.push(from: .trailing))
                     case 2:
-                        InvitePartnerStep(onContinue: advance, onSkip: advance)
+                        InvitePartnerStep(
+                            onContinue: advance,
+                            onSkip: advance,
+                            emailSent: $emailInviteSent,
+                            linkShared: $inviteLinkShared
+                        )
                             .transition(.push(from: .trailing))
                     case 3:
                         MonitoringSetupStep(onContinue: advance, onSkip: advance)
                             .transition(.push(from: .trailing))
                     case 4:
-                        DeepScanStep(onContinue: advance)
+                        DeepScanStep(onContinue: advance, onLater: advance)
+                            .transition(.push(from: .trailing))
+                    case 5:
+                        AppPickerStep(onContinue: advance)
                             .transition(.push(from: .trailing))
                     default:
-                        AppPickerStep {
+                        SetupStatusStep(emailInvite: emailInviteSent, linkShared: inviteLinkShared) {
                             hasCompletedOnboarding = true
                         }
                         .transition(.push(from: .trailing))
@@ -187,6 +199,7 @@ private struct CreateAccountStep: View {
     let onComplete: () -> Void
 
     @FocusState private var focused: Field?
+    @StateObject private var appleCoordinator = AppleSignInCoordinator()
     @State private var isLoading  = false
     @State private var errorMsg: String?
     @State private var isAdult = false
@@ -334,6 +347,35 @@ private struct CreateAccountStep: View {
             .multilineTextAlignment(.center)
             .padding(.top, 16)
 
+            HStack(spacing: 14) {
+                Rectangle().fill(Color.white.opacity(0.12)).frame(height: 1)
+                Text("or")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white.opacity(0.35))
+                Rectangle().fill(Color.white.opacity(0.12)).frame(height: 1)
+            }
+            .padding(.top, 18)
+
+            Button(action: continueWithApple) {
+                HStack(spacing: 12) {
+                    Image(systemName: "apple.logo")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(.black)
+                        .frame(width: 22)
+                    Text("Continue with Apple")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color(red: 0.10, green: 0.10, blue: 0.10))
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .background(RoundedRectangle(cornerRadius: 14).fill(isAdult ? Color.white : Color.white.opacity(0.45)))
+            }
+            .disabled(!isAdult || isLoading)
+            .padding(.top, 14)
+            .accessibilityLabel("Continue with Apple")
+
             Spacer()
 
             RFButton(
@@ -372,6 +414,56 @@ private struct CreateAccountStep: View {
             }
         }
     }
+
+    private func continueWithApple() {
+        guard isAdult, !isLoading else { return }
+        let provider = ASAuthorizationAppleIDProvider()
+        let request = provider.createRequest()
+        request.requestedScopes = [.fullName, .email]
+        appleCoordinator.perform(request: request) { result in
+            switch result {
+            case .failure(let err):
+                if (err as? ASAuthorizationError)?.code == .canceled { return }
+                errorMsg = "Apple sign in did not finish. Try again."
+            case .success(let auth):
+                guard let cred = auth.credential as? ASAuthorizationAppleIDCredential,
+                      let tokenData = cred.identityToken,
+                      let identityToken = String(data: tokenData, encoding: .utf8),
+                      let codeData = cred.authorizationCode,
+                      let authCode = String(data: codeData, encoding: .utf8) else {
+                    errorMsg = "Apple sign in did not finish. Try again."
+                    return
+                }
+                let firstName = cred.fullName?.givenName ?? ""
+                let lastName = cred.fullName?.familyName ?? ""
+                isLoading = true
+                errorMsg = nil
+                Task {
+                    do {
+                        let resp = try await APIClient.shared.appleSignIn(
+                            identityToken: identityToken,
+                            authorizationCode: authCode,
+                            firstName: firstName,
+                            lastName: lastName
+                        )
+                        await MainActor.run {
+                            name = resp.user.name
+                            email = resp.user.email
+                            AuthState.shared.noteAppleSignIn(userID: resp.user.id, email: resp.user.email, appleUserID: cred.user)
+                            AuthState.shared.setSession(token: resp.token, user: resp.user)
+                            isLoading = false
+                            onComplete()
+                        }
+                    } catch {
+                        await MainActor.run {
+                            errorMsg = UserFacingError.message(for: error)
+                            isLoading = false
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Step 3: Invite Partner
@@ -379,6 +471,8 @@ private struct CreateAccountStep: View {
 private struct InvitePartnerStep: View {
     let onContinue: () -> Void
     let onSkip:     () -> Void
+    @Binding var emailSent: Bool
+    @Binding var linkShared: Bool
 
     @FocusState private var emailFocused: Bool
     @State private var partnerEmail = ""
@@ -455,6 +549,22 @@ private struct InvitePartnerStep: View {
                 }
             }
 
+            Text("Or share a link they can open. They still accept from the email you send. Groups hold up to 12 people.")
+                .font(.footnote)
+                .foregroundStyle(Color.white.opacity(0.72))
+                .multilineTextAlignment(.center)
+                .padding(.top, 18)
+
+            Button {
+                linkShared = true
+                shareInviteLink()
+            } label: {
+                Text(linkShared ? "Invite link ready" : "Share invite link")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Color.rfGold)
+                    .frame(minHeight: 44)
+            }
+
             Spacer()
 
             Button(action: onSkip) {
@@ -469,6 +579,14 @@ private struct InvitePartnerStep: View {
         .animation(.easeInOut(duration: 0.2), value: errorMsg)
     }
 
+    private func shareInviteLink() {
+        let text = "I would like you as my accountability partner on Remain Faithful. https://www.remainfaithful.com"
+        let controller = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController else { return }
+        root.present(controller, animated: true)
+    }
+
     private func sendInvite() {
         guard canSend else { return }
         emailFocused = false
@@ -480,6 +598,7 @@ private struct InvitePartnerStep: View {
                 let result = try await APIClient.shared.invitePartner(email: addr)
                 await MainActor.run {
                     isSending = false
+                    emailSent = true
                     resultMessage = result.message
                 }
             } catch {
@@ -500,6 +619,7 @@ private struct MonitoringSetupStep: View {
 
     @ObservedObject private var fcManager = FamilyControlsManager.shared
     @State private var didRequestScreenTime = false
+    @State private var showLeaveOffWarning = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -521,7 +641,7 @@ private struct MonitoringSetupStep: View {
                 )
                 .padding(.bottom, 20)
 
-                Text("Remain Faithful needs Apple’s Screen Time permission so Alerts and Blocking can use the apps you choose. Your partner cannot browse your phone. Only an alert category and a heartbeat leave this device — not photos, messages, or the screen itself. If you skip this, monitoring stays off. You can turn it on later in Settings.")
+                Text("Remain Faithful needs Apple's Screen Time permission so Alerts and Blocking can use the apps you choose. Your partner cannot browse your phone. Only an alert category and a heartbeat leave this device, not photos, messages, or the screen itself. If you skip this, monitoring stays off. You can turn it on later in Settings.")
                     .font(.subheadline)
                     .foregroundStyle(Color.white.opacity(0.78))
                     .multilineTextAlignment(.leading)
@@ -562,11 +682,41 @@ private struct MonitoringSetupStep: View {
                     }
                     .padding(.bottom, 12)
 
-                    RFButton(
-                        title: "Skip for now — monitoring stays off",
-                        role: .secondary,
-                        action: onSkip
-                    )
+                    if showLeaveOffWarning {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Monitoring stays off")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                            Text("Without Screen Time, Alerts and Blocking cannot run. Your partner will not hear about the apps you choose until you allow it.")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.white.opacity(0.88))
+                                .fixedSize(horizontal: false, vertical: true)
+                            RFButton(title: "Allow Screen Time") {
+                                didRequestScreenTime = true
+                                Task {
+                                    await fcManager.requestAuthorization()
+                                    await MainActor.run {
+                                        didRequestScreenTime = false
+                                        if fcManager.authorizationStatus == .approved {
+                                            onContinue()
+                                        }
+                                    }
+                                }
+                            }
+                            RFButton(title: "Leave monitoring off", role: .destructive, action: onSkip)
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(red: 0.45, green: 0.16, blue: 0.14))
+                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.rfGold, lineWidth: 1.5))
+                        )
+                        .padding(.bottom, 12)
+                    } else {
+                        RFButton(title: "Skip for now. Monitoring stays off", role: .secondary) {
+                            showLeaveOffWarning = true
+                        }
+                    }
                 } else {
                     RFButton(title: "Continue", action: onContinue)
                 }
@@ -612,6 +762,7 @@ private struct MonitoringSetupStep: View {
 
 private struct DeepScanStep: View {
     let onContinue: () -> Void
+    let onLater: () -> Void
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -651,6 +802,83 @@ private struct DeepScanStep: View {
 
                 RFButton(title: "Continue", action: onContinue)
                     .padding(.top, 8)
+                RFButton(title: DeepScanOnboarding.later, role: .secondary, action: onLater)
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 24)
+        }
+    }
+}
+
+// MARK: - End of setup
+
+private struct SetupStatusStep: View {
+    let emailInvite: Bool
+    let linkShared: Bool
+    let onFinish: () -> Void
+
+    @ObservedObject private var fcManager = FamilyControlsManager.shared
+    @ObservedObject private var selection = ActivitySelectionManager.shared
+    @ObservedObject private var auth = AuthState.shared
+
+    private var lines: [SetupLine] {
+        let count = selection.selection.applicationTokens.count + selection.selection.categoryTokens.count
+        return SetupStatusCopy.lines(
+            screenTime: fcManager.authorizationStatus == .approved,
+            alerts: selection.isMonitoringEnabled && count > 0,
+            blocking: selection.isShieldingEnabled,
+            deepScan: false,
+            emailInvite: emailInvite,
+            linkShared: linkShared
+        )
+    }
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 14) {
+                stepHeader(
+                    title: "You are set up",
+                    subtitle: "Here is what is on, and what you can turn on later."
+                )
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 8)
+
+                ForEach(lines, id: \.label) { line in
+                    HStack(spacing: 12) {
+                        Image(systemName: line.isOn ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(line.isOn ? Color.rfGold : Color.white.opacity(0.45))
+                            .frame(width: 28)
+                        Text(line.text)
+                            .font(.body)
+                            .foregroundStyle(.white)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: 48)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white.opacity(0.06))
+                            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(RFStroke.lit, lineWidth: 1))
+                    )
+                    .accessibilityElement(children: .combine)
+                }
+
+                if auth.emailRequired {
+                    Text("Add an email in Settings and confirm it. Then you can accept a partner invite.")
+                        .font(.footnote)
+                        .foregroundStyle(Color.rfGold)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 4)
+                }
+
+                Text("Deep Scan stays off until you start it from Control Center. Protected video such as Netflix is not visible.")
+                    .font(.footnote)
+                    .foregroundStyle(Color.white.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+
+                RFButton(title: "Go to Home", action: onFinish)
+                    .padding(.top, 8)
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 24)
@@ -661,7 +889,7 @@ private struct DeepScanStep: View {
 // MARK: - Shared helpers
 
 private struct AppPickerStep: View {
-    let onComplete: () -> Void
+    let onContinue: () -> Void
 
     @ObservedObject private var fcManager = FamilyControlsManager.shared
     @ObservedObject private var selection = ActivitySelectionManager.shared
@@ -695,7 +923,7 @@ private struct AppPickerStep: View {
                     ) {
                         selection.selectionDidChange()
                         selection.setMonitoringEnabled(true)
-                        NotificationService.shared.requestPermission(then: onComplete)
+                        NotificationService.shared.requestPermission(then: onContinue)
                     }
                 } else {
                     Text("Screen Time access is still off, so the app list cannot open. Monitoring stays off until you allow it.")
@@ -707,7 +935,7 @@ private struct AppPickerStep: View {
                 }
 
                 RFButton(title: "I'll do this later", role: .secondary) {
-                    NotificationService.shared.requestPermission(then: onComplete)
+                    NotificationService.shared.requestPermission(then: onContinue)
                 }
             }
             .padding(.horizontal, 24)

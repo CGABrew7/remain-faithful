@@ -2,6 +2,16 @@ export type Count = number | '<3'
 export type Percent = number | '<3' | null
 
 export type NotTracked = { status: 'not_tracked_yet'; note: string }
+export type VersionRollup = {
+  status: 'tracked' | 'not_tracked_yet'
+  versions?: { label: string; count: Count }[]
+  note?: string
+}
+export type CountRollup = {
+  status: 'tracked' | 'not_tracked_yet'
+  count?: Count
+  note?: string
+}
 
 export type Overview = {
   range: string
@@ -47,8 +57,9 @@ export type Overview = {
     monitoring_off: Count
     heartbeat_silent: Count
     never_checked_in: Count
+    monitored_apps: Count
     daily_history: NotTracked
-    app_versions: NotTracked
+    app_versions: VersionRollup
   }
   accountability: {
     partnerships: { status: string; count: Count }[]
@@ -63,7 +74,7 @@ export type Overview = {
   alerts: {
     partner_alerts_by_day: { day: string; count: Count }[]
     monitoring_paused_by_day: { day: string; count: Count }[]
-    support_taps: NotTracked
+    support_taps: CountRollup
   }
   notifications: {
     push_tokens: Count

@@ -231,6 +231,27 @@ GROUP BY 1
 ORDER BY 1
 LIMIT 400`
 
+	sqlPhoneSignals = `
+SELECT
+  count(*) FILTER (WHERE screen_time_granted IS TRUE),
+  count(*) FILTER (WHERE COALESCE(monitored_app_count, 0) > 0),
+  COALESCE(sum(monitored_app_count), 0)::bigint
+FROM users
+WHERE ($1::timestamptz IS NULL OR created_at >= $1)`
+
+	sqlAppVersions = `
+SELECT app_version, count(*)::bigint
+FROM users
+WHERE app_version IS NOT NULL AND app_version <> ''
+GROUP BY app_version
+ORDER BY count(*) DESC
+LIMIT 12`
+
+	sqlSupportTaps = `
+SELECT COALESCE(sum(support_tap_count), 0)::bigint,
+       count(*) FILTER (WHERE support_tap_count > 0)
+FROM users`
+
 	sqlPushTokens = `
 SELECT
   count(*) FILTER (WHERE is_active),
@@ -263,7 +284,8 @@ func aggregateStatements() []string {
 		sqlPageTrend, sqlGrowth, sqlFunnel, sqlActive, sqlMonitoringOff, sqlPartnerships,
 		sqlInvites, sqlGroupInvites, sqlGroupSummary, sqlGroupSizes, sqlZeroPartners,
 		signupSQL("day"), signupSQL("week"),
-		sqlPartnerAlerts, sqlPausedAlerts, sqlPushTokens, sqlHealth,
+		sqlPartnerAlerts, sqlPausedAlerts, sqlPhoneSignals, sqlAppVersions, sqlSupportTaps,
+		sqlPushTokens, sqlHealth,
 	}
 }
 
@@ -351,7 +373,17 @@ func (h *H) loadOverview(ctx context.Context, label string, from *time.Time, now
 	if err := scanInts(h.DB.QueryRowContext(ctx, sqlFunnel, from), &accounts, &invited, &accepted, &heartbeat); err != nil {
 		return nil, err
 	}
-	ov.Funnel = admin.BuildFunnel(accounts, invited, accepted, heartbeat)
+	var screenYes, appsPeople, appsTotal int
+	if err := scanInts(h.DB.QueryRowContext(ctx, sqlPhoneSignals, from), &screenYes, &appsPeople, &appsTotal); err != nil {
+		return nil, err
+	}
+	ov.Funnel = admin.BuildFunnel(accounts, invited, accepted, screenYes, heartbeat, appsPeople)
+	ov.Active.MonitoredApps = quietOr(appsTotal, appsPeople)
+	versions, err := h.queryAppVersions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ov.Active.AppVersions = admin.VersionRollup{Status: "tracked", Versions: versions}
 
 	var dau, wau, mau, on, silent, never int
 	if err := scanInts(h.DB.QueryRowContext(ctx, sqlActive), &dau, &wau, &mau, &on, &silent, &never); err != nil {
@@ -368,6 +400,11 @@ func (h *H) loadOverview(ctx context.Context, label string, from *time.Time, now
 	ov.Active.MonitoringOff = quietOr(off, off)
 	ov.Active.HeartbeatSilent = quietOr(silent, silent)
 	ov.Active.NeverCheckedIn = quietOr(never, never)
+	var taps, tapPeople int
+	if err := scanInts(h.DB.QueryRowContext(ctx, sqlSupportTaps), &taps, &tapPeople); err != nil {
+		return nil, err
+	}
+	ov.Alerts.SupportTaps = admin.CountRollup{Status: "tracked", Count: quietOr(taps, tapPeople)}
 
 	parts, err := h.queryPartnerships(ctx)
 	if err != nil {
@@ -538,6 +575,24 @@ func (h *H) queryPages(ctx context.Context, q string, from *time.Time) ([]admin.
 		out = append(out, admin.PageRow{
 			Path: path, Visits: quietOr(int(visits), int(visitors)), Visitors: quietOr(int(visitors), int(visitors)),
 		})
+	}
+	return out, rows.Err()
+}
+
+func (h *H) queryAppVersions(ctx context.Context) ([]admin.NamedCount, error) {
+	rows, err := h.DB.QueryContext(ctx, sqlAppVersions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []admin.NamedCount{}
+	for rows.Next() {
+		var label string
+		var n int64
+		if err := rows.Scan(&label, &n); err != nil {
+			return nil, err
+		}
+		out = append(out, admin.NamedCount{Label: label, Count: quietOr(int(n), int(n))})
 	}
 	return out, rows.Err()
 }
@@ -792,8 +847,9 @@ func blankOverview(label string, now time.Time) *admin.Overview {
 		Funnel: []admin.FunnelStep{},
 		Active: admin.Active{
 			Basis:        "These figures use the latest heartbeat on each account. They describe right now, not the date range above. Monitoring on means a heartbeat in the last 30 minutes. Heartbeat silent means the latest heartbeat is older than that. Monitoring off means a partner was told monitoring stopped and no heartbeat has arrived since.",
-			DailyHistory: admin.NotTracked("Only the latest heartbeat is stored, so this dashboard cannot draw active users for each past day."),
-			AppVersions:  admin.NotTracked("The server does not receive the app version on heartbeat or sign-in. A later app build could send the version string alone."),
+			MonitoredApps: admin.Zero(),
+			DailyHistory:  admin.NotTracked("Only the latest heartbeat is stored, so this dashboard cannot draw active users for each past day."),
+			AppVersions:   admin.VersionRollup{Status: "tracked", Versions: []admin.NamedCount{}},
 		},
 		Accountability: admin.Accountability{
 			Partnerships: []admin.Partnership{}, GroupSizes: []admin.GroupSize{},
@@ -801,7 +857,7 @@ func blankOverview(label string, now time.Time) *admin.Overview {
 		},
 		Alerts: admin.Alerts{
 			PartnerAlertsByDay: []admin.DayCount{}, MonitoringPausedByDay: []admin.DayCount{},
-			SupportTaps: admin.NotTracked("The I need support button is not saved on the server. A later app build could send a count only, with no message and no partner names."),
+			SupportTaps: admin.CountRollup{Status: "tracked", Count: admin.Zero()},
 		},
 		Notifications: admin.Notifications{
 			Emails: []admin.EmailStat{},

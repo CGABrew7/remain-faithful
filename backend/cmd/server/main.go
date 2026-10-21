@@ -337,6 +337,7 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/alerts/mark-seen", h.MarkAlertsSeen).Methods(http.MethodPost)
 	api.HandleFunc("/alerts/{id}/discussed", h.MarkAlertDiscussed).Methods(http.MethodPatch)
 	api.Handle("/heartbeat", authenticatedRateLimiter(60)(http.HandlerFunc(h.Heartbeat))).Methods(http.MethodPost)
+	api.Handle("/users/me/signals", authenticatedRateLimiter(30)(http.HandlerFunc(h.RecordPhoneSignals))).Methods(http.MethodPost)
 	api.HandleFunc("/users/device-token", h.RegisterDeviceToken).Methods(http.MethodPost)
 	api.Handle("/panic", authenticatedRateLimiter(20)(http.HandlerFunc(h.SendPanicAlert))).Methods(http.MethodPost)
 	api.Handle("/feedback", authenticatedRateLimiter(5)(http.HandlerFunc(h.SubmitFeedback))).Methods(http.MethodPost)
@@ -593,6 +594,10 @@ func migrate(db *sql.DB) error {
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS last_heartbeat_at    TIMESTAMPTZ;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS heartbeat_screen_state TEXT;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS heartbeat_notified_at TIMESTAMPTZ;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS screen_time_granted BOOLEAN;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS monitored_app_count INT;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS app_version TEXT;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS support_tap_count INT NOT NULL DEFAULT 0;
 
 	ALTER TABLE alerts ADD COLUMN IF NOT EXISTS recipient_user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
 	CREATE INDEX IF NOT EXISTS idx_alerts_recipient ON alerts(recipient_user_id);

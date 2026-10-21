@@ -71,6 +71,7 @@ struct RemainFaithfulApp: App {
                 try? await APIClient.shared.refreshTokenIfNeeded()
                 await ProtectionAlerts.flush()
                 await sendMonitoringHeartbeat()
+                await sendPhoneSignals()
                 FamilyControlsManager.shared.noteRevocationIfNeeded()
                 // Drain any events queued by the broadcast extension while the app was closed.
                 await EventProcessor.shared.processPendingEvents()
@@ -91,6 +92,7 @@ struct RemainFaithfulApp: App {
                     try? await APIClient.shared.refreshTokenIfNeeded()
                     await ProtectionAlerts.flush()
                     await sendMonitoringHeartbeat()
+                    await sendPhoneSignals()
                 }
                 NotificationService.shared.ensureRegisteredIfAuthorized()
                 // Re-sync lockout shield — catches the case where the broadcast ended
@@ -99,17 +101,16 @@ struct RemainFaithfulApp: App {
                 AppLockoutManager.shared.syncShieldState()
             }
             // Detect FamilyControls authorization revocation and notify the partner.
+            .onChange(of: authState.isAuthenticated) { _, signedIn in
+                if signedIn {
+                    FamilyControlsManager.shared.noteRevocationIfNeeded()
+                    Task { await sendPhoneSignals() }
+                }
+            }
             .onChange(of: fcManager.authorizationStatus) { oldStatus, newStatus in
                 guard oldStatus == .approved, newStatus != .approved else { return }
-                guard AuthState.shared.isAuthenticated else { return }
-                // Shield can no longer be applied — also clear any lockout state.
                 ActivitySelectionManager.shared.clearShielding()
-                Task {
-                    ProtectionAlerts.send(
-                        type: "family_controls_revoked",
-                        detail: "Screen Time access was turned off. Alerts and Blocking are off."
-                    )
-                }
+                FamilyControlsManager.shared.noteRevocationIfNeeded()
             }
         }
     }
@@ -121,6 +122,19 @@ struct RemainFaithfulApp: App {
         guard mgr.isMonitoringEnabled || mgr.isShieldingEnabled else { return }
         guard APIClient.shared.isAuthenticated else { return }
         try? await APIClient.shared.heartbeat(screen: "monitoring")
+    }
+
+    private func sendPhoneSignals() async {
+        guard APIClient.shared.isAuthenticated else { return }
+        let mgr = ActivitySelectionManager.shared
+        let count = mgr.selection.applicationTokens.count + mgr.selection.categoryTokens.count
+        let granted = FamilyControlsManager.shared.authorizationStatus == .approved
+        let userID = AuthState.shared.currentUser?.id ?? 0
+        await APIClient.shared.sendPhoneSignals(
+            screenTimeGranted: granted,
+            monitoredAppCount: count,
+            supportTaps: PhoneSignals.supportTaps(userID: userID)
+        )
     }
 }
 

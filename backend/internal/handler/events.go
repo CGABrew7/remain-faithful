@@ -32,6 +32,7 @@ var allowedEventSummaries = map[string]struct{}{
 	"Monitored app category used for 1+ minute":       {},
 	"Monitored app activity detected":                 {},
 	"App activity detected":                           {},
+	"Blocked app opened":                              {},
 	// SampleHandler.summaryForTier1
 	"Adult content flagged on screen":     {},
 	"Gambling flagged on screen":          {},
@@ -221,7 +222,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 				"aps": map[string]any{
 					"alert": map[string]string{
 						"title": alertTitle(capturedSeverity, capturedCategory),
-						"body":  alertBody(capturedCaller, capturedCategory, capturedSeverity),
+						"body":  alertBody(capturedCaller, capturedCategory, capturedSeverity, capturedSummary),
 					},
 					"sound": "default",
 				},
@@ -270,7 +271,10 @@ func alertTitle(severity, category string) string {
 }
 
 // alertBody returns a conversation-starter notification body.
-func alertBody(name, category, severity string) string {
+func alertBody(name, category, severity, summary string) string {
+	if category == "app_usage" && summary == "Blocked app opened" {
+		return name + " opened an app they asked to block."
+	}
 	if category == "app_usage" {
 		return fmt.Sprintf("%s spent 1+ minute today in an app they're monitoring. A quick check-in shows you care.", name)
 	}

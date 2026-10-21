@@ -62,8 +62,9 @@ func TestOverviewJSONKeysAreAggregate(t *testing.T) {
 		}},
 		Active: Active{
 			DAU: People(1), WAU: People(2), MAU: People(2),
-			DailyHistory: NotTracked("no daily heartbeat log"),
-			AppVersions:  NotTracked("version is not sent"),
+			MonitoredApps: People(2),
+			DailyHistory:  NotTracked("no daily heartbeat log"),
+			AppVersions:   VersionRollup{Status: "tracked", Versions: []NamedCount{{Label: "1.0.2", Count: People(2)}}},
 		},
 		Accountability: Accountability{
 			Partnerships:     []Partnership{{Status: "accepted", Count: People(2)}},
@@ -73,7 +74,7 @@ func TestOverviewJSONKeysAreAggregate(t *testing.T) {
 		Alerts: Alerts{
 			PartnerAlertsByDay:    []DayCount{{Day: "2026-10-18", Count: Show(5, 1)}},
 			MonitoringPausedByDay: []DayCount{{Day: "2026-10-18", Count: Show(4, 2)}},
-			SupportTaps:           NotTracked("not saved"),
+			SupportTaps:           CountRollup{Status: "tracked", Count: People(2)},
 		},
 		Notifications: Notifications{
 			PushTokens: Show(2, 1), PushPeople: People(1),

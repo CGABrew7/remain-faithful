@@ -46,7 +46,7 @@ struct MonitoringPresentation: Equatable {
             return MonitoringPresentation(
                 kind: .noApps,
                 title: "No apps selected",
-                detail: "Nothing is being watched yet. Choose the apps you want help with.",
+                detail: "Nothing is being watched yet. Choose the apps you want help with. You can take your time.",
                 deepScanLine: deepScan,
                 actionTitle: "Choose apps",
                 coreIsOn: false
@@ -56,7 +56,7 @@ struct MonitoringPresentation: Equatable {
             return MonitoringPresentation(
                 kind: .off,
                 title: "Monitoring off",
-                detail: "Apps are chosen. Alerts and Blocking are both off.",
+                detail: "Apps are chosen. Alerts and Blocking are both off. Turn them on when you are ready.",
                 deepScanLine: deepScan,
                 actionTitle: "Turn monitoring on",
                 coreIsOn: false
@@ -69,7 +69,7 @@ struct MonitoringPresentation: Equatable {
         return MonitoringPresentation(
             kind: .on,
             title: "Monitoring on",
-            detail: parts.joined(separator: " · "),
+            detail: parts.joined(separator: ". ") + ". You are not doing this alone.",
             deepScanLine: deepScan,
             actionTitle: nil,
             coreIsOn: true
@@ -78,7 +78,7 @@ struct MonitoringPresentation: Equatable {
 
     private static func deepScanLine(on: Bool, extensionSignedOut: Bool) -> String {
         if extensionSignedOut {
-            return "Deep Scan stopped — sign in again on this phone."
+            return "Deep Scan stopped. Sign in again on this phone."
         }
         if on {
             return "Deep Scan is on. Protected video such as Netflix is not visible."
@@ -94,13 +94,13 @@ struct MonitoringPresentation: Equatable {
 enum DeepScanOnboarding {
     static let title = "Deep Scan"
     static let subtitle = "Optional. It does not replace Alerts or Blocking."
-    static let summary = "Deep Scan looks at the screen on this phone, only while you have it running. You start it yourself. Alerts and Blocking do not change."
+    static let summary = "Deep Scan looks at this phone only while you start it from Control Center. Alerts and Blocking stay as you set them."
     static let steps = [
-        "Swipe down from the top-right corner to open Control Center.",
-        "If you do not see Screen Recording, open Settings, then Control Center, and add Screen Recording.",
-        "Touch and hold Screen Recording, choose Remain Faithful, then tap Start Broadcast.",
+        "Open Control Center. If you do not see Screen Recording, add it in Settings.",
+        "Touch and hold Screen Recording, choose Remain Faithful, then start it.",
     ]
     static let limits = "Protected video such as Netflix is not visible. Stopping or pausing Deep Scan notifies your partners."
+    static let later = "Set up later"
 }
 
 // MARK: - Streak week
@@ -292,7 +292,10 @@ enum UserFacingError {
             return "Something went wrong. Please try again."
         }
         switch api {
-        case .server(let text):
+        case .server(let text, let code):
+            if let coded = MailboxNotice.message(code: code, text: text) {
+                return coded
+            }
             return friendlyServer(text)
         case .network:
             return "Couldn't reach Remain Faithful. Check your connection and try again."
@@ -319,7 +322,185 @@ enum UserFacingError {
         if lower.contains("relationship not found") {
             return "Couldn't remove them. Try again."
         }
+        if lower == "not authorized to set pin on this relationship" {
+            return "You can set a PIN after this partnership is accepted."
+        }
         return text
+    }
+}
+
+// MARK: - Partner row
+
+enum PartnerRow {
+    static func showsPin(isPartner: Bool, status: String) -> Bool {
+        isPartner && status.lowercased() == "accepted"
+    }
+
+    /// A pending invite with no accept button while the mailbox is still unconfirmed.
+    static func needsEmailConfirm(awaitingMe: Bool, inviteID: Int?, emailVerified: Bool?, listCode: String?) -> Bool {
+        guard awaitingMe, inviteID == nil else { return false }
+        if listCode == "email_required" { return false }
+        if listCode == "email_not_verified" { return true }
+        return emailVerified == false
+    }
+
+    /// Apple sign-in did not share an email, so the invite cannot be accepted yet.
+    static func needsAddedEmail(listCode: String?) -> Bool {
+        listCode == "email_required"
+    }
+}
+
+enum MailboxNotice {
+    static let confirmFallback = "Confirm your email to accept."
+    static let addEmailFallback = "Add an email in your profile and confirm it."
+    static let pinPendingFallback = "You can set a PIN after this partnership is accepted."
+    static let resendLimitFallback = "Too many confirmation emails. Try again in an hour."
+    static let resendSent = "Check your email for the confirmation link."
+    static let alreadyConfirmed = "Your email is already confirmed."
+
+    static func message(code: String?, text: String) -> String? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let usable = !trimmed.isEmpty && !trimmed.hasPrefix("HTTP ")
+        switch code {
+        case "email_not_verified":
+            return usable ? trimmed : confirmFallback
+        case "email_required":
+            return usable ? trimmed : addEmailFallback
+        case "relationship_not_accepted":
+            return usable ? trimmed : pinPendingFallback
+        case "rate_limited":
+            return usable ? trimmed : resendLimitFallback
+        default:
+            return nil
+        }
+    }
+
+    static func resendStatus(_ status: String?) -> String {
+        if status == "already_verified" { return alreadyConfirmed }
+        return resendSent
+    }
+}
+
+/// True when Apple sign-in did not share an email address.
+enum AppleMailbox {
+    static func isStandIn(email: String, appleUserID: String) -> Bool {
+        let sub = appleUserID.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !sub.isEmpty else { return false }
+        let expected = sub.lowercased() + "@privaterelay.appleid.com"
+        return email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == expected
+    }
+}
+
+enum PINSaveMessage {
+    static func text(for error: Error) -> String {
+        let message = UserFacingError.message(for: error).trimmingCharacters(in: .whitespacesAndNewlines)
+        if message.isEmpty { return "Couldn't save PIN. Try again." }
+        return message
+    }
+}
+
+// MARK: - Queued events stay with the account that created them
+
+enum QueuedEventGate {
+    static func shouldUpload(ownerAccountID: Int?, signedInAccountID: Int) -> Bool {
+        let owner = ownerAccountID ?? 0
+        if owner > 0 && signedInAccountID > 0 && owner != signedInAccountID {
+            return false
+        }
+        if owner > 0 && signedInAccountID == 0 {
+            return false
+        }
+        return true
+    }
+}
+
+// MARK: - Screen Time turned off while signed out
+
+struct ScreenTimeRevocationPlan: Equatable {
+    var send: Bool
+    var pending: Bool
+    var storeApproved: Bool
+}
+
+enum ScreenTimeRevocation {
+    static func plan(wasApproved: Bool, nowApproved: Bool, authenticated: Bool, alreadyPending: Bool) -> ScreenTimeRevocationPlan {
+        var pending = alreadyPending
+        if wasApproved && !nowApproved {
+            pending = true
+        }
+        if nowApproved {
+            pending = false
+        }
+        let send = authenticated && pending && !nowApproved
+        if send {
+            pending = false
+        }
+        return ScreenTimeRevocationPlan(send: send, pending: pending, storeApproved: nowApproved)
+    }
+}
+
+// MARK: - End of setup
+
+struct SetupLine: Equatable {
+    let label: String
+    let isOn: Bool
+    var text: String {
+        if label == "Alerts" {
+            return isOn ? "Alerts are on" : "Alerts are off"
+        }
+        return "\(label) is \(isOn ? "on" : "off")"
+    }
+}
+
+enum SetupStatusCopy {
+    static func lines(screenTime: Bool, alerts: Bool, blocking: Bool, deepScan: Bool, emailInvite: Bool, linkShared: Bool) -> [SetupLine] {
+        [
+            SetupLine(label: "Screen Time", isOn: screenTime),
+            SetupLine(label: "Alerts", isOn: alerts),
+            SetupLine(label: "Blocking", isOn: blocking),
+            SetupLine(label: "Deep Scan", isOn: deepScan),
+            SetupLine(label: "Email invite", isOn: emailInvite),
+            SetupLine(label: "Invite link", isOn: linkShared),
+        ]
+    }
+}
+
+enum FinishSetupCopy {
+    static let title = "Finish setup"
+    static func detail(kind: MonitoringKind) -> String {
+        switch kind {
+        case .needsPermission:
+            return "Screen Time is still off. Allow it so Alerts and Blocking can help."
+        case .noApps:
+            return "Choose the apps you want help with. It takes a moment."
+        case .off:
+            return "Alerts and Blocking are off. Turn them on when you are ready."
+        case .on:
+            return ""
+        }
+    }
+}
+
+enum HomeGreeting {
+    static func line(hour: Int) -> String {
+        if hour < 12 { return "Good morning" }
+        if hour < 17 { return "Good afternoon" }
+        return "Good evening"
+    }
+    static let welcome = "Glad you are here."
+}
+
+enum PhoneSignals {
+    private static func key(userID: Int) -> String { "supportTapCount.\(userID)" }
+
+    static func supportTaps(userID: Int) -> Int {
+        guard userID > 0 else { return 0 }
+        return UserDefaults.standard.integer(forKey: key(userID: userID))
+    }
+
+    static func recordSupportTap(userID: Int) {
+        guard userID > 0 else { return }
+        UserDefaults.standard.set(supportTaps(userID: userID) + 1, forKey: key(userID: userID))
     }
 }
 

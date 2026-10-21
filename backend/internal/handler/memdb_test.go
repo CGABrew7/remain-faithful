@@ -46,6 +46,10 @@ type memUser struct {
 	heartbeat      bool
 	verifyCount    int
 	verifyWindow   time.Time
+	screenTime     *bool
+	appCount       int
+	appVersion     string
+	supportTaps    int
 }
 
 type memToken struct {
@@ -442,6 +446,22 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 			u.verifyCount = int(asInt64(args[0]))
 			if t, ok := args[1].(time.Time); ok {
 				u.verifyWindow = t
+			}
+		}
+		return []string{"ok"}, nil
+
+	case containsAll(q, "UPDATE users", "screen_time_granted"):
+		u := m.users[asInt64(args[0])]
+		if u != nil {
+			if b, ok := args[1].(bool); ok {
+				u.screenTime = &b
+			}
+			u.appCount = int(asInt64(args[2]))
+			if s := asString(args[3]); s != "" {
+				u.appVersion = s
+			}
+			if taps := int(asInt64(args[4])); taps > u.supportTaps {
+				u.supportTaps = taps
 			}
 		}
 		return []string{"ok"}, nil

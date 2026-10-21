@@ -23,18 +23,28 @@ final class FamilyControlsManager: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// If Screen Time was allowed and is no longer, tell the partner once.
+    /// If Screen Time was allowed and is no longer, tell the partner.
+    /// A change noticed while signed out is sent the next time someone signs in.
     func noteRevocationIfNeeded() {
-        let key = "lastKnownFamilyControlsApproved"
+        let approvedKey = "lastKnownFamilyControlsApproved"
+        let pendingKey = "familyControlsRevocationUnsent"
         let nowApproved = authorizationStatus == .approved
-        let wasApproved = UserDefaults.standard.bool(forKey: key)
-        if wasApproved && !nowApproved && AuthState.shared.isAuthenticated {
+        let wasApproved = UserDefaults.standard.bool(forKey: approvedKey)
+        let pending = UserDefaults.standard.bool(forKey: pendingKey)
+        let plan = ScreenTimeRevocation.plan(
+            wasApproved: wasApproved,
+            nowApproved: nowApproved,
+            authenticated: AuthState.shared.isAuthenticated,
+            alreadyPending: pending
+        )
+        UserDefaults.standard.set(plan.pending, forKey: pendingKey)
+        UserDefaults.standard.set(plan.storeApproved, forKey: approvedKey)
+        if plan.send {
             ProtectionAlerts.send(
                 type: "family_controls_revoked",
                 detail: "Screen Time access was turned off. Alerts and Blocking are off."
             )
         }
-        UserDefaults.standard.set(nowApproved, forKey: key)
     }
 
     func requestAuthorization() async {
