@@ -14,6 +14,7 @@ const (
 	eventPastWindow    = 7 * 24 * time.Hour
 	eventFutureSkew    = 5 * time.Minute
 	resetMailPerHour   = 3
+	verifyMailPerHour  = 3
 	silenceRepeatAfter = 6 * time.Hour
 	eventRetention     = 365 * 24 * time.Hour
 )

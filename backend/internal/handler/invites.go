@@ -407,13 +407,13 @@ func (h *H) preparePartnerInvite(ctx context.Context, userID, inviteeID int64) (
 // GET /relationships/invites/pending
 func (h *H) ListPendingPartnerInvites(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
-	email, verified, err := h.userMailbox(r.Context(), userID)
+	email, verified, appleID, err := h.accountMailbox(r.Context(), userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
 		return
 	}
 	if !verified {
-		writeJSON(w, http.StatusOK, []any{})
+		writeUnverifiedMailbox(w, appleID, email)
 		return
 	}
 	rows, err := h.DB.QueryContext(r.Context(), `
@@ -451,13 +451,13 @@ func (h *H) ListPendingPartnerInvites(w http.ResponseWriter, r *http.Request) {
 // GET /groups/invites/pending
 func (h *H) ListPendingGroupInvites(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
-	email, verified, err := h.userMailbox(r.Context(), userID)
+	email, verified, appleID, err := h.accountMailbox(r.Context(), userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
 		return
 	}
 	if !verified {
-		writeJSON(w, http.StatusOK, []any{})
+		writeUnverifiedMailbox(w, appleID, email)
 		return
 	}
 	rows, err := h.DB.QueryContext(r.Context(), `
@@ -500,26 +500,47 @@ func (h *H) userEmail(ctx context.Context, userID int64) (string, error) {
 }
 
 func (h *H) userMailbox(ctx context.Context, userID int64) (string, bool, error) {
-	var email string
-	var verified bool
-	err := h.DB.QueryRowContext(ctx, `SELECT email, email_verified FROM users WHERE id = $1`, userID).Scan(&email, &verified)
+	email, verified, _, err := h.accountMailbox(ctx, userID)
 	return email, verified, err
 }
 
+func (h *H) accountMailbox(ctx context.Context, userID int64) (string, bool, string, error) {
+	var email, appleID string
+	var verified bool
+	err := h.DB.QueryRowContext(ctx,
+		`SELECT email, email_verified, COALESCE(apple_id, '') FROM users WHERE id = $1`,
+		userID,
+	).Scan(&email, &verified, &appleID)
+	return email, verified, appleID, err
+}
+
 // requireVerifiedMailbox loads the caller's address and refuses the request
-// until that address is confirmed.
+// until that address is confirmed. The JSON code tells the app whether to
+// offer a confirmation resend or to ask the person to add an email.
 func (h *H) requireVerifiedMailbox(w http.ResponseWriter, r *http.Request) (int64, string, bool) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
-	email, verified, err := h.userMailbox(r.Context(), userID)
+	email, verified, appleID, err := h.accountMailbox(r.Context(), userID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
 		return 0, "", false
 	}
 	if !verified {
-		writeError(w, http.StatusForbidden, "confirm your email before accepting an invite")
+		writeUnverifiedMailbox(w, appleID, email)
 		return 0, "", false
 	}
 	return userID, email, true
+}
+
+// writeUnverifiedMailbox explains why invites are unavailable.
+// A sign-in that never received an email address cannot confirm one.
+func writeUnverifiedMailbox(w http.ResponseWriter, appleID, email string) {
+	if placeholderAppleEmail(appleID, email) {
+		writeCodedError(w, http.StatusForbidden, "email_required",
+			"Add an email address in your account and confirm it before you can accept an invite.")
+		return
+	}
+	writeCodedError(w, http.StatusForbidden, "email_not_verified",
+		"Confirm your email, then you can view and accept invites. You can resend the confirmation email.")
 }
 
 // AcceptPartnerInviteByID accepts a pending partner invite addressed to the caller.

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"io"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -43,6 +44,8 @@ type memUser struct {
 	googleID       string
 	screen         string
 	heartbeat      bool
+	verifyCount    int
+	verifyWindow   time.Time
 }
 
 type memToken struct {
@@ -68,6 +71,7 @@ type memRel struct {
 	partnerID int64
 	typ       string
 	status    string
+	pinHash   string
 }
 
 type memPInvite struct {
@@ -346,8 +350,43 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 		m.nextAlert++
 		return []string{"ok"}, nil
 
+	case containsAll(q, "INSERT INTO users", "RETURNING id, name, email"):
+		id := int64(1)
+		for existing := range m.users {
+			if existing >= id {
+				id = existing + 1
+			}
+		}
+		verified := false
+		if len(args) > 3 {
+			if b, ok := args[3].(bool); ok {
+				verified = b
+			}
+		}
+		u := &memUser{
+			id: id, name: asString(args[0]), email: asString(args[1]),
+			verified: verified, tokenVersion: 1,
+		}
+		if containsAll(q, "apple_id") {
+			u.appleID = asString(args[2])
+		}
+		if containsAll(q, "google_id") {
+			u.googleID = asString(args[2])
+		}
+		m.users[id] = u
+		return []string{"id", "name", "email"}, [][]driver.Value{{u.id, u.name, u.email}}
+
 	case containsAll(q, "INSERT INTO relationships"):
 		return m.insertRel(q, args)
+
+	case containsAll(q, "UPDATE relationships", "pin_hash = $1"):
+		id := asInt64(args[1])
+		for i := range m.rels {
+			if m.rels[i].id == id {
+				m.rels[i].pinHash = asString(args[0])
+			}
+		}
+		return []string{"ok"}, nil
 
 	case containsAll(q, "UPDATE relationship_invites"):
 		id := asInt64(args[0])
@@ -381,6 +420,31 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 	case containsAll(q, "INSERT INTO group_members"):
 		m.members = append(m.members, memMember{groupID: asInt64(args[0]), userID: asInt64(args[1])})
 		return []string{"joined_at"}, [][]driver.Value{{"2026-01-01T00:00:00Z"}}
+
+	case containsAll(q, "UPDATE users", "SET email = $1", "email_verified = TRUE"):
+		u := m.users[asInt64(args[1])]
+		if u != nil && !u.verified && strings.EqualFold(u.email, asString(args[2])) {
+			u.email = asString(args[0])
+			u.verified = true
+		}
+		return []string{"ok"}, nil
+
+	case containsAll(q, "UPDATE users", "SET email_verified = TRUE", "email_verified = FALSE"):
+		u := m.users[asInt64(args[0])]
+		if u != nil && !u.verified && strings.EqualFold(u.email, asString(args[1])) {
+			u.verified = true
+		}
+		return []string{"ok"}, nil
+
+	case containsAll(q, "UPDATE users", "verify_mail_count"):
+		u := m.users[asInt64(args[2])]
+		if u != nil {
+			u.verifyCount = int(asInt64(args[0]))
+			if t, ok := args[1].(time.Time); ok {
+				u.verifyWindow = t
+			}
+		}
+		return []string{"ok"}, nil
 
 	case containsAll(q, "UPDATE users", "last_heartbeat_at"):
 		u := m.users[asInt64(args[0])]
@@ -457,6 +521,25 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 		}
 		return []string{"name"}, [][]driver.Value{{u.name}}
 
+	case containsAll(q, "verify_mail_count", "FROM users"):
+		u := m.users[asInt64(args[0])]
+		cols := []string{"name", "email", "email_verified", "apple_id", "verify_mail_count", "verify_mail_window"}
+		if u == nil {
+			return cols, nil
+		}
+		var window driver.Value
+		if !u.verifyWindow.IsZero() {
+			window = u.verifyWindow
+		}
+		return cols, [][]driver.Value{{u.name, u.email, u.verified, u.appleID, int64(u.verifyCount), window}}
+
+	case containsAll(q, "SELECT email, email_verified, COALESCE(apple_id, '')"):
+		u := m.users[asInt64(args[0])]
+		if u == nil {
+			return []string{"email", "email_verified", "apple_id"}, nil
+		}
+		return []string{"email", "email_verified", "apple_id"}, [][]driver.Value{{u.email, u.verified, u.appleID}}
+
 	case containsAll(q, "SELECT email, email_verified FROM users"):
 		u := m.users[asInt64(args[0])]
 		if u == nil {
@@ -482,10 +565,10 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 		idVal := asString(args[0])
 		for _, u := range m.users {
 			if (containsAll(q, "google_id") && u.googleID == idVal) || (containsAll(q, "apple_id") && u.appleID == idVal) {
-				return []string{"id", "name", "email"}, [][]driver.Value{{u.id, u.name, u.email}}
+				return []string{"id", "name", "email", "email_verified"}, [][]driver.Value{{u.id, u.name, u.email, u.verified}}
 			}
 		}
-		return []string{"id", "name", "email"}, nil
+		return []string{"id", "name", "email", "email_verified"}, nil
 
 	case containsAll(q, "COALESCE(apple_id", "WHERE email"):
 		email := asString(args[0])
@@ -529,6 +612,15 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 		}
 		return []string{"user_id", "expires_at"}, nil
 
+	case containsAll(q, "SELECT user_id, status FROM relationships"):
+		id, partnerID := asInt64(args[0]), asInt64(args[1])
+		for _, rel := range m.rels {
+			if rel.id == id && rel.partnerID == partnerID {
+				return []string{"user_id", "status"}, [][]driver.Value{{rel.userID, rel.status}}
+			}
+		}
+		return []string{"user_id", "status"}, nil
+
 	case containsAll(q, "SELECT status FROM relationships"):
 		userID, partnerID := asInt64(args[0]), asInt64(args[1])
 		for _, rel := range m.rels {
@@ -570,6 +662,16 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 			}
 		}
 		return []string{"partner_id"}, rows
+
+	case containsAll(q, "SELECT inviter_id, token FROM relationship_invites"):
+		email := asString(args[0])
+		var rows [][]driver.Value
+		for _, inv := range m.pInvites {
+			if inv.email == email && inv.status == "pending" {
+				rows = append(rows, []driver.Value{inv.inviterID, inv.token})
+			}
+		}
+		return []string{"inviter_id", "token"}, rows
 
 	case containsAll(q, "SELECT token, inviter_id FROM relationship_invites"):
 		id := asInt64(args[0])

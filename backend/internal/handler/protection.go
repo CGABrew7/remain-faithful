@@ -438,14 +438,22 @@ func (h *H) SetRelationshipPIN(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Authorization: caller must be the partner_id on an accepted relationship.
+	// A protection PIN can be saved only after the partnership is accepted.
+	// A row that belongs to this partner but is still waiting says so.
+	// Any other row keeps the same not-authorized response as before.
 	var monitoredUserID int64
+	var status string
 	err = h.DB.QueryRowContext(r.Context(), `
-		SELECT user_id FROM relationships
-		WHERE id = $1 AND partner_id = $2 AND status = 'accepted'
-	`, relID, callerID).Scan(&monitoredUserID)
+		SELECT user_id, status FROM relationships
+		WHERE id = $1 AND partner_id = $2
+	`, relID, callerID).Scan(&monitoredUserID, &status)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not authorized to set PIN on this relationship")
+		return
+	}
+	if status != "accepted" {
+		writeCodedError(w, http.StatusConflict, "relationship_not_accepted",
+			"Your partner request isn't accepted yet. Confirm your email, then accept the invite.")
 		return
 	}
 

@@ -344,7 +344,8 @@ func routes(h *handler.H) http.Handler {
 		api.HandleFunc("/debug/test-push", h.SendTestPush).Methods(http.MethodPost)
 	}
 	api.HandleFunc("/auth/refresh", h.RefreshToken).Methods(http.MethodPost)
-	api.HandleFunc("/auth/resend-verification", h.ResendVerification).Methods(http.MethodPost)
+	// Short burst limit. ResendVerification also sends only a few confirmation emails per hour.
+	api.Handle("/auth/resend-verification", authenticatedRateLimiter(5)(http.HandlerFunc(h.ResendVerification))).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session", h.CreateCheckoutSession).Methods(http.MethodPost)
 	api.HandleFunc("/donations/billing-portal", h.CreateBillingPortalSession).Methods(http.MethodPost)
 
@@ -615,6 +616,8 @@ func migrate(db *sql.DB) error {
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_email_expires_at TIMESTAMPTZ;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_mail_count INT NOT NULL DEFAULT 0;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_mail_window TIMESTAMPTZ;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_mail_count INT NOT NULL DEFAULT 0;
+	ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_mail_window TIMESTAMPTZ;
 
 	CREATE TABLE IF NOT EXISTS email_verifications (
 		user_id    BIGINT      PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
