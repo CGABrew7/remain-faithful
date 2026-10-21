@@ -14,6 +14,7 @@ struct SettingsView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ObservedObject private var tour = TourController.shared
 
+    @ObservedObject private var auth           = AuthState.shared
     @ObservedObject private var fcManager      = FamilyControlsManager.shared
     @ObservedObject private var lockoutManager = AppLockoutManager.shared
     @ObservedObject private var pinManager     = PartnerPINManager.shared
@@ -50,6 +51,7 @@ struct SettingsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     profileCard
+                    EmailConfirmBanner()
                     accountabilitySection
                     monitoringSection
                     screenTimeSection
@@ -67,7 +69,10 @@ struct SettingsView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .task { await pinManager.refreshStatus() }
+        .task {
+            await pinManager.refreshStatus()
+            await AuthState.shared.refreshFromAPI()
+        }
         .sheet(isPresented: $showPINGate) {
             PINEntryView(
                 title: "Partner PIN Required",
@@ -134,6 +139,12 @@ struct SettingsView: View {
 
     // MARK: - Profile card
 
+    private var profileEmail: String {
+        if auth.emailRequired { return "No email yet" }
+        if let pending = auth.pendingEmail, !pending.isEmpty { return pending }
+        return userEmail.isEmpty ? "your@email.com" : userEmail
+    }
+
     private var profileCard: some View {
         HStack(spacing: 16) {
             ZStack {
@@ -149,7 +160,7 @@ struct SettingsView: View {
                 Text(userName.isEmpty ? "Your Name" : userName)
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.white)
-                Text(userEmail.isEmpty ? "your@email.com" : userEmail)
+                Text(profileEmail)
                     .font(.system(size: 13))
                     .foregroundStyle(Color.white.opacity(0.45))
             }
@@ -314,12 +325,10 @@ struct SettingsView: View {
                 } else {
                     withPINGate {
                         lockoutManager.setEnabled(false)
-                        Task {
-                            try? await APIClient.shared.sendProtectionAlert(
-                                type: "lockout_disabled",
-                                detail: "\(userName) disabled the App Lockout feature."
-                            )
-                        }
+                        ProtectionAlerts.send(
+                            type: "lockout_disabled",
+                            detail: "App Lockout was turned off."
+                        )
                     }
                 }
             }
@@ -683,6 +692,9 @@ private struct DeleteAccountSheet: View {
         do {
             try await APIClient.shared.deleteAccount()
             await MainActor.run {
+                ActivitySelectionManager.shared.resetForSignOut()
+                AppLockoutManager.shared.clearLocally()
+                ProtectionAlerts.dropCurrentUser()
                 AuthState.shared.clearSession()
                 userName               = ""
                 userEmail              = ""
@@ -795,6 +807,7 @@ private struct DestructiveConfirmSheet: View {
 
 private struct ManagePartnersView: View {
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var auth = AuthState.shared
     @FocusState private var emailFocused: Bool
     @State private var inviteEmail   = ""
     @State private var isSending     = false
@@ -813,6 +826,9 @@ private struct ManagePartnersView: View {
     @State private var partners:         [PartnerItem] = []
     @State private var isLoadingPartners = false
     @State private var isSettingPrimary  = false
+    @State private var inviteListCode: String?
+    @State private var resendNote: String?
+    @State private var showAddEmail = false
 
     var body: some View {
         ZStack {
@@ -832,6 +848,10 @@ private struct ManagePartnersView: View {
             }
         }
         .task { await loadPartners() }
+        .sheet(isPresented: $showAddEmail) {
+            EditProfileSheet()
+                .presentationDetents([.medium])
+        }
         .alert("Remove Partner", isPresented: $showRemoveConfirm) {
             Button("Remove", role: .destructive) {
                 guard let p = partnerToRemove else { return }
@@ -930,7 +950,15 @@ private struct ManagePartnersView: View {
                                 Text(partner.email)
                                     .font(.footnote)
                                     .foregroundStyle(Color.white.opacity(0.66))
-                                if partner.status.lowercased() != "accepted" {
+                                if needsAddedEmail(partner) {
+                                    Text("Add an email in your profile")
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(Color.rfGold)
+                                } else if needsEmailConfirm(partner) {
+                                    Text("Confirm your email to accept")
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(Color.rfGold)
+                                } else if partner.status.lowercased() != "accepted" {
                                     Text(partner.isMonitoringThem
                                          ? "Waiting for you to accept"
                                          : "Waiting for \(partner.name) to accept")
@@ -949,8 +977,7 @@ private struct ManagePartnersView: View {
                             }
                             .accessibilityLabel(partner.isPrimary ? "Primary partner" : "Make primary partner")
                             .padding(.trailing, 2)
-                            // PIN management — only visible when the current user is monitoring this person
-                            if partner.isMonitoringThem {
+                            if PartnerRow.showsPin(isPartner: partner.isMonitoringThem, status: partner.status) {
                                 Button {
                                     pinPartner = partner
                                     if partner.pinSet {
@@ -982,7 +1009,32 @@ private struct ManagePartnersView: View {
                         }
                         .padding(.vertical, 8)
                         .padding(.horizontal, 16)
-                        if partner.inviteID != nil {
+                        if needsAddedEmail(partner) {
+                            Button("Add email") { showAddEmail = true }
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(Color.rfNavy)
+                                .padding(.horizontal, 14)
+                                .frame(minHeight: 44)
+                                .background(Capsule().fill(Color.rfGold))
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
+                        } else if needsEmailConfirm(partner) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Button("Resend") { resendConfirmation() }
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(Color.rfNavy)
+                                    .padding(.horizontal, 14)
+                                    .frame(minHeight: 44)
+                                    .background(Capsule().fill(Color.rfGold))
+                                if let resendNote {
+                                    Text(resendNote)
+                                        .font(.footnote)
+                                        .foregroundStyle(Color.white.opacity(0.78))
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                        } else if partner.inviteID != nil {
                             HStack(spacing: 10) {
                                 RFButton(title: "Accept") {
                                     respondToInvite(partner, accept: true)
@@ -1079,7 +1131,20 @@ private struct ManagePartnersView: View {
         isLoadingPartners = true
         defer { isLoadingPartners = false }
         if let rels = try? await APIClient.shared.listRelationships() {
-            let invites = (try? await APIClient.shared.listPendingPartnerInvites()) ?? []
+            var invites: [PendingPartnerInvite] = []
+            var listCode: String?
+            do {
+                invites = try await APIClient.shared.listPendingPartnerInvites()
+            } catch let error as APIError {
+                listCode = error.code
+                if error.code == "email_required" {
+                    AuthState.shared.noteEmailRequired()
+                }
+                invites = []
+            } catch {
+                invites = []
+            }
+            inviteListCode = listCode
             let myID = AuthState.shared.currentUser?.id ?? 0
             partners = rels.map { r in
                 let awaitingMe = r.partnerId == myID && r.status.lowercased() != "accepted"
@@ -1162,7 +1227,40 @@ private struct ManagePartnersView: View {
             } catch {
                 await MainActor.run {
                     errorMsg = UserFacingError.message(for: error)
+                    if let api = error as? APIError, api.code == "email_not_verified" || api.code == "email_required" {
+                        inviteListCode = api.code
+                        if api.code == "email_required" {
+                            AuthState.shared.noteEmailRequired()
+                        }
+                    }
                 }
+            }
+        }
+    }
+
+    private func needsEmailConfirm(_ partner: PartnerItem) -> Bool {
+        PartnerRow.needsEmailConfirm(
+            awaitingMe: partner.isMonitoringThem && partner.status.lowercased() != "accepted",
+            inviteID: partner.inviteID,
+            emailVerified: auth.currentUser?.emailVerified,
+            listCode: inviteListCode
+        )
+    }
+
+    private func needsAddedEmail(_ partner: PartnerItem) -> Bool {
+        partner.isMonitoringThem
+            && partner.status.lowercased() != "accepted"
+            && partner.inviteID == nil
+            && PartnerRow.needsAddedEmail(listCode: inviteListCode)
+    }
+
+    private func resendConfirmation() {
+        Task {
+            do {
+                let message = try await APIClient.shared.resendVerification()
+                await MainActor.run { resendNote = message }
+            } catch {
+                await MainActor.run { errorMsg = UserFacingError.message(for: error) }
             }
         }
     }
@@ -1279,7 +1377,7 @@ private struct GroupInviteSheet: View {
 
 // MARK: - Edit Profile Sheet
 
-private struct EditProfileSheet: View {
+struct EditProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var nameFocused:  Bool
     @FocusState private var emailFocused: Bool
@@ -1290,8 +1388,9 @@ private struct EditProfileSheet: View {
 
     init() {
         let user = AuthState.shared.currentUser
+        let storedEmail = user?.email ?? UserDefaults.standard.string(forKey: "userEmail") ?? ""
         _name  = State(initialValue: user?.name  ?? UserDefaults.standard.string(forKey: "userName")  ?? "")
-        _email = State(initialValue: user?.email ?? UserDefaults.standard.string(forKey: "userEmail") ?? "")
+        _email = State(initialValue: AuthState.shared.emailRequired ? "" : storedEmail)
     }
 
     var body: some View {
@@ -1304,7 +1403,7 @@ private struct EditProfileSheet: View {
                         Text("Edit Profile")
                             .font(.system(size: 20, weight: .bold, design: .serif))
                             .foregroundStyle(.white)
-                        Text("Update your name or email")
+                        Text(AuthState.shared.emailRequired ? "Add an email and confirm it" : "Update your name or email")
                             .font(.system(size: 13))
                             .foregroundStyle(Color.white.opacity(0.45))
                     }
@@ -1357,8 +1456,11 @@ private struct EditProfileSheet: View {
         let e = email.trimmingCharacters(in: .whitespaces).lowercased()
         Task {
             do {
-                _ = try await APIClient.shared.updateMe(name: n, email: e)
-                AuthState.shared.updateProfile(name: n, email: e)
+                let updated = try await APIClient.shared.updateMe(name: n, email: e)
+                AuthState.shared.updateProfile(name: updated.name, email: updated.email)
+                if let pending = updated.pendingEmail, !pending.isEmpty {
+                    AuthState.shared.notePendingEmail(pending)
+                }
                 await MainActor.run { isSaving = false }
                 dismiss()
             } catch {
@@ -1432,6 +1534,10 @@ private struct ManageGroupsView: View {
     @State private var groups: [GroupItem] = []
     @State private var pendingInvites: [PendingGroupInvite] = []
     @State private var inviteError: String?
+    @State private var inviteListCode: String?
+    @State private var inviteListMessage: String?
+    @State private var showAddEmail = false
+    @State private var resendNote: String?
     @FocusState private var groupNameFocused: Bool
 
     var body: some View {
@@ -1488,6 +1594,10 @@ private struct ManageGroupsView: View {
             }
         }
         .task { await reloadGroups() }
+        .sheet(isPresented: $showAddEmail) {
+            EditProfileSheet()
+                .presentationDetents([.medium])
+        }
     }
 
     @MainActor
@@ -1497,11 +1607,64 @@ private struct ManageGroupsView: View {
             primaryGroupID = GroupSelection.resolvePrimaryGroupID(stored: primaryGroupID,
                                                                   memberGroupIDs: groups.map(\.id))
         }
-        pendingInvites = (try? await APIClient.shared.listPendingGroupInvites()) ?? pendingInvites
+        do {
+            pendingInvites = try await APIClient.shared.listPendingGroupInvites()
+            inviteListCode = nil
+            inviteListMessage = nil
+        } catch let error as APIError {
+            inviteListCode = error.code
+            inviteListMessage = UserFacingError.message(for: error)
+            if error.code == "email_required" {
+                AuthState.shared.noteEmailRequired()
+            }
+            pendingInvites = []
+        } catch {
+            pendingInvites = []
+        }
     }
 
     private var pendingInvitesSection: some View {
         Group {
+            if inviteListCode == "email_not_verified" || inviteListCode == "email_required" {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(inviteListCode == "email_required" ? "Add an email in your profile" : "Confirm your email to accept")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                    if let inviteListMessage {
+                        Text(inviteListMessage)
+                            .font(.footnote)
+                            .foregroundStyle(Color.white.opacity(0.78))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if inviteListCode == "email_required" {
+                        Button("Add email") { showAddEmail = true }
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Color.rfNavy)
+                            .padding(.horizontal, 14)
+                            .frame(minHeight: 44)
+                            .background(Capsule().fill(Color.rfGold))
+                    } else {
+                        Button("Resend") { resendGroupConfirmation() }
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Color.rfNavy)
+                            .padding(.horizontal, 14)
+                            .frame(minHeight: 44)
+                            .background(Capsule().fill(Color.rfGold))
+                        if let resendNote {
+                            Text(resendNote)
+                                .font(.footnote)
+                                .foregroundStyle(Color.white.opacity(0.78))
+                        }
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.rfGold.opacity(0.12))
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.rfGold.opacity(0.55), lineWidth: 1))
+                )
+            }
             if !pendingInvites.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("GROUP INVITES")
@@ -1561,7 +1724,25 @@ private struct ManageGroupsView: View {
             } catch {
                 await MainActor.run {
                     inviteError = UserFacingError.message(for: error)
+                    if let api = error as? APIError, api.code == "email_not_verified" || api.code == "email_required" {
+                        inviteListCode = api.code
+                        inviteListMessage = inviteError
+                        if api.code == "email_required" {
+                            AuthState.shared.noteEmailRequired()
+                        }
+                    }
                 }
+            }
+        }
+    }
+
+    private func resendGroupConfirmation() {
+        Task {
+            do {
+                let message = try await APIClient.shared.resendVerification()
+                await MainActor.run { resendNote = message }
+            } catch {
+                await MainActor.run { inviteListMessage = UserFacingError.message(for: error) }
             }
         }
     }
@@ -2122,6 +2303,104 @@ private struct LogRow: View {
                 .overlay(RoundedRectangle(cornerRadius: 14)
                     .stroke(Color.white.opacity(0.07), lineWidth: 1))
         )
+    }
+}
+
+// Shown on Home and Settings while an email still needs to be added or confirmed.
+struct EmailConfirmBanner: View {
+    @ObservedObject private var auth = AuthState.shared
+    @State private var note: String?
+    @State private var sending = false
+    @State private var showProfile = false
+
+    var body: some View {
+        Group {
+            if let pending = auth.pendingEmail, !pending.isEmpty {
+                card(
+                    title: "Confirm your new email",
+                    detail: "We sent a link to \(pending). Open it, then come back.",
+                    buttonTitle: nil,
+                    action: nil
+                )
+            } else if auth.emailRequired {
+                card(
+                    title: "Add an email",
+                    detail: "This sign-in does not have an email yet. Add one in your profile and confirm it.",
+                    buttonTitle: "Add email",
+                    action: { showProfile = true }
+                )
+            } else if auth.currentUser?.emailVerified == false {
+                card(
+                    title: "Confirm your email",
+                    detail: "Open the link we sent. Then you can accept a partner.",
+                    buttonTitle: sending ? "Sending" : "Resend",
+                    action: resend
+                )
+            }
+        }
+        .task { await auth.refreshFromAPI() }
+        .sheet(isPresented: $showProfile) {
+            EditProfileSheet()
+                .presentationDetents([.medium])
+        }
+    }
+
+    private func card(title: String, detail: String, buttonTitle: String?, action: (() -> Void)?) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+            Text(detail)
+                .font(.subheadline)
+                .foregroundStyle(Color.white.opacity(0.78))
+                .fixedSize(horizontal: false, vertical: true)
+            if let note {
+                Text(note)
+                    .font(.footnote)
+                    .foregroundStyle(Color.rfGold)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let buttonTitle, let action {
+                Button(action: action) {
+                    Text(buttonTitle)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color.rfNavy)
+                        .padding(.horizontal, 16)
+                        .frame(minHeight: 44)
+                        .background(Capsule().fill(Color.rfGold))
+                }
+                .disabled(sending && buttonTitle != "Add email")
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.rfGold.opacity(0.12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.rfGold.opacity(0.55), lineWidth: 1)
+                )
+        )
+    }
+
+    private func resend() {
+        guard !sending else { return }
+        sending = true
+        Task {
+            do {
+                let message = try await APIClient.shared.resendVerification()
+                await MainActor.run {
+                    note = message
+                    sending = false
+                }
+            } catch {
+                await MainActor.run {
+                    note = UserFacingError.message(for: error)
+                    sending = false
+                }
+            }
+        }
     }
 }
 

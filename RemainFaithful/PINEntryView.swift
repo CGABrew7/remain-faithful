@@ -405,7 +405,7 @@ struct SetPINSheet: View {
             } catch {
                 await MainActor.run {
                     isSaving = false
-                    saveError = "Couldn't save PIN. Try again."
+                    saveError = PINSaveMessage.text(for: error)
                     confirmDigits = []
                     phase = .enter
                     digits = []

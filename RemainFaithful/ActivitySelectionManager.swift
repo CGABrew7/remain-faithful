@@ -175,6 +175,10 @@ final class ActivitySelectionManager: ObservableObject {
             isMonitoringEnabled = false
             defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
             logger.error("DeviceActivity startMonitoring failed: \(error.localizedDescription)")
+            ProtectionAlerts.send(
+                type: "monitoring_disabled",
+                detail: "Alerts were turned off."
+            )
         }
     }
 
@@ -216,15 +220,31 @@ final class ActivitySelectionManager: ObservableObject {
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        var updated = queue
-        for i in updated.indices {
-            guard (updated[i]["processed"] as? Bool) != true else { continue }
-            let ts  = updated[i]["timestamp"] as? TimeInterval ?? Date().timeIntervalSince1970
-            let cat = updated[i]["category"]  as? String ?? "app_usage"
-            let sev = updated[i]["severity"]  as? String ?? "concerning"
-            let sum = updated[i]["summary"]   as? String ?? "App activity detected"
+        let signedIn = defaults?.integer(forKey: "authUserID") ?? 0
+        var updated: [[String: Any]] = []
+        var stop = false
+        for var row in queue {
+            if (row["processed"] as? Bool) == true {
+                updated.append(row)
+                continue
+            }
+            let owner = (row["accountID"] as? Int) ?? (row["accountID"] as? NSNumber)?.intValue
+            if !QueuedEventGate.shouldUpload(ownerAccountID: owner, signedInAccountID: signedIn) {
+                continue
+            }
+            if stop {
+                updated.append(row)
+                continue
+            }
+            let ts  = row["timestamp"] as? TimeInterval ?? Date().timeIntervalSince1970
+            let cat = row["category"]  as? String ?? "app_usage"
+            let sev = row["severity"]  as? String ?? "concerning"
+            let sum = row["summary"]   as? String ?? "App activity detected"
 
-            guard let url  = URL(string: apiBase + "/events") else { continue }
+            guard let url  = URL(string: apiBase + "/events") else {
+                updated.append(row)
+                continue
+            }
             var req = URLRequest(url: url, timeoutInterval: 10)
             req.httpMethod = "POST"
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -232,15 +252,20 @@ final class ActivitySelectionManager: ObservableObject {
             guard let body = try? JSONSerialization.data(withJSONObject: [
                 "category": cat, "severity": sev, "summary": sum,
                 "timestamp": iso.string(from: Date(timeIntervalSince1970: ts)),
-            ]) else { continue }
+            ]) else {
+                updated.append(row)
+                continue
+            }
             req.httpBody = body
 
             if let (_, resp) = try? await URLSession.shared.data(for: req),
                let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) {
-                updated[i]["processed"] = true
-                logger.info("Drained raw event \(i): HTTP \(http.statusCode)")
+                row["processed"] = true
+                updated.append(row)
+                logger.info("Drained raw event: HTTP \(http.statusCode)")
             } else {
-                break
+                updated.append(row)
+                stop = true
             }
         }
         defaults?.set(updated, forKey: "pendingRawEvents")

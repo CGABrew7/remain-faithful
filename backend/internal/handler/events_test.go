@@ -23,6 +23,7 @@ func TestIsAllowedEventSummary(t *testing.T) {
 		"Monitored app category used for 1+ minute",
 		"Monitored app activity detected",
 		"App activity detected",
+		"Blocked app opened",
 		"Adult content flagged on screen",
 		"Gambling flagged on screen",
 		"Violence flagged on screen",

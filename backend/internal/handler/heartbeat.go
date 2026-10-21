@@ -14,6 +14,75 @@ import (
 	rfauth "remain-faithful/backend/internal/auth"
 )
 
+// RecordPhoneSignals stores aggregate phone facts for the owner dashboard.
+// Screen Time is yes or no, apps are a count, the version is a string, and
+// support taps are a running total. App names and messages stay on the phone.
+// POST /users/me/signals
+func (h *H) RecordPhoneSignals(w http.ResponseWriter, r *http.Request) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+
+	var req struct {
+		ScreenTimeGranted *bool  `json:"screen_time_granted"`
+		MonitoredAppCount *int   `json:"monitored_app_count"`
+		AppVersion        string `json:"app_version"`
+		SupportTaps       *int   `json:"support_taps"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.ScreenTimeGranted == nil || req.MonitoredAppCount == nil || req.SupportTaps == nil {
+		writeError(w, http.StatusBadRequest, "screen time, app count, and support taps are required")
+		return
+	}
+	if *req.MonitoredAppCount < 0 || *req.MonitoredAppCount > 500 {
+		writeError(w, http.StatusBadRequest, "app count is out of range")
+		return
+	}
+	if *req.SupportTaps < 0 || *req.SupportTaps > 100000 {
+		writeError(w, http.StatusBadRequest, "support tap count is out of range")
+		return
+	}
+	version := trimVersion(req.AppVersion)
+	if version == "" && req.AppVersion != "" {
+		writeError(w, http.StatusBadRequest, "app version is not recognized")
+		return
+	}
+
+	_, err := h.DB.ExecContext(r.Context(), `
+		UPDATE users
+		SET screen_time_granted = $2,
+		    monitored_app_count = $3,
+		    app_version = CASE WHEN $4 = '' THEN app_version ELSE $4 END,
+		    support_tap_count = GREATEST(support_tap_count, $5)
+		WHERE id = $1
+	`, userID, *req.ScreenTimeGranted, *req.MonitoredAppCount, version, *req.SupportTaps)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to save phone signals")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func trimVersion(raw string) string {
+	out := make([]rune, 0, len(raw))
+	for _, c := range raw {
+		if c == ' ' || c == '\t' {
+			continue
+		}
+		switch {
+		case c >= '0' && c <= '9', c >= 'A' && c <= 'Z', c >= 'a' && c <= 'z', c == '.':
+			out = append(out, c)
+		default:
+			return ""
+		}
+		if len(out) > 32 {
+			return ""
+		}
+	}
+	return string(out)
+}
+
 // Heartbeat updates the authenticated user's last_heartbeat_at and screen state.
 // POST /heartbeat
 // Body: {"screen":"active"|"idle"|"monitoring"}

@@ -23,9 +23,13 @@ struct RemoteUser: Decodable {
     let name: String
     let email: String
     let createdAt: String?
+    var emailVerified: Bool? = nil
+    var pendingEmail: String? = nil
     enum CodingKeys: String, CodingKey {
         case id, name, email
         case createdAt = "created_at"
+        case emailVerified = "email_verified"
+        case pendingEmail = "pending_email"
     }
 }
 
@@ -201,18 +205,32 @@ struct RemoteGroupMember: Decodable {
 enum APIError: LocalizedError {
     case badURL
     case unauthenticated
-    case server(String)
+    case server(String, code: String?)
     case decoding(Error)
     case network(Error)
+
+    var code: String? {
+        if case .server(_, let code) = self { return code }
+        return nil
+    }
 
     var errorDescription: String? {
         switch self {
         case .badURL:          return "Invalid URL"
-        case .unauthenticated: return "Not signed in — please log in again"
-        case .server(let m):   return m
+        case .unauthenticated: return "Not signed in. Please log in again."
+        case .server(let m, _): return m
         case .decoding(let e): return "Unexpected response format: \(e.localizedDescription)"
         case .network(let e):  return "Network error: \(e.localizedDescription)"
         }
+    }
+
+    static func fromServer(data: Data, status: Int) -> APIError {
+        struct Body: Decodable {
+            let error: String?
+            let code: String?
+        }
+        let body = try? JSONDecoder().decode(Body.self, from: data)
+        return .server(body?.error ?? "HTTP \(status)", code: body?.code)
     }
 }
 
@@ -363,8 +381,7 @@ final class APIClient {
                 return PINCheck.from(success: body.success, reason: body.reason)
             }
             if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-                let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-                throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+                throw APIError.fromServer(data: data, status: http.statusCode)
             }
             throw APIError.decoding(DecodingError.dataCorrupted(
                 .init(codingPath: [], debugDescription: "PIN response")
@@ -398,6 +415,51 @@ final class APIClient {
 
     func heartbeat(screen: String) async throws {
         try await postVoid("/heartbeat", body: ["screen": screen])
+    }
+
+    /// Counts only: Screen Time yes or no, how many apps, the app version, and support taps.
+    func sendPhoneSignals(screenTimeGranted: Bool, monitoredAppCount: Int, supportTaps: Int) async {
+        guard isAuthenticated else { return }
+        struct Body: Encodable {
+            let screenTimeGranted: Bool
+            let monitoredAppCount: Int
+            let appVersion: String
+            let supportTaps: Int
+            enum CodingKeys: String, CodingKey {
+                case screenTimeGranted = "screen_time_granted"
+                case monitoredAppCount = "monitored_app_count"
+                case appVersion = "app_version"
+                case supportTaps = "support_taps"
+            }
+        }
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        do {
+            try await postVoid("/users/me/signals", body: Body(
+                screenTimeGranted: screenTimeGranted,
+                monitoredAppCount: monitoredAppCount,
+                appVersion: version,
+                supportTaps: supportTaps
+            ))
+        } catch {
+            // A server that does not know this yet leaves the counts on the phone.
+        }
+    }
+
+    /// POST /auth/resend-verification. Returns a short line for the screen.
+    func resendVerification() async throws -> String {
+        struct Body: Decodable { let status: String? }
+        do {
+            let body: Body = try await post("/auth/resend-verification", body: [String: String]())
+            if body.status == "already_verified" {
+                AuthState.shared.markEmailVerified()
+            }
+            return MailboxNotice.resendStatus(body.status)
+        } catch {
+            if let api = error as? APIError, api.code == "email_required" {
+                AuthState.shared.noteEmailRequired()
+            }
+            throw error
+        }
     }
 
     // MARK: - Groups
@@ -588,8 +650,7 @@ final class APIClient {
         if auth { try attachToken(&req) }
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+            throw APIError.fromServer(data: data, status: http.statusCode)
         }
     }
 
@@ -610,8 +671,7 @@ final class APIClient {
         try attachToken(&req)
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+            throw APIError.fromServer(data: data, status: http.statusCode)
         }
     }
 
@@ -623,8 +683,7 @@ final class APIClient {
         try attachToken(&req)
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+            throw APIError.fromServer(data: data, status: http.statusCode)
         }
     }
 
@@ -634,8 +693,7 @@ final class APIClient {
         try attachToken(&req)
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+            throw APIError.fromServer(data: data, status: http.statusCode)
         }
     }
 
@@ -648,8 +706,7 @@ final class APIClient {
         if auth { try attachToken(&req) }
         let (data, resp) = try await session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-            let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-            throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+            throw APIError.fromServer(data: data, status: http.statusCode)
         }
     }
 
@@ -679,8 +736,7 @@ final class APIClient {
         do {
             let (data, resp) = try await session.data(for: req)
             if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-                let msg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-                throw APIError.server(msg ?? "HTTP \(http.statusCode)")
+                throw APIError.fromServer(data: data, status: http.statusCode)
             }
             return try JSONDecoder().decode(T.self, from: data)
         } catch let e as APIError { throw e }

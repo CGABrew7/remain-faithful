@@ -15,6 +15,7 @@ struct DetectedEvent: Codable {
     let tier: Int
     let confidence: Float
     var processed: Bool
+    var accountID: Int? = nil
 }
 
 // MARK: - EventSending
@@ -33,17 +34,26 @@ final class EventProcessor {
     static let shared = EventProcessor()
     private let appGroupID: String
     private let eventSender: EventSending
+    private let accountID: () -> Int
     private let logger = Logger(subsystem: "com.remainfaithful.app", category: "EventProcessor")
     private lazy var sharedDefaults: UserDefaults? = UserDefaults(suiteName: appGroupID)
 
     private init() {
-        appGroupID  = "group.com.remainfaithful.app"
-        eventSender = APIClient.shared
+        self.init(
+            appGroupID: "group.com.remainfaithful.app",
+            eventSender: APIClient.shared,
+            accountID: {
+                let stored = UserDefaults(suiteName: "group.com.remainfaithful.app")?.integer(forKey: "authUserID") ?? 0
+                if stored > 0 { return stored }
+                return AuthState.shared.currentUser?.id ?? 0
+            }
+        )
     }
 
-    init(appGroupID: String, eventSender: EventSending) {
+    init(appGroupID: String, eventSender: EventSending, accountID: @escaping () -> Int = { 0 }) {
         self.appGroupID  = appGroupID
         self.eventSender = eventSender
+        self.accountID = accountID
     }
 
     // MARK: - Called on foreground / background fetch
@@ -56,39 +66,42 @@ final class EventProcessor {
         let apiBase = ProcessInfo.processInfo.environment["API_BASE_URL"] ?? "https://remain-faithful-api.fly.dev"
         defaults.set(apiBase, forKey: "apiBaseURL")
 
-        guard let data = defaults.data(forKey: "pendingEvents"),
-              var events = try? JSONDecoder().decode([DetectedEvent].self, from: data) else { return }
+        if let data = defaults.data(forKey: "pendingEvents"),
+           var events = try? JSONDecoder().decode([DetectedEvent].self, from: data) {
+            let signedIn = accountID()
+            let before = events.count
+            events.removeAll { event in
+                !event.processed && !QueuedEventGate.shouldUpload(ownerAccountID: event.accountID, signedInAccountID: signedIn)
+            }
+            var changed = events.count != before
 
-        let pending = events.indices.filter { !events[$0].processed }
-        guard !pending.isEmpty else { return }
+            let pending = events.indices.filter { !events[$0].processed }
+            if !pending.isEmpty {
+                logger.info("Processing \(pending.count) pending events from broadcast extension")
+            }
 
-        logger.info("Processing \(pending.count) pending events from broadcast extension")
+            for i in pending {
+                do {
+                    _ = try await eventSender.createEvent(
+                        category: events[i].category,
+                        severity: events[i].severity,
+                        summary: events[i].summary,
+                        timestamp: nil
+                    )
+                    events[i].processed = true
+                    changed = true
+                    logger.info("Posted event \(events[i].id) (\(events[i].category))")
+                } catch {
+                    logger.error("Failed to post event \(events[i].id): \(error.localizedDescription)")
+                    break
+                }
+            }
 
-        var changed = false
-        for i in pending {
-            do {
-                _ = try await eventSender.createEvent(
-                    category: events[i].category,
-                    severity: events[i].severity,
-                    summary: events[i].summary,
-                    timestamp: nil
-                )
-                events[i].processed = true
-                changed = true
-                logger.info("Posted event \(events[i].id) (\(events[i].category))")
-            } catch {
-                // Stop on first network failure to avoid piling up failures
-                logger.error("Failed to post event \(events[i].id): \(error.localizedDescription)")
-                break
+            if changed, let newData = try? JSONEncoder().encode(events) {
+                defaults.set(newData, forKey: "pendingEvents")
             }
         }
 
-        if changed, let newData = try? JSONEncoder().encode(events) {
-            defaults.set(newData, forKey: "pendingEvents")
-        }
-
-        // Drain events queued by the DeviceActivityMonitor extension (raw JSON dicts,
-        // separate key because the extension can't encode DetectedEvent directly).
         await ActivitySelectionManager.shared.drainPendingRawEvents()
     }
 

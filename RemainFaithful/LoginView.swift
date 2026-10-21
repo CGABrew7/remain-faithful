@@ -339,6 +339,7 @@ struct LoginView: View {
                         storedName  = resp.user.name
                         storedEmail = resp.user.email
                         hasCompletedOnboarding = true
+                        AuthState.shared.noteAppleSignIn(userID: resp.user.id, email: resp.user.email, appleUserID: cred.user)
                         AuthState.shared.setSession(token: resp.token, user: resp.user)
                     }
                 } catch {
@@ -540,7 +541,7 @@ private extension View {
 
 // MARK: - Apple Sign In coordinator
 
-private final class AppleSignInCoordinator: NSObject, ObservableObject,
+final class AppleSignInCoordinator: NSObject, ObservableObject,
     ASAuthorizationControllerDelegate,
     ASAuthorizationControllerPresentationContextProviding {
 

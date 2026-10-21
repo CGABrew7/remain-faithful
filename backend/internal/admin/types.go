@@ -189,9 +189,22 @@ type Active struct {
 	MonitoringOn    Count  `json:"monitoring_on"`
 	MonitoringOff   Count  `json:"monitoring_off"`
 	HeartbeatSilent Count  `json:"heartbeat_silent"`
-	NeverCheckedIn  Count  `json:"never_checked_in"`
-	DailyHistory    Gap    `json:"daily_history"`
-	AppVersions     Gap    `json:"app_versions"`
+	NeverCheckedIn  Count         `json:"never_checked_in"`
+	MonitoredApps   Count         `json:"monitored_apps"`
+	DailyHistory    Gap           `json:"daily_history"`
+	AppVersions     VersionRollup `json:"app_versions"`
+}
+
+// VersionRollup is a count of phones per app version. No account is listed.
+type VersionRollup struct {
+	Status   string       `json:"status"`
+	Versions []NamedCount `json:"versions"`
+}
+
+// CountRollup is one aggregate total, such as support taps.
+type CountRollup struct {
+	Status string `json:"status"`
+	Count  Count  `json:"count"`
 }
 
 type Partnership struct {
@@ -218,7 +231,7 @@ type Accountability struct {
 type Alerts struct {
 	PartnerAlertsByDay    []DayCount `json:"partner_alerts_by_day"`
 	MonitoringPausedByDay []DayCount `json:"monitoring_paused_by_day"`
-	SupportTaps           Gap        `json:"support_taps"`
+	SupportTaps           CountRollup `json:"support_taps"`
 }
 
 type EmailStat struct {

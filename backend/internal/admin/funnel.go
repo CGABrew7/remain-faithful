@@ -1,15 +1,15 @@
 package admin
 
 const (
-	noteScreenTime = "The phone does not tell the server when Screen Time access is granted. A later app build could send a yes or no only, with no app names."
-	noteAppsChosen = "The phone does not tell the server how many apps were chosen. A later app build could send that count only, never the app names."
+	noteScreenTime = "People who allowed Screen Time."
+	noteAppsChosen = "People who chose at least one app. App names stay on the phone."
 	noteHeartbeat  = "Counted when a heartbeat has arrived at least once. That means monitoring has checked in. It is not a separate Screen Time flag."
 )
 
 // BuildFunnel turns cohort headcounts into ordered steps.
 // Drop-off is the share lost since the previous tracked step.
-// Steps with no server signal stay visible and carry no count.
-func BuildFunnel(accounts, invited, accepted, heartbeat int) []FunnelStep {
+// Screen Time and chosen apps are yes/no and a count. Names stay on the phone.
+func BuildFunnel(accounts, invited, accepted, screenTime, heartbeat, appsChosen int) []FunnelStep {
 	steps := []struct {
 		key, label, note string
 		tracked          bool
@@ -18,9 +18,9 @@ func BuildFunnel(accounts, invited, accepted, heartbeat int) []FunnelStep {
 		{"account_created", "Account created", "", true, accounts},
 		{"invited_partner", "Invited a partner", "", true, invited},
 		{"partner_accepted", "Partner accepted", "", true, accepted},
-		{"screen_time", "Screen Time granted", noteScreenTime, false, 0},
+		{"screen_time", "Screen Time granted", noteScreenTime, true, screenTime},
 		{"monitoring_active", "Monitoring has checked in", noteHeartbeat, true, heartbeat},
-		{"apps_chosen", "Apps chosen", noteAppsChosen, false, 0},
+		{"apps_chosen", "Apps chosen", noteAppsChosen, true, appsChosen},
 	}
 
 	out := make([]FunnelStep, 0, len(steps))

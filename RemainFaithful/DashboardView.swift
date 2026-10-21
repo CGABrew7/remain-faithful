@@ -364,10 +364,7 @@ struct DashboardView: View {
     @ObservedObject private var familyControls = FamilyControlsManager.shared
 
     private var greeting: String {
-        let h = Calendar.current.component(.hour, from: Date())
-        if h < 12 { return "Good morning" }
-        if h < 17 { return "Good afternoon" }
-        return "Good evening"
+        HomeGreeting.line(hour: Calendar.current.component(.hour, from: Date()))
     }
 
     private var firstName: String {
@@ -381,16 +378,17 @@ struct DashboardView: View {
 
             ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 18) {
+                VStack(spacing: 20) {
                     headerRow
+                    EmailConfirmBanner()
+                    if setupUnfinished {
+                        FinishSetupCard(kind: monitoring.kind, onAction: { handleStatusAction() })
+                    }
                     StatusCard(
                         presentation: monitoring,
                         onAction: { handleStatusAction() }
                     )
                     .tourAnchor(.homeStatus)
-                    if monitoring.kind == .noApps {
-                        NoAppsBanner { showBlockingSetup = true }
-                    }
                     if showAppUsagePrompt && !isBroadcasting {
                         AppUsagePromptBanner(
                             onDismiss: {
@@ -467,7 +465,10 @@ struct DashboardView: View {
         .sheet(isPresented: $showBlockingSetup) {
             NavigationStack { ScreenTimeMonitoringView() }
         }
-        .task { await loadEvents() }
+        .task {
+            await AuthState.shared.refreshFromAPI()
+            await loadEvents()
+        }
         .task {
             // Poll broadcast status every 5 seconds while the view is active.
             while !Task.isCancelled {
@@ -591,7 +592,12 @@ struct DashboardView: View {
     }
 
     private var panicButton: some View {
-        Button { showPanic = true } label: {
+        Button {
+            let userID = AuthState.shared.currentUser?.id ?? 0
+            PhoneSignals.recordSupportTap(userID: userID)
+            showPanic = true
+            Task { await sendSupportSignal() }
+        } label: {
             HStack(spacing: 12) {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 15))
@@ -621,15 +627,29 @@ struct DashboardView: View {
         }
     }
 
+    private func sendSupportSignal() async {
+        let count = selection.selection.applicationTokens.count + selection.selection.categoryTokens.count
+        let granted = familyControls.authorizationStatus == .approved
+        let userID = AuthState.shared.currentUser?.id ?? 0
+        await APIClient.shared.sendPhoneSignals(
+            screenTimeGranted: granted,
+            monitoredAppCount: count,
+            supportTaps: PhoneSignals.supportTaps(userID: userID)
+        )
+    }
+
     private var headerRow: some View {
         HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(greeting)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.45))
+                    .foregroundStyle(Color.white.opacity(0.62))
                 Text(firstName)
-                    .font(.system(size: 26, weight: .bold, design: .serif))
+                    .font(.system(size: 28, weight: .bold, design: .serif))
                     .foregroundStyle(.white)
+                Text(HomeGreeting.welcome)
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.white.opacity(0.78))
             }
             Spacer()
             ZStack {
@@ -741,39 +761,41 @@ private struct StatusCard: View {
     }
 }
 
-private struct NoAppsBanner: View {
-    let onChoose: () -> Void
+private struct FinishSetupCard: View {
+    let kind: MonitoringKind
+    let onAction: () -> Void
+
+    private var buttonTitle: String {
+        switch kind {
+        case .needsPermission: return "Allow Screen Time"
+        case .noApps: return "Choose apps"
+        case .off: return "Turn monitoring on"
+        case .on: return "Continue"
+        }
+    }
 
     var body: some View {
-        Button(action: onChoose) {
-            HStack(spacing: 12) {
-                Image(systemName: "apps.iphone")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(Color.rfGold)
-                    .frame(width: 44, height: 44)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("No apps selected")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
-                    Text("Choose apps to turn Alerts and Blocking on.")
-                        .font(.footnote)
-                        .foregroundStyle(Color.white.opacity(0.72))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(Color.white.opacity(0.55))
-            }
-            .padding(12)
-            .frame(minHeight: 44)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.rfGold.opacity(0.12))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.rfGold.opacity(0.45), lineWidth: 1))
-            )
+        VStack(alignment: .leading, spacing: 12) {
+            Text(FinishSetupCopy.title)
+                .font(.system(size: 18, weight: .semibold, design: .serif))
+                .foregroundStyle(.white)
+            Text(FinishSetupCopy.detail(kind: kind))
+                .font(.subheadline)
+                .foregroundStyle(Color.white.opacity(0.82))
+                .fixedSize(horizontal: false, vertical: true)
+            RFButton(title: buttonTitle, action: onAction)
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("No apps selected. Choose apps.")
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.rfGold.opacity(0.12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.rfGold.opacity(0.55), lineWidth: 1)
+                )
+        )
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -800,9 +822,9 @@ private struct StreakCard: View {
                             .foregroundStyle(Color.white.opacity(0.45))
                             .padding(.bottom, 8)
                     }
-                    Text("clean streak")
+                    Text("days you've stayed with it")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.45))
+                        .foregroundStyle(Color.white.opacity(0.62))
                 }
 
                 Spacer()

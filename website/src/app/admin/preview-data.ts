@@ -93,8 +93,9 @@ export function previewOverview(range = '7d'): Overview {
       {
         key: 'screen_time',
         label: 'Screen Time granted',
-        status: 'not_tracked_yet',
-        note: 'The phone does not tell the server when Screen Time access is granted. A later app build could send a yes or no only, with no app names.',
+        status: 'tracked',
+        count: 9,
+        note: 'People who allowed Screen Time.',
       },
       {
         key: 'monitoring_active',
@@ -107,8 +108,9 @@ export function previewOverview(range = '7d'): Overview {
       {
         key: 'apps_chosen',
         label: 'Apps chosen',
-        status: 'not_tracked_yet',
-        note: 'The phone does not tell the server how many apps were chosen. A later app build could send that count only, never the app names.',
+        status: 'tracked',
+        count: 6,
+        note: 'People who chose at least one app. App names stay on the phone.',
       },
     ],
     active: {
@@ -121,13 +123,17 @@ export function previewOverview(range = '7d'): Overview {
       monitoring_off: 6,
       heartbeat_silent: 30,
       never_checked_in: 23,
+      monitored_apps: 18,
       daily_history: {
         status: 'not_tracked_yet',
         note: 'Only the latest heartbeat is stored, so this dashboard cannot draw active users for each past day.',
       },
       app_versions: {
-        status: 'not_tracked_yet',
-        note: 'The server does not receive the app version on heartbeat or sign-in. A later app build could send the version string alone.',
+        status: 'tracked',
+        versions: [
+          { label: '1.0.2', count: 14 },
+          { label: '1.0.1', count: 4 },
+        ],
       },
     },
     accountability: {
@@ -164,8 +170,8 @@ export function previewOverview(range = '7d'): Overview {
       partner_alerts_by_day: labels.map((day, i) => ({ day, count: 4 + (i % 3) })),
       monitoring_paused_by_day: labels.map((day, i) => ({ day, count: i % 4 === 0 ? '<3' : 3 })),
       support_taps: {
-        status: 'not_tracked_yet',
-        note: 'The I need support button is not saved on the server. A later app build could send a count only, with no message and no partner names.',
+        status: 'tracked',
+        count: 11,
       },
     },
     notifications: {

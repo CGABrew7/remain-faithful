@@ -221,4 +221,111 @@ final class Build10Tests: XCTestCase {
         XCTAssertEqual(PINCheck.from(success: false, reason: nil), .wrong)
         XCTAssertEqual(PINCheck.from(success: true, reason: nil), .success)
     }
+
+    func testPinButtonWaitsForAnAcceptedPartnership() {
+        XCTAssertFalse(PartnerRow.showsPin(isPartner: true, status: "pending"))
+        XCTAssertFalse(PartnerRow.showsPin(isPartner: false, status: "accepted"))
+        XCTAssertTrue(PartnerRow.showsPin(isPartner: true, status: "accepted"))
+        XCTAssertEqual(
+            PINSaveMessage.text(for: APIError.server("not authorized to set pin on this relationship", code: nil)),
+            "You can set a PIN after this partnership is accepted."
+        )
+        XCTAssertEqual(
+            PINSaveMessage.text(for: APIError.server(
+                "Your partner request isn't accepted yet. Confirm your email, then accept the invite.",
+                code: "relationship_not_accepted"
+            )),
+            "Your partner request isn't accepted yet. Confirm your email, then accept the invite."
+        )
+    }
+
+    func testUnconfirmedEmailExplainsTheMissingAcceptButton() {
+        XCTAssertTrue(PartnerRow.needsEmailConfirm(awaitingMe: true, inviteID: nil, emailVerified: false, listCode: nil))
+        XCTAssertTrue(PartnerRow.needsEmailConfirm(awaitingMe: true, inviteID: nil, emailVerified: nil, listCode: "email_not_verified"))
+        XCTAssertFalse(PartnerRow.needsEmailConfirm(awaitingMe: true, inviteID: 4, emailVerified: false, listCode: nil))
+        XCTAssertFalse(PartnerRow.needsEmailConfirm(awaitingMe: true, inviteID: nil, emailVerified: nil, listCode: nil))
+        XCTAssertFalse(PartnerRow.needsEmailConfirm(awaitingMe: true, inviteID: nil, emailVerified: false, listCode: "email_required"))
+        XCTAssertTrue(PartnerRow.needsAddedEmail(listCode: "email_required"))
+        XCTAssertEqual(
+            UserFacingError.message(for: APIError.server("HTTP 403", code: "email_not_verified")),
+            "Confirm your email to accept."
+        )
+        XCTAssertEqual(
+            UserFacingError.message(for: APIError.server("HTTP 409", code: "email_required")),
+            "Add an email in your profile and confirm it."
+        )
+        XCTAssertEqual(
+            UserFacingError.message(for: APIError.server("Too many confirmation emails. Try again in an hour.", code: "rate_limited")),
+            "Too many confirmation emails. Try again in an hour."
+        )
+        XCTAssertEqual(MailboxNotice.resendStatus("sent"), "Check your email for the confirmation link.")
+        XCTAssertEqual(MailboxNotice.resendStatus("already_verified"), "Your email is already confirmed.")
+        XCTAssertTrue(AppleMailbox.isStandIn(email: "abc.123@privaterelay.appleid.com", appleUserID: "abc.123"))
+        XCTAssertFalse(AppleMailbox.isStandIn(email: "hide.me@privaterelay.appleid.com", appleUserID: "abc.123"))
+        XCTAssertEqual(
+            UserFacingError.message(for: APIError.server("Confirm your email to accept this invite.", code: "email_not_verified")),
+            "Confirm your email to accept this invite."
+        )
+    }
+
+    func testQueuedAlertsStayWithTheAccountThatMadeThem() {
+        XCTAssertFalse(QueuedEventGate.shouldUpload(ownerAccountID: 4, signedInAccountID: 9))
+        XCTAssertFalse(QueuedEventGate.shouldUpload(ownerAccountID: 4, signedInAccountID: 0))
+        XCTAssertTrue(QueuedEventGate.shouldUpload(ownerAccountID: 4, signedInAccountID: 4))
+        XCTAssertTrue(QueuedEventGate.shouldUpload(ownerAccountID: nil, signedInAccountID: 4))
+    }
+
+    func testScreenTimeRevocationWaitsForTheNextSignIn() {
+        let signedOut = ScreenTimeRevocation.plan(wasApproved: true, nowApproved: false, authenticated: false, alreadyPending: false)
+        XCTAssertFalse(signedOut.send)
+        XCTAssertTrue(signedOut.pending)
+        let signedIn = ScreenTimeRevocation.plan(wasApproved: false, nowApproved: false, authenticated: true, alreadyPending: true)
+        XCTAssertTrue(signedIn.send)
+        XCTAssertFalse(signedIn.pending)
+        let restored = ScreenTimeRevocation.plan(wasApproved: false, nowApproved: true, authenticated: true, alreadyPending: true)
+        XCTAssertFalse(restored.send)
+        XCTAssertFalse(restored.pending)
+    }
+
+    func testSetupStatusAndHomeCopyStayPlain() {
+        let lines = SetupStatusCopy.lines(screenTime: true, alerts: true, blocking: false, deepScan: false, emailInvite: true, linkShared: false)
+        XCTAssertEqual(lines.map(\.text), [
+            "Screen Time is on",
+            "Alerts are on",
+            "Blocking is off",
+            "Deep Scan is off",
+            "Email invite is on",
+            "Invite link is off",
+        ])
+        XCTAssertEqual(DeepScanOnboarding.later, "Set up later")
+        XCTAssertEqual(HomeGreeting.line(hour: 9), "Good morning")
+        XCTAssertEqual(HomeGreeting.welcome, "Glad you are here.")
+        XCTAssertEqual(FinishSetupCopy.title, "Finish setup")
+        let copy = FinishSetupCopy.detail(kind: .needsPermission)
+            + FinishSetupCopy.detail(kind: .noApps)
+            + FinishSetupCopy.detail(kind: .off)
+            + HomeGreeting.welcome
+        XCTAssertFalse(copy.contains("—"))
+        XCTAssertFalse(copy.contains("–"))
+        let on = MonitoringPresentation.make(
+            authorizationApproved: true,
+            selectedCount: 1,
+            alertsOn: true,
+            blockingOn: false,
+            deepScanOn: false,
+            extensionSignedOut: false
+        )
+        XCTAssertTrue(on.detail.contains("You are not doing this alone."))
+    }
+
+    func testSupportTapsCountOnThisPhone() {
+        let id = 880011
+        UserDefaults.standard.removeObject(forKey: "supportTapCount.\(id)")
+        defer { UserDefaults.standard.removeObject(forKey: "supportTapCount.\(id)") }
+        XCTAssertEqual(PhoneSignals.supportTaps(userID: id), 0)
+        PhoneSignals.recordSupportTap(userID: id)
+        PhoneSignals.recordSupportTap(userID: id)
+        XCTAssertEqual(PhoneSignals.supportTaps(userID: id), 2)
+        XCTAssertEqual(PhoneSignals.supportTaps(userID: 0), 0)
+    }
 }

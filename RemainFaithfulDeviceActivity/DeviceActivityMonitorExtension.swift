@@ -78,7 +78,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     // checks both keys on foreground.
     private func enqueue(id: String, timestamp: TimeInterval, summary: String) {
         var queue = (defaults?.array(forKey: "pendingRawEvents") as? [[String: Any]]) ?? []
-        queue.append([
+        var row: [String: Any] = [
             "id":         id,
             "timestamp":  timestamp,
             "category":   "app_usage",
@@ -87,7 +87,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             "tier":       4,
             "confidence": 1.0,
             "processed":  false,
-        ])
+        ]
+        let account = defaults?.integer(forKey: "authUserID") ?? 0
+        if account > 0 { row["accountID"] = account }
+        queue.append(row)
         if queue.count > 50 { queue = Array(queue.suffix(50)) }
         defaults?.set(queue, forKey: "pendingRawEvents")
         logger.info("Queued raw event (depth: \(queue.count))")
