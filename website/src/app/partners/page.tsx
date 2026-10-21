@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import AppStoreLink from '@/components/AppStoreLink'
+import FeaturePlate from '@/components/FeaturePlate'
 import PhoneFrame from '@/components/PhoneFrame'
 import PilotForm from '@/components/PilotForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
@@ -60,7 +61,7 @@ export default function PartnersPage() {
               From small accountability triads to church-wide programs, RF scales to your structure.
             </p>
           </div>
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid items-stretch gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="grid gap-5 lg:grid-cols-12">
             {[
               {
@@ -86,9 +87,17 @@ export default function PartnersPage() {
               </div>
             ))}
           </div>
-            <PhoneFrame
-              src="/screens/alert.png"
-              alt="Remain Faithful alert screen a partner opens from a notification: Adult Content category, Medium severity, when it was detected, a conversation starter, and Mark as Discussed."
+            <FeaturePlate
+              stretch
+              kicker="Alerts"
+              title="What a partner receives"
+              lines={[
+                { label: 'Category', detail: 'The kind of alert' },
+                { label: 'Severity', detail: 'How serious it is' },
+                { label: 'Timestamp', detail: 'When it happened' },
+                { label: 'Summary', detail: 'A short line the app wrote' },
+              ]}
+              footer="Screenshots and screen content stay on the phone."
             />
           </div>
         </div>

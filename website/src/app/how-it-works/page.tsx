@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import FaqAccordion from '@/components/FaqAccordion'
-import PhoneFrame from '@/components/PhoneFrame'
+import FeaturePlate from '@/components/FeaturePlate'
 import { JsonLd } from '@/components/JsonLd'
 import { howItWorksFaqSchema } from '@/lib/structured-data'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
@@ -62,7 +62,7 @@ export default function HowItWorksPage() {
       </div>
       {/* Hero */}
       <section className="border-b border-white/10 pb-20 pt-8">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:px-8">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
           <div>
             <p className="kicker mb-4">The Method</p>
             <h1 className="mb-6 font-serif text-4xl font-bold text-ink sm:text-5xl lg:text-6xl">
@@ -73,9 +73,14 @@ export default function HowItWorksPage() {
               Built on peer trust, on-device privacy, and the covenant model.
             </p>
           </div>
-          <PhoneFrame
-            src="/screens/home.png"
-            alt="Remain Faithful home screen with monitoring active, a 47-day clean streak, and no recent flags."
+          <FeaturePlate
+            kicker="Setup"
+            title="Three short steps"
+            lines={[
+              { label: 'Create an account', detail: 'Free, on your iPhone.' },
+              { label: 'Invite a trusted partner', detail: 'A friend, spouse, or mentor you choose.' },
+              { label: 'Turn on protection', detail: 'Choose the apps, then turn on Alerts or Blocking.' },
+            ]}
           />
         </div>
       </section>

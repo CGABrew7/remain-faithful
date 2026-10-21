@@ -5,6 +5,7 @@ import AppStoreLink from '@/components/AppStoreLink'
 import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
 import FaqAccordion from '@/components/FaqAccordion'
+import FeaturePlate from '@/components/FeaturePlate'
 import Ornament from '@/components/Ornament'
 import PhoneFrame from '@/components/PhoneFrame'
 import WaitlistForm from '@/components/WaitlistForm'
@@ -258,7 +259,7 @@ export default function HomePage() {
 
       <section className="band section" aria-labelledby="alert-heading">
         <div className="shell">
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <div>
               <p className="kicker mb-4">Partner alerts</p>
               <h2 id="alert-heading" className="font-serif text-4xl font-bold text-white sm:text-5xl">
@@ -272,9 +273,16 @@ export default function HomePage() {
                 <Arrow />
               </Link>
             </div>
-            <PhoneFrame
-              src="/screens/home.png"
-              alt="Remain Faithful home screen with monitoring active, a 47-day clean streak, and no recent flags."
+            <FeaturePlate
+              kicker="The notice"
+              title="What a partner can receive"
+              lines={[
+                { label: 'Category', detail: 'The kind of alert' },
+                { label: 'Severity', detail: 'How serious it is' },
+                { label: 'Timestamp', detail: 'When it happened' },
+                { label: 'Summary', detail: 'A short line the app wrote' },
+              ]}
+              footer="Screenshots and screen content stay on the phone."
             />
           </div>
 

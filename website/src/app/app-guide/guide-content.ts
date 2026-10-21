@@ -14,12 +14,20 @@ export type GuideShot = {
   caption: string
 }
 
+export type GuidePlate = {
+  kicker: string
+  title: string
+  lines: { label: string; detail: string }[]
+  caption: string
+}
+
 export type GuideScreen = {
   id: string
   title: string
   where: string
   intro: string
   shots?: GuideShot[]
+  plate?: GuidePlate
   buttons: GuideButton[]
   note?: string
 }
@@ -188,13 +196,16 @@ export const guideParts: GuidePart[] = [
         title: 'Home',
         where: 'First tab at the bottom of the screen',
         intro: 'Here is everything you can see and tap on Home.',
-        shots: [
-          {
-            src: '/screens/home.png',
-            alt: 'Home tab showing the green Monitoring Active card while Deep Scan is running, with a 47-day clean streak.',
-            caption: 'Home with Deep Scan running',
-          },
-        ],
+        plate: {
+          kicker: 'Home',
+          title: 'Daily check-in',
+          caption: 'What Home shows',
+          lines: [
+            { label: 'Status', detail: 'Whether Alerts and Blocking are on' },
+            { label: 'Clean streak', detail: 'Days in a row without a flag' },
+            { label: 'Recent flags', detail: 'Your latest alerts' },
+          ],
+        },
         buttons: [
           {
             name: 'Monitoring status (card)',
@@ -250,14 +261,19 @@ export const guideParts: GuidePart[] = [
         id: 'alert-detail',
         title: 'An alert',
         where: 'Tap any item in Recent Flags',
-        intro: 'This is what an alert looks like when you open it.',
-        shots: [
-          {
-            src: '/screens/alert.png',
-            alt: 'Alert detail screen for an Adult Content alert at Medium level, with a Detected time and summary, Conversation Starter talking points, and a Mark as Discussed button.',
-            caption: 'Alert detail',
-          },
-        ],
+        intro: 'This is what you find when you open an alert.',
+        plate: {
+          kicker: 'Alert',
+          title: 'Inside an alert',
+          caption: 'What an alert includes',
+          lines: [
+            { label: 'Category and level', detail: 'The kind of alert, and how serious' },
+            { label: 'When', detail: 'The time it happened' },
+            { label: 'Summary', detail: 'A short line the app wrote' },
+            { label: 'Conversation Starter', detail: 'Questions for the talk' },
+            { label: 'Mark as Discussed', detail: 'Saved after you talk it through' },
+          ],
+        },
         buttons: [
           {
             name: 'Category and level',
