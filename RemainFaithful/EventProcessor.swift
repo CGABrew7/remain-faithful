@@ -38,7 +38,7 @@ final class EventProcessor {
     private let logger = Logger(subsystem: "com.remainfaithful.app", category: "EventProcessor")
     private lazy var sharedDefaults: UserDefaults? = UserDefaults(suiteName: appGroupID)
 
-    private init() {
+    private convenience init() {
         self.init(
             appGroupID: "group.com.remainfaithful.app",
             eventSender: APIClient.shared,

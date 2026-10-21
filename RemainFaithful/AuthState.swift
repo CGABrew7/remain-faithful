@@ -137,6 +137,7 @@ final class AuthState: ObservableObject {
         DispatchQueue.main.async { self.currentUser = updated }
     }
 
+    @MainActor
     func refreshFromAPI() async {
         guard isAuthenticated else { return }
         guard let user = try? await APIClient.shared.me() else { return }
@@ -147,12 +148,9 @@ final class AuthState: ObservableObject {
         UserDefaults.standard.set(user.name,  forKey: "userName")
         UserDefaults.standard.set(user.email, forKey: "userEmail")
         sharedDefaults?.set(user.id, forKey: "authUserID")
-        let verified = user.emailVerified == true
-        DispatchQueue.main.async {
-            self.currentUser = updated
-            if verified {
-                self.clearMailboxFlags(userID: user.id)
-            }
+        currentUser = updated
+        if user.emailVerified == true {
+            clearMailboxFlags(userID: user.id)
         }
     }
 

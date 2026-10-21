@@ -243,7 +243,7 @@ struct SettingsView: View {
 
     private var screenTimeStatusLabel: String {
         switch fcManager.authorizationStatus {
-        case .approved:
+        case .approved, .approvedWithDataAccess:
             let count = selection.selection.applicationTokens.count
                 + selection.selection.categoryTokens.count
             if count == 0 { return "No apps selected" }
@@ -258,7 +258,7 @@ struct SettingsView: View {
 
     private var screenTimeStatusColor: Color {
         switch fcManager.authorizationStatus {
-        case .approved:      return Color(red: 0.20, green: 0.78, blue: 0.45)
+        case .approved, .approvedWithDataAccess:      return Color(red: 0.20, green: 0.78, blue: 0.45)
         case .denied:        return Color(red: 0.90, green: 0.30, blue: 0.30)
         case .notDetermined: return Color.rfGold.opacity(0.75)
         @unknown default:    return Color.white.opacity(0.40)

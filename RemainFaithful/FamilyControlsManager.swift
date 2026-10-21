@@ -28,7 +28,7 @@ final class FamilyControlsManager: ObservableObject {
     func noteRevocationIfNeeded() {
         let approvedKey = "lastKnownFamilyControlsApproved"
         let pendingKey = "familyControlsRevocationUnsent"
-        let nowApproved = authorizationStatus == .approved
+        let nowApproved = authorizationStatus.isMonitoringAllowed
         let wasApproved = UserDefaults.standard.bool(forKey: approvedKey)
         let pending = UserDefaults.standard.bool(forKey: pendingKey)
         let plan = ScreenTimeRevocation.plan(
@@ -55,6 +55,20 @@ final class FamilyControlsManager: ObservableObject {
         }
         await MainActor.run {
             authorizationStatus = AuthorizationCenter.shared.authorizationStatus
+        }
+    }
+}
+
+extension AuthorizationStatus {
+    /// Screen Time is on, so Alerts and Blocking can run.
+    var isMonitoringAllowed: Bool {
+        switch self {
+        case .approved, .approvedWithDataAccess:
+            return true
+        case .denied, .notDetermined:
+            return false
+        @unknown default:
+            return false
         }
     }
 }

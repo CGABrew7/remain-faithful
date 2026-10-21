@@ -108,7 +108,7 @@ struct RemainFaithfulApp: App {
                 }
             }
             .onChange(of: fcManager.authorizationStatus) { oldStatus, newStatus in
-                guard oldStatus == .approved, newStatus != .approved else { return }
+                guard oldStatus.isMonitoringAllowed, !newStatus.isMonitoringAllowed else { return }
                 ActivitySelectionManager.shared.clearShielding()
                 FamilyControlsManager.shared.noteRevocationIfNeeded()
             }
@@ -128,7 +128,7 @@ struct RemainFaithfulApp: App {
         guard APIClient.shared.isAuthenticated else { return }
         let mgr = ActivitySelectionManager.shared
         let count = mgr.selection.applicationTokens.count + mgr.selection.categoryTokens.count
-        let granted = FamilyControlsManager.shared.authorizationStatus == .approved
+        let granted = FamilyControlsManager.shared.authorizationStatus.isMonitoringAllowed
         let userID = AuthState.shared.currentUser?.id ?? 0
         await APIClient.shared.sendPhoneSignals(
             screenTimeGranted: granted,
