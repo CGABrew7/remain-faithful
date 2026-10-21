@@ -19,7 +19,7 @@ struct ScreenTimeMonitoringView: View {
                 VStack(spacing: 24) {
                     authorizationCard
 
-                    if fcManager.authorizationStatus == .approved {
+                    if fcManager.authorizationStatus.isMonitoringAllowed {
                         selectionCard
                         blockingCard
                         if selManager.isMonitoringEnabled || selManager.isShieldingEnabled {
@@ -67,7 +67,7 @@ struct ScreenTimeMonitoringView: View {
                 }
                 Spacer()
 
-                if fcManager.authorizationStatus == .approved {
+                if fcManager.authorizationStatus.isMonitoringAllowed {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(Color(red: 0.20, green: 0.78, blue: 0.45))
                         .font(.system(size: 20))
@@ -76,7 +76,7 @@ struct ScreenTimeMonitoringView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
 
-            if fcManager.authorizationStatus != .approved {
+            if !fcManager.authorizationStatus.isMonitoringAllowed {
                 STDivider()
 
                 Button {
@@ -227,7 +227,7 @@ struct ScreenTimeMonitoringView: View {
 
     private var authTint: Color {
         switch fcManager.authorizationStatus {
-        case .approved:      return Color(red: 0.20, green: 0.78, blue: 0.45)
+        case .approved, .approvedWithDataAccess: return Color(red: 0.20, green: 0.78, blue: 0.45)
         case .denied:        return Color(red: 0.90, green: 0.30, blue: 0.30)
         case .notDetermined: return Color.rfGold
         @unknown default:    return Color.white
@@ -236,7 +236,7 @@ struct ScreenTimeMonitoringView: View {
 
     private var authStatusLabel: String {
         switch fcManager.authorizationStatus {
-        case .approved:      return "Allowed — choose apps next"
+        case .approved, .approvedWithDataAccess: return "Allowed — choose apps next"
         case .denied:        return "Denied"
         case .notDetermined: return "Not yet enabled"
         @unknown default:    return "Unknown"

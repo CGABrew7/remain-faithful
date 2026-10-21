@@ -92,7 +92,7 @@ struct OnboardingView: View {
 
     private var stepDots: some View {
         HStack(spacing: 7) {
-            ForEach(1..<totalSteps) { i in
+            ForEach(Array(1..<totalSteps), id: \.self) { i in
                 Capsule()
                     .fill(i == step ? Color.rfGold : Color.white.opacity(0.25))
                     .frame(width: i == step ? 20 : 7, height: 7)
@@ -664,7 +664,7 @@ private struct MonitoringSetupStep: View {
                 }
                 .padding(.bottom, 20)
 
-                if fcManager.authorizationStatus != .approved {
+                if !fcManager.authorizationStatus.isMonitoringAllowed {
                     RFButton(
                         title: didRequestScreenTime ? "Waiting for permission…" : "Allow Screen Time",
                         isLoading: didRequestScreenTime
@@ -674,7 +674,7 @@ private struct MonitoringSetupStep: View {
                             await fcManager.requestAuthorization()
                             await MainActor.run {
                                 didRequestScreenTime = false
-                                if fcManager.authorizationStatus == .approved {
+                                if fcManager.authorizationStatus.isMonitoringAllowed {
                                     onContinue()
                                 }
                             }
@@ -697,7 +697,7 @@ private struct MonitoringSetupStep: View {
                                     await fcManager.requestAuthorization()
                                     await MainActor.run {
                                         didRequestScreenTime = false
-                                        if fcManager.authorizationStatus == .approved {
+                                        if fcManager.authorizationStatus.isMonitoringAllowed {
                                             onContinue()
                                         }
                                     }
@@ -824,7 +824,7 @@ private struct SetupStatusStep: View {
     private var lines: [SetupLine] {
         let count = selection.selection.applicationTokens.count + selection.selection.categoryTokens.count
         return SetupStatusCopy.lines(
-            screenTime: fcManager.authorizationStatus == .approved,
+            screenTime: fcManager.authorizationStatus.isMonitoringAllowed,
             alerts: selection.isMonitoringEnabled && count > 0,
             blocking: selection.isShieldingEnabled,
             deepScan: false,
@@ -915,7 +915,7 @@ private struct AppPickerStep: View {
                     .foregroundStyle(Color.white.opacity(0.85))
                     .frame(maxWidth: .infinity, alignment: .center)
 
-                if fcManager.authorizationStatus == .approved {
+                if fcManager.authorizationStatus.isMonitoringAllowed {
                     RFButton(title: "Choose apps") { showingPicker = true }
                     RFButton(
                         title: selectedCount == 0 ? "Save selected apps" : "Turn on Alerts",

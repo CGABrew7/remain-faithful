@@ -540,7 +540,7 @@ struct DashboardView: View {
         let signedOut = UserDefaults(suiteName: "group.com.remainfaithful.app")?
             .bool(forKey: "extensionAuthFailed") ?? false
         return MonitoringPresentation.make(
-            authorizationApproved: familyControls.authorizationStatus == .approved,
+            authorizationApproved: familyControls.authorizationStatus.isMonitoringAllowed,
             selectedCount: selected,
             alertsOn: selection.isMonitoringEnabled,
             blockingOn: selection.isShieldingEnabled,
@@ -629,7 +629,7 @@ struct DashboardView: View {
 
     private func sendSupportSignal() async {
         let count = selection.selection.applicationTokens.count + selection.selection.categoryTokens.count
-        let granted = familyControls.authorizationStatus == .approved
+        let granted = familyControls.authorizationStatus.isMonitoringAllowed
         let userID = AuthState.shared.currentUser?.id ?? 0
         await APIClient.shared.sendPhoneSignals(
             screenTimeGranted: granted,
