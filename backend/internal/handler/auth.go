@@ -540,6 +540,8 @@ func (h *H) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 // ResendVerification emails a fresh confirmation link to the signed-in user.
+// A person can request a few of these per hour. An Apple sign-in that never
+// shared an address is asked to add one instead.
 // POST /auth/resend-verification
 func (h *H) ResendVerification(w http.ResponseWriter, r *http.Request) {
 	userID, ok := rfauth.UserIDFromContext(r.Context())
@@ -547,16 +549,43 @@ func (h *H) ResendVerification(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
-	var name, email string
+	var name, email, appleID string
 	var verified bool
+	var sentCount int
+	var windowStart sql.NullTime
 	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT name, email, email_verified FROM users WHERE id = $1`, userID,
-	).Scan(&name, &email, &verified); err != nil {
+		`SELECT name, email, email_verified, COALESCE(apple_id, ''), verify_mail_count, verify_mail_window
+		 FROM users WHERE id = $1`, userID,
+	).Scan(&name, &email, &verified, &appleID, &sentCount, &windowStart); err != nil {
 		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 	if verified {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "already_verified"})
+		return
+	}
+	if placeholderAppleEmail(appleID, email) {
+		writeCodedError(w, http.StatusConflict, "email_required",
+			"Add an email address in your account and confirm it. This sign-in does not have an email to confirm yet.")
+		return
+	}
+	now := time.Now()
+	if !windowStart.Valid || now.Sub(windowStart.Time) >= time.Hour {
+		sentCount = 0
+		windowStart.Time = now
+		windowStart.Valid = true
+	}
+	if sentCount >= verifyMailPerHour {
+		w.Header().Set("Retry-After", "3600")
+		writeCodedError(w, http.StatusTooManyRequests, "rate_limited",
+			"Too many confirmation emails. Try again in an hour.")
+		return
+	}
+	if _, err := h.DB.ExecContext(r.Context(),
+		`UPDATE users SET verify_mail_count = $1, verify_mail_window = $2 WHERE id = $3`,
+		sentCount+1, windowStart.Time, userID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not send confirmation email")
 		return
 	}
 	h.sendEmailVerification(r.Context(), userID, email, name)

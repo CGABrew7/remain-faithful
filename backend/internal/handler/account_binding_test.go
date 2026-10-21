@@ -141,34 +141,16 @@ func TestUnverifiedEmailCannotAcceptInvites(t *testing.T) {
 	db.mu.Unlock()
 	h := &H{DB: db.open(t)}
 
-	t.Run("partner list hidden", func(t *testing.T) {
+	t.Run("partner list asks to confirm email", func(t *testing.T) {
 		rr := httptest.NewRecorder()
 		h.ListPendingPartnerInvites(rr, authed(http.MethodGet, "/relationships/invites/pending", "", 2))
-		if rr.Code != http.StatusOK {
-			t.Fatalf("status %d body %s", rr.Code, rr.Body.String())
-		}
-		var rows []any
-		if err := json.Unmarshal(rr.Body.Bytes(), &rows); err != nil {
-			t.Fatal(err)
-		}
-		if len(rows) != 0 {
-			t.Fatalf("pending partner invites = %s", rr.Body.String())
-		}
+		assertCodedError(t, rr, http.StatusForbidden, "email_not_verified")
 	})
 
-	t.Run("group list hidden", func(t *testing.T) {
+	t.Run("group list asks to confirm email", func(t *testing.T) {
 		rr := httptest.NewRecorder()
 		h.ListPendingGroupInvites(rr, authed(http.MethodGet, "/groups/invites/pending", "", 2))
-		if rr.Code != http.StatusOK {
-			t.Fatalf("status %d body %s", rr.Code, rr.Body.String())
-		}
-		var rows []any
-		if err := json.Unmarshal(rr.Body.Bytes(), &rows); err != nil {
-			t.Fatal(err)
-		}
-		if len(rows) != 0 {
-			t.Fatalf("pending group invites = %s", rr.Body.String())
-		}
+		assertCodedError(t, rr, http.StatusForbidden, "email_not_verified")
 	})
 
 	t.Run("partner accept by id", func(t *testing.T) {
@@ -176,9 +158,7 @@ func TestUnverifiedEmailCannotAcceptInvites(t *testing.T) {
 		req = mux.SetURLVars(req, map[string]string{"id": "7"})
 		rr := httptest.NewRecorder()
 		h.AcceptPartnerInviteByID(rr, req)
-		if rr.Code < 400 {
-			t.Fatalf("unverified accept status %d body %s", rr.Code, rr.Body.String())
-		}
+		assertCodedError(t, rr, http.StatusForbidden, "email_not_verified")
 		if len(db.relRows()) != 0 {
 			t.Fatalf("relationship created: %+v", db.relRows())
 		}
@@ -188,9 +168,7 @@ func TestUnverifiedEmailCannotAcceptInvites(t *testing.T) {
 		req := authed(http.MethodPost, "/relationships/accept-invite", `{"token":"raw-token-2"}`, 2)
 		rr := httptest.NewRecorder()
 		h.AcceptPartnerInvite(rr, req)
-		if rr.Code < 400 {
-			t.Fatalf("unverified token accept status %d body %s", rr.Code, rr.Body.String())
-		}
+		assertCodedError(t, rr, http.StatusForbidden, "email_not_verified")
 	})
 
 	t.Run("group accept by id", func(t *testing.T) {
@@ -198,9 +176,7 @@ func TestUnverifiedEmailCannotAcceptInvites(t *testing.T) {
 		req = mux.SetURLVars(req, map[string]string{"id": "8"})
 		rr := httptest.NewRecorder()
 		h.AcceptGroupInviteByID(rr, req)
-		if rr.Code < 400 {
-			t.Fatalf("unverified group accept status %d body %s", rr.Code, rr.Body.String())
-		}
+		assertCodedError(t, rr, http.StatusForbidden, "email_not_verified")
 		if len(db.memberRows()) != 0 {
 			t.Fatalf("group member created: %+v", db.memberRows())
 		}
@@ -210,9 +186,7 @@ func TestUnverifiedEmailCannotAcceptInvites(t *testing.T) {
 		req := authed(http.MethodPost, "/groups/accept-invite", `{"token":"group-token"}`, 2)
 		rr := httptest.NewRecorder()
 		h.AcceptGroupInvite(rr, req)
-		if rr.Code < 400 {
-			t.Fatalf("unverified group token accept status %d body %s", rr.Code, rr.Body.String())
-		}
+		assertCodedError(t, rr, http.StatusForbidden, "email_not_verified")
 	})
 }
 
@@ -224,6 +198,18 @@ func TestVerifiedEmailCanAcceptPartnerInvite(t *testing.T) {
 	db.pInvites = append(db.pInvites, memPInvite{id: 7, inviterID: 1, email: "bea@example.com", token: "raw-token", status: "pending"})
 	db.mu.Unlock()
 	h := &H{DB: db.open(t)}
+	listed := httptest.NewRecorder()
+	h.ListPendingPartnerInvites(listed, authed(http.MethodGet, "/relationships/invites/pending", "", 2))
+	if listed.Code != http.StatusOK {
+		t.Fatalf("list status %d body %s", listed.Code, listed.Body.String())
+	}
+	var rows []map[string]any
+	if err := json.Unmarshal(listed.Body.Bytes(), &rows); err != nil {
+		t.Fatalf("list body %s: %v", listed.Body.String(), err)
+	}
+	if len(rows) != 1 {
+		t.Fatalf("verified list = %s", listed.Body.String())
+	}
 	req := authed(http.MethodPost, "/relationships/invites/7/accept", "", 2)
 	req = mux.SetURLVars(req, map[string]string{"id": "7"})
 	rr := httptest.NewRecorder()

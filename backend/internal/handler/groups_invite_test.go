@@ -134,13 +134,17 @@ type recordingEmail struct {
 	mu          sync.Mutex
 	groupInvite []string // acceptURL per call
 	groupTo     []string
+	verify      int
 }
 
 func (e *recordingEmail) SendPasswordReset(string, string, string) error           { return nil }
 func (e *recordingEmail) SendPartnerInvite(string, string, string) error           { return nil }
 func (e *recordingEmail) SendContact(string, string, string, string, string) error { return nil }
-func (e *recordingEmail) SendVerifyEmail(string, string, string) error             { return nil }
-func (e *recordingEmail) SendEmailChange(string, string, string) error             { return nil }
+func (e *recordingEmail) SendVerifyEmail(string, string, string) error {
+	e.verify++
+	return nil
+}
+func (e *recordingEmail) SendEmailChange(string, string, string) error { return nil }
 func (e *recordingEmail) SendGroupInvite(to, _, _, acceptURL string) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()

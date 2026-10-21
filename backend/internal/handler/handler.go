@@ -50,3 +50,9 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 func writeError(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
+
+// writeCodedError sends a JSON error the app can branch on.
+// Both fields are strings so existing clients that read error still work.
+func writeCodedError(w http.ResponseWriter, status int, code, msg string) {
+	writeJSON(w, status, map[string]string{"error": msg, "code": code})
+}

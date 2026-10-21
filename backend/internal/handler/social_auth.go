@@ -145,10 +145,19 @@ func (h *H) findOrCreateSocialUser(r *http.Request, idCol, idVal, email, name st
 	}
 	email = strings.ToLower(strings.TrimSpace(email))
 
+	var storedVerified bool
 	err = h.DB.QueryRowContext(ctx,
-		fmt.Sprintf(`SELECT id, name, email FROM users WHERE %s = $1`, idCol), idVal,
-	).Scan(&userID, &userName, &userEmail)
+		fmt.Sprintf(`SELECT id, name, email, email_verified FROM users WHERE %s = $1`, idCol), idVal,
+	).Scan(&userID, &userName, &userEmail, &storedVerified)
 	if err == nil {
+		// A later sign-in can confirm an address the provider has verified.
+		// Hide My Email relay addresses count. A stand-in address does not,
+		// unless this sign-in now includes a confirmed address.
+		if emailVerified {
+			if updated, ok := h.confirmProviderEmail(ctx, userID, idCol, idVal, userEmail, email, storedVerified); ok {
+				userEmail = updated
+			}
+		}
 		return
 	}
 	if err != nil && !errors.Is(err, sql.ErrNoRows) && !isNoRows(err) {
@@ -220,7 +229,9 @@ func (h *H) findOrCreateSocialUser(r *http.Request, idCol, idVal, email, name st
 
 	placeholderEmail := email == ""
 	if placeholderEmail {
-		email = fmt.Sprintf("%s@privaterelay.appleid.com", idVal)
+		// Apple did not share an address. This stand-in is not a mailbox,
+		// including not a Hide My Email relay address, so it stays unconfirmed.
+		email = placeholderAppleAddress(idVal)
 		name = firstNonEmpty(name, "Apple User")
 	}
 	if name == "" {
@@ -237,6 +248,68 @@ func (h *H) findOrCreateSocialUser(r *http.Request, idCol, idVal, email, name st
 		h.redeemPendingInvites(ctx, userID, email)
 	}
 	return
+}
+
+func placeholderAppleAddress(appleSub string) string {
+	return strings.TrimSpace(appleSub) + "@privaterelay.appleid.com"
+}
+
+// placeholderAppleEmail reports a stand-in address created when Apple did not
+// share an email. A real Hide My Email relay address is a different value.
+func placeholderAppleEmail(appleSub, email string) bool {
+	appleSub = strings.TrimSpace(appleSub)
+	if appleSub == "" {
+		return false
+	}
+	return strings.EqualFold(strings.TrimSpace(email), placeholderAppleAddress(appleSub))
+}
+
+// confirmProviderEmail records that the provider has confirmed this sign-in
+// address. A stand-in Apple address is replaced only when the provider sends
+// a confirmed address that no other account is using.
+func (h *H) confirmProviderEmail(ctx context.Context, userID int64, idCol, idVal, storedEmail, incomingEmail string, storedVerified bool) (string, bool) {
+	incoming := strings.ToLower(strings.TrimSpace(incomingEmail))
+	if incoming == "" {
+		return storedEmail, false
+	}
+	if strings.EqualFold(storedEmail, incoming) {
+		if storedVerified {
+			return storedEmail, false
+		}
+		res, err := h.DB.ExecContext(ctx, `
+			UPDATE users SET email_verified = TRUE
+			WHERE id = $1 AND email = $2 AND email_verified = FALSE
+		`, userID, storedEmail)
+		if err != nil {
+			return storedEmail, false
+		}
+		if n, _ := res.RowsAffected(); n == 0 {
+			return storedEmail, false
+		}
+		h.redeemPendingInvites(ctx, userID, strings.ToLower(storedEmail))
+		return storedEmail, true
+	}
+	if idCol != "apple_id" || storedVerified || !placeholderAppleEmail(idVal, storedEmail) {
+		return storedEmail, false
+	}
+	var other int64
+	err := h.DB.QueryRowContext(ctx, `SELECT id FROM users WHERE email = $1`, incoming).Scan(&other)
+	if err == nil || (err != nil && !isNoRows(err)) {
+		return storedEmail, false
+	}
+	res, err := h.DB.ExecContext(ctx, `
+		UPDATE users
+		SET email = $1, email_verified = TRUE
+		WHERE id = $2 AND email = $3 AND email_verified = FALSE
+	`, incoming, userID, storedEmail)
+	if err != nil {
+		return storedEmail, false
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return storedEmail, false
+	}
+	h.redeemPendingInvites(ctx, userID, incoming)
+	return incoming, true
 }
 
 func isNoRows(err error) bool {
