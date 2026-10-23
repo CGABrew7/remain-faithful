@@ -39,7 +39,7 @@ export const softwareApplicationSchema = {
   },
   featureList: [
     'Alerts: one partner alert that day after a chosen app or category is used for a minute',
-    'Blocking: Screen Time shield when a chosen app opens, with no alert from the open itself',
+    'Blocking: opening an app you asked to block sends your partner an alert that you opened an app you asked to block, and Apple\'s Screen Time shield appears. The app name is never sent.',
     'Optional on-device Deep Scan',
     'One-to-one or group accountability',
     'Covenant-based partner system',
