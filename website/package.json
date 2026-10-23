@@ -10,7 +10,7 @@
     "test": "node --experimental-strip-types --test scripts/checkout-urls.test.ts scripts/donate-links.test.ts scripts/alert-copy.test.ts scripts/visitor-hash.test.ts scripts/client-address.test.ts"
   },
   "dependencies": {
-    "next": "15.5.27",
+    "next": "15.5.28",
     "react": "^18",
     "react-dom": "^18",
     "sharp": "^0.35.5",
@@ -22,7 +22,7 @@
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^15.5.27",
+    "eslint-config-next": "^15.5.28",
     "postcss": "^8",
     "tailwindcss": "^3",
     "typescript": "^5"
