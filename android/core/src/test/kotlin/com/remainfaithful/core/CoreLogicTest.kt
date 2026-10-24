@@ -79,6 +79,8 @@ class CoreLogicTest {
         assertTrue(DevicePolicy.validId("phone-1"))
         assertFalse(DevicePolicy.validId(""))
         assertFalse(DevicePolicy.validId("com.example.browser"))
+        assertFalse(DevicePolicy.validId("com.android.chrome"))
+        assertFalse(DevicePolicy.validId("chrome.exe"))
         assertFalse(DevicePolicy.validId("a".repeat(65)))
         val report = DevicePolicy.reportBody("phone-1", false)
         assertEquals("android", report.getValue("device_kind"))
