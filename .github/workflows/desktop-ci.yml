@@ -106,10 +106,14 @@ jobs:
           cache-dependency-path: desktop/go.sum
 
       - name: Install Wails
-        run: CGO_ENABLED=1 go install -ldflags="-linkmode=external" github.com/wailsapp/wails/v2/cmd/wails@v2.10.2
+        env:
+          GOTOOLCHAIN: go1.26.10
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2
 
       - name: Build app
-        run: CGO_ENABLED=1 wails build -clean -ldflags "-linkmode=external"
+        env:
+          GOTOOLCHAIN: go1.26.10
+        run: CGO_ENABLED=1 wails build -clean
 
       - name: Stamp bundle and helper
         run: bash macos/stamp.sh
