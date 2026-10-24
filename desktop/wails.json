@@ -1,0 +1,24 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Remain Faithful",
+  "outputfilename": "RemainFaithful",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dir": "frontend",
+  "frontend:dev:watcher": "",
+  "frontend:dev:serverUrl": "",
+  "wailsjsdir": "frontend",
+  "version": "2",
+  "author": {
+    "name": "Remain Faithful",
+    "email": "support@remainfaithful.com"
+  },
+  "info": {
+    "companyName": "Remain Faithful",
+    "productName": "Remain Faithful",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright 2026 Remain Faithful",
+    "comments": "Accountability between trusted friends"
+  },
+  "nsisType": "multiple"
+}

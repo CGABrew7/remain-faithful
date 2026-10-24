@@ -1,0 +1,126 @@
+name: Desktop CI
+
+on:
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: core-tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: desktop/go.mod
+          cache-dependency-path: desktop/go.sum
+
+      - name: Test
+        run: |
+          go test ./core/ ./monitor/
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go test -c -o "$RUNNER_TEMP/monitor-windows.test.exe" ./monitor/
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go test -c -o "$RUNNER_TEMP/monitor-darwin.test" ./monitor/
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o "$RUNNER_TEMP/RemainFaithful.exe" .
+
+  windows:
+    name: windows-installer
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: desktop/go.mod
+          cache-dependency-path: desktop/go.sum
+
+      - name: Test
+        run: go test ./core/ ./monitor/
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Build installer
+        shell: pwsh
+        working-directory: desktop
+        run: |
+          $env:Path = "C:\Program Files (x86)\NSIS;C:\Program Files (x86)\NSIS\Bin;C:\ProgramData\chocolatey\bin;" + $env:Path
+          if (-not (Get-Command makensis -ErrorAction SilentlyContinue)) {
+            throw "makensis was not installed"
+          }
+          $env:CGO_ENABLED = "0"
+          wails build -nsis -platform windows/amd64 -clean
+          $installer = Get-ChildItem -Path build/bin -Filter *installer.exe
+          if (-not $installer) { throw "NSIS installer was not produced" }
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: remain-faithful-windows
+          path: |
+            desktop/build/bin/*.exe
+          if-no-files-found: error
+
+  macos:
+    name: macos-app
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: desktop/go.mod
+          cache-dependency-path: desktop/go.sum
+
+      - name: Install Wails
+        env:
+          GOTOOLCHAIN: go1.26.10
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2
+
+      - name: Build app
+        env:
+          GOTOOLCHAIN: go1.26.10
+        run: CGO_ENABLED=1 wails build -clean
+
+      - name: Stamp bundle and helper
+        run: bash macos/stamp.sh
+
+      - name: Upload Mac build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: remain-faithful-mac
+          path: desktop/build/bin/RemainFaithful-mac.zip
+          if-no-files-found: error

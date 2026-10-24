@@ -36,6 +36,7 @@ func (h *H) StartHeartbeatSweep(ctx context.Context, silenceMinutes int) {
 			return
 		case <-ticker.C:
 			h.sweepHeartbeatSilence(ctx, silenceMinutes)
+			h.sweepDeviceHeartbeatSilence(ctx, silenceMinutes)
 		}
 	}
 }

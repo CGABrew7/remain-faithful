@@ -25,6 +25,8 @@ type memDB struct {
 	members   []memMember
 	groups    map[int64]bool
 	resets    []memReset
+	devices   []memDevice
+	removals  []memRemoval
 	nextAlert int64
 	nextRel   int64
 	sqlLog    []string
@@ -263,6 +265,9 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.sqlLog = append(m.sqlLog, q)
+	if cols, rows, ok := m.applyDevice(q, args); ok {
+		return cols, rows
+	}
 
 	switch {
 	case containsAll(q, "INSERT INTO device_tokens"):

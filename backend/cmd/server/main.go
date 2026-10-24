@@ -337,6 +337,10 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/alerts/mark-seen", h.MarkAlertsSeen).Methods(http.MethodPost)
 	api.HandleFunc("/alerts/{id}/discussed", h.MarkAlertDiscussed).Methods(http.MethodPatch)
 	api.Handle("/heartbeat", authenticatedRateLimiter(60)(http.HandlerFunc(h.Heartbeat))).Methods(http.MethodPost)
+	api.HandleFunc("/users/me/devices", h.ListDevices).Methods(http.MethodGet)
+	api.Handle("/users/me/devices", authenticatedRateLimiter(30)(http.HandlerFunc(h.ReportDevice))).Methods(http.MethodPost)
+	api.Handle("/users/me/devices/reclaim", authenticatedRateLimiter(10)(http.HandlerFunc(h.ReclaimDevice))).Methods(http.MethodPost)
+	api.Handle("/users/me/devices/{deviceID}", authenticatedRateLimiter(10)(http.HandlerFunc(h.RemoveDevice))).Methods(http.MethodDelete)
 	api.Handle("/users/me/signals", authenticatedRateLimiter(30)(http.HandlerFunc(h.RecordPhoneSignals))).Methods(http.MethodPost)
 	api.HandleFunc("/users/device-token", h.RegisterDeviceToken).Methods(http.MethodPost)
 	api.Handle("/panic", authenticatedRateLimiter(20)(http.HandlerFunc(h.SendPanicAlert))).Methods(http.MethodPost)
@@ -673,5 +677,8 @@ func migrate(db *sql.DB) error {
 	);
 	CREATE INDEX IF NOT EXISTS idx_admin_audit_created_at ON admin_audit (created_at);
 	`)
-	return err
+	if err != nil {
+		return err
+	}
+	return handler.MigrateDeviceHeartbeats(db)
 }
