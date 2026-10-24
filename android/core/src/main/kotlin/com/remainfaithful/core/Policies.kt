@@ -241,6 +241,11 @@ object Payloads {
         require(pin.length == 4 && pin.all { it.isDigit() })
         return mapOf("pin" to pin)
     }
+
+    fun googleIdToken(idToken: String): Map<String, String> {
+        require(idToken.isNotBlank())
+        return mapOf("id_token" to idToken)
+    }
 }
 
 object JwtClock {
@@ -298,11 +303,12 @@ object MonitoringStatus {
         alertsOn: Boolean,
         blockingOn: Boolean,
         deepScanOn: Boolean,
+        deepScanAvailable: Boolean = true,
     ): MonitoringPresentation {
-        val deep = if (deepScanOn) {
-            "Deep Scan is on. Protected video such as Netflix is not visible."
-        } else {
-            "Deep Scan is off. It is optional and separate from Alerts and Blocking."
+        val deep = when {
+            !deepScanAvailable -> ""
+            deepScanOn -> "Deep Scan is on. Protected video such as Netflix is not visible."
+            else -> "Deep Scan is off. It is optional and separate from Alerts and Blocking."
         }
         if (!usageGranted) {
             return MonitoringPresentation(
@@ -369,9 +375,14 @@ object TourContent {
         return completedVersion < version
     }
 
-    fun steps(inGroup: Boolean): List<TourStep> {
+    fun steps(inGroup: Boolean, deepScan: Boolean = true): List<TourStep> {
+        val monitoringBody = if (deepScan) {
+            "This shows whether Alerts and Blocking are on. Deep Scan is the smaller line. It is optional."
+        } else {
+            "This shows whether Alerts and Blocking are on."
+        }
         val steps = mutableListOf(
-            TourStep(0, "Monitoring status", "This shows whether Alerts and Blocking are on. Deep Scan is the smaller line. It is optional."),
+            TourStep(0, "Monitoring status", monitoringBody),
             TourStep(0, "Your clean streak", "Days in a row without a flag. The circles are this week."),
             TourStep(0, "Recent flags", "Your latest alerts. Tap one to see what happened and a few questions to talk through with your partner."),
             TourStep(0, "When it gets hard", "One tap sends an urgent notice to your partners and your group."),

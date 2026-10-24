@@ -8,6 +8,11 @@ object Copy {
     const val begin = "Begin Your Journey"
     const val alreadyAccount = "Already have an account?"
     const val signIn = "Sign In"
+    const val google = "Sign in with Google"
+    const val googleContinue = "Continue with Google"
+    const val googleUnavailable = "Google Sign In is not available"
+    const val googleFailed = "Google Sign In failed. Try again."
+    const val googleNone = "No Google account is available on this phone."
     const val createTitle = "Create your\naccount"
     const val createSubtitle = "Your journey begins here"
     const val ageGate = "I am 18 or older, and I am setting this up for myself."
@@ -52,6 +57,8 @@ object Copy {
     const val pinTitle = "Partner PIN Required"
     const val pinBody = "Your partner set this PIN. They are the one who knows it."
     const val lockoutTitle = "Keep apps blocked unless Deep Scan is running"
+    const val lockoutTitleNoScan = "Keep chosen apps covered by the shield"
+    const val shieldLockoutPin = "Ask your partner for the Partner PIN."
     const val pinActive = "Active. Your partner controls gated actions."
     const val pinMissing = "Not set. Ask your partner to enable it in Manage Partners."
     const val overlayTitle = "Allow the shield"
@@ -75,9 +82,13 @@ object Copy {
     const val privacyUrl = "https://remainfaithful.com/privacy"
     const val supportEmail = "support@remainfaithful.com"
 
-    val howSteps = listOf(
+    fun howSteps(includeDeepScan: Boolean = true): List<Pair<String, String>> = listOf(
         "Choose Your Partners" to "Invite a trusted friend or join a small group of men who will walk with you. Accountability works because you choose people who care.",
-        "Turn on Alerts and Blocking" to "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking covers those apps with a shield you asked for. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone.",
+        "Turn on Alerts and Blocking" to if (includeDeepScan) {
+            "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking covers those apps with a shield you asked for. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."
+        } else {
+            "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking covers those apps with a shield you asked for. Only an alert and a heartbeat leave this phone."
+        },
         "Stay Accountable" to "Review your activity together and spur one another toward freedom. Iron sharpens iron, and so one man sharpens another.",
     )
 
@@ -87,21 +98,27 @@ object Copy {
     fun allStrings(): List<String> {
         val base = listOf(
             appName, welcomeSubtitle, scripture, scriptureRef, begin, alreadyAccount, signIn,
+            google, googleContinue, googleUnavailable, googleFailed, googleNone,
             createTitle, createSubtitle, ageGate, legalLead, terms, privacy, getStarted, creating,
             inviteTitle, inviteSkip, groupCap, sharePartner, usageTitle, usageBody, alertsRow,
             blockingRow, deepScanTitle, deepScanSubtitle, deepScanSummary, deepScanStep,
             deepScanLimits, setUpLater, youAreSet, deepScanHomeNote, goHome, welcomeBack,
             signInSubtitle, forgot, newHere, createAccount, networkError, pauseNotice, panic,
             noAlerts, partnerEmpty, appUsed, appUsedDetail, skipTour, signOutBody,
-            howItWorksPrivacy, deleteBody, pinTitle, pinBody, lockoutTitle, pinActive, pinMissing,
+            howItWorksPrivacy, deleteBody, pinTitle, pinBody, lockoutTitle, lockoutTitleNoScan,
+            shieldLockoutPin, pinActive, pinMissing,
             overlayTitle, overlayBody, notifyTitle, notifyBody, ideas, contact, rate, how, replay,
             morning, afternoon, evening, glad, verseLabel, shieldLockout, shieldOpen, needHelp,
         )
         val verses = Verses.all.flatMap { listOf(it.text, it.ref) }
         val starters = Conversation.starters.values.flatten()
-        val tour = TourContent.steps(true).flatMap { listOf(it.title, it.body) } +
-            TourContent.steps(false).flatMap { listOf(it.title, it.body) }
-        val howLines = howSteps.flatMap { listOf(it.first, it.second) }
+        val tour = listOf(true, false).flatMap { deep ->
+            listOf(true, false).flatMap { inGroup ->
+                TourContent.steps(inGroup, deep).flatMap { listOf(it.title, it.body) }
+            }
+        }
+        val howLines = howSteps(true).flatMap { listOf(it.first, it.second) } +
+            howSteps(false).flatMap { listOf(it.first, it.second) }
         return base + verses + starters + tour + howLines
     }
 }

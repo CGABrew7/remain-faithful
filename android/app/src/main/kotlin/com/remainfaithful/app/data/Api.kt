@@ -95,6 +95,13 @@ class ApiClient(
         return session
     }
 
+    fun googleSignIn(idToken: String): AuthSession {
+        val body = post("/auth/google", com.remainfaithful.core.Payloads.googleIdToken(idToken), auth = false)
+        val session = AuthSession(body.getString("token"), body.getJSONObject("user").toUser())
+        onToken(session.token)
+        return session
+    }
+
     fun forgotPassword(email: String) {
         post("/auth/forgot-password", mapOf("email" to email), auth = false)
     }

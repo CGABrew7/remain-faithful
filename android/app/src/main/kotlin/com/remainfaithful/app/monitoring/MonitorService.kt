@@ -116,7 +116,7 @@ class MonitorService : Service() {
         }
         repo.markAlerted(decision.alertedPackages)
         if (decision.showShield && SettingsCompat.canDraw(this)) {
-            ShieldWindow.show(this, repo.lockoutOn)
+            ShieldWindow.show(this, repo.lockoutOn, com.remainfaithful.app.BuildConfig.DEEP_SCAN_ENABLED)
         } else {
             ShieldWindow.hide(this)
             if (decision.showShield) {

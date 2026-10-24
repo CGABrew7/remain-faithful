@@ -15,7 +15,7 @@ import com.remainfaithful.core.Copy
 object ShieldWindow {
     private var view: LinearLayout? = null
 
-    fun show(context: Context, lockout: Boolean) {
+    fun show(context: Context, lockout: Boolean, deepScanEnabled: Boolean) {
         if (view != null) return
         if (!SettingsCompat.canDraw(context)) return
         val app = context.applicationContext
@@ -33,7 +33,11 @@ object ShieldWindow {
             gravity = Gravity.CENTER
         })
         layout.addView(TextView(app).apply {
-            text = if (lockout) Copy.shieldLockout else Copy.shieldOpen
+            text = when {
+                lockout && deepScanEnabled -> Copy.shieldLockout
+                lockout -> Copy.shieldLockoutPin
+                else -> Copy.shieldOpen
+            }
             setTextColor(0xFFFFFFFF.toInt())
             textSize = 16f
             gravity = Gravity.CENTER
@@ -50,16 +54,18 @@ object ShieldWindow {
             }
         })
         if (lockout) {
-            layout.addView(Button(app).apply {
-                text = "Start Deep Scan"
-                setOnClickListener {
-                    hide(app)
-                    app.startActivity(Intent(app, MainActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        putExtra(MainActivity.EXTRA_OPEN, MainActivity.OPEN_DEEP_SCAN)
-                    })
-                }
-            })
+            if (deepScanEnabled) {
+                layout.addView(Button(app).apply {
+                    text = "Start Deep Scan"
+                    setOnClickListener {
+                        hide(app)
+                        app.startActivity(Intent(app, MainActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            putExtra(MainActivity.EXTRA_OPEN, MainActivity.OPEN_DEEP_SCAN)
+                        })
+                    }
+                })
+            }
             layout.addView(Button(app).apply {
                 text = "Enter Partner PIN"
                 setOnClickListener {

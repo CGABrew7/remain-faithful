@@ -1,9 +1,25 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
 }
+
+val localProps = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun setting(name: String): String =
+    System.getenv(name)?.takeIf { it.isNotBlank() }
+        ?: (findProperty(name) as String?)?.takeIf { it.isNotBlank() }
+        ?: localProps.getProperty(name).orEmpty()
+
+val deepScanEnabled = setting("DEEP_SCAN_ENABLED").equals("true", ignoreCase = true)
+val googleWebClientId = setting("GOOGLE_WEB_CLIENT_ID").replace("\\", "\\\\").replace("\"", "")
+val keystorePath = setting("ANDROID_KEYSTORE_PATH")
 
 android {
     namespace = "com.remainfaithful.app"
@@ -16,6 +32,19 @@ android {
         versionCode = 1
         versionName = "1.0.2"
         buildConfigField("String", "API_BASE_URL", "\"https://remain-faithful-api.fly.dev\"")
+        buildConfigField("Boolean", "DEEP_SCAN_ENABLED", deepScanEnabled.toString())
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+    }
+
+    signingConfigs {
+        if (keystorePath.isNotBlank()) {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = setting("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = setting("ANDROID_KEY_ALIAS")
+                keyPassword = setting("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -25,6 +54,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (keystorePath.isNotBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
@@ -49,6 +81,14 @@ android {
     }
 }
 
+androidComponents {
+    onVariants { variant ->
+        if (deepScanEnabled) {
+            variant.sources.manifests.addStaticManifestFile("src/deepScan/AndroidManifest.xml")
+        }
+    }
+}
+
 dependencies {
     implementation(project(":core"))
 
@@ -68,6 +108,9 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-messaging")
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

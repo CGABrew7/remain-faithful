@@ -28,6 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,6 +56,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.remainfaithful.app.BuildConfig
 import com.remainfaithful.app.theme.RfButton
 import com.remainfaithful.app.theme.RfColors
 import com.remainfaithful.app.theme.RfMetrics
@@ -98,17 +101,27 @@ fun RootScreen(model: AppModel) {
 private fun Onboarding(model: AppModel) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(RfMetrics.gutter)) {
         if (model.step in 1..6) {
-            Text("${model.step} of 6", color = RfColors.gold, fontSize = 13.sp)
+            val total = if (BuildConfig.DEEP_SCAN_ENABLED) 6 else 5
+            val shown = if (!BuildConfig.DEEP_SCAN_ENABLED && model.step >= 5) model.step - 1 else model.step
+            Text("$shown of $total", color = RfColors.gold, fontSize = 13.sp)
             Spacer(Modifier.height(12.dp))
         }
         when (model.step) {
             0 -> Welcome(model)
             1 -> CreateAccount(model)
             2 -> InviteStep(model)
-            3 -> DisclosureStep(model, Copy.usageTitle, Copy.usageBody, Copy.alertsRow, Copy.blockingRow, "Allow usage access") {
+            3 -> DisclosureStep(
+                model,
+                Copy.usageTitle,
+                Copy.usageBody,
+                Copy.alertsRow,
+                Copy.blockingRow,
+                "Allow usage access",
+                nextStep = if (BuildConfig.DEEP_SCAN_ENABLED) 4 else 5,
+            ) {
                 model.askSystem("usage")
             }
-            4 -> DeepScanStep(model)
+            4 -> if (BuildConfig.DEEP_SCAN_ENABLED) DeepScanStep(model) else ChooseStep(model)
             5 -> ChooseStep(model)
             else -> DoneStep(model)
         }
@@ -156,6 +169,10 @@ private fun CreateAccount(model: AppModel) {
         }.padding(top = 8.dp, bottom = 8.dp))
     }
     RfButton(if (model.busy) Copy.creating else Copy.getStarted, onClick = { model.register() }, enabled = !model.busy)
+    OrDivider()
+    GoogleButton(Copy.googleContinue, enabled = model.adult && !model.busy) {
+        model.continueWithGoogle(context, fromCreate = true)
+    }
 }
 
 @Composable
@@ -181,6 +198,7 @@ private fun DisclosureStep(
     row1: String,
     row2: String,
     action: String,
+    nextStep: Int,
     onAllow: () -> Unit,
 ) {
     Text(title, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp)
@@ -190,7 +208,7 @@ private fun DisclosureStep(
     Text("Blocking", color = RfColors.gold, fontWeight = FontWeight.Bold)
     Text(row2, color = RfColors.textSecondary, modifier = Modifier.padding(bottom = 16.dp))
     RfButton(action, onClick = onAllow)
-    RfButton(Copy.inviteSkip, onClick = { model.step = 4 }, secondary = true)
+    RfButton(Copy.inviteSkip, onClick = { model.step = nextStep }, secondary = true)
 }
 
 @Composable
@@ -234,7 +252,9 @@ private fun ChooseStep(model: AppModel) {
 @Composable
 private fun DoneStep(model: AppModel) {
     Text(Copy.youAreSet, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 34.sp)
-    Text(Copy.deepScanHomeNote, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 16.dp))
+    if (BuildConfig.DEEP_SCAN_ENABLED) {
+        Text(Copy.deepScanHomeNote, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 16.dp))
+    }
     RfButton(Copy.goHome, onClick = { model.finishOnboarding() })
 }
 
@@ -248,6 +268,11 @@ private fun LoginScreen(model: AppModel) {
         Field("Password", model.formPassword, KeyboardType.Password, password = true) { model.formPassword = it }
         Text(Copy.forgot, color = RfColors.gold, modifier = Modifier.clickable { model.sheet = Sheet.Forgot }.padding(vertical = 8.dp))
         RfButton(Copy.signIn, onClick = { model.login() }, enabled = !model.busy)
+        OrDivider()
+        val context = LocalContext.current
+        GoogleButton(Copy.google, enabled = !model.busy) {
+            model.continueWithGoogle(context, fromCreate = false)
+        }
         TextButtonRow(Copy.newHere, Copy.createAccount) {
             model.phase = Phase.Onboarding
             model.step = 1
@@ -295,7 +320,9 @@ private fun HomeScreen(model: AppModel) {
             Column(Modifier.rfCard()) {
                 Text(model.status.title, color = RfColors.textPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text(model.status.detail, color = RfColors.textSecondary, modifier = Modifier.padding(top = 6.dp))
-                Text(model.status.deepScanLine, color = RfColors.gold, fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp))
+                if (model.status.deepScanLine.isNotBlank()) {
+                    Text(model.status.deepScanLine, color = RfColors.gold, fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp))
+                }
                 model.status.actionTitle?.let { title ->
                     Spacer(Modifier.height(10.dp))
                     RfButton(title, onClick = { model.openMonitoring() })
@@ -436,7 +463,10 @@ private fun SettingsScreen(model: AppModel) {
         item {
             Row(Modifier.rfCard(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(Copy.lockoutTitle, color = RfColors.textPrimary)
+                    Text(
+                        if (BuildConfig.DEEP_SCAN_ENABLED) Copy.lockoutTitle else Copy.lockoutTitleNoScan,
+                        color = RfColors.textPrimary,
+                    )
                 }
                 Switch(
                     checked = model.lockoutOn,
@@ -585,7 +615,7 @@ private fun ActivitySheet(model: AppModel) {
 private fun HowSheet(onClose: () -> Unit) {
     Text(Copy.how, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp)
     Text("Three steps to freedom", color = RfColors.gold, modifier = Modifier.padding(bottom = 8.dp))
-    Copy.howSteps.forEach { (title, body) ->
+    Copy.howSteps(BuildConfig.DEEP_SCAN_ENABLED).forEach { (title, body) ->
         Text(title, color = RfColors.gold, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
         Text(body, color = RfColors.textPrimary)
     }
@@ -674,7 +704,9 @@ private fun MonitoringSheet(model: AppModel) {
             Text(app.label, color = RfColors.textPrimary)
         }
     }
-    RfButton("Deep Scan", onClick = { model.sheet = Sheet.DeepScan }, secondary = true)
+    if (BuildConfig.DEEP_SCAN_ENABLED) {
+        RfButton("Deep Scan", onClick = { model.sheet = Sheet.DeepScan }, secondary = true)
+    }
     RfButton("Done", onClick = { model.sheet = null })
 }
 
@@ -766,6 +798,34 @@ private fun Field(
         colors = rfFieldColors(),
         shape = RoundedCornerShape(RfMetrics.control),
     )
+}
+
+@Composable
+private fun OrDivider() {
+    Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.weight(1f).height(1.dp).background(RfColors.hairline))
+        Text("or", color = RfColors.textTertiary, modifier = Modifier.padding(horizontal = 12.dp), fontSize = 13.sp)
+        Box(Modifier.weight(1f).height(1.dp).background(RfColors.hairline))
+    }
+}
+
+@Composable
+private fun GoogleButton(title: String, enabled: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth().heightIn(min = RfMetrics.minTap),
+        shape = RoundedCornerShape(RfMetrics.control),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = RfColors.textPrimary,
+            contentColor = RfColors.navy,
+            disabledContainerColor = RfColors.textPrimary.copy(alpha = 0.45f),
+            disabledContentColor = RfColors.navy.copy(alpha = 0.6f),
+        ),
+    ) {
+        Text("G", color = RfColors.info, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 10.dp))
+        Text(title, color = RfColors.navy, fontWeight = FontWeight.SemiBold)
+    }
 }
 
 @Composable

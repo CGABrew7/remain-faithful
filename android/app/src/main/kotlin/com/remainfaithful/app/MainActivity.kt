@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
     private val capture = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data
-        if (result.resultCode == RESULT_OK && data != null) {
+        if (BuildConfig.DEEP_SCAN_ENABLED && result.resultCode == RESULT_OK && data != null) {
             DeepScanService.start(this, result.resultCode, data)
             if (::model.isInitialized) model.deepScanOn = true
         }
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                         "notifications" -> if (Build.VERSION.SDK_INT >= 33) {
                             notifications.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                         }
-                        "capture" -> {
+                        "capture" -> if (BuildConfig.DEEP_SCAN_ENABLED) {
                             val manager = getSystemService(android.media.projection.MediaProjectionManager::class.java)
                             capture.launch(manager.createScreenCaptureIntent())
                         }
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
         }
         when (intent?.getStringExtra(EXTRA_OPEN)) {
             OPEN_PANIC -> model.sheet = Sheet.Panic
-            OPEN_DEEP_SCAN -> model.askSystem("capture")
+            OPEN_DEEP_SCAN -> if (BuildConfig.DEEP_SCAN_ENABLED) model.askSystem("capture")
             OPEN_PIN -> {
                 model.pendingAfterPin = { }
                 model.sheet = Sheet.Pin

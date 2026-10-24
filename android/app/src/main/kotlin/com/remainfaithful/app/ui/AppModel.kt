@@ -9,6 +9,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.remainfaithful.app.BuildConfig
+import com.remainfaithful.app.auth.GoogleSignIn
+import com.remainfaithful.app.auth.GoogleSignInException
 import com.remainfaithful.app.data.ApiException
 import com.remainfaithful.app.data.GroupInvite
 import com.remainfaithful.app.data.GroupMember
@@ -104,8 +107,15 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var formEmail by mutableStateOf("")
     var formPassword by mutableStateOf("")
 
-    val status get() = MonitoringStatus.make(usageGranted, chosen.size, alertsOn, blockingOn, deepScanOn)
-    val tourSteps get() = TourContent.steps(group != null || groups.isNotEmpty())
+    val status get() = MonitoringStatus.make(
+        usageGranted,
+        chosen.size,
+        alertsOn,
+        blockingOn,
+        deepScanOn,
+        deepScanAvailable = BuildConfig.DEEP_SCAN_ENABLED,
+    )
+    val tourSteps get() = TourContent.steps(group != null || groups.isNotEmpty(), BuildConfig.DEEP_SCAN_ENABLED)
     val inGroup get() = (group?.members?.size ?: 0) > 0 || groups.isNotEmpty()
 
     init {
@@ -224,16 +234,56 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun login() {
         launchIo {
             val session = repo.api().login(formEmail.trim(), formPassword)
-            repo.saveSession(session)
+            applySession(session, enterApp = true)
+        }
+    }
+
+    fun continueWithGoogle(activity: android.content.Context, fromCreate: Boolean) {
+        if (fromCreate && !adult) {
+            banner = Copy.ageGate
+            return
+        }
+        if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
+            banner = Copy.googleUnavailable
+            return
+        }
+        viewModelScope.launch {
+            busy = true
+            banner = null
+            try {
+                val idToken = GoogleSignIn.requestIdToken(activity, BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                if (idToken != null) {
+                    val session = withContext(Dispatchers.IO) { repo.api().googleSignIn(idToken) }
+                    applySession(session, enterApp = !fromCreate)
+                    if (fromCreate) step = 2
+                }
+            } catch (e: GoogleSignInException) {
+                banner = when (e.message) {
+                    "none" -> Copy.googleNone
+                    "unconfigured" -> Copy.googleUnavailable
+                    else -> Copy.googleFailed
+                }
+            } catch (e: Exception) {
+                banner = message(e)
+                if (e is ApiException && e.status == 401) signOutLocal()
+            } finally {
+                busy = false
+            }
+        }
+    }
+
+    private fun applySession(session: com.remainfaithful.app.data.AuthSession, enterApp: Boolean) {
+        repo.saveSession(session)
+        name = session.user.name
+        email = session.user.email
+        userId = session.user.id
+        verified = session.user.emailVerified != false
+        refreshPush()
+        if (enterApp) {
             repo.onboardingDone = true
-            name = session.user.name
-            email = session.user.email
-            userId = session.user.id
-            verified = session.user.emailVerified != false
             phase = Phase.App
             refresh()
             maybeTour(false)
-            refreshPush()
         }
     }
 

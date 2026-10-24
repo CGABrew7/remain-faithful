@@ -92,6 +92,11 @@ class CoreLogicTest {
     }
 
     @Test
+    fun googleSignInSendsOnlyTheIdToken() {
+        val body = Payloads.googleIdToken("header.payload.sig")
+        assertEquals(mapOf("id_token" to "header.payload.sig"), body)
+    }
+
     fun deviceTokenAndSignalsDoNotCarryAppNames() {
         val token = Payloads.deviceToken("fcm-token")
         assertEquals(setOf("token", "platform", "environment"), token.keys)
@@ -151,6 +156,9 @@ class CoreLogicTest {
         assertEquals(MonitoringKind.On, status.kind)
         assertTrue(status.detail.contains("Alerts on"))
         assertTrue(status.deepScanLine.contains("Deep Scan is off"))
+        val hidden = MonitoringStatus.make(true, 2, true, false, false, deepScanAvailable = false)
+        assertEquals("", hidden.deepScanLine)
+        assertFalse(TourContent.steps(false, deepScan = false).any { it.body.contains("Deep Scan") })
     }
 
     @Test
