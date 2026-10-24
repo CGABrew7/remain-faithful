@@ -1,0 +1,38 @@
+/* Remain Faithful color tokens. Every color in the desktop app lives here. */
+
+:root {
+  --navy: #12214C;
+  --navy-mid: #1C3066;
+  --navy-deep: #0A122E;
+  --sheet: #121C3D;
+  --gold: #D1AB4C;
+  --gold-light: #F2D685;
+  --gold-deep: #B88C2E;
+  --danger: #9E2429;
+  --danger-hot: #E64D4D;
+  --warn: #F28C73;
+  --ok: #33C773;
+  --text: #FFFFFF;
+  --text-70: rgba(255, 255, 255, 0.72);
+  --text-60: rgba(255, 255, 255, 0.60);
+  --text-50: rgba(255, 255, 255, 0.50);
+  --text-40: rgba(255, 255, 255, 0.38);
+  --fill-4: rgba(255, 255, 255, 0.04);
+  --fill-6: rgba(255, 255, 255, 0.06);
+  --fill-8: rgba(255, 255, 255, 0.08);
+  --fill-12: rgba(255, 255, 255, 0.12);
+  --line: rgba(255, 255, 255, 0.16);
+  --line-soft: rgba(255, 255, 255, 0.08);
+  --shadow: rgba(0, 0, 0, 0.22);
+  --shadow-wide: rgba(0, 0, 0, 0.16);
+  --gold-08: rgba(209, 171, 76, 0.08);
+  --gold-12: rgba(209, 171, 76, 0.12);
+  --gold-14: rgba(209, 171, 76, 0.14);
+  --gold-20: rgba(209, 171, 76, 0.20);
+  --gold-line: rgba(209, 171, 76, 0.55);
+  --danger-soft: rgba(158, 36, 41, 0.18);
+  --danger-line: rgba(230, 77, 77, 0.70);
+  --ok-soft: rgba(51, 199, 115, 0.18);
+  --scrim: rgba(6, 10, 24, 0.72);
+  --outline: rgba(255, 255, 255, 0.10);
+}
