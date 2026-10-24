@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"remain-faithful/backend/internal/apns"
 	rfauth "remain-faithful/backend/internal/auth"
@@ -32,8 +33,16 @@ func (h *H) RegisterDeviceToken(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "token is required")
 		return
 	}
-	if req.Platform == "" {
+	switch strings.ToLower(strings.TrimSpace(req.Platform)) {
+	case "", "ios":
 		req.Platform = "ios"
+	case "android":
+		req.Platform = "android"
+	default:
+		req.Platform = strings.TrimSpace(req.Platform)
+		if req.Platform == "" {
+			req.Platform = "ios"
+		}
 	}
 	if req.Environment != "sandbox" && req.Environment != "production" {
 		req.Environment = "sandbox"
@@ -61,7 +70,7 @@ func (h *H) RegisterDeviceToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("[push] registered token %.8s... user=%d env=%s", req.Token, userID, req.Environment)
+	log.Printf("[push] registered token %.8s... user=%d platform=%s env=%s", req.Token, userID, req.Platform, req.Environment)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
@@ -74,7 +83,7 @@ func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 
 	env := h.APNS.Environment()
 	rows, err := h.DB.QueryContext(r.Context(), `
-		SELECT token, environment FROM device_tokens
+		SELECT token, environment, platform FROM device_tokens
 		WHERE user_id = $1 AND is_active = TRUE
 	`, userID)
 	if err != nil {
@@ -86,11 +95,12 @@ func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 	type tokenRow struct {
 		token       string
 		environment string
+		platform    string
 	}
 	var tokens []tokenRow
 	for rows.Next() {
 		var t tokenRow
-		if rows.Scan(&t.token, &t.environment) == nil {
+		if rows.Scan(&t.token, &t.environment, &t.platform) == nil {
 			tokens = append(tokens, t)
 		}
 	}
@@ -105,6 +115,27 @@ func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 
 	for _, t := range tokens {
 		res := result{Token: t.token[:min(8, len(t.token))] + "...", Environment: t.environment}
+		if t.platform == "android" {
+			note := &apns.Notification{
+				DeviceToken: t.token,
+				PushType:    "alert",
+				Priority:    10,
+				Payload: map[string]any{
+					"aps": map[string]any{
+						"alert": map[string]string{
+							"title": "Push Test",
+							"body":  "Push notifications are working.",
+						},
+						"sound": "default",
+					},
+					"notification_type": "TEST",
+				},
+			}
+			h.deliverAndroid(r.Context(), userID, note, false)
+			res.Sent = h.FCM != nil
+			results = append(results, res)
+			continue
+		}
 		if t.environment != env {
 			res.Error = fmt.Sprintf("token env=%s but server env=%s — skipped", t.environment, env)
 			results = append(results, res)
@@ -334,6 +365,7 @@ func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string,
 		  AND  r.status     = 'accepted'
 		  AND  dt.is_active = TRUE
 		  AND  dt.environment = $2
+		  AND  dt.platform <> 'android'
 	`, userID, env)
 	if err != nil {
 		log.Printf("notifyPartners: query tokens: %v", err)
@@ -341,14 +373,19 @@ func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string,
 	}
 	defer rows.Close()
 
+	seen := map[int64]struct{}{}
 	for rows.Next() {
 		var ownerID int64
 		var token string
 		if err := rows.Scan(&ownerID, &token); err != nil {
 			continue
 		}
+		seen[ownerID] = struct{}{}
 
 		n.DeviceToken = token
+		if h.APNS == nil {
+			continue
+		}
 		if err := h.APNS.Send(ctx, n); err != nil {
 			var invalidErr *apns.ErrInvalidToken
 			if errors.As(err, &invalidErr) {
@@ -358,6 +395,29 @@ func (h *H) notifyPartners(ctx context.Context, userID int64, callerName string,
 			}
 			log.Printf("notifyPartners: send to %s: %v", token, err)
 		}
+	}
+	androidRows, androidErr := h.DB.QueryContext(ctx, `
+		SELECT DISTINCT r.partner_id
+		FROM   relationships r
+		JOIN   device_tokens dt ON dt.user_id = r.partner_id
+		WHERE  r.user_id = $1
+		  AND  r.status = 'accepted'
+		  AND  dt.is_active = TRUE
+		  AND  dt.platform = 'android'
+	`, userID)
+	if androidErr != nil {
+		log.Printf("notifyPartners: android partners: %v", androidErr)
+	} else {
+		defer androidRows.Close()
+		for androidRows.Next() {
+			var ownerID int64
+			if androidRows.Scan(&ownerID) == nil {
+				seen[ownerID] = struct{}{}
+			}
+		}
+	}
+	for ownerID := range seen {
+		h.deliverAndroid(ctx, ownerID, n, true)
 	}
 }
 
@@ -369,33 +429,37 @@ func (h *H) notifyPartnerByID(ctx context.Context, partnerID int64, callerName s
 	rows, err := h.DB.QueryContext(ctx, `
 		SELECT token FROM device_tokens
 		WHERE user_id = $1 AND is_active = TRUE AND environment = $2
+		  AND platform <> 'android'
 	`, partnerID, env)
 	if err != nil {
 		log.Printf("[push] notifyPartnerByID: query tokens for user=%d env=%s: %v", partnerID, env, err)
-		return
-	}
-	defer rows.Close()
-
-	sent := 0
-	for rows.Next() {
-		var token string
-		if err := rows.Scan(&token); err != nil {
-			continue
-		}
-		n.DeviceToken = token
-		if err := h.APNS.Send(ctx, n); err != nil {
-			var invalidErr *apns.ErrInvalidToken
-			if errors.As(err, &invalidErr) {
-				h.markTokenInactive(ctx, token)
-				h.notifyAppRemoved(ctx, partnerID)
+	} else {
+		defer rows.Close()
+		sent := 0
+		for rows.Next() {
+			var token string
+			if err := rows.Scan(&token); err != nil {
 				continue
 			}
-			log.Printf("[push] notifyPartnerByID: send to user=%d token=%.8s...: %v", partnerID, token, err)
-		} else {
-			sent++
+			n.DeviceToken = token
+			if h.APNS == nil {
+				continue
+			}
+			if err := h.APNS.Send(ctx, n); err != nil {
+				var invalidErr *apns.ErrInvalidToken
+				if errors.As(err, &invalidErr) {
+					h.markTokenInactive(ctx, token)
+					h.notifyAppRemoved(ctx, partnerID)
+					continue
+				}
+				log.Printf("[push] notifyPartnerByID: send to user=%d token=%.8s...: %v", partnerID, token, err)
+			} else {
+				sent++
+			}
 		}
+		log.Printf("[push] notifyPartnerByID: user=%d env=%s sent=%d", partnerID, env, sent)
 	}
-	log.Printf("[push] notifyPartnerByID: user=%d env=%s sent=%d", partnerID, env, sent)
+	h.deliverAndroid(ctx, partnerID, n, true)
 }
 
 // notifyAppRemoved tells the people who watch ownerID that a device token for

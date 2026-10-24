@@ -385,7 +385,7 @@ func (h *H) pushDonationAlert(ctx context.Context, userID int64, title, body, no
 		return
 	}
 	rows, err := h.DB.QueryContext(ctx,
-		`SELECT token FROM device_tokens WHERE user_id = $1 AND is_active = TRUE`, userID)
+		`SELECT token FROM device_tokens WHERE user_id = $1 AND is_active = TRUE AND platform <> 'android'`, userID)
 	if err != nil {
 		log.Printf("pushDonationAlert query user=%d: %v", userID, err)
 		return
@@ -422,6 +422,11 @@ func (h *H) pushDonationAlert(ctx context.Context, userID int64, title, body, no
 			log.Printf("pushDonationAlert send %d: %v", userID, err)
 		}
 	}
+	h.deliverAndroid(ctx, userID, &apns.Notification{
+		PushType: "alert",
+		Priority: 10,
+		Payload:  payload,
+	}, false)
 }
 
 func (h *H) lookupStripeCustomerID(ctx context.Context, userID int64) string {

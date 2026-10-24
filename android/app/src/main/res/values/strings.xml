@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Remain Faithful</string>
+    <string name="monitoring_channel">Monitoring</string>
+    <string name="alerts_channel">Alerts</string>
+    <string name="urgent_channel">Urgent</string>
+</resources>

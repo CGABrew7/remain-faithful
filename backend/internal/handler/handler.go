@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"remain-faithful/backend/internal/apns"
+	"remain-faithful/backend/internal/fcm"
 	"remain-faithful/backend/internal/payment"
 )
 
@@ -16,6 +17,14 @@ type APNSSender interface {
 	Send(ctx context.Context, n *apns.Notification) error
 	IsNoop() bool
 	Environment() string
+}
+
+// FCMSender delivers the same alert to Android tokens. *fcm.Client satisfies it.
+// Nil means this process has not wired FCM. A non-nil no-op client is used
+// when credentials are unset so iOS sends are unchanged.
+type FCMSender interface {
+	Send(ctx context.Context, msg *fcm.Message) error
+	IsNoop() bool
 }
 
 // EmailSender is the interface used by handlers to send transactional email.
@@ -32,6 +41,7 @@ type EmailSender interface {
 type H struct {
 	DB     *sql.DB
 	APNS   APNSSender
+	FCM    FCMSender
 	Email  EmailSender
 	Stripe *payment.Client
 	// SyncPush runs notification side effects on the request goroutine.

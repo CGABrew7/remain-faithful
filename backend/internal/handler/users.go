@@ -11,6 +11,7 @@ import (
 
 	"remain-faithful/backend/internal/apns"
 	rfauth "remain-faithful/backend/internal/auth"
+	"remain-faithful/backend/internal/fcm"
 )
 
 // GetMe returns the authenticated user's profile.
@@ -174,8 +175,12 @@ func (h *H) deleteUserByID(ctx context.Context, userID int64, userName string) e
 	}
 
 	var tokens []string
+	var androidTokens []string
 	if h.APNS != nil {
 		tokens = h.collectDepartureTokens(ctx, userID)
+	}
+	if h.FCM != nil {
+		androidTokens = h.collectAndroidDepartureTokens(ctx, userID)
 	}
 
 	if _, err := h.DB.ExecContext(ctx, `DELETE FROM alerts WHERE subject_user_id = $1`, userID); err != nil {
@@ -186,6 +191,9 @@ func (h *H) deleteUserByID(ctx context.Context, userID int64, userName string) e
 	}
 	if len(tokens) > 0 {
 		go h.sendDepartureNotifications(context.Background(), userName, tokens)
+	}
+	if len(androidTokens) > 0 {
+		go h.sendAndroidDeparture(context.Background(), userName, androidTokens)
 	}
 	return nil
 }
@@ -246,6 +254,7 @@ func (h *H) collectDepartureTokens(ctx context.Context, userID int64) []string {
 		FROM   device_tokens dt
 		WHERE  dt.is_active   = TRUE
 		  AND  dt.environment = $2
+		  AND  dt.platform <> 'android'
 		  AND  dt.user_id IN (
 		      SELECT CASE WHEN r.user_id = $1 THEN r.partner_id ELSE r.user_id END
 		      FROM   relationships r
@@ -308,6 +317,68 @@ func (h *H) sendDepartureNotifications(ctx context.Context, userName string, tok
 		}
 	}
 	log.Printf("[delete] departure notifications sent=%d/%d user=%s", sent, len(tokens), userName)
+}
+
+// collectAndroidDepartureTokens returns active FCM tokens for partners and
+// group co-members. APNs environment is not applied.
+func (h *H) collectAndroidDepartureTokens(ctx context.Context, userID int64) []string {
+	rows, err := h.DB.QueryContext(ctx, `
+		SELECT token FROM device_tokens
+		WHERE is_active = TRUE
+		  AND platform = 'android'
+		  AND user_id IN (
+		      SELECT CASE WHEN user_id = $1 THEN partner_id ELSE user_id END
+		      FROM relationships
+		      WHERE (user_id = $1 OR partner_id = $1) AND status = 'accepted'
+		      UNION
+		      SELECT gm2.user_id
+		      FROM group_members gm1
+		      JOIN group_members gm2
+		        ON gm2.group_id = gm1.group_id AND gm2.user_id != $1
+		      WHERE gm1.user_id = $1
+		  )
+	`, userID)
+	if err != nil {
+		log.Printf("[delete] collectAndroidDepartureTokens user=%d: %v", userID, err)
+		return nil
+	}
+	defer rows.Close()
+	var tokens []string
+	for rows.Next() {
+		var t string
+		if rows.Scan(&t) == nil && t != "" {
+			tokens = append(tokens, t)
+		}
+	}
+	return tokens
+}
+
+func (h *H) sendAndroidDeparture(ctx context.Context, userName string, tokens []string) {
+	if h.FCM == nil {
+		return
+	}
+	payload := map[string]any{
+		"aps": map[string]any{
+			"alert": map[string]string{
+				"title": "Partner Update",
+				"body":  userName + " has left Remain Faithful and is no longer being monitored.",
+			},
+			"sound": "default",
+		},
+		"notification_type": "PARTNER_LEFT",
+		"sender_name":       userName,
+	}
+	for _, token := range tokens {
+		msg := fcm.FromAPNS(token, "", payload)
+		if err := h.FCM.Send(ctx, msg); err != nil {
+			var invalid *fcm.ErrInvalidToken
+			if errors.As(err, &invalid) {
+				h.markTokenInactive(ctx, token)
+				continue
+			}
+			log.Printf("[delete] fcm to %.8s...: %v", token, err)
+		}
+	}
 }
 
 // GetUserStats returns the authenticated user's clean-streak statistics computed

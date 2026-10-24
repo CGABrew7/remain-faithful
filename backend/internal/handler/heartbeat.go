@@ -240,14 +240,6 @@ func (h *H) checkHeartbeats(ctx context.Context) {
 
 // notifyUserDirect sends a push to all active device tokens belonging to userID.
 func (h *H) notifyUserDirect(ctx context.Context, userID int64, collapseID, title, body string) {
-	rows, err := h.DB.QueryContext(ctx,
-		`SELECT token FROM device_tokens WHERE user_id = $1 AND is_active = TRUE`, userID)
-	if err != nil {
-		log.Printf("notifyUserDirect %d: %v", userID, err)
-		return
-	}
-	defer rows.Close()
-
 	payload := map[string]any{
 		"aps": map[string]any{
 			"alert": map[string]string{"title": title, "body": body},
@@ -255,26 +247,37 @@ func (h *H) notifyUserDirect(ctx context.Context, userID int64, collapseID, titl
 		},
 		"notification_type": "MONITORING_STOPPED",
 	}
+	note := &apns.Notification{
+		PushType:   "alert",
+		Priority:   10,
+		CollapseID: fmt.Sprintf("%s-%d", collapseID, userID),
+		Payload:    payload,
+	}
 
-	for rows.Next() {
-		var token string
-		if err := rows.Scan(&token); err != nil {
-			continue
-		}
-		n := &apns.Notification{
-			DeviceToken: token,
-			PushType:    "alert",
-			Priority:    10,
-			CollapseID:  fmt.Sprintf("%s-%d", collapseID, userID),
-			Payload:     payload,
-		}
-		if err := h.APNS.Send(ctx, n); err != nil {
-			var inv *apns.ErrInvalidToken
-			if errors.As(err, &inv) {
-				h.markTokenInactive(ctx, token)
+	rows, err := h.DB.QueryContext(ctx,
+		`SELECT token FROM device_tokens WHERE user_id = $1 AND is_active = TRUE AND platform <> 'android'`, userID)
+	if err != nil {
+		log.Printf("notifyUserDirect %d: %v", userID, err)
+	} else {
+		defer rows.Close()
+		for rows.Next() {
+			var token string
+			if err := rows.Scan(&token); err != nil {
 				continue
 			}
-			log.Printf("notifyUserDirect %d: %v", userID, err)
+			note.DeviceToken = token
+			if h.APNS == nil {
+				continue
+			}
+			if err := h.APNS.Send(ctx, note); err != nil {
+				var inv *apns.ErrInvalidToken
+				if errors.As(err, &inv) {
+					h.markTokenInactive(ctx, token)
+					continue
+				}
+				log.Printf("notifyUserDirect %d: %v", userID, err)
+			}
 		}
 	}
+	h.deliverAndroid(ctx, userID, note, false)
 }

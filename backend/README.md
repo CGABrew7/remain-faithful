@@ -51,6 +51,9 @@ go run ./cmd/server
 | `DB_PASSWORD`   | `postgres`                        | PostgreSQL password                             |
 | `DB_NAME`       | `remainfaithful`                  | PostgreSQL database                             |
 | `JWT_SECRET`    | `dev-secret-change-in-production` | HS256 signing secret — **always override in production** |
+| `FCM_PROJECT_ID` | *(unset)* | Firebase project id for Android push. Unset keeps FCM as a no-op. |
+| `FCM_CLIENT_EMAIL` | *(unset)* | Service account email. Not the APNs key. |
+| `FCM_PRIVATE_KEY` | *(unset)* | Service account PEM. Newlines may be written as `\n`. Never commit this value. |
 
 ## API Reference
 
