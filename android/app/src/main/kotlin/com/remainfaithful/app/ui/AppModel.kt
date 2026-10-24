@@ -23,7 +23,9 @@ import com.remainfaithful.app.data.RemoteRel
 import com.remainfaithful.app.data.Repository
 import com.remainfaithful.app.monitoring.MonitorService
 import com.remainfaithful.app.monitoring.UsageAccess
+import com.remainfaithful.app.data.RemoteDevice
 import com.remainfaithful.core.AuthRules
+import com.remainfaithful.core.DevicePolicy
 import com.remainfaithful.core.CategoryLabels
 import com.remainfaithful.core.Copy
 import com.remainfaithful.core.GroupPolicy
@@ -42,7 +44,15 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 
 enum class Phase { Loading, Onboarding, Login, App }
-enum class Sheet { Panic, Feedback, Pin, Activity, How, Delete, Partners, Monitoring, DeepScan, Alert, Profile, Forgot }
+enum class Sheet { Panic, Feedback, Pin, Activity, How, Delete, Partners, Monitoring, DeepScan, Alert, Profile, Forgot, RemoveDevice }
+
+data class DeviceRow(
+    val id: String,
+    val label: String,
+    val monitoring: Boolean,
+    val lastCheckIn: String,
+    val current: Boolean,
+)
 
 data class LocalApp(val packageName: String, val label: String)
 
@@ -97,6 +107,10 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var group by mutableStateOf<RemoteGroup?>(null)
     var groupInvites by mutableStateOf(listOf<GroupInvite>())
 
+    var devices by mutableStateOf(listOf<DeviceRow>())
+    var devicesUnavailable by mutableStateOf(false)
+    var pendingDevice by mutableStateOf<DeviceRow?>(null)
+
     var tourOn by mutableStateOf(false)
     var tourIndex by mutableIntStateOf(0)
     var tourForced by mutableStateOf(false)
@@ -144,6 +158,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         if (phase == Phase.App) {
             refresh()
             syncMonitoring()
+            adoptRemovedIfNeeded()
             maybeTour(false)
             refreshPush()
         }
@@ -160,9 +175,16 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         overlayGranted = com.remainfaithful.app.monitoring.SettingsCompat.canDraw(context)
         deepScanOn = repo.deepScanRunning
         if (phase == Phase.App) {
+            adoptRemovedIfNeeded()
             syncMonitoring()
             viewModelScope.launch {
-                runCatching { withContext(Dispatchers.IO) { repo.sendHeartbeat() } }
+                val error = runCatching { withContext(Dispatchers.IO) { repo.sendHeartbeat() } }.exceptionOrNull()
+                if (error is ApiException && DevicePolicy.removed(error.status, error.code)) {
+                    adoptRemoved()
+                    banner = Copy.deviceRemoved
+                } else {
+                    runCatching { withContext(Dispatchers.IO) { reloadDevices() } }
+                }
                 runCatching { withContext(Dispatchers.IO) { repo.sendSignals(usageGranted) } }
             }
         }
@@ -206,6 +228,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
                     group = null
                 }
                 withContext(Dispatchers.IO) { repo.sendSignals(usageGranted) }
+                runCatching { reloadDevices() }
             } catch (e: Exception) {
                 banner = message(e)
                 if (e is ApiException && e.status == 401) signOutLocal()
@@ -315,6 +338,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         gate {
             launchIo {
                 runCatching { repo.protection("signed_out", "Signed out. Monitoring on this phone has stopped.") }
+                runCatching { repo.reportMonitoring(false) }
                 signOutLocal()
             }
         }
@@ -352,10 +376,14 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun setAlerts(on: Boolean) {
+        val wasWatching = alertsOn || blockingOn
         if (!on && alertsOn) {
             alertsOn = false
             repo.alertsOn = false
-            launchIo { repo.protection("monitoring_disabled", "Alerts were turned off.") }
+            launchIo {
+                repo.protection("monitoring_disabled", "Alerts were turned off.")
+                repo.reportMonitoring(repo.alertsOn || repo.blockingOn)
+            }
         } else if (on) {
             if (!usageGranted) {
                 sheet = Sheet.Monitoring
@@ -363,15 +391,20 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             }
             alertsOn = true
             repo.alertsOn = true
+            publishDevice(turnedOn = !wasWatching)
         }
         syncMonitoring()
     }
 
     fun setBlocking(on: Boolean) {
+        val wasWatching = alertsOn || blockingOn
         if (!on && blockingOn) {
             blockingOn = false
             repo.blockingOn = false
-            launchIo { repo.protection("shielding_disabled", "Blocking was turned off.") }
+            launchIo {
+                repo.protection("shielding_disabled", "Blocking was turned off.")
+                repo.reportMonitoring(repo.alertsOn || repo.blockingOn)
+            }
         } else if (on) {
             if (!usageGranted) {
                 sheet = Sheet.Monitoring
@@ -380,6 +413,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             blockingOn = true
             repo.blockingOn = true
             if (!overlayGranted) askSystem("overlay")
+            publishDevice(turnedOn = !wasWatching)
         }
         syncMonitoring()
     }
@@ -399,16 +433,25 @@ class AppModel(app: Application) : AndroidViewModel(app) {
 
     fun saveChosen(next: Set<String>) {
         val cleared = chosen.isNotEmpty() && next.isEmpty()
+        val wasWatching = alertsOn || blockingOn
         chosen = next
         repo.chosenPackages = next
-        if (cleared) launchIo { repo.protection("selection_cleared", "All chosen apps were removed.") }
-        if (next.isEmpty() && (alertsOn || blockingOn)) {
+        val stopped = next.isEmpty() && wasWatching
+        if (stopped) {
             alertsOn = false
             blockingOn = false
             repo.alertsOn = false
             repo.blockingOn = false
-            launchIo { repo.protection("monitoring_disabled", "Alerts stopped because no apps are selected.") }
             syncMonitoring()
+        }
+        if (cleared || stopped) {
+            launchIo {
+                if (cleared) repo.protection("selection_cleared", "All chosen apps were removed.")
+                if (stopped) {
+                    repo.protection("monitoring_disabled", "Alerts stopped because no apps are selected.")
+                    repo.reportMonitoring(false)
+                }
+            }
         }
     }
 
@@ -459,7 +502,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun setPartnerPin(relationshipId: Long, pin: String) {
         launchIo {
             repo.api().setPin(relationshipId, pin)
-            repo.api().protection("pin_changed", "Protection PIN was changed by your accountability partner.")
+            repo.protection("pin_changed", "Protection PIN was changed by your accountability partner.")
             refresh()
         }
     }
@@ -467,7 +510,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun removePartnerPin(relationshipId: Long) {
         launchIo {
             repo.api().removePin(relationshipId)
-            repo.api().protection("pin_removed", "Protection PIN removed by accountability partner.")
+            repo.protection("pin_removed", "Protection PIN removed by accountability partner.")
             refresh()
         }
     }
@@ -658,6 +701,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
             try {
                 withContext(Dispatchers.IO) { block() }
             } catch (e: Exception) {
+                if (e is ApiException && DevicePolicy.removed(e.status, e.code)) adoptRemoved()
                 banner = message(e)
                 if (e is ApiException && e.status == 401) signOutLocal()
             } finally {
@@ -666,9 +710,95 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun message(e: Exception): String = when (e) {
-        is ApiException -> e.message ?: Copy.networkError
+    private fun message(e: Exception): String = when {
+        e is ApiException && DevicePolicy.removed(e.status, e.code) -> Copy.deviceRemoved
+        e is ApiException -> e.message ?: Copy.networkError
         else -> Copy.networkError
+    }
+
+    private fun publishDevice(turnedOn: Boolean) {
+        launchIo {
+            if (turnedOn) repo.reclaim()
+            val watching = repo.alertsOn || repo.blockingOn
+            repo.reportMonitoring(watching)
+            if (watching) repo.sendHeartbeat()
+            runCatching { reloadDevices() }
+        }
+    }
+
+    private fun adoptRemoved() {
+        alertsOn = false
+        blockingOn = false
+        deepScanOn = false
+        repo.alertsOn = false
+        repo.blockingOn = false
+        repo.deepScanRunning = false
+        repo.removedNotice = false
+        syncMonitoring()
+    }
+
+    private fun adoptRemovedIfNeeded() {
+        if (!repo.removedNotice) return
+        adoptRemoved()
+        banner = Copy.deviceRemoved
+    }
+
+    private suspend fun reloadDevices() {
+        val remote = try {
+            withContext(Dispatchers.IO) { repo.listDevices() }
+        } catch (e: ApiException) {
+            if (e.status == 404) devicesUnavailable = true
+            return
+        } catch (_: Exception) {
+            return
+        }
+        devices = deviceRows(remote)
+        devicesUnavailable = false
+    }
+
+    private fun deviceRows(remote: List<RemoteDevice>): List<DeviceRow> {
+        val mine = repo.deviceId
+        return remote.mapNotNull { item ->
+            if (!DevicePolicy.validId(item.id)) return@mapNotNull null
+            val label = DevicePolicy.label(item.kind) ?: return@mapNotNull null
+            DeviceRow(
+                id = item.id,
+                label = label,
+                monitoring = item.monitoring,
+                lastCheckIn = DevicePolicy.formatCheckIn(item.lastCheckIn).ifBlank { Copy.noCheckIn },
+                current = item.id == mine,
+            )
+        }
+    }
+
+    fun askRemoveDevice(row: DeviceRow) {
+        pendingDevice = row
+        gate { sheet = Sheet.RemoveDevice }
+    }
+
+    fun confirmRemoveDevice() {
+        val row = pendingDevice ?: return
+        val wasWatching = row.current && (alertsOn || blockingOn)
+        if (row.current) {
+            alertsOn = false
+            blockingOn = false
+            repo.alertsOn = false
+            repo.blockingOn = false
+            syncMonitoring()
+        }
+        launchIo {
+            try {
+                repo.removeDevice(row.id)
+            } catch (e: Exception) {
+                if (wasWatching) {
+                    runCatching { repo.protection("monitoring_disabled", "Alerts were turned off.") }
+                }
+                throw e
+            }
+            pendingDevice = null
+            sheet = null
+            reloadDevices()
+        }
     }
 
     fun greeting(): String {

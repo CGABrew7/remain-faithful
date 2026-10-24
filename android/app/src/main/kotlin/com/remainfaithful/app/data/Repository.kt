@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.remainfaithful.core.DevicePolicy
 import com.remainfaithful.core.HeartbeatPolicy
 import com.remainfaithful.core.Payloads
 import java.time.LocalDate
@@ -132,11 +133,59 @@ class Repository private constructor(context: Context) {
 
     fun api(): ApiClient = api
 
+    val deviceId: String
+        get() {
+            val existing = prefs.getString(KEY_DEVICE, null)
+            if (existing != null && DevicePolicy.validId(existing)) return existing
+            val created = DevicePolicy.newId()
+            prefs.edit().putString(KEY_DEVICE, created).apply()
+            return created
+        }
+
+    var removedNotice: Boolean
+        get() = prefs.getBoolean(KEY_REMOVED, false)
+        set(value) { prefs.edit().putBoolean(KEY_REMOVED, value).apply() }
+
     fun sendHeartbeat() {
         if (!isSignedIn) return
         val since = if (lastFrameAt == 0L) null else System.currentTimeMillis() - lastFrameAt
         val screen = HeartbeatPolicy.screen(alertsOn, blockingOn, deepScanRunning, since) ?: return
-        api.heartbeat(HeartbeatPolicy.body(screen).getValue("screen"))
+        try {
+            api.heartbeat(HeartbeatPolicy.body(screen, deviceId))
+        } catch (e: ApiException) {
+            if (DevicePolicy.removed(e.status, e.code)) parkRemoved()
+            throw e
+        }
+    }
+
+    fun reclaim() {
+        if (!isSignedIn) return
+        api.reclaimDevice(DevicePolicy.reclaimBody(deviceId))
+        removedNotice = false
+    }
+
+    fun reportMonitoring(on: Boolean) {
+        if (!isSignedIn) return
+        try {
+            api.reportDevice(DevicePolicy.reportBody(deviceId, on))
+        } catch (e: ApiException) {
+            if (DevicePolicy.removed(e.status, e.code)) parkRemoved()
+            throw e
+        }
+    }
+
+    fun listDevices(): List<RemoteDevice> = api.listDevices()
+
+    fun removeDevice(id: String) {
+        if (!DevicePolicy.validId(id)) return
+        api.removeDevice(id)
+    }
+
+    fun parkRemoved() {
+        alertsOn = false
+        blockingOn = false
+        deepScanRunning = false
+        removedNotice = true
     }
 
     fun sendSignals(usageGranted: Boolean) {
@@ -158,7 +207,7 @@ class Repository private constructor(context: Context) {
 
     fun protection(type: String, detail: String) {
         if (!isSignedIn) return
-        api.protection(type, detail)
+        api.protection(Payloads.protection(type, detail, deviceId))
     }
 
     companion object {
@@ -189,6 +238,8 @@ class Repository private constructor(context: Context) {
         private const val KEY_PACKAGES = "chosen_packages"
         private const val KEY_ALERT_DAY = "alert_day"
         private const val KEY_ALERTED = "alerted_packages"
+        private const val KEY_DEVICE = "device_id"
+        private const val KEY_REMOVED = "device_removed_notice"
     }
 }
 

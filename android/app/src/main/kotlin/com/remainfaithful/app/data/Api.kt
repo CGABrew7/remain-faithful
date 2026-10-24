@@ -73,6 +73,13 @@ data class RemoteGroup(
     val members: List<GroupMember>,
 )
 
+data class RemoteDevice(
+    val id: String,
+    val kind: String,
+    val monitoring: Boolean,
+    val lastCheckIn: String,
+)
+
 class ApiClient(
     private val baseUrl: String,
     private val tokenProvider: () -> String?,
@@ -162,8 +169,33 @@ class ApiClient(
 
     fun createEvent(fields: Map<String, String>): RemoteEvent = post("/events", fields).toEvent()
 
-    fun heartbeat(screen: String) {
-        post("/heartbeat", mapOf("screen" to screen))
+    fun heartbeat(fields: Map<String, String>) {
+        post("/heartbeat", fields)
+    }
+
+    fun reportDevice(fields: Map<String, Any>) {
+        postAny("/users/me/devices", fields)
+    }
+
+    fun reclaimDevice(fields: Map<String, String>) {
+        post("/users/me/devices/reclaim", fields)
+    }
+
+    fun listDevices(): List<RemoteDevice> {
+        val arr = get("/users/me/devices").optJSONArray("devices") ?: return emptyList()
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            RemoteDevice(
+                id = o.optString("device_id"),
+                kind = o.optString("device_kind"),
+                monitoring = o.optBoolean("monitoring"),
+                lastCheckIn = o.optString("last_check_in"),
+            )
+        }
+    }
+
+    fun removeDevice(deviceId: String) {
+        delete("/users/me/devices/$deviceId")
     }
 
     fun signals(body: Map<String, Any>) {
@@ -178,8 +210,8 @@ class ApiClient(
         post("/users/device-token", body)
     }
 
-    fun protection(type: String, detail: String) {
-        post("/protection/alerts", mapOf("type" to type, "detail" to detail))
+    fun protection(fields: Map<String, String>) {
+        post("/protection/alerts", fields)
     }
 
     fun pinSet(): Boolean = get("/protection/pin").optBoolean("is_set")

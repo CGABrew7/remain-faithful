@@ -41,7 +41,9 @@ Usage access and the shield each have an in-app disclosure before the system scr
 
 ## What leaves the phone
 
-An alert is category, severity, summary, and time. A heartbeat is `active`, `idle`, or `monitoring`. Package names, web addresses, and screen contents stay on the phone.
+An alert is category, severity, summary, and time. A heartbeat is `active`, `idle`, or `monitoring`, plus an opaque device id and the device type `android`. The id is created on the phone and stored in app preferences. It is not the push token, an advertising id, or a package name. Package names, web addresses, and screen contents stay on the phone.
+
+If this phone was removed from the account, the server answers `409` with code `device_removed`. The app stops Alerts and Blocking on this phone and shows: "This phone was removed from the account. Monitoring on this phone has stopped. Turn Alerts or Blocking on again to add it back." Turning monitoring on again calls reclaim, then heartbeats resume. Settings lists My devices for this account.
 
 ## Publishing
 
@@ -51,7 +53,7 @@ An alert is category, severity, summary, and time. A heartbeat is `active`, `idl
 4. Create an upload keystore and store it somewhere safe, not in git. Turn on Play App Signing. In GitHub Actions secrets, add `ANDROID_KEYSTORE_BASE64` (the keystore file, base64), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. Also add `GOOGLE_WEB_CLIENT_ID` when the Firebase Web client exists. The release job builds `app-release.aab` only after those four signing secrets are set, and uploads it as `remain-faithful-android-release`.
 5. Play listing: adults 18 and up, self-chosen accountability, privacy policy `https://remainfaithful.com/privacy`. Data safety answers for this v1 build:
    - Account info: name and email, from the form or from Google sign-in. Required for the account. Sent to the Remain Faithful server.
-   - Device or other IDs: the Firebase push token, so partner alerts can arrive.
+   - Device or other IDs: the Firebase push token, so partner alerts can arrive, and an opaque device id so this phone has its own heartbeat. That id is not an advertising id.
    - The app does not collect browsing history, photos, contacts, screen contents, or the names of other apps. Usage access stays on the phone and becomes an alert category, a fixed summary, and a heartbeat.
    - Data is not sold.
    - Do not declare screen capture. Deep Scan is not in this build.

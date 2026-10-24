@@ -52,6 +52,19 @@ object Copy {
     const val appUsedDetail = "Alerts and Blocking stay as you set them. Deep Scan is optional."
     const val skipTour = "Skip tour"
     const val signOutBody = "Signing out stops monitoring on this phone. Your partners will be told. Blocking on this phone is separate from the account and turns off until you sign back in."
+    const val deviceRemoved = "This phone was removed from the account. Monitoring on this phone has stopped. Turn Alerts or Blocking on again to add it back."
+    const val myDevices = "My devices"
+    const val myDevicesBody = "Each phone or computer on this account is listed on its own. Removing one tells your partners, the same as turning monitoring off."
+    const val thisPhone = "This phone"
+    const val devicesEmpty = "No devices are registered yet."
+    const val devicesUnavailable = "Device list is not available yet."
+    const val removeDevice = "Remove"
+    const val removeDeviceTitle = "Remove this device?"
+    const val removeDeviceBody = "Partners are told that activity monitoring was turned off on that device."
+    const val removeDeviceConfirm = "Remove device"
+    const val monitoringOnLabel = "Monitoring on"
+    const val monitoringOffLabel = "Monitoring off"
+    const val noCheckIn = "No check-in yet"
     const val howItWorksPrivacy = "Only an alert and a heartbeat leave this phone."
     const val deleteBody = "This will permanently delete your account, all your data, and notify your accountability partners that you've left. This cannot be undone."
     const val pinTitle = "Partner PIN Required"
@@ -106,6 +119,9 @@ object Copy {
             signInSubtitle, forgot, newHere, createAccount, networkError, pauseNotice, panic,
             noAlerts, partnerEmpty, appUsed, appUsedDetail, skipTour, signOutBody,
             howItWorksPrivacy, deleteBody, pinTitle, pinBody, lockoutTitle, lockoutTitleNoScan,
+            deviceRemoved, myDevices, myDevicesBody, thisPhone, devicesEmpty, devicesUnavailable,
+            removeDevice, removeDeviceTitle, removeDeviceBody, removeDeviceConfirm,
+            monitoringOnLabel, monitoringOffLabel, noCheckIn,
             shieldLockoutPin, pinActive, pinMissing,
             overlayTitle, overlayBody, notifyTitle, notifyBody, ideas, contact, rate, how, replay,
             morning, afternoon, evening, glad, verseLabel, shieldLockout, shieldOpen, needHelp,

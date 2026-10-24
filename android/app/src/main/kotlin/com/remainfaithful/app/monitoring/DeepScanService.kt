@@ -19,7 +19,9 @@ import android.os.Looper
 import androidx.core.app.NotificationCompat
 import com.remainfaithful.app.MainActivity
 import com.remainfaithful.app.R
+import com.remainfaithful.app.data.ApiException
 import com.remainfaithful.app.data.Repository
+import com.remainfaithful.core.DevicePolicy
 import com.remainfaithful.app.theme.RfColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +87,12 @@ class DeepScanService : Service() {
         )
         loop = scope.launch {
             while (isActive) {
-                runCatching { Repository.get(this@DeepScanService).sendHeartbeat() }
+                val error = runCatching { Repository.get(this@DeepScanService).sendHeartbeat() }.exceptionOrNull()
+                if (error is ApiException && DevicePolicy.removed(error.status, error.code)) {
+                    end(notify = false)
+                    stopSelf()
+                    break
+                }
                 delay(120_000)
             }
         }

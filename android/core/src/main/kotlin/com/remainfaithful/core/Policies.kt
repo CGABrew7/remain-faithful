@@ -145,9 +145,83 @@ object HeartbeatPolicy {
         return null
     }
 
-    fun body(screen: String): Map<String, String> {
+    fun body(screen: String, deviceId: String): Map<String, String> {
         require(screen == "active" || screen == "idle" || screen == "monitoring")
-        return mapOf("screen" to screen)
+        require(DevicePolicy.validId(deviceId))
+        return linkedMapOf(
+            "screen" to screen,
+            "device_id" to deviceId,
+            "device_kind" to DevicePolicy.KIND_ANDROID,
+        )
+    }
+}
+
+object DevicePolicy {
+    const val KIND_ANDROID = "android"
+    const val REMOVED = "device_removed"
+
+    fun validId(id: String): Boolean {
+        if (id.isEmpty() || id.length > 64) return false
+        return id.all { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' || it == '_' || it == '-' }
+    }
+
+    fun newId(): String {
+        val bytes = ByteArray(16)
+        try {
+            java.security.SecureRandom().nextBytes(bytes)
+        } catch (_: Exception) {
+            var tick = System.nanoTime()
+            for (i in bytes.indices) {
+                bytes[i] = (tick and 0xff).toByte()
+                tick = tick ushr 8
+            }
+        }
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    fun label(kind: String): String? = when (kind) {
+        "iphone" -> "iPhone"
+        "mac" -> "Mac"
+        "windows" -> "Windows PC"
+        KIND_ANDROID -> "Android phone"
+        else -> null
+    }
+
+    fun removed(status: Int, code: String?): Boolean = status == 409 && code == REMOVED
+
+    fun reclaimBody(deviceId: String): Map<String, String> {
+        require(validId(deviceId))
+        return linkedMapOf("device_id" to deviceId, "device_kind" to KIND_ANDROID)
+    }
+
+    fun reportBody(deviceId: String, monitoring: Boolean): Map<String, Any> {
+        require(validId(deviceId))
+        return linkedMapOf(
+            "device_id" to deviceId,
+            "device_kind" to KIND_ANDROID,
+            "monitoring" to monitoring,
+        )
+    }
+
+    fun formatCheckIn(raw: String, now: java.time.ZonedDateTime = java.time.ZonedDateTime.now()): String {
+        val trimmed = raw.trim()
+        if (trimmed.isEmpty()) return "No check-in yet"
+        val parsed = runCatching { java.time.OffsetDateTime.parse(trimmed) }.getOrNull()
+            ?: return "No check-in yet"
+        val local = parsed.atZoneSameInstant(now.zone)
+        val time = clockLabel(local)
+        if (local.toLocalDate() == now.toLocalDate()) return "Today $time"
+        val day = java.time.format.DateTimeFormatter.ofPattern("MMM d", java.util.Locale.US)
+        return local.format(day) + ", " + time
+    }
+
+    private fun clockLabel(local: java.time.ZonedDateTime): String {
+        val suffix = if (local.hour < 12) "AM" else "PM"
+        val hour12 = when (val hour = local.hour % 12) {
+            0 -> 12
+            else -> hour
+        }
+        return "%d:%02d %s".format(hour12, local.minute, suffix)
     }
 }
 
@@ -231,10 +305,15 @@ object Payloads {
         "support_taps" to supportTaps,
     )
 
-    fun protection(type: String, detail: String): Map<String, String> {
+    fun protection(type: String, detail: String, deviceId: String? = null): Map<String, String> {
         require(type in protectionTypes)
         require(!EventPolicy.leaks(detail))
-        return mapOf("type" to type, "detail" to detail)
+        val body = linkedMapOf("type" to type, "detail" to detail)
+        if (!deviceId.isNullOrBlank() && DevicePolicy.validId(deviceId)) {
+            body["device_id"] = deviceId
+            body["device_kind"] = DevicePolicy.KIND_ANDROID
+        }
+        return body
     }
 
     fun pin(pin: String): Map<String, String> {

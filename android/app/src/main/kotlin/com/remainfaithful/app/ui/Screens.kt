@@ -479,6 +479,35 @@ private fun SettingsScreen(model: AppModel) {
             Text("Partner PIN", color = RfColors.textPrimary, fontWeight = FontWeight.SemiBold)
             Text(if (model.pinSet) Copy.pinActive else Copy.pinMissing, color = RfColors.textSecondary)
         }
+        item { SectionLabel("MY DEVICES") }
+        item {
+            Text(Copy.myDevicesBody, color = RfColors.textSecondary)
+        }
+        if (model.devicesUnavailable) {
+            item { Text(Copy.devicesUnavailable, color = RfColors.textSecondary, modifier = Modifier.rfCard()) }
+        } else if (model.devices.isEmpty()) {
+            item { Text(Copy.devicesEmpty, color = RfColors.textSecondary, modifier = Modifier.rfCard()) }
+        } else {
+            items(model.devices, key = { it.id }) { row ->
+                Column(Modifier.rfCard()) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(row.label, color = RfColors.textPrimary, fontWeight = FontWeight.SemiBold)
+                        if (row.current) Text(Copy.thisPhone, color = RfColors.gold, fontSize = 13.sp)
+                    }
+                    Text(
+                        if (row.monitoring) Copy.monitoringOnLabel else Copy.monitoringOffLabel,
+                        color = RfColors.textSecondary,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                    Text(row.lastCheckIn, color = RfColors.textSecondary, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
+                    Text(
+                        Copy.removeDevice,
+                        color = RfColors.gold,
+                        modifier = Modifier.padding(top = 8.dp).clickable { model.askRemoveDevice(row) },
+                    )
+                }
+            }
+        }
         item { SectionLabel("PRIVACY") }
         item { SettingsRow("View My Activity Log") { model.sheet = Sheet.Activity } }
         item { SectionLabel("APP") }
@@ -546,10 +575,24 @@ private fun SheetHost(model: AppModel) {
                 Sheet.Alert -> AlertSheet(model)
                 Sheet.Profile -> ProfileSheet(model)
                 Sheet.Forgot -> ForgotSheet(model)
+                Sheet.RemoveDevice -> RemoveDeviceSheet(model)
                 null -> Unit
             }
         }
     }
+}
+
+@Composable
+private fun RemoveDeviceSheet(model: AppModel) {
+    val label = model.pendingDevice?.label ?: "device"
+    Text(Copy.removeDeviceTitle, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 26.sp)
+    Text(label, color = RfColors.textPrimary, modifier = Modifier.padding(top = 8.dp))
+    if (model.pendingDevice?.current == true) {
+        Text(Copy.thisPhone, color = RfColors.gold, modifier = Modifier.padding(top = 4.dp))
+    }
+    Text(Copy.removeDeviceBody, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 12.dp))
+    RfButton(Copy.removeDeviceConfirm, onClick = { model.confirmRemoveDevice() }, destructive = true)
+    RfButton("Cancel", onClick = { model.sheet = null }, secondary = true)
 }
 
 @Composable

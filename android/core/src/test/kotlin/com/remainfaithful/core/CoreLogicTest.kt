@@ -65,7 +65,36 @@ class CoreLogicTest {
         assertEquals("active", HeartbeatPolicy.screen(true, true, true, 10_000))
         assertEquals("idle", HeartbeatPolicy.screen(true, true, true, 121_000))
         assertNull(HeartbeatPolicy.screen(false, false, false, null))
-        assertEquals(setOf("screen"), HeartbeatPolicy.body("monitoring").keys)
+        val beat = HeartbeatPolicy.body("monitoring", "phone-1")
+        assertEquals(setOf("screen", "device_id", "device_kind"), beat.keys)
+        assertEquals("monitoring", beat.getValue("screen"))
+        assertEquals("phone-1", beat.getValue("device_id"))
+        assertEquals("android", beat.getValue("device_kind"))
+        assertFalse(beat.values.any { it.contains("com.") || it.contains("http") })
+    }
+
+    @Test
+    fun deviceIdStaysOpaqueAndRemovalStopsTheClient() {
+        assertTrue(DevicePolicy.validId(DevicePolicy.newId()))
+        assertTrue(DevicePolicy.validId("phone-1"))
+        assertFalse(DevicePolicy.validId(""))
+        assertFalse(DevicePolicy.validId("com.example.browser"))
+        assertFalse(DevicePolicy.validId("a".repeat(65)))
+        val report = DevicePolicy.reportBody("phone-1", false)
+        assertEquals("android", report.getValue("device_kind"))
+        assertEquals(false, report.getValue("monitoring"))
+        assertEquals("android", DevicePolicy.reclaimBody("phone-1").getValue("device_kind"))
+        assertTrue(DevicePolicy.removed(409, "device_removed"))
+        assertFalse(DevicePolicy.removed(409, "other"))
+        assertFalse(DevicePolicy.removed(400, "device_removed"))
+        assertEquals("Android phone", DevicePolicy.label("android"))
+        assertNull(DevicePolicy.label("browser"))
+        assertEquals("No check-in yet", DevicePolicy.formatCheckIn(""))
+        val now = java.time.ZonedDateTime.of(2026, 10, 24, 15, 5, 0, 0, java.time.ZoneOffset.UTC)
+        assertEquals(
+            "Today 3:04 PM",
+            DevicePolicy.formatCheckIn("2026-10-24T15:04:00Z", now),
+        )
     }
 
     @Test
@@ -114,6 +143,10 @@ class CoreLogicTest {
         val body = Payloads.protection("monitoring_disabled", "Alerts were turned off.")
         assertEquals("monitoring_disabled", body.getValue("type"))
         assertFalse(EventPolicy.leaks(body.getValue("detail")))
+        val named = Payloads.protection("monitoring_disabled", "Alerts were turned off.", "phone-1")
+        assertEquals("phone-1", named.getValue("device_id"))
+        assertEquals("android", named.getValue("device_kind"))
+        assertFalse(named.getValue("device_id").contains("."))
     }
 
     @Test

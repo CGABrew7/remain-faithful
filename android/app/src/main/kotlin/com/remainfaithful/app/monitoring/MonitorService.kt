@@ -17,8 +17,11 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.remainfaithful.app.MainActivity
 import com.remainfaithful.app.R
+import com.remainfaithful.app.data.ApiException
 import com.remainfaithful.app.data.Repository
 import com.remainfaithful.app.theme.RfColors
+import com.remainfaithful.core.Copy
+import com.remainfaithful.core.DevicePolicy
 import com.remainfaithful.core.EventPolicy
 import com.remainfaithful.core.MonitorInput
 import com.remainfaithful.core.MonitoringPolicy
@@ -125,7 +128,13 @@ class MonitorService : Service() {
         }
         if (now - lastHeartbeat > 120_000) {
             lastHeartbeat = now
-            runCatching { repo.sendHeartbeat() }
+            val error = runCatching { repo.sendHeartbeat() }.exceptionOrNull()
+            if (error is ApiException && DevicePolicy.removed(error.status, error.code)) {
+                Notify.alert(this, "Remain Faithful", Copy.deviceRemoved, "DEVICE_REMOVED")
+                ShieldWindow.hide(this)
+                stopSelf()
+                return
+            }
         }
     }
 
