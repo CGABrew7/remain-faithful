@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mirror of RfColors in theme/RfTheme.kt. Change both together. -->
+<resources>
+    <color name="rf_navy">#12214C</color>
+    <color name="rf_gold">#D1AB4C</color>
+</resources>
