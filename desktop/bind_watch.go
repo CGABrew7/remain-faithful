@@ -153,7 +153,14 @@ func (a *App) GrantConsent() error {
 		core.GrantConsent(st)
 		return nil
 	})
-	return err
+	if err != nil {
+		return err
+	}
+	if a.watching() {
+		_ = a.reclaimDevice()
+	}
+	a.beat()
+	return nil
 }
 
 func (a *App) RevokeConsent(unlocked bool) error {

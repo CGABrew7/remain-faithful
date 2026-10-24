@@ -107,8 +107,10 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	var req struct {
-		Type   string `json:"type"`
-		Detail string `json:"detail"`
+		Type       string `json:"type"`
+		Detail     string `json:"detail"`
+		DeviceID   string `json:"device_id"`
+		DeviceKind string `json:"device_kind"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -121,6 +123,25 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 	if isServerOnlyProtectionAlertType(req.Type) || !isClientProtectionAlertType(req.Type) {
 		writeError(w, http.StatusBadRequest, "unknown protection alert type")
 		return
+	}
+	// Shipped iOS 1.0.2 sends type and detail only. Detail is still ignored.
+	// A newer client may name the device type so the sentence can say
+	// "on their Windows PC". Free text is rejected so an app name cannot land
+	// in the partner notification.
+	label := ""
+	collapseExtra := ""
+	if req.DeviceID != "" || req.DeviceKind != "" {
+		if !validDeviceID(req.DeviceID) {
+			writeError(w, http.StatusBadRequest, "device id is not recognized")
+			return
+		}
+		var ok bool
+		label, ok = deviceKindLabel(req.DeviceKind)
+		if !ok {
+			writeError(w, http.StatusBadRequest, "device type is not recognized")
+			return
+		}
+		collapseExtra = deviceCollapseKey(req.DeviceID)
 	}
 
 	var senderName string
@@ -145,7 +166,8 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store the alert before acknowledging so a missed push still has a history row.
-	if err := h.storeAndPushProtection(userID, senderName, req.Type, false); err != nil {
+	body := protectionBody(senderName, req.Type, label)
+	if err := h.storeAndPushProtectionText(userID, senderName, req.Type, body, false, collapseExtra); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to record protection alert")
 		return
 	}
@@ -160,13 +182,19 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 // co-member, then pushes. detail from the client is ignored.
 // silenceDedup skips a recipient who already has this silence alert in the last 6 hours.
 func (h *H) storeAndPushProtection(userID int64, senderName, alertType string, silenceDedup bool) error {
+	return h.storeAndPushProtectionText(userID, senderName, alertType, protectionAlertBody(senderName, alertType, ""), silenceDedup, "")
+}
+
+// storeAndPushProtectionText is storeAndPushProtection with a finished sentence.
+// collapseExtra keeps two devices from replacing each other's push. It is a
+// short hash, never the device id and never part of the sentence.
+func (h *H) storeAndPushProtectionText(userID int64, senderName, alertType, body string, silenceDedup bool, collapseExtra string) error {
 	ctx := context.Background()
 	ids, err := h.protectionRecipients(ctx, userID)
 	if err != nil {
 		log.Printf("[protection] query recipients user=%d: %v", userID, err)
 		return err
 	}
-	body := protectionAlertBody(senderName, alertType, "")
 	var deliver []int64
 	for _, pid := range ids {
 		if silenceDedup && h.recentSilenceAlert(ctx, userID, pid) {
@@ -185,7 +213,7 @@ func (h *H) storeAndPushProtection(userID int64, senderName, alertType string, s
 		return nil
 	}
 	h.inBackground(func() {
-		h.pushProtection(userID, senderName, alertType, body, deliver)
+		h.pushProtection(userID, senderName, alertType, body, deliver, collapseExtra)
 	})
 	return nil
 }
@@ -228,9 +256,14 @@ func (h *H) recentSilenceAlert(ctx context.Context, subject, recipient int64) bo
 	return n > 0
 }
 
-func (h *H) pushProtection(userID int64, senderName, alertType, body string, partnerIDs []int64) {
+func (h *H) pushProtection(userID int64, senderName, alertType, body string, partnerIDs []int64, collapseExtra string) {
 	ctx := context.Background()
-	// detail is never interpolated into the APNs body — only fixed copy per type.
+	// detail is never interpolated into the APNs body. Only fixed copy per type,
+	// plus an allowlisted device label when the client sent one.
+	collapse := fmt.Sprintf("protection-%d-%s", userID, alertType)
+	if collapseExtra != "" {
+		collapse += "-" + collapseExtra
+	}
 	payload := map[string]any{
 		"aps": map[string]any{
 			"alert": map[string]string{
@@ -246,7 +279,7 @@ func (h *H) pushProtection(userID int64, senderName, alertType, body string, par
 	n := &apns.Notification{
 		PushType:   "alert",
 		Priority:   10,
-		CollapseID: fmt.Sprintf("protection-%d-%s", userID, alertType),
+		CollapseID: collapse,
 		Payload:    payload,
 	}
 	for _, pid := range partnerIDs {

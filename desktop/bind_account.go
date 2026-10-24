@@ -70,6 +70,7 @@ func (a *App) login(email, password string, returning bool) error {
 	})
 	go a.signals()
 	go a.deliver(a.store.TakeQueue(resp.User.ID))
+	go a.beat()
 	return nil
 }
 
@@ -134,6 +135,11 @@ func (a *App) SignOut(unlocked bool) error {
 		return err
 	}
 	a.deliver([]core.ProtectionNotice{note})
+	if id, kind, ok := a.deviceIdentity(); ok {
+		ctx, cancel := a.ctxTimeout()
+		_ = a.client.ReportDevice(ctx, id, kind, false)
+		cancel()
+	}
 	return a.store.ClearSession()
 }
 

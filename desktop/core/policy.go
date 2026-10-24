@@ -98,8 +98,8 @@ func selected(keys []string, key string) bool {
 }
 
 // HeartbeatScreen is "monitoring" only while this computer is actually watching.
-// An empty result means do not post. A signed-out or idle desktop must not
-// refresh the account heartbeat, because the server keeps one heartbeat per person.
+// An empty result means do not post a heartbeat. Desktop heartbeats name this
+// computer and do not refresh the account timestamp shared with a phone.
 func HeartbeatScreen(consent, alerts, blocking, lockout bool) string {
 	if consent && (alerts || blocking || lockout) {
 		return "monitoring"

@@ -129,13 +129,22 @@ func (a *App) beat() {
 	if !a.store.SignedIn() {
 		return
 	}
-	st := a.store.State()
-	if core.HeartbeatScreen(st.Consent, st.Alerts, st.Blocking, st.Lockout) == "" {
+	id, kind, ok := a.deviceIdentity()
+	if !ok {
 		return
 	}
 	ctx, cancel := a.ctxTimeout()
 	defer cancel()
-	_ = a.client.HeartbeatMonitoring(ctx)
+	watching := a.watching()
+	var err error
+	if watching {
+		err = a.client.HeartbeatMonitoring(ctx, id, kind)
+	} else {
+		err = a.client.ReportDevice(ctx, id, kind, false)
+	}
+	if core.IsDeviceRemoved(err) && watching {
+		a.parkRemoved()
+	}
 }
 
 func (a *App) signals() {
@@ -173,10 +182,11 @@ func (a *App) deliver(notes []core.ProtectionNotice) {
 		return
 	}
 	userID := a.store.User().ID
+	deviceID, deviceKind, _ := a.deviceIdentity()
 	var keep []core.ProtectionNotice
 	for _, n := range notes {
 		ctx, cancel := a.ctxTimeout()
-		err := a.client.SendProtection(ctx, n)
+		err := a.client.SendProtection(ctx, n, deviceID, deviceKind)
 		cancel()
 		if err == nil {
 			continue
@@ -184,7 +194,7 @@ func (a *App) deliver(notes []core.ProtectionNotice) {
 		if !core.IsNetwork(err) && n.Type == "signed_out" {
 			fallback := core.ProtectionNotice{Type: "monitoring_disabled", Detail: n.Detail}
 			ctx, cancel = a.ctxTimeout()
-			err = a.client.SendProtection(ctx, fallback)
+			err = a.client.SendProtection(ctx, fallback, deviceID, deviceKind)
 			cancel()
 		}
 		if err != nil && core.IsNetwork(err) {
@@ -248,6 +258,9 @@ func (a *App) afterWatch(notes []core.ProtectionNotice, err error) error {
 		return err
 	}
 	a.deliver(notes)
+	if a.watching() {
+		_ = a.reclaimDevice()
+	}
 	a.beat()
 	a.signals()
 	return nil

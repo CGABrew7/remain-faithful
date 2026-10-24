@@ -258,24 +258,30 @@ func (a *App) Settings() (SettingsView, error) {
 	if err != nil {
 		pendingG = []InviteRow{}
 	}
+	a.beat()
+	st = a.store.State()
+	status = core.MonitoringStatus(st.Consent, len(st.Selected), st.Alerts, st.Blocking, monitor.Ready())
+	devices, devicesUnavailable := a.deviceRows()
 	return SettingsView{
-		Name:            user.Name,
-		Email:           user.Email,
-		EmailVerified:   user.EmailVerified,
-		Platform:        monitor.Platform(),
-		Version:         core.VersionLabel(),
-		DeviceCaption:   a.DeviceCaption(),
-		Consent:         st.Consent,
-		AlertsOn:        st.Alerts,
-		BlockingOn:      st.Blocking,
-		LockoutOn:       st.Lockout,
-		PinSet:          pin,
-		StatusTitle:     status.Title,
-		StatusDetail:    status.Detail,
-		PauseNotice:     core.PauseNotice,
-		Apps:            a.Catalog(),
-		Partners:        partners,
-		PendingPartners: pendingP,
-		PendingGroups:   pendingG,
+		Name:               user.Name,
+		Email:              user.Email,
+		EmailVerified:      user.EmailVerified,
+		Platform:           monitor.Platform(),
+		Version:            core.VersionLabel(),
+		DeviceCaption:      a.DeviceCaption(),
+		Consent:            st.Consent,
+		AlertsOn:           st.Alerts,
+		BlockingOn:         st.Blocking,
+		LockoutOn:          st.Lockout,
+		PinSet:             pin,
+		StatusTitle:        status.Title,
+		StatusDetail:       status.Detail,
+		PauseNotice:        core.PauseNotice,
+		Apps:               a.Catalog(),
+		Partners:           partners,
+		PendingPartners:    pendingP,
+		PendingGroups:      pendingG,
+		Devices:            devices,
+		DevicesUnavailable: devicesUnavailable,
 	}, nil
 }

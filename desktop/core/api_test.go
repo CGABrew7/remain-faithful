@@ -30,8 +30,16 @@ func TestClientLoginAndMetadataEvent(t *testing.T) {
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(`{"id":1}`))
 		case "/heartbeat":
-			if string(body) != `{"screen":"monitoring"}` {
+			if string(body) != `{"screen":"monitoring","device_id":"abc123device","device_kind":"windows"}` {
 				t.Fatalf("heartbeat %s", body)
+			}
+			if strings.Contains(string(body), ".exe") || strings.Contains(string(body), "http") {
+				t.Fatal(body)
+			}
+			_, _ = w.Write([]byte(`{"status":"ok"}`))
+		case "/protection/alerts":
+			if !strings.Contains(string(body), `"device_kind":"windows"`) || strings.Contains(string(body), ".exe") {
+				t.Fatalf("protection %s", body)
 			}
 			_, _ = w.Write([]byte(`{"status":"ok"}`))
 		case "/users/me/signals":
@@ -61,7 +69,13 @@ func TestClientLoginAndMetadataEvent(t *testing.T) {
 	if strings.Contains(strings.ToLower(gotEvent), "chrome") || strings.Contains(gotEvent, "http") {
 		t.Fatal(gotEvent)
 	}
-	if err := c.HeartbeatMonitoring(context.Background()); err != nil {
+	if err := c.HeartbeatMonitoring(context.Background(), "abc123device", "windows"); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.HeartbeatMonitoring(context.Background(), "abc123device", "chrome.exe"); err == nil {
+		t.Fatal("app name accepted as a device type")
+	}
+	if err := c.SendProtection(context.Background(), ProtectionNotice{Type: "monitoring_disabled", Detail: "Alerts were turned off."}, "abc123device", "windows"); err != nil {
 		t.Fatal(err)
 	}
 	if err := c.SendSignals(context.Background(), 2, 0); err != nil {
@@ -126,5 +140,41 @@ func TestStoreKeepsTokenOffTheStateFile(t *testing.T) {
 	}
 	if s.SignedIn() || s.Token() != "" {
 		t.Fatal("session remains")
+	}
+}
+
+func TestDeviceIDSurvivesSignOut(t *testing.T) {
+	dir := t.TempDir()
+	s, err := OpenStore(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := s.DeviceID()
+	if !ValidDeviceID(id) || strings.Contains(id, ".") {
+		t.Fatal(id)
+	}
+	if err := s.SetSession("token", User{ID: 4, Name: "Ada", Email: "ada@example.com"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Update(func(st *LocalState) error {
+		st.Alerts = true
+		st.Blocking = true
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.ClearSession(); err != nil {
+		t.Fatal(err)
+	}
+	if s.DeviceID() != id {
+		t.Fatal("sign-out rotated the device id")
+	}
+	state := s.State()
+	if state.Alerts || state.Blocking || state.DeviceID != id {
+		t.Fatalf("state after sign-out %+v", state)
+	}
+	StopWatching(&state)
+	if state.DeviceID != id {
+		t.Fatal("stop watching cleared the device id")
 	}
 }

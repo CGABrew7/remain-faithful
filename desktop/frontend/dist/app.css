@@ -375,6 +375,8 @@ p { text-wrap: pretty; margin: 0; }
   gap: 4px;
 }
 
+.item .btn { align-self: flex-start; }
+
 .switch {
   width: 100%;
   min-height: 44px;

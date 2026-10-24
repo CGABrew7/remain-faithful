@@ -174,6 +174,18 @@ func (s *Store) ReplaceQueue(userID int64, notes []ProtectionNotice) error {
 	})
 }
 
+// DeviceID is the stable token for this computer. Sign-out does not rotate it.
+func (s *Store) DeviceID() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if ValidDeviceID(s.state.DeviceID) {
+		return s.state.DeviceID
+	}
+	s.state.DeviceID = NewDeviceID()
+	_ = s.writeState()
+	return s.state.DeviceID
+}
+
 func (s *Store) PanicTap(userID int64) (int, error) {
 	var n int
 	err := s.Update(func(st *LocalState) error {

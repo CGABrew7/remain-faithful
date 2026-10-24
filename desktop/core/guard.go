@@ -31,6 +31,7 @@ type LocalState struct {
 	QueueUser          int64              `json:"queue_user"`
 	PanicTaps          int                `json:"panic_taps"`
 	PanicUser          int64              `json:"panic_user"`
+	DeviceID           string             `json:"device_id"`
 }
 
 func (s *LocalState) normalize() {
@@ -174,7 +175,16 @@ func SignOutNotice() (ProtectionNotice, error) {
 	return n, ValidateProtection(n)
 }
 
+// StopWatching turns the toggles off without a partner notice.
+// Removing this computer uses it so the server can send the one alert.
+func StopWatching(s *LocalState) {
+	s.Alerts = false
+	s.Blocking = false
+	s.Lockout = false
+}
+
 // ClearMonitoring drops this account's watch settings. Sign-out already sent its notice.
+// The device id stays so this computer keeps the same row after the next sign-in.
 func ClearMonitoring(s *LocalState) {
 	s.Alerts = false
 	s.Blocking = false

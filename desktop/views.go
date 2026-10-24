@@ -42,24 +42,34 @@ type Row struct {
 }
 
 type SettingsView struct {
-	Name            string           `json:"name"`
-	Email           string           `json:"email"`
-	EmailVerified   bool             `json:"emailVerified"`
-	Platform        string           `json:"platform"`
-	Version         string           `json:"version"`
-	DeviceCaption   string           `json:"deviceCaption"`
-	Consent         bool             `json:"consent"`
-	AlertsOn        bool             `json:"alertsOn"`
-	BlockingOn      bool             `json:"blockingOn"`
-	LockoutOn       bool             `json:"lockoutOn"`
-	PinSet          bool             `json:"pinSet"`
-	StatusTitle     string           `json:"statusTitle"`
-	StatusDetail    string           `json:"statusDetail"`
-	PauseNotice     string           `json:"pauseNotice"`
-	Apps            []core.AppChoice `json:"apps"`
-	Partners        []PartnerView    `json:"partners"`
-	PendingPartners []InviteRow      `json:"pendingPartners"`
-	PendingGroups   []InviteRow      `json:"pendingGroups"`
+	Name               string           `json:"name"`
+	Email              string           `json:"email"`
+	EmailVerified      bool             `json:"emailVerified"`
+	Platform           string           `json:"platform"`
+	Version            string           `json:"version"`
+	DeviceCaption      string           `json:"deviceCaption"`
+	Consent            bool             `json:"consent"`
+	AlertsOn           bool             `json:"alertsOn"`
+	BlockingOn         bool             `json:"blockingOn"`
+	LockoutOn          bool             `json:"lockoutOn"`
+	PinSet             bool             `json:"pinSet"`
+	StatusTitle        string           `json:"statusTitle"`
+	StatusDetail       string           `json:"statusDetail"`
+	PauseNotice        string           `json:"pauseNotice"`
+	Apps               []core.AppChoice `json:"apps"`
+	Partners           []PartnerView    `json:"partners"`
+	PendingPartners    []InviteRow      `json:"pendingPartners"`
+	PendingGroups      []InviteRow      `json:"pendingGroups"`
+	Devices            []DeviceRow      `json:"devices"`
+	DevicesUnavailable bool             `json:"devicesUnavailable"`
+}
+
+type DeviceRow struct {
+	DeviceID    string `json:"deviceId"`
+	Label       string `json:"label"`
+	Monitoring  bool   `json:"monitoring"`
+	LastCheckIn string `json:"lastCheckIn"`
+	Current     bool   `json:"current"`
 }
 
 type PartnerView struct {

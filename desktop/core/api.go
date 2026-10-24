@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -119,6 +120,19 @@ func IsNetwork(err error) bool {
 		return false
 	}
 	return err != nil
+}
+
+func IsDeviceRemoved(err error) bool {
+	var api *APIError
+	if !errors.As(err, &api) {
+		return false
+	}
+	return api.Status == http.StatusConflict && api.Code == "device_removed"
+}
+
+func IsNotFound(err error) bool {
+	var api *APIError
+	return errors.As(err, &api) && api.Status == http.StatusNotFound
 }
 
 type Client struct {
@@ -239,21 +253,109 @@ func (c *Client) MarkDiscussed(ctx context.Context, id int64) error {
 	return c.call(ctx, http.MethodPatch, "/alerts/"+itoa64(id)+"/discussed", nil, nil, true)
 }
 
-func (c *Client) HeartbeatMonitoring(ctx context.Context) error {
-	return c.call(ctx, http.MethodPost, "/heartbeat", map[string]string{"screen": "monitoring"}, nil, true)
+type heartbeatRequest struct {
+	Screen     string `json:"screen"`
+	DeviceID   string `json:"device_id"`
+	DeviceKind string `json:"device_kind"`
+}
+
+type protectionRequest struct {
+	Type       string `json:"type"`
+	Detail     string `json:"detail"`
+	DeviceID   string `json:"device_id,omitempty"`
+	DeviceKind string `json:"device_kind,omitempty"`
+}
+
+type deviceReport struct {
+	DeviceID   string `json:"device_id"`
+	DeviceKind string `json:"device_kind"`
+	Monitoring *bool  `json:"monitoring,omitempty"`
+}
+
+type RemoteDevice struct {
+	DeviceID    string `json:"device_id"`
+	DeviceKind  string `json:"device_kind"`
+	Label       string `json:"label"`
+	Monitoring  bool   `json:"monitoring"`
+	LastCheckIn string `json:"last_check_in"`
+}
+
+func (c *Client) HeartbeatMonitoring(ctx context.Context, deviceID, deviceKind string) error {
+	if !ValidDeviceID(deviceID) {
+		return errors.New("device id is not recognized")
+	}
+	if _, ok := DeviceLabel(deviceKind); !ok {
+		return errors.New("device type is not recognized")
+	}
+	return c.call(ctx, http.MethodPost, "/heartbeat", heartbeatRequest{
+		Screen:     "monitoring",
+		DeviceID:   deviceID,
+		DeviceKind: deviceKind,
+	}, nil, true)
+}
+
+func (c *Client) ReportDevice(ctx context.Context, deviceID, deviceKind string, monitoring bool) error {
+	if !ValidDeviceID(deviceID) {
+		return errors.New("device id is not recognized")
+	}
+	if _, ok := DeviceLabel(deviceKind); !ok {
+		return errors.New("device type is not recognized")
+	}
+	flag := monitoring
+	return c.call(ctx, http.MethodPost, "/users/me/devices", deviceReport{
+		DeviceID:   deviceID,
+		DeviceKind: deviceKind,
+		Monitoring: &flag,
+	}, nil, true)
+}
+
+func (c *Client) ReclaimDevice(ctx context.Context, deviceID, deviceKind string) error {
+	if !ValidDeviceID(deviceID) {
+		return errors.New("device id is not recognized")
+	}
+	if _, ok := DeviceLabel(deviceKind); !ok {
+		return errors.New("device type is not recognized")
+	}
+	return c.call(ctx, http.MethodPost, "/users/me/devices/reclaim", deviceReport{
+		DeviceID:   deviceID,
+		DeviceKind: deviceKind,
+	}, nil, true)
+}
+
+func (c *Client) ListDevices(ctx context.Context) ([]RemoteDevice, error) {
+	var resp struct {
+		Devices []RemoteDevice `json:"devices"`
+	}
+	err := c.call(ctx, http.MethodGet, "/users/me/devices", nil, &resp, true)
+	if resp.Devices == nil {
+		resp.Devices = []RemoteDevice{}
+	}
+	return resp.Devices, err
+}
+
+func (c *Client) RemoveDevice(ctx context.Context, deviceID string) error {
+	if !ValidDeviceID(deviceID) {
+		return errors.New("device id is not recognized")
+	}
+	return c.call(ctx, http.MethodDelete, "/users/me/devices/"+url.PathEscape(deviceID), nil, nil, true)
 }
 
 func (c *Client) SendSignals(ctx context.Context, selected, taps int) error {
 	return c.call(ctx, http.MethodPost, "/users/me/signals", DesktopSignals(selected, taps), nil, true)
 }
 
-func (c *Client) SendProtection(ctx context.Context, n ProtectionNotice) error {
+func (c *Client) SendProtection(ctx context.Context, n ProtectionNotice, deviceID, deviceKind string) error {
 	if err := ValidateProtection(n); err != nil {
 		return err
 	}
-	return c.call(ctx, http.MethodPost, "/protection/alerts", map[string]string{
-		"type": n.Type, "detail": n.Detail,
-	}, nil, true)
+	payload := protectionRequest{Type: n.Type, Detail: n.Detail}
+	if ValidDeviceID(deviceID) {
+		if _, ok := DeviceLabel(deviceKind); ok {
+			payload.DeviceID = deviceID
+			payload.DeviceKind = deviceKind
+		}
+	}
+	return c.call(ctx, http.MethodPost, "/protection/alerts", payload, nil, true)
 }
 
 func (c *Client) PINStatus(ctx context.Context) (bool, error) {

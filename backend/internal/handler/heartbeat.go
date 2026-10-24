@@ -83,18 +83,27 @@ func trimVersion(raw string) string {
 	return string(out)
 }
 
-// Heartbeat updates the authenticated user's last_heartbeat_at and screen state.
+// Heartbeat records that the signed-in app is still checking in.
 // POST /heartbeat
 // Body: {"screen":"active"|"idle"|"monitoring"}
-// "monitoring" is the value the app sends while Alerts or Blocking are on,
-// including when Deep Scan is off. It refreshes last_heartbeat_at the same way
-// as active and idle. The shorter "active screen stopped" nudge still applies
-// only when the stored state is "active".
+// Optional, for clients newer than iOS 1.0.2: {"device_id","device_kind"}.
+//
+// Shipped iOS 1.0.2 omits both device fields. That request still updates
+// users.last_heartbeat_at and nothing else, exactly as before.
+//
+// A request that names a device updates only that device row. It does not
+// touch users.last_heartbeat_at, so a computer cannot keep a silent phone
+// looking alive, and a phone cannot keep a silent computer looking alive.
+// "monitoring" is the value desktop sends while Alerts or Blocking are on.
+// The shorter "active screen stopped" nudge still applies only when the
+// stored account state is "active" (legacy heartbeats).
 func (h *H) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	var req struct {
-		Screen string `json:"screen"`
+		Screen     string `json:"screen"`
+		DeviceID   string `json:"device_id"`
+		DeviceKind string `json:"device_kind"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -107,16 +116,41 @@ func (h *H) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := h.DB.ExecContext(r.Context(), `
-		UPDATE users
-		SET last_heartbeat_at = NOW(), heartbeat_screen_state = $2
-		WHERE id = $1
-	`, userID, req.Screen)
+	if req.DeviceID == "" && req.DeviceKind == "" {
+		_, err := h.DB.ExecContext(r.Context(), `
+			UPDATE users
+			SET last_heartbeat_at = NOW(), heartbeat_screen_state = $2
+			WHERE id = $1
+		`, userID, req.Screen)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update heartbeat")
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+		return
+	}
+
+	if !validDeviceID(req.DeviceID) {
+		writeError(w, http.StatusBadRequest, "device id is not recognized")
+		return
+	}
+	if _, ok := deviceKindLabel(req.DeviceKind); !ok {
+		writeError(w, http.StatusBadRequest, "device type is not recognized")
+		return
+	}
+	removed, err := h.deviceIsRemoved(r.Context(), userID, req.DeviceID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update heartbeat")
 		return
 	}
-
+	if removed {
+		writeCodedError(w, http.StatusConflict, "device_removed", "this device was removed from the account.")
+		return
+	}
+	if err := h.upsertDeviceHeartbeat(r.Context(), userID, req.DeviceID, req.DeviceKind, req.Screen); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update heartbeat")
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 

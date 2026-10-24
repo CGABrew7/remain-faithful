@@ -321,6 +321,7 @@
       '<p class="fine">Partner PIN is ' + (s.pinSet ? "active. Your partner controls gated actions." : "not set. Ask your partner to enable it under Partners.") + "</p>" +
       (s.consent ? '<button class="btn btn-quiet btn-block" data-act="revoke">Turn monitoring access off</button>' : '<button class="btn btn-secondary btn-block" data-act="open-consent">Allow monitoring</button>') +
       "</section>" +
+      devicesHTML(s) +
       '<section class="chunk stack"><h2>Choose apps</h2>' + appList() + btn("Save chosen apps", "save-apps", "btn btn-secondary btn-block") + "</section>" +
       '<section class="chunk stack"><h2>Your partners</h2>' + fieldInput("partnerEmail", "Partner's email address", "email") +
       btn("Send Invitation", "invite-partner", "btn btn-secondary btn-block") +
@@ -334,6 +335,22 @@
       btn("Sign Out", "ask-signout", "btn btn-quiet btn-block") +
       btn("Delete Account", "ask-delete", "btn btn-danger btn-block") +
       '<p class="fine">' + esc(s.deviceCaption || s.version) + "</p></section>";
+  }
+
+  function devicesHTML(s) {
+    if (s.devicesUnavailable) {
+      return '<section class="chunk stack"><h2>My devices</h2><p class="muted">Device list is not available yet.</p></section>';
+    }
+    const rows = (s.devices || []).map(function (d) {
+      const mark = d.monitoring ? '<p class="ok">Monitoring on</p>' : '<p class="fine">Monitoring off</p>';
+      const here = d.current ? '<span class="fine">This computer</span>' : "<span></span>";
+      return '<div class="item"><div class="spread"><strong>' + esc(d.label) + "</strong>" + here + "</div>" +
+        mark +
+        '<p class="fine num">' + esc(d.lastCheckIn || "No check-in yet") + "</p>" +
+        '<button class="btn btn-quiet" data-act="remove-device" data-id="' + esc(d.deviceId) + '" data-label="' + esc(d.label) + '">Remove</button></div>';
+    }).join("");
+    const body = rows || '<p class="fine">No devices are registered yet.</p>';
+    return '<section class="chunk stack"><h2>My devices</h2><p class="muted">Each phone or computer on this account is listed on its own. Removing one tells your partners, the same as turning monitoring off.</p><div class="list">' + body + "</div></section>";
   }
 
   function toggle(title, detail, on, act) {
@@ -391,6 +408,10 @@
     } else if (m.type === "signout") {
       inner = "<h2>Sign Out</h2><p class=\"muted\">Signing out stops monitoring on this computer. Your partners will be told. Blocking on this computer turns off until you sign back in.</p>" +
         btn("Sign Out", "do-signout", "btn btn-danger btn-block") +
+        '<button class="btn btn-quiet btn-block" data-act="close-modal">Cancel</button>';
+    } else if (m.type === "remove-device") {
+      inner = "<h2>Remove this " + esc(m.label || "device") + "?</h2><p class=\"muted\">Partners are told that activity monitoring was turned off on that device.</p>" +
+        btn("Remove device", "do-remove-device", "btn btn-danger btn-block") +
         '<button class="btn btn-quiet btn-block" data-act="close-modal">Cancel</button>';
     } else if (m.type === "setpin") {
       inner = "<h2>Partner PIN</h2><p class=\"muted\">Set a 4-digit PIN for " + esc(m.name) + ". Share it verbally. It will be required to change protection settings.</p>" +
@@ -723,6 +744,22 @@
     if (act === "decline-partner") { await call("DeclinePartnerInvite", Number(el.dataset.id)); await loadSettings(); render(); return; }
     if (act === "primary") { await call("SetPrimary", Number(el.dataset.id)); await loadSettings(); render(); return; }
     if (act === "remove-partner") { await call("RemovePartner", Number(el.dataset.id)); await loadSettings(); render(); return; }
+    if (act === "remove-device") {
+      state.modal = { type: "remove-device", id: el.dataset.id, label: el.dataset.label || "device" };
+      render();
+      return;
+    }
+    if (act === "do-remove-device") {
+      const id = state.modal && state.modal.id;
+      const left = await gated(function (ok) { return call("RemoveDevice", id, ok); });
+      if (!left) return;
+      state.modal = null;
+      await loadSettings();
+      await loadHome();
+      toast("Removed. Partners were told.");
+      render();
+      return;
+    }
     if (act === "set-pin") {
       field.newpin = "";
       state.modal = { type: "setpin", id: Number(el.dataset.id), name: el.dataset.name, replacing: el.dataset.replacing === "1" };
@@ -895,6 +932,11 @@
       if (state.home) state.home.unread = count;
       const badge = document.querySelector('[data-tab="home"] .badge');
       if (count && badge) badge.textContent = String(count);
+    });
+    window.runtime.EventsOn("device-removed", function () {
+      toast("This computer was removed. Partners were told that monitoring stopped.");
+      if (state.screen !== "main") return;
+      Promise.resolve().then(function () { return loadSettings(); }).then(function () { return loadHome(); }).then(render).catch(function () { render(); });
     });
     window.runtime.EventsOn("signed-out", function () {
       state.home = null;
