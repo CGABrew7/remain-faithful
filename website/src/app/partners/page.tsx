@@ -174,7 +174,7 @@ export default function PartnersPage() {
                 {[
                   'Introduce RF at an existing group meeting, as an accountability covenant rather than only as an app.',
                   'Read the covenant text together. Discuss what "responding with grace" means for your group.',
-                  'Allow members to ask questions. Invite hesitation. This is a trust-building moment.',
+                  'Allow members to ask questions. Invite open questions. This is a trust-building moment.',
                   'Set a 30-day trial. No pressure to continue; just try it and see.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
@@ -234,7 +234,7 @@ export default function PartnersPage() {
                 Remain Faithful integrates naturally with Celebrate Recovery and similar programs. For participants working through sexual purity or addiction to pornography, RF provides an automatic accountability layer that works between weekly meetings.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                The key alignment with 12-step and recovery models: RF removes the decision to self-disclose at the moment of greatest shame. It makes the signal automatic, which is exactly what recovery programs teach but struggle to keep up between meetings.
+                The key alignment with 12-step and recovery models: RF removes the decision to self-disclose at the moment of greatest shame. It makes accountability automatic, which is exactly what recovery programs teach but struggle to keep up between meetings.
               </p>
               <p className="text-ink-soft leading-relaxed mb-6">
                 RF can pair with any existing sponsor or accountability partner structure. The sponsor relationship already exists. RF simply adds a consistent signal layer to it.

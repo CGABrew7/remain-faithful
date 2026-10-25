@@ -70,7 +70,7 @@ func checkoutSessionParams(p CheckoutParams, now time.Time) *stripe.CheckoutSess
 	priceData := &stripe.CheckoutSessionLineItemPriceDataParams{
 		Currency: stripe.String("usd"),
 		ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
-			Name:        stripe.String("Remain Faithful — Support the Mission"),
+			Name:        stripe.String("Remain Faithful: Support the Mission"),
 			Description: stripe.String("Helping keep RF free for men pursuing sexual integrity"),
 		},
 		UnitAmount: stripe.Int64(p.AmountCents),
