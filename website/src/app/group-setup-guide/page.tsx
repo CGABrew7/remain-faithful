@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function GroupSetupGuidePage() {
   return (
     <>
-      {/* Print button — hidden when printing */}
+      {/* Print button, hidden when printing */}
       <div className="print:hidden fixed bottom-6 right-6 z-50">
         <PrintButton />
       </div>
@@ -177,7 +177,7 @@ export default function GroupSetupGuidePage() {
               <p className="text-sm text-ink-soft mb-4">Every member agrees to this before joining. Reviewing it together in your first meeting is worth the time.</p>
               <ul className="space-y-3">
                 {[
-                  'I will be honest with my partner, even when it is difficult.',
+                  'I will tell my partner the truth, even when it is difficult.',
                   'I will not use this app to condemn my partner.',
                   'I will respond to alerts with grace and genuine care.',
                   'I will not share my partner\'s alerts with others.',
@@ -200,7 +200,7 @@ export default function GroupSetupGuidePage() {
 
             <div className="space-y-5">
               <GuideTip title="First Meeting (Within Two Weeks of Launch)">
-                Normalize the awkwardness. Monitoring feels strange at first. Talk about it openly. Discuss the covenant together. Agree on how the group will respond when an alert comes in: a text, a call, a prayer, or a conversation. The goal isn&apos;t catching each other. It&apos;s removing the barrier to honest conversation.
+                Normalize the awkwardness. Monitoring feels strange at first. Talk about it openly. Discuss the covenant together. Agree on how the group will respond when an alert comes in: a text, a call, a prayer, or a conversation. The goal isn&apos;t catching each other. It&apos;s removing the barrier to a real conversation.
               </GuideTip>
 
               <GuideTip title="When an Alert Comes In">

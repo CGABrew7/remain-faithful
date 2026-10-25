@@ -83,7 +83,7 @@ export default function ChristianAccountabilityApp() {
               <h3 className="font-serif text-lg font-semibold text-ink mb-4">The Covenant Partners Accept</h3>
               <ul className="space-y-3">
                 {[
-                  'I will be honest with my partner, even when it is difficult.',
+                  'I will tell my partner the truth, even when it is difficult.',
                   'I will not use this app to condemn my partner.',
                   'I will respond to alerts with grace and genuine care.',
                   'I will not share my partner\'s alerts with others.',

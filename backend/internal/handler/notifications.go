@@ -111,7 +111,7 @@ func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 	for _, t := range tokens {
 		res := result{Token: t.token[:min(8, len(t.token))] + "...", Environment: t.environment}
 		if t.environment != env {
-			res.Error = fmt.Sprintf("token env=%s but server env=%s — skipped", t.environment, env)
+			res.Error = fmt.Sprintf("token env=%s but server env=%s, skipped", t.environment, env)
 			results = append(results, res)
 			continue
 		}

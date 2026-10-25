@@ -14,7 +14,7 @@ export default function PrivacyArchitecturePage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
-    headline: 'How Your Privacy is Protected — Remain Faithful Privacy Architecture',
+    headline: 'How Your Privacy is Protected. Remain Faithful Privacy Architecture',
     description:
       'A detailed look at how Remain Faithful processes content without compromising your privacy.',
     author: { '@type': 'Person', name: 'Jeff Brewer' },
@@ -45,7 +45,7 @@ export default function PrivacyArchitecturePage() {
             How Your Privacy is Protected
           </h1>
           <p className="text-ink-soft text-lg max-w-2xl mx-auto">
-            A detailed look at how Remain Faithful processes content without compromising your privacy — from device to partner notification.
+            A detailed look at how Remain Faithful processes content without compromising your privacy, from device to partner notification.
           </p>
         </div>
       </section>
@@ -55,7 +55,7 @@ export default function PrivacyArchitecturePage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="font-serif text-3xl font-bold text-ink mb-4">
-              What Always Runs — and What You Opt Into
+              What Always Runs, and What You Opt Into
             </h2>
             <p className="text-ink-soft max-w-2xl mx-auto">
               The credible core is always-on. Deep Scan is optional. Screenshots, OCR text, and raw screen content never leave the device. Partners may receive a short system-generated summary string in addition to category, severity, and timestamp.
@@ -72,7 +72,7 @@ export default function PrivacyArchitecturePage() {
               {
                 label: 'Always-on',
                 title: 'Usage as category events',
-                body: 'DeviceActivity monitors usage as category-level events — not screen content, not which specific app, and not page content.',
+                body: 'DeviceActivity monitors usage as category-level events. It does not see screen content, which specific app, or page content.',
               },
               {
                 label: 'Always-on',
@@ -82,7 +82,7 @@ export default function PrivacyArchitecturePage() {
               {
                 label: 'Opt-in',
                 title: 'Deep Scan cannot see DRM',
-                body: 'If you start Deep Scan, on-device AI classifies non-DRM frames only. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM — unbypassable, not a bug.',
+                body: 'If you start Deep Scan, on-device AI classifies non-DRM frames only. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM. It cannot be bypassed.',
               },
             ].map((card) => (
               <div key={card.title} className="rounded-sm p-6 border border-hairline bg-paper-deep">
@@ -144,7 +144,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Tier 2 · On-Device AI"
                 badgeColor="#D1AB4C"
                 title="On-Device AI: Apple SensitiveContentAnalysis + Vision OCR + Text Classifier"
-                desc="Apple Vision OCR extracts text; SensitiveContentAnalysis detects explicit imagery; a local keyword classifier scores the result. All three run on the device's Neural Engine — the dedicated AI chip in modern iPhones. No server involved at any stage."
+                desc="Apple Vision OCR extracts text; SensitiveContentAnalysis detects explicit imagery; a local keyword classifier scores the result. All three run on the device's Neural Engine, the dedicated AI chip in modern iPhones. No server involved at any stage."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -173,7 +173,7 @@ export default function PrivacyArchitecturePage() {
             className="mt-10 p-5 rounded-sm border border-wax/25 text-sm text-ink-soft text-center"
             
           >
-            Classification is fully on-device. What leaves your device is alert metadata — category, severity, timestamp, and a short system-generated summary. Screenshots, OCR text, and raw screen content never leave your device.
+            Classification is fully on-device. What leaves your device is alert metadata: category, severity, timestamp, and a short system-generated summary. Screenshots, OCR text, and raw screen content never leave your device.
           </div>
         </div>
       </section>
@@ -233,7 +233,7 @@ export default function PrivacyArchitecturePage() {
           <div className="text-center mb-14">
             <h2 className="font-serif text-3xl font-bold text-ink mb-4">Data Flow Diagram</h2>
             <p className="text-ink-soft max-w-xl mx-auto">
-              How a flagged event travels from your device to your partner&apos;s notification — with encryption at every step.
+              How a flagged event travels from your device to your partner&apos;s notification, with encryption at every step.
             </p>
           </div>
 
@@ -291,11 +291,11 @@ export default function PrivacyArchitecturePage() {
               },
               {
                 threat: 'What if a partner is malicious?',
-                answer: 'Partners may see category, severity, timestamp, and a short system-generated summary — never raw content, screenshots, OCR text, or browsing history. A malicious partner cannot share your screen. You can remove a partner instantly at any time.',
+                answer: 'Partners may see category, severity, timestamp, and a short system-generated summary. They do not see raw content, screenshots, OCR text, or browsing history. A malicious partner cannot share your screen. You can remove a partner instantly at any time.',
               },
               {
                 threat: 'What if the app itself is compromised?',
-                answer: 'The entire codebase is open source and auditable by anyone. We run pre-commit secret scanning on every contribution. Anyone can read the source and confirm that classification is fully on-device and that what is transmitted is alert metadata (category, severity, timestamp, and a short system-generated summary) — never screenshots, OCR text, or raw screen content.',
+                answer: 'The entire codebase is open source and auditable by anyone. We run pre-commit secret scanning on every contribution. Anyone can read the source and confirm that classification is fully on-device and that what is transmitted is alert metadata (category, severity, timestamp, and a short system-generated summary). Screenshots, OCR text, and raw screen content are not transmitted.',
               },
             ].map((t) => (
               <div key={t.threat} className="rounded-sm p-7 border border-hairline bg-paper-deep">
@@ -321,10 +321,10 @@ export default function PrivacyArchitecturePage() {
             <div>
               <h2 className="font-serif text-3xl font-bold text-ink mb-5">Open Source Commitment</h2>
               <p className="text-ink-soft leading-relaxed mb-4">
-                The entire Remain Faithful codebase — iOS app, Go backend, and this website — is publicly available on GitHub. This is not optional for an app that handles sensitive behavioral data.
+                The entire Remain Faithful codebase, the iOS app, the Go backend, and this website, is publicly available on GitHub. This is not optional for an app that handles sensitive behavioral data.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                Our privacy architecture is not a policy claim. It is verifiable in the code. Anyone can confirm that classification happens entirely on-device and that what is transmitted is alert metadata (including a short system-generated summary) — never screenshots, OCR text, or raw screen content.
+                Our privacy architecture is not a policy claim. It is verifiable in the code. Anyone can confirm that classification happens entirely on-device and that what is transmitted is alert metadata (including a short system-generated summary). Screenshots, OCR text, and raw screen content are not transmitted.
               </p>
               <p className="text-ink-soft leading-relaxed mb-6">
                 Security researchers and privacy advocates are invited to review, test, and report findings. We take responsible disclosure seriously.
@@ -395,7 +395,7 @@ export default function PrivacyArchitecturePage() {
                   ['Open source codebase', '✓ Yes', '✗ No', '✗ No'],
                   ['Screenshots stored on server', '✗ Never', '✓ Yes', '✓ Yes'],
                   ['Partners see raw content', '✗ Never', '✓ Yes', '✓ Yes'],
-                  ['Cloud dependency for classification', 'Zero — fully on-device', 'Always', 'Always'],
+                  ['Cloud dependency for classification', 'Zero, fully on-device', 'Always', 'Always'],
                   ['Cost', '100% Free', 'Paid subscription', 'Paid subscription'],
                   ['Auditable by security researchers', '✓ Yes', '✗ No', '✗ No'],
                 ].map(([dim, rf, ce, ea]) => (
@@ -421,7 +421,7 @@ export default function PrivacyArchitecturePage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-serif text-3xl font-bold text-ink mb-4">Questions About Our Privacy Model?</h2>
           <p className="text-ink-soft mb-8">
-            Read the source code, open a GitHub issue, or contact us directly. Transparency is not just a commitment — it is a practice.
+            Read the source code, open a GitHub issue, or contact us directly. Transparency is not just a commitment. It is a practice.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
