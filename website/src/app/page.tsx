@@ -1,14 +1,16 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import AppStoreLink from '@/components/AppStoreLink'
 import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
-import FaqAccordion from '@/components/FaqAccordion'
 import FeaturePlate from '@/components/FeaturePlate'
 import Ornament from '@/components/Ornament'
 import PhoneFrame from '@/components/PhoneFrame'
-import WaitlistForm from '@/components/WaitlistForm'
+
+const FaqAccordion = dynamic(() => import('@/components/FaqAccordion'))
+const WaitlistForm = dynamic(() => import('@/components/WaitlistForm'))
 import { JsonLd } from '@/components/JsonLd'
 import { softwareApplicationSchema, homepageFaqSchema } from '@/lib/structured-data'
 import {
@@ -99,7 +101,7 @@ const faqs = [
     ),
   },
   {
-    q: 'Can it see streaming video?',
+    q: 'What about streaming video apps?',
     a: FAQ_STREAMING,
   },
   {
@@ -151,7 +153,7 @@ export default function HomePage() {
         </div>
         <div className="rise rise-3 lg:col-start-2 lg:row-start-1 lg:justify-self-end">
           <PhoneFrame
-            src="/screens/welcome.png"
+            src="/screens/welcome.webp"
             alt="Remain Faithful iPhone welcome screen: Remain Faithful, accountability between trusted friends, and Begin Your Journey."
             priority
           />
@@ -213,7 +215,7 @@ export default function HomePage() {
             </div>
           </div>
           <PhoneFrame
-            src="/screens/create.png"
+            src="/screens/create.webp"
             alt="Remain Faithful create-account screen with name, email, and password fields."
           />
         </div>

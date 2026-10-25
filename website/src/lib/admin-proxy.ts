@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { backendBase } from '@/lib/backend'
+import { backendBase, proxyHeaders, SERVER_UNREACHABLE } from '@/lib/backend'
 
 const COOKIE = 'rf_admin'
 const EIGHT_HOURS = 60 * 60 * 8
@@ -26,6 +26,9 @@ export async function proxyAdmin(request: Request, path: string) {
   const headers = new Headers()
   headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
+  for (const [key, value] of Object.entries(proxyHeaders(request))) {
+    headers.set(key, value)
+  }
 
   const url = new URL(request.url)
   const init: RequestInit = {
@@ -37,7 +40,12 @@ export async function proxyAdmin(request: Request, path: string) {
     init.body = await request.text()
   }
 
-  const res = await fetch(`${base}/admin/${path}${url.search}`, init)
+  let res: Response
+  try {
+    res = await fetch(`${base}/admin/${path}${url.search}`, { ...init, signal: AbortSignal.timeout(10_000) })
+  } catch {
+    return Response.json({ error: SERVER_UNREACHABLE }, { status: 504 })
+  }
   const text = await res.text()
 
   if (path === 'login') {

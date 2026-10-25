@@ -25,9 +25,8 @@ production submissions.
 ## Email Delivery
 
 The Go backend sends contact submissions via SendGrid (`SENDGRID_API_KEY` is
-already deployed on Fly.io). Emails are forwarded to `jeff@hanokventures.co`
-(overridable via `CONTACT_TO_EMAIL` env var on the backend if you want to change
-the destination without a code deploy).
+already deployed on Fly.io). Set `CONTACT_TO_EMAIL` on the API. If it is unset,
+the send fails and nothing is delivered to another address.
 
 ## Env Vars Required
 

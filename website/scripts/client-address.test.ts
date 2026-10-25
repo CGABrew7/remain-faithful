@@ -15,8 +15,8 @@ describe('donate client address', () => {
     assert.equal(clientAddress(req), '198.51.100.20')
   })
 
-  it('does not key on a caller-supplied forwarded hop when the platform header is absent', () => {
-    const req = requestWith({ 'x-forwarded-for': '203.0.113.5' })
-    assert.equal(clientAddress(req), 'local')
+  it('uses the first forwarded hop when the platform client header is absent', () => {
+    const req = requestWith({ 'x-forwarded-for': '203.0.113.5, 10.0.0.1' })
+    assert.equal(clientAddress(req), '203.0.113.5')
   })
 })

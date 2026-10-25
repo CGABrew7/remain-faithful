@@ -53,7 +53,10 @@ func (h *H) ListMyGroups(w http.ResponseWriter, r *http.Request) {
 // POST /groups
 // Body: { "name": "...", "covenant": "..." }
 func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
-	userID, _ := rfauth.UserIDFromContext(r.Context())
+	userID, ok := h.requireConfirmedAccount(w, r)
+	if !ok {
+		return
+	}
 
 	var req struct {
 		Name     string `json:"name"`
@@ -63,10 +66,18 @@ func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if strings.TrimSpace(req.Name) == "" {
-		writeError(w, http.StatusBadRequest, "name is required")
+	name, nameErr := cleanGroupName(req.Name)
+	if nameErr != "" {
+		writeError(w, http.StatusBadRequest, nameErr)
 		return
 	}
+	covenant, covErr := cleanCovenant(req.Covenant)
+	if covErr != "" {
+		writeError(w, http.StatusBadRequest, covErr)
+		return
+	}
+	req.Name = name
+	req.Covenant = covenant
 
 	tx, err := h.DB.BeginTx(r.Context(), nil)
 	if err != nil {
@@ -251,18 +262,20 @@ func (h *H) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	newName := currentName
 	newCovenant := currentCovenant
 	if req.Name != nil {
-		newName = strings.TrimSpace(*req.Name)
-		if newName == "" || len([]rune(newName)) > maxGroupNameLen {
-			writeError(w, http.StatusBadRequest, "name must be 1–80 characters")
+		cleaned, msg := cleanGroupName(*req.Name)
+		if msg != "" {
+			writeError(w, http.StatusBadRequest, msg)
 			return
 		}
+		newName = cleaned
 	}
 	if req.Covenant != nil {
-		newCovenant = strings.TrimSpace(*req.Covenant)
-		if len([]rune(newCovenant)) > maxGroupCovenantLen {
-			writeError(w, http.StatusBadRequest, "covenant is too long")
+		cleaned, msg := cleanCovenant(*req.Covenant)
+		if msg != "" {
+			writeError(w, http.StatusBadRequest, msg)
 			return
 		}
+		newCovenant = cleaned
 	}
 
 	if _, err = h.DB.ExecContext(r.Context(),
@@ -368,7 +381,10 @@ func (h *H) SendEncouragement(w http.ResponseWriter, r *http.Request) {
 // POST /groups/:id/invite
 // Body: { "user_email": "..." } (the key "email" is also accepted)
 func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
-	userID, _ := rfauth.UserIDFromContext(r.Context())
+	userID, ok := h.requireConfirmedAccount(w, r)
+	if !ok {
+		return
+	}
 
 	groupID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -389,13 +405,17 @@ func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	email := req.UserEmail
-	if strings.TrimSpace(email) == "" {
-		email = req.Email
+	rawEmail := req.UserEmail
+	if strings.TrimSpace(rawEmail) == "" {
+		rawEmail = req.Email
 	}
-	email = strings.ToLower(strings.TrimSpace(email))
-	if email == "" {
+	if strings.TrimSpace(rawEmail) == "" {
 		writeError(w, http.StatusBadRequest, "user_email is required")
+		return
+	}
+	email, valid := normalizeWaitlistEmail(rawEmail)
+	if !valid {
+		writeError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
 

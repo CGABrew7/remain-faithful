@@ -34,7 +34,7 @@ func (c *Client) SendPartnerInvite(toEmail, inviterName, acceptURL string) error
 	subject := inviterName + " invited you to Remain Faithful"
 	plain := fmt.Sprintf(
 		"Hi,\n\n%s has invited you to join them as an accountability partner on Remain Faithful.\n\n"+
-			"Open the link below on your iPhone to accept. You are not connected until you accept.\n\n%s\n\n"+
+			"If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, open the link below to accept.\n\n%s\n\n"+
 			"Remain Faithful is a faith-based accountability app for adults.\n\n"+
 			"If you weren't expecting this, you can safely ignore this email.\n\n- Remain Faithful",
 		inviterName, acceptURL,
@@ -46,7 +46,7 @@ func partnerInviteHTML(inviterName, acceptURL string) string {
 	return fmt.Sprintf(
 		`<p>Hi,</p>`+
 			`<p><strong>%s</strong> has invited you to join them as an accountability partner on Remain Faithful.</p>`+
-			`<p>You are not connected until you accept.</p>`+
+			`<p>If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, use the button below.</p>`+
 			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
 			`text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>`+
 			`<p>If you weren't expecting this, you can safely ignore this email.</p>`+
@@ -94,7 +94,7 @@ func (c *Client) SendGroupInvite(toEmail, inviterName, groupName, acceptURL stri
 	subject := inviterName + " invited you to join " + groupName + " on Remain Faithful"
 	plain := fmt.Sprintf(
 		"Hi,\n\n%s has invited you to join the accountability group \"%s\" on Remain Faithful.\n\n"+
-			"Open the link below to accept. You are not in the group until you accept.\n\n%s\n\n"+
+			"If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, open the link below to accept.\n\n%s\n\n"+
 			"If you weren't expecting this, you can safely ignore this email.\n\n- Remain Faithful",
 		inviterName, groupName, acceptURL,
 	)
@@ -102,7 +102,7 @@ func (c *Client) SendGroupInvite(toEmail, inviterName, groupName, acceptURL stri
 		`<p>Hi,</p>`+
 			`<p><strong>%s</strong> has invited you to join the accountability group `+
 			`<strong>%s</strong> on Remain Faithful.</p>`+
-			`<p>You are not in the group until you accept.</p>`+
+			`<p>If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, use the button below.</p>`+
 			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
 			`text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>`+
 			`<p style="color:#888;">If you weren't expecting this, you can safely ignore this email.</p>`+

@@ -45,9 +45,9 @@ const copy: Record<InviteVariant, { kicker: string; title: string; lede: string;
     ],
   },
   link: {
-    kicker: 'Group invite',
-    title: 'You were invited to a group',
-    lede: 'Someone shared their Remain Faithful group with you. This link does not add you to the group.',
+    kicker: 'Groups',
+    title: 'Join a Remain Faithful group',
+    lede: 'This page is a general starting point. It does not add you to a specific group.',
     steps: [
       {
         title: 'Get the app',
@@ -104,8 +104,9 @@ export default function InviteLanding({
           </ol>
 
           <p className="relative mt-8 text-center text-sm leading-relaxed text-ink-faint">
-            Remain Faithful is for adults (18+) who choose accountability for themselves. Each adult authorizes Family
-            Controls on their own iPhone. It is not parental controls.
+            Remain Faithful is for adults (18+) who choose accountability for themselves. Family Controls is the Apple
+            setting each adult turns on to block apps they choose on their own iPhone. It is not parental controls.
+            Screenshots and screen content stay on the phone.
           </p>
 
           {token && variant !== 'link' && (

@@ -307,6 +307,7 @@ func TestPasswordResetClearsPendingEmail(t *testing.T) {
 
 func TestCreateRelationshipResponseDoesNotDependOnRegistration(t *testing.T) {
 	db := newMemDB()
+	db.addUser(memUser{id: 1, name: "Ada", email: "ada@example.com", verified: true})
 	db.addUser(memUser{id: 2, name: "Bea", email: "bea@example.com", verified: true})
 	h := &H{DB: db.open(t)}
 
@@ -326,6 +327,7 @@ func TestCreateRelationshipResponseDoesNotDependOnRegistration(t *testing.T) {
 
 func TestCreateRelationshipDoesNotRewriteExistingType(t *testing.T) {
 	db := newMemDB()
+	db.addUser(memUser{id: 1, name: "Ada", email: "ada@example.com", verified: true})
 	db.addUser(memUser{id: 2, name: "Bea", email: "bea@example.com", verified: true})
 	db.mu.Lock()
 	db.rels = append(db.rels, memRel{id: 9, userID: 1, partnerID: 2, typ: "partner", status: "accepted"})
@@ -335,7 +337,7 @@ func TestCreateRelationshipDoesNotRewriteExistingType(t *testing.T) {
 	rr := httptest.NewRecorder()
 	h.CreateRelationship(rr, authed(http.MethodPost, "/relationships",
 		`{"partner_email":"bea@example.com","type":"friend"}`, 1))
-	if rr.Code >= 400 {
+	if rr.Code != http.StatusBadRequest {
 		t.Fatalf("status %d body %s", rr.Code, rr.Body.String())
 	}
 	rels := db.relRows()

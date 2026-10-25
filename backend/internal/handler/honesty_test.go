@@ -108,6 +108,7 @@ func TestSubmitFeedbackUsesAccountAndSkipsDevice(t *testing.T) {
 		}
 		return none("x")
 	}}
+	t.Setenv("CONTACT_TO_EMAIL", "support@remainfaithful.com")
 	em := &capturingEmail{}
 	h := &H{DB: f.open(t), Email: em}
 	body := `{"type":"Improvement","summary":"Clearer pause text","details":"Say who gets told."}`

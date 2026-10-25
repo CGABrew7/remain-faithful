@@ -213,6 +213,9 @@ func (c *nameLookupConn) Close() error                        { return nil }
 func (c *nameLookupConn) Begin() (driver.Tx, error)           { return nil, driver.ErrSkip }
 
 func (c *nameLookupConn) QueryContext(_ context.Context, query string, _ []driver.NamedValue) (driver.Rows, error) {
+	if strings.Contains(query, "email_verified") {
+		return &nameLookupRows{cols: []string{"email", "email_verified", "apple_id", "google_id"}, vals: [][]driver.Value{{"ada@example.com", true, "", ""}}}, nil
+	}
 	if strings.Contains(query, "FROM users") {
 		return &nameLookupRows{cols: []string{"name"}, vals: [][]driver.Value{{c.name}}}, nil
 	}

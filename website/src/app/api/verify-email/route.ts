@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!body?.token) {
     return Response.json({ error: 'A confirmation link is required.' }, { status: 400 })
   }
-  const result = await backendJSON('/auth/verify-email', { token: body.token })
+  const result = await backendJSON('/auth/verify-email', { token: body.token }, undefined, request)
   if (!result.ok) {
     return Response.json(
       { error: result.data.error || 'That confirmation link is not valid.' },

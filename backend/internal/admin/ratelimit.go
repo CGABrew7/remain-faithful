@@ -1,12 +1,11 @@
 package admin
 
 import (
-	"net"
 	"net/http"
-	"os"
-	"strings"
 	"sync"
 	"time"
+
+	"remain-faithful/backend/internal/clientaddr"
 )
 
 const (
@@ -58,23 +57,8 @@ func ResetLoginLimits() {
 	loginMu.Unlock()
 }
 
-// ClientIP prefers Fly-Client-IP. Fly's proxy adds that header as the address
-// it accepted the connection from and tells apps to prefer it over
-// X-Forwarded-For when Fly is the edge:
-// https://fly.io/docs/networking/request-headers/
-// Production does not fall back to X-Forwarded-For.
+// ClientIP is the address used for owner sign-in lockout.
+// A website call can pass the visitor address when the shared proxy secret matches.
 func ClientIP(r *http.Request) string {
-	if ip := strings.TrimSpace(r.Header.Get("Fly-Client-IP")); ip != "" {
-		return ip
-	}
-	if os.Getenv("APP_ENV") != "production" {
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			return strings.TrimSpace(strings.SplitN(xff, ",", 2)[0])
-		}
-	}
-	host := r.RemoteAddr
-	if h, _, err := net.SplitHostPort(host); err == nil {
-		return h
-	}
-	return host
+	return clientaddr.FromRequest(r)
 }

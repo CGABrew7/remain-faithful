@@ -89,64 +89,87 @@ export default function AdminDashboard({
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(!preview)
   const [busy, setBusy] = useState(false)
+  const [checked, setChecked] = useState(preview)
+  const [sessionCheck, setSessionCheck] = useState(0)
 
   useEffect(() => {
     if (preview) {
       setOverview(ranges?.[range] ?? null)
       return
     }
-    if (!authed) return
     let cancel = false
     setLoading(true)
     setError('')
     void (async () => {
-      const [ov, he] = await Promise.all([
-        fetch(`/api/admin/overview?range=${range}`, { cache: 'no-store' }),
-        fetch('/api/admin/health', { cache: 'no-store' }),
-      ])
-      if (cancel) return
-      if (ov.status === 401) {
-        setAuthed(false)
-        setOverview(null)
+      try {
+        const [ov, he] = await Promise.all([
+          fetch(`/api/admin/overview?range=${range}`, { cache: 'no-store' }),
+          fetch('/api/admin/health', { cache: 'no-store' }),
+        ])
+        if (cancel) return
+        if (ov.status === 401) {
+          setAuthed(false)
+          setOverview(null)
+          setLoading(false)
+          setChecked(true)
+          return
+        }
+        if (!ov.ok) {
+          const body = await ov.json().catch(() => ({}))
+          setError(body.error || 'The dashboard could not load.')
+          setLoading(false)
+          setChecked(true)
+          return
+        }
+        setOverview(await ov.json())
+        setAuthed(true)
+        if (he.ok) setHealth(await he.json())
         setLoading(false)
-        return
+        setChecked(true)
+      } catch {
+        if (!cancel) {
+          setError('We could not reach the server. Check your connection and try again.')
+          setLoading(false)
+          setChecked(true)
+        }
       }
-      if (!ov.ok) {
-        const body = await ov.json().catch(() => ({}))
-        setError(body.error || 'The dashboard could not load.')
-        setLoading(false)
-        return
-      }
-      setOverview(await ov.json())
-      if (he.ok) setHealth(await he.json())
-      setLoading(false)
     })()
     return () => {
       cancel = true
     }
-  }, [authed, preview, range, ranges])
+  }, [preview, range, ranges, sessionCheck])
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError('')
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    })
-    setBusy(false)
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}))
-      setError(loginMessage(res.status, body.error || ''))
-      return
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        setError(loginMessage(res.status, body.error || ''))
+        return
+      }
+      setPassword('')
+      setAuthed(true)
+      setSessionCheck((n) => n + 1)
+    } catch {
+      setError('We could not reach the server. Check your connection and try again.')
+    } finally {
+      setBusy(false)
     }
-    setPassword('')
-    setAuthed(true)
   }
 
   async function signOut() {
-    await fetch('/api/admin/logout', { method: 'POST' })
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+    } catch {
+      setError('We could not reach the server. Check your connection and try again.')
+    }
     setAuthed(false)
     setOverview(null)
   }
@@ -174,7 +197,9 @@ export default function AdminDashboard({
         </p>
       )}
 
-      {!authed && (
+      {!preview && !checked && <p className="mt-10 text-ink-soft">Checking your session...</p>}
+
+      {checked && !authed && (
         <form onSubmit={signIn} className="surface rise rise-2 mx-auto mt-10 max-w-md p-6 sm:p-8">
           <h2 className="font-serif text-2xl text-white">Sign in</h2>
           <p className="mt-2 text-sm text-ink-soft">The password is the one set on the API. It is not an app account.</p>
@@ -251,6 +276,7 @@ function DashboardBody({
             ['App Store clicks', w.app_store_clicks],
             ['Click-through', fmtPct(w.app_store_ctr_percent)],
             ['Android signups', w.android_signups],
+            ['Android waitlist', w.android_waitlist],
           ]}
         />
         <h3 className="mt-6 font-serif text-xl text-white">Visits by day</h3>
@@ -506,18 +532,24 @@ function SupportTools({ preview }: { preview: boolean }) {
     setBusy(true)
     setError('')
     setMessage('')
-    const res = await fetch(path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    const data = await res.json().catch(() => ({}))
-    setBusy(false)
-    if (!res.ok) {
-      setError(data.error || 'That did not work.')
+    try {
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error || 'That did not work.')
+        return null
+      }
+      return data
+    } catch {
+      setError('We could not reach the server. Check your connection and try again.')
       return null
+    } finally {
+      setBusy(false)
     }
-    return data
   }
 
   return (
@@ -536,15 +568,21 @@ function SupportTools({ preview }: { preview: boolean }) {
           setBusy(true)
           setError('')
           setMessage('')
-          const res = await fetch(`/api/admin/account?email=${encodeURIComponent(email.trim())}`, { cache: 'no-store' })
-          const data = await res.json().catch(() => ({}))
-          setBusy(false)
-          if (!res.ok) {
+          try {
+            const res = await fetch(`/api/admin/account?email=${encodeURIComponent(email.trim())}`, { cache: 'no-store' })
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok) {
+              setAccount(null)
+              setError(data.error || 'That did not work.')
+              return
+            }
+            setAccount(data as AccountStatus)
+          } catch {
             setAccount(null)
-            setError(data.error || 'That did not work.')
-            return
+            setError('We could not reach the server. Check your connection and try again.')
+          } finally {
+            setBusy(false)
           }
-          setAccount(data as AccountStatus)
         }}
       >
         <label className="sr-only" htmlFor="lookup-email">

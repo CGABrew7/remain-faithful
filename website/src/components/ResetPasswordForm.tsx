@@ -11,6 +11,9 @@ export default function ResetPasswordForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const [email, setEmail] = useState('')
+  const [resetNote, setResetNote] = useState('')
+  const [sending, setSending] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -27,10 +30,20 @@ export default function ResetPasswordForm() {
         body: JSON.stringify({ token, password }),
       })
       const body = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(body.error || 'Could not reset the password.')
+      if (!res.ok) {
+        const raw = body.error || 'Could not reset the password.'
+        if (String(raw).toLowerCase().includes('invalid or expired')) {
+          throw new Error('This reset link is no longer active. Send a new one below.')
+        }
+        if (String(raw).toLowerCase().includes('failed to fetch')) {
+          throw new Error('We could not reach the server. Check your connection and try again.')
+        }
+        throw new Error(raw)
+      }
       setDone(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not reset the password.')
+      const message = err instanceof Error ? err.message : 'Could not reset the password.'
+      setError(message.includes('Failed to fetch') ? 'We could not reach the server. Check your connection and try again.' : message)
     } finally {
       setLoading(false)
     }
@@ -73,6 +86,50 @@ export default function ResetPasswordForm() {
               )}
               <button type="submit" className="btn-wax w-full" disabled={loading}>
                 {loading ? 'Saving...' : 'Save password'}
+              </button>
+            </form>
+          )}
+          {!done && (
+            <form
+              className="mt-8 space-y-3 border-t border-white/10 pt-6"
+              onSubmit={async (e) => {
+                e.preventDefault()
+                setSending(true)
+                setResetNote('')
+                try {
+                  const res = await fetch('/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                  })
+                  const body = await res.json().catch(() => ({}))
+                  if (!res.ok) {
+                    setResetNote(body.error || 'We could not send that email. Try again in a little while.')
+                    return
+                  }
+                  setResetNote('If that address has an account, a new reset link is on the way.')
+                } catch {
+                  setResetNote('We could not reach the server. Check your connection and try again.')
+                } finally {
+                  setSending(false)
+                }
+              }}
+            >
+              <label htmlFor="reset-email" className="block text-sm text-white">
+                Send a new reset link
+              </label>
+              <input
+                id="reset-email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-field w-full"
+              />
+              {resetNote && <p className="text-sm text-ink-soft">{resetNote}</p>}
+              <button type="submit" className="btn-ghost w-full" disabled={sending}>
+                {sending ? 'Sending...' : 'Send a new reset link'}
               </button>
             </form>
           )}
