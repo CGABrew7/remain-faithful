@@ -375,6 +375,11 @@ func routes(h *handler.H) http.Handler {
 	contact.Use(authRateLimiter())
 	contact.HandleFunc("/contact", h.Contact).Methods(http.MethodPost)
 
+	// Website app waitlist: unauthenticated, 10 requests/minute per IP in its own window.
+	waitlist := r.NewRoute().Subrouter()
+	waitlist.Use(authRateLimiter())
+	waitlist.HandleFunc("/waitlist", h.JoinWaitlist).Methods(http.MethodPost)
+
 	// Stripe webhook — unauthenticated, verified by Stripe-Signature header
 	r.HandleFunc("/donations/webhook", h.DonationWebhook).Methods(http.MethodPost)
 
@@ -680,5 +685,8 @@ func migrate(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	return handler.MigrateDeviceHeartbeats(db)
+	if err := handler.MigrateDeviceHeartbeats(db); err != nil {
+		return err
+	}
+	return handler.MigrateWaitlist(db)
 }

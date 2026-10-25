@@ -208,3 +208,23 @@ func TestClientIPIgnoresForwardedForInProduction(t *testing.T) {
 		t.Fatalf("development X-Forwarded-For = %q", got)
 	}
 }
+
+func TestWaitlistRouteMountedAndRateLimited(t *testing.T) {
+	t.Setenv("JWT_SECRET", "test-secret-not-for-production")
+	router := routes(&handler.H{})
+	status := func() int {
+		req := httptest.NewRequest(http.MethodPost, "/waitlist", strings.NewReader(`{"email":"@"}`))
+		req.RemoteAddr = "192.0.2.10:1234"
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+		return rr.Code
+	}
+	for i := 0; i < 10; i++ {
+		if got := status(); got != http.StatusBadRequest {
+			t.Fatalf("request %d: status %d, want 400 from the waitlist handler", i+1, got)
+		}
+	}
+	if got := status(); got != http.StatusTooManyRequests {
+		t.Fatalf("request 11: status %d, want 429", got)
+	}
+}

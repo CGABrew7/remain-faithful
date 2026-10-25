@@ -1,3 +1,5 @@
+import { pilotContact } from '@/lib/pilot'
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -8,16 +10,23 @@ export async function POST(request: Request) {
     }
     delete body.company
 
-    if (!body.email || !body.name || !body.message) {
+    let payload = body
+    if (body.type === 'church_pilot') {
+      const pilot = pilotContact(body)
+      if (!pilot.ok) {
+        return Response.json({ error: pilot.error }, { status: 400 })
+      }
+      payload = pilot.contact
+    } else if (!body.email || !body.name || !body.message) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const backendUrl = process.env.BACKEND_URL
     if (!backendUrl) {
       console.log('[contact] BACKEND_URL not set — logging submission:', {
-        name: body.name,
-        email: body.email,
-        subject: body.subject,
+        name: payload.name,
+        email: payload.email,
+        subject: payload.subject,
       })
       return Response.json({ success: true })
     }
@@ -25,7 +34,7 @@ export async function POST(request: Request) {
     const res = await fetch(`${backendUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
     })
 
     if (!res.ok) {

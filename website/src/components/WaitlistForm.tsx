@@ -32,11 +32,15 @@ export default function WaitlistForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email }),
       })
-      if (!res.ok) throw new Error('Failed')
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        setError(typeof data?.error === 'string' ? data.error : 'We could not save your signup. Please try again.')
+        return
+      }
       trackEvent('android_signup')
       setSubmitted(true)
     } catch {
-      setError('Something went wrong. Please try again.')
+      setError('We could not reach the server. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
