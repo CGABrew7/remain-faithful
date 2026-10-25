@@ -56,7 +56,7 @@ export default function AboutPage() {
               My name is Jeff Brewer. I serve in youth and high school ministry at my local church. While several generations of my family served as pastors, God led me down a different path. Instead of an M.Div., He gave me an MBA and a career building and leading businesses, many of them rooted in technology.
             </p>
             <p>
-              Like many who grew up alongside the internet, I learned firsthand that marriage does not automatically solve struggles with purity. For years, I became skilled at appearing accountable while still hiding parts of the truth. Everything changed when I finally became completely honest with a trusted accountability partner. Real freedom began with real honesty.
+              Like many who grew up alongside the internet, I learned firsthand that marriage does not automatically solve struggles with purity. For years, I became skilled at appearing accountable while still hiding parts of the truth. Everything changed when I finally told a trusted accountability partner the whole truth. Real freedom began when nothing was hidden.
             </p>
             <p>
               As my sons grew older and my oldest prepared to leave for college, I started thinking seriously about the kind of accountability tool I wanted them to have. I wanted something that encouraged deeper relationships, meaningful conversations, and spiritual growth, while also removing the ability to hide. I also knew that many existing accountability tools suffered from two major problems: they were expensive and they were complicated.
@@ -65,7 +65,7 @@ export default function AboutPage() {
               Advances in AI and modern software development created an opportunity to build something different. Remain Faithful was designed to be free, simple to use, privacy focused, and effective. I also wanted to eliminate a problem I experienced personally: accountability systems that exposed partners to explicit screenshots or detailed content. In some cases, the accountability process itself became a source of temptation. Remain Faithful alerts accountability partners without exposing them to the content itself.
             </p>
             <p>
-              Today, I personally fund the project and use it myself. The entire codebase is open source because I believe trust is earned through transparency. My hope is simple: that every Christian who desires to walk faithfully with Christ can have access to an accountability tool that strengthens relationships, promotes honesty, and helps believers pursue purity together.
+                Today, I personally fund the project and use it myself. The entire codebase is open source because I believe trust is earned through transparency. My hope is simple: that every Christian who desires to walk faithfully with Christ can have access to an accountability tool that strengthens relationships, keeps the conversation open, and helps believers pursue purity together.
             </p>
             <div className="rounded-sm p-8 text-center my-8" style={{ boxShadow: 'var(--shadow-border)' }}>
               <p className="font-serif text-xl text-ink italic leading-relaxed">
@@ -94,7 +94,7 @@ export default function AboutPage() {
             <div>
               <h2 className="font-serif text-2xl font-bold text-ink mb-5">Why We Built This</h2>
               <p className="text-ink-soft leading-relaxed mb-4">
-                The existing accountability software market has a few products, but they tend toward one of two failure modes: either they&apos;re heavy-handed surveillance tools that damage trust, or they&apos;re check-in apps that depend entirely on self-reporting honesty, defeating the point of accountability.
+                The existing accountability software market has a few products, but they tend toward one of two failure modes: either they are heavy-handed surveillance tools that damage trust, or they are check-in apps that depend entirely on someone choosing to report, which leaves the hard moments uncovered.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
                 We wanted something that creates automatic, consistent signals, so that disclosure isn&apos;t a choice a struggling person has to summon the courage to make in their worst moment, while still preserving dignity and privacy.

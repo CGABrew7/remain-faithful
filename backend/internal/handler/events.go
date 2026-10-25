@@ -90,8 +90,6 @@ func validateCreateEvent(category, severity, summary string) string {
 // POST /events
 // Body: { "category": "...", "severity": "low|medium|high", "summary": "...", "timestamp": "..." }
 func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
-	userID, _ := rfauth.UserIDFromContext(r.Context())
-
 	var req struct {
 		Category  string `json:"category"`
 		Severity  string `json:"severity"`
@@ -111,8 +109,9 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, msg)
 		return
 	}
+	userID, _ := rfauth.UserIDFromContext(r.Context())
 
-	// Step 1: insert the event — single auto-committed statement, independent of alert creation.
+	// Step 1: insert the event. One statement, independent of alert creation.
 	var eventID int64
 	var timestamp string
 	var err error
@@ -196,7 +195,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	capturedSeverity := req.Severity
 	capturedSummary := req.Summary
 	capturedTimestamp := timestamp
-	capturedCaller := callerName
+	capturedCaller := clipPushName(callerName)
 
 	go func() {
 		ctx := context.Background()
@@ -272,6 +271,7 @@ func alertTitle(severity, category string) string {
 
 // alertBody returns a conversation-starter notification body.
 func alertBody(name, category, severity, summary string) string {
+	name = clipPushName(name)
 	if category == "app_usage" && summary == "Blocked app opened" {
 		return name + " opened an app they asked to block."
 	}
@@ -281,17 +281,17 @@ func alertBody(name, category, severity, summary string) string {
 	if severity == "severe" {
 		switch category {
 		case "self_harm":
-			return fmt.Sprintf("%s needs you right now — their device flagged self-harm content. Reach out immediately.", name)
+			return fmt.Sprintf("%s needs you right now. Their device flagged self-harm content. Reach out immediately.", name)
 		case "adult_content":
-			return fmt.Sprintf("%s needs accountability — their device flagged explicit content. Be present and non-judgmental.", name)
+			return fmt.Sprintf("%s needs accountability. Their device flagged explicit content. Be present and kind.", name)
 		case "gambling":
-			return fmt.Sprintf("%s may be struggling — their device flagged gambling content. A quick check-in goes a long way.", name)
+			return fmt.Sprintf("%s may be struggling. Their device flagged gambling content. A quick check-in goes a long way.", name)
 		default:
 			return fmt.Sprintf("%s needs accountability right now. Open the app to see what was flagged.", name)
 		}
 	}
 	if severity == "concerning" {
-		return fmt.Sprintf("%s may need support — their device flagged %s content. Consider checking in today.", name, category)
+		return fmt.Sprintf("%s may need support. Their device flagged %s content. Consider checking in today.", name, category)
 	}
 	return fmt.Sprintf("%s's device flagged activity worth noting. Keep them in your prayers.", name)
 }

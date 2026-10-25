@@ -49,8 +49,12 @@ export function trackablePath(path: string): string | null {
 }
 
 /** Hostname only. Same-site referrers count as direct. */
+function stripCampaign(value: string, max: number) {
+  return value.replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().slice(0, max)
+}
+
 export function referrerDomain(raw: string): string {
-  const trimmed = raw.trim()
+  const trimmed = stripCampaign(raw, 300)
   if (!trimmed) return ''
   try {
     const withScheme = trimmed.includes('://') ? trimmed : `https://${trimmed}`
@@ -64,5 +68,5 @@ export function referrerDomain(raw: string): string {
 
 export function cleanUTM(value: unknown): string {
   if (typeof value !== 'string') return ''
-  return value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 80)
+  return stripCampaign(value, 80)
 }

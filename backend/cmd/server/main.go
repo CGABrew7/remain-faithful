@@ -16,6 +16,7 @@ import (
 
 	"remain-faithful/backend/internal/apns"
 	rfauth "remain-faithful/backend/internal/auth"
+	"remain-faithful/backend/internal/clientaddr"
 	"remain-faithful/backend/internal/email"
 	"remain-faithful/backend/internal/handler"
 	"remain-faithful/backend/internal/payment"
@@ -181,7 +182,7 @@ func fixedWindowRateLimiter(limit int, keyFn func(*http.Request) string) mux.Mid
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
-				fmt.Fprint(w, `{"error":"too many requests — try again in a minute"}`)
+				fmt.Fprint(w, `{"error":"Too many requests. Try again in a minute."}`)
 				return
 			}
 			next.ServeHTTP(w, r)
@@ -214,19 +215,7 @@ func limitRequestBody(next http.Handler) http.Handler {
 // Fly, and it says to treat X-Forwarded-For with caution. Production uses
 // Fly-Client-IP and does not fall back to X-Forwarded-For.
 func clientIP(r *http.Request) string {
-	if ip := r.Header.Get("Fly-Client-IP"); ip != "" {
-		return ip
-	}
-	if os.Getenv("APP_ENV") != "production" {
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			return strings.TrimSpace(strings.SplitN(xff, ",", 2)[0])
-		}
-	}
-	host := r.RemoteAddr
-	if i := strings.LastIndex(host, ":"); i != -1 {
-		return host[:i]
-	}
-	return host
+	return clientaddr.FromRequest(r)
 }
 
 // corsMiddleware sets CORS headers. Only origins listed in ALLOWED_ORIGINS (comma-separated) receive
@@ -284,6 +273,7 @@ func routes(h *handler.H) http.Handler {
 	auth.HandleFunc("/forgot-password", h.ForgotPassword).Methods(http.MethodPost)
 	auth.HandleFunc("/reset-password", h.ResetPassword).Methods(http.MethodPost)
 	auth.HandleFunc("/verify-email", h.VerifyEmail).Methods(http.MethodPost)
+	auth.HandleFunc("/resend-confirmation", h.ResendConfirmationByEmail).Methods(http.MethodPost)
 
 	// Protected routes — JWT required, and the session version must still match.
 	api := r.NewRoute().Subrouter()

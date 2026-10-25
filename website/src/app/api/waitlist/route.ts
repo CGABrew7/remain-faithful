@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       name: typeof name === 'string' ? name : '',
       platform: 'android',
       company: typeof company === 'string' ? company : '',
-    })
+    }, undefined, req)
   } catch (err) {
     console.error('[waitlist] backend unreachable:', err)
     return NextResponse.json({ error: SAVE_FAILED }, { status: 502 })

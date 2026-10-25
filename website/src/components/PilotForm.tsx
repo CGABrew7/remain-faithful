@@ -108,8 +108,8 @@ export default function PilotForm() {
           >
             <option value="">Select</option>
             <option>1 group</option>
-            <option>2–3 groups</option>
-            <option>4–10 groups</option>
+            <option>2 to 3 groups</option>
+            <option>4 to 10 groups</option>
             <option>10+ groups</option>
           </select>
         </Field>

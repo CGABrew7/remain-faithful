@@ -285,9 +285,14 @@ func aggregateStatements() []string {
 		sqlInvites, sqlGroupInvites, sqlGroupSummary, sqlGroupSizes, sqlZeroPartners,
 		signupSQL("day"), signupSQL("week"),
 		sqlPartnerAlerts, sqlPausedAlerts, sqlPhoneSignals, sqlAppVersions, sqlSupportTaps,
-		sqlPushTokens, sqlHealth,
+		sqlPushTokens, sqlHealth, sqlAndroidWaitlist,
 	}
 }
+
+const sqlAndroidWaitlist = `
+SELECT COUNT(*) FROM waitlist_signups
+WHERE platform = 'android'
+  AND ($1::timestamptz IS NULL OR created_at >= $1)`
 
 func (h *H) loadOverview(ctx context.Context, label string, from *time.Time, now time.Time) (*admin.Overview, error) {
 	ov := blankOverview(label, now)
@@ -302,6 +307,15 @@ func (h *H) loadOverview(ctx context.Context, label string, from *time.Time, now
 	ov.Website.DesktopVisitors = quietOr(desktop, desktop)
 	ov.Website.AppStoreClicks = quietOr(clicks, clickPeople)
 	ov.Website.AndroidSignups = quietOr(android, androidPeople)
+	var waitlist int
+	if err := h.DB.QueryRowContext(ctx, sqlAndroidWaitlist, from).Scan(&waitlist); err != nil {
+		return nil, err
+	}
+	if waitlist == 0 {
+		ov.Website.AndroidWaitlist = admin.Zero()
+	} else {
+		ov.Website.AndroidWaitlist = admin.People(waitlist)
+	}
 	ctrPeople := visitors
 	if visitors < 3 || (clickPeople > 0 && clickPeople < 3) {
 		ctrPeople = 0
@@ -839,6 +853,7 @@ func blankOverview(label string, now time.Time) *admin.Overview {
 			TopPages: []admin.PageRow{}, TopReferrers: []admin.NamedCount{},
 			Campaigns: []admin.CampaignRow{}, Countries: []admin.NamedCount{},
 			USStates: []admin.NamedCount{}, Trend: []admin.TrendPoint{},
+			AndroidWaitlist: admin.Zero(),
 		},
 		Growth: admin.Growth{
 			ByDay: []admin.DayCount{}, ByWeek: []admin.DayCount{}, SignIn: []admin.MethodCount{},
@@ -846,7 +861,7 @@ func blankOverview(label string, now time.Time) *admin.Overview {
 		},
 		Funnel: []admin.FunnelStep{},
 		Active: admin.Active{
-			Basis:        "These figures use the latest heartbeat on each account. They describe right now, not the date range above. Monitoring on means a heartbeat in the last 30 minutes. Heartbeat silent means the latest heartbeat is older than that. Monitoring off means a partner was told monitoring stopped and no heartbeat has arrived since.",
+			Basis:         "These figures use the latest heartbeat on each account. They describe right now, not the date range above. Monitoring on means a heartbeat in the last 30 minutes. Heartbeat silent means the latest heartbeat is older than that. Monitoring off means a partner was told monitoring stopped and no heartbeat has arrived since.",
 			MonitoredApps: admin.Zero(),
 			DailyHistory:  admin.NotTracked("Only the latest heartbeat is stored, so this dashboard cannot draw active users for each past day."),
 			AppVersions:   admin.VersionRollup{Status: "tracked", Versions: []admin.NamedCount{}},

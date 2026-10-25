@@ -51,6 +51,8 @@ go run ./cmd/server
 | `DB_PASSWORD`   | `postgres`                        | PostgreSQL password                             |
 | `DB_NAME`       | `remainfaithful`                  | PostgreSQL database                             |
 | `JWT_SECRET`    | `dev-secret-change-in-production` | HS256 signing secret — **always override in production** |
+| `SITE_PROXY_SECRET` | *(unset)*                    | Shared with the website. When set, the API uses `X-RF-Client-IP` only if `X-RF-Proxy-Secret` matches. When unset, the previous address rules stay in place. |
+| `CONTACT_TO_EMAIL` | *(unset)*                     | Inbox for contact and in-app feedback. The send fails when this is unset. |
 
 ## API Reference
 

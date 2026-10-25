@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const login = await backendJSON('/auth/login', {
     email: String(body.email),
     password: String(body.password),
-  })
+  }, undefined, request)
   if (!login.ok || !login.data.token) {
     return Response.json(
       { error: login.data.error || 'That email or password did not match.' },
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     : decline
       ? '/relationships/decline-invite'
       : '/relationships/accept-invite'
-  const result = await backendJSON(path, { token: body.token }, login.data.token)
+  const result = await backendJSON(path, { token: body.token }, login.data.token, request)
   if (!result.ok) {
     return Response.json(
       { error: result.data.error || 'Could not update this invite.' },

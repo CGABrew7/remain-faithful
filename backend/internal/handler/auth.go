@@ -44,16 +44,22 @@ func (h *H) Register(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
-	req.Name = strings.TrimSpace(req.Name)
-	if req.Name == "" || req.Email == "" || req.Password == "" {
-		writeError(w, http.StatusBadRequest, "name, email, and password are required")
+	name, nameErr := cleanPersonName(req.Name)
+	if nameErr != "" {
+		writeError(w, http.StatusBadRequest, nameErr)
 		return
 	}
-	if len(req.Password) < 8 {
-		writeError(w, http.StatusBadRequest, "password must be at least 8 characters")
+	email, ok := normalizeWaitlistEmail(req.Email)
+	if !ok {
+		writeError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
+	if msg := passwordProblem(req.Password, email); msg != "" {
+		writeError(w, http.StatusBadRequest, msg)
+		return
+	}
+	req.Name = name
+	req.Email = email
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -190,6 +196,7 @@ func (h *H) acceptPendingGroupInvites(ctx context.Context, newUserID int64, emai
 }
 
 var errGroupFull = errors.New("group is full; invite left pending")
+var errInviteGone = errors.New("invite not found or expired")
 
 func (h *H) joinGroupFromInvite(ctx context.Context, userID, inviteID, groupID int64) error {
 	tx, err := h.DB.BeginTx(ctx, nil)
@@ -213,6 +220,18 @@ func (h *H) joinGroupFromInvite(ctx context.Context, userID, inviteID, groupID i
 	if memberCount >= maxGroupMembers {
 		return errGroupFull
 	}
+	var claimed int64
+	err = tx.QueryRowContext(ctx, `
+		UPDATE group_invites SET status = 'accepted'
+		WHERE id = $1 AND status = 'pending'
+		RETURNING id
+	`, inviteID).Scan(&claimed)
+	if isNoRows(err) {
+		return errInviteGone
+	}
+	if err != nil {
+		return fmt.Errorf("mark accepted: %w", err)
+	}
 	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO group_members (group_id, user_id, role)
 		 VALUES ($1, $2, 'member')
@@ -220,11 +239,6 @@ func (h *H) joinGroupFromInvite(ctx context.Context, userID, inviteID, groupID i
 		groupID, userID,
 	); err != nil {
 		return fmt.Errorf("add member: %w", err)
-	}
-	if _, err := tx.ExecContext(ctx,
-		`UPDATE group_invites SET status = 'accepted' WHERE id = $1`, inviteID,
-	); err != nil {
-		return fmt.Errorf("mark accepted: %w", err)
 	}
 	return tx.Commit()
 }
@@ -390,18 +404,24 @@ func (h *H) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if len(req.Password) < 8 {
-		writeError(w, http.StatusBadRequest, "password must be at least 8 characters")
+	if msg := passwordProblem(req.Password, ""); msg != "" {
+		writeError(w, http.StatusBadRequest, msg)
 		return
 	}
-
-	var userID int64
-	var expiresAt time.Time
-	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT user_id, expires_at FROM password_reset_tokens WHERE token = $1`, hashToken(req.Token),
-	).Scan(&userID, &expiresAt)
-	if err != nil || time.Now().After(expiresAt) {
+	sum := hashToken(strings.TrimSpace(req.Token))
+	var email string
+	err := h.DB.QueryRowContext(r.Context(), `
+		SELECT u.email
+		FROM password_reset_tokens t
+		JOIN users u ON u.id = t.user_id
+		WHERE t.token = $1 AND t.expires_at > NOW()
+	`, sum).Scan(&email)
+	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid or expired reset token")
+		return
+	}
+	if msg := passwordProblem(req.Password, email); msg != "" {
+		writeError(w, http.StatusBadRequest, msg)
 		return
 	}
 
@@ -417,6 +437,20 @@ func (h *H) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback() //nolint
+	var userID int64
+	err = tx.QueryRowContext(r.Context(), `
+		DELETE FROM password_reset_tokens
+		WHERE token = $1 AND expires_at > NOW()
+		RETURNING user_id
+	`, sum).Scan(&userID)
+	if isNoRows(err) {
+		writeError(w, http.StatusBadRequest, "invalid or expired reset token")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update password")
+		return
+	}
 	if _, err = tx.ExecContext(r.Context(), `
 		UPDATE users
 		SET password_hash = $1,
@@ -427,12 +461,6 @@ func (h *H) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		WHERE id = $2
 	`, string(hash), userID); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to update password")
-		return
-	}
-	if _, err = tx.ExecContext(r.Context(),
-		`DELETE FROM password_reset_tokens WHERE user_id = $1`, userID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to clear reset token")
 		return
 	}
 	if err = tx.Commit(); err != nil {
@@ -590,6 +618,52 @@ func (h *H) ResendVerification(w http.ResponseWriter, r *http.Request) {
 	}
 	h.sendEmailVerification(r.Context(), userID, email, name)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "sent"})
+}
+
+// ResendConfirmationByEmail emails a fresh confirmation link when the address
+// still needs one. The response is the same whether or not an account exists.
+// POST /auth/resend-confirmation
+// Body: { "email": "..." }
+func (h *H) ResendConfirmationByEmail(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	if email, ok := normalizeWaitlistEmail(req.Email); ok {
+		h.maybeResendVerification(r.Context(), email)
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (h *H) maybeResendVerification(ctx context.Context, email string) {
+	var userID int64
+	var name, appleID string
+	var verified bool
+	var sentCount int
+	var windowStart sql.NullTime
+	err := h.DB.QueryRowContext(ctx, `
+		SELECT id, name, email_verified, COALESCE(apple_id, ''), verify_mail_count, verify_mail_window
+		FROM users WHERE lower(email) = lower($1)
+	`, email).Scan(&userID, &name, &verified, &appleID, &sentCount, &windowStart)
+	if err != nil || verified || placeholderAppleEmail(appleID, email) {
+		return
+	}
+	now := time.Now()
+	if !windowStart.Valid || now.Sub(windowStart.Time) >= time.Hour {
+		sentCount = 0
+		windowStart.Time = now
+		windowStart.Valid = true
+	}
+	if sentCount >= verifyMailPerHour {
+		return
+	}
+	if _, err := h.DB.ExecContext(ctx,
+		`UPDATE users SET verify_mail_count = $1, verify_mail_window = $2 WHERE id = $3`,
+		sentCount+1, windowStart.Time, userID,
+	); err != nil {
+		return
+	}
+	h.sendEmailVerification(ctx, userID, email, name)
 }
 
 func getAppBaseURL() string {

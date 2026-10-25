@@ -105,7 +105,7 @@ export default function HowItWorksPage() {
             </div>
             <div className="space-y-4">
               {[
-                { label: 'Vulnerability', desc: 'Inviting partners to see you clearly requires honest agreement to the covenant upfront.' },
+                { label: 'Vulnerability', desc: 'Inviting partners in requires a clear agreement to the covenant first.' },
                 { label: 'Consistent Visibility', desc: 'Automatic alerts remove the shame barrier of self-disclosure without removing personal responsibility.' },
                 { label: 'Community of Trust', desc: 'Partners accept terms before gaining any access. Relationships must exist before accountability can work.' },
               ].map((item) => (
@@ -174,7 +174,7 @@ export default function HowItWorksPage() {
             <div className="ml-4 pb-1 pt-2">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
                 <span className="w-1.5 h-1.5 rounded-sm bg-wax" />
-                Layer 1 — Always-On Filtering
+                Layer 1: Always-on filtering
               </span>
             </div>
 
@@ -204,7 +204,7 @@ export default function HowItWorksPage() {
             <div className="ml-4 pb-1 pt-4">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
                 <span className="w-1.5 h-1.5 rounded-sm bg-wax" />
-                Layer 2 — DeviceActivity Usage Monitoring
+                Layer 2: DeviceActivity usage monitoring
               </span>
             </div>
 
@@ -241,7 +241,7 @@ export default function HowItWorksPage() {
 
             <div className="ml-4 pb-1 pt-4">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
-                Layer 4 — Deep Scan (Opt-In)
+                Layer 4: Deep Scan (optional)
               </span>
             </div>
 
@@ -249,14 +249,14 @@ export default function HowItWorksPage() {
               {
                 step: '5',
                 title: 'You Start the Session',
-                body: 'Deep Scan is never automatic. You start it intentionally when you want stronger scrutiny — a high-risk period, a travel trip, or a season of struggle. iOS asks for explicit screen broadcast permission each time. You are always in control.',
+                body: 'Deep Scan is never automatic. You start it intentionally when you want stronger scrutiny, such as a high-risk period, a travel trip, or a season of struggle. iOS asks for explicit screen broadcast permission each time. You are always in control.',
                 note: undefined as string | undefined,
               },
               {
                 step: '6',
                 title: 'On-Device AI Analyzes Non-DRM Frames',
-                body: "A sandboxed ReplayKit broadcast extension captures screen frames from apps that allow it. Each frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple's nudity detector), and a local keyword classifier — all running on your device's Neural Engine. Classification is entirely on-device. Frames are never stored or transmitted.",
-                note: 'Deep Scan cannot see DRM-protected video or banking apps. Netflix, Disney+, Hulu, Prime Video, Apple TV, HBO, and banking apps render as black frames. That is Apple FairPlay / platform DRM — unbypassable, not a Remain Faithful bug. It can analyze browsers, photos, social media, and most non-DRM apps.',
+                body: "A sandboxed ReplayKit broadcast extension handles frames from apps that allow it. Each frame is analyzed by Apple Vision (OCR), SensitiveContentAnalysis (Apple's nudity detector), and a local keyword classifier, all running on your device's Neural Engine. Classification is entirely on-device. Frames are never stored or transmitted.",
+                note: 'DRM video apps such as Netflix, Disney+, Hulu, Prime Video, Apple TV, and HBO do not share frames, so there is nothing from those apps to classify. Banking apps work the same way. That is Apple FairPlay and platform DRM, not a Remain Faithful bug. Browsers, photos, social media, and most other apps can be classified on the phone. Screenshots and screen content stay on the phone.',
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-6 p-5 rounded-sm border border-hairline bg-paper-deep ml-4">
@@ -316,7 +316,7 @@ export default function HowItWorksPage() {
               <h3 className="font-serif text-xl font-semibold text-ink mb-5">The Covenant</h3>
               <ul className="space-y-3">
                 {[
-                  'I will be honest with my partner, even when it is difficult.',
+                  'I will be open with my partner, even when it is difficult.',
                   'I will not use this app to condemn my partner.',
                   'I will respond to alerts with grace and genuine care.',
                   'I will not share my partner\'s alerts with others.',

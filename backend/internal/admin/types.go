@@ -154,6 +154,7 @@ type Website struct {
 	AppStoreClicks  Count         `json:"app_store_clicks"`
 	AppStoreCTR     Percent       `json:"app_store_ctr_percent"`
 	AndroidSignups  Count         `json:"android_signups"`
+	AndroidWaitlist Count         `json:"android_waitlist"`
 	Trend           []TrendPoint  `json:"trend"`
 }
 
@@ -182,13 +183,13 @@ type FunnelStep struct {
 }
 
 type Active struct {
-	Basis           string `json:"basis"`
-	DAU             Count  `json:"dau"`
-	WAU             Count  `json:"wau"`
-	MAU             Count  `json:"mau"`
-	MonitoringOn    Count  `json:"monitoring_on"`
-	MonitoringOff   Count  `json:"monitoring_off"`
-	HeartbeatSilent Count  `json:"heartbeat_silent"`
+	Basis           string        `json:"basis"`
+	DAU             Count         `json:"dau"`
+	WAU             Count         `json:"wau"`
+	MAU             Count         `json:"mau"`
+	MonitoringOn    Count         `json:"monitoring_on"`
+	MonitoringOff   Count         `json:"monitoring_off"`
+	HeartbeatSilent Count         `json:"heartbeat_silent"`
 	NeverCheckedIn  Count         `json:"never_checked_in"`
 	MonitoredApps   Count         `json:"monitored_apps"`
 	DailyHistory    Gap           `json:"daily_history"`
@@ -229,8 +230,8 @@ type Accountability struct {
 }
 
 type Alerts struct {
-	PartnerAlertsByDay    []DayCount `json:"partner_alerts_by_day"`
-	MonitoringPausedByDay []DayCount `json:"monitoring_paused_by_day"`
+	PartnerAlertsByDay    []DayCount  `json:"partner_alerts_by_day"`
+	MonitoringPausedByDay []DayCount  `json:"monitoring_paused_by_day"`
 	SupportTaps           CountRollup `json:"support_taps"`
 }
 

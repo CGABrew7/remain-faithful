@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // Client sends transactional email via SendGrid's v3 mail/send API.
@@ -30,23 +32,29 @@ func New() *Client {
 
 // SendPartnerInvite sends an accountability partner invitation email.
 func (c *Client) SendPartnerInvite(toEmail, inviterName, acceptURL string) error {
-	inviterName = sanitizeMailHeader(inviterName)
-	subject := inviterName + " invited you to Remain Faithful"
-	plain := fmt.Sprintf(
+	subject, plain, htmlBody := partnerInviteMessage(inviterName, acceptURL)
+	return c.send(toEmail, "", subject, plain, htmlBody)
+}
+
+func partnerInviteMessage(inviterName, acceptURL string) (subject, plain, htmlBody string) {
+	inviterName = mailDisplayName(inviterName)
+	subject = inviterName + " invited you to Remain Faithful"
+	plain = fmt.Sprintf(
 		"Hi,\n\n%s has invited you to join them as an accountability partner on Remain Faithful.\n\n"+
-			"Open the link below on your iPhone to accept. You are not connected until you accept.\n\n%s\n\n"+
+			"If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, open the link below to accept.\n\n%s\n\n"+
 			"Remain Faithful is a faith-based accountability app for adults.\n\n"+
 			"If you weren't expecting this, you can safely ignore this email.\n\n- Remain Faithful",
 		inviterName, acceptURL,
 	)
-	return c.send(toEmail, "", subject, plain, partnerInviteHTML(inviterName, acceptURL))
+	htmlBody = partnerInviteHTML(inviterName, acceptURL)
+	return subject, plain, htmlBody
 }
 
 func partnerInviteHTML(inviterName, acceptURL string) string {
 	return fmt.Sprintf(
 		`<p>Hi,</p>`+
 			`<p><strong>%s</strong> has invited you to join them as an accountability partner on Remain Faithful.</p>`+
-			`<p>You are not connected until you accept.</p>`+
+			`<p>If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, use the button below.</p>`+
 			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
 			`text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>`+
 			`<p>If you weren't expecting this, you can safely ignore this email.</p>`+
@@ -89,27 +97,52 @@ func (c *Client) SendEmailChange(toEmail, toName, verifyURL string) error {
 
 // SendGroupInvite sends a group member invitation email.
 func (c *Client) SendGroupInvite(toEmail, inviterName, groupName, acceptURL string) error {
-	inviterName = sanitizeMailHeader(inviterName)
+	subject, plain, htmlBody := groupInviteMessage(inviterName, groupName, acceptURL)
+	return c.send(toEmail, "", subject, plain, htmlBody)
+}
+
+func groupInviteMessage(inviterName, groupName, acceptURL string) (subject, plain, htmlBody string) {
+	inviterName = mailDisplayName(inviterName)
 	groupName = sanitizeMailHeader(groupName)
-	subject := inviterName + " invited you to join " + groupName + " on Remain Faithful"
-	plain := fmt.Sprintf(
+	subject = inviterName + " invited you to join " + groupName + " on Remain Faithful"
+	plain = fmt.Sprintf(
 		"Hi,\n\n%s has invited you to join the accountability group \"%s\" on Remain Faithful.\n\n"+
-			"Open the link below to accept. You are not in the group until you accept.\n\n%s\n\n"+
+			"If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, open the link below to accept.\n\n%s\n\n"+
 			"If you weren't expecting this, you can safely ignore this email.\n\n- Remain Faithful",
 		inviterName, groupName, acceptURL,
 	)
-	htmlBody := fmt.Sprintf(
+	htmlBody = fmt.Sprintf(
 		`<p>Hi,</p>`+
 			`<p><strong>%s</strong> has invited you to join the accountability group `+
 			`<strong>%s</strong> on Remain Faithful.</p>`+
-			`<p>You are not in the group until you accept.</p>`+
+			`<p>If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, use the button below.</p>`+
 			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
 			`text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>`+
 			`<p style="color:#888;">If you weren't expecting this, you can safely ignore this email.</p>`+
 			`<p>- Remain Faithful</p>`,
 		html.EscapeString(inviterName), html.EscapeString(groupName), html.EscapeString(acceptURL),
 	)
-	return c.send(toEmail, "", subject, plain, htmlBody)
+	return subject, plain, htmlBody
+}
+
+// mailDisplayName keeps an inviter name short and free of control or bidi
+// characters before it is placed in a subject or body.
+func mailDisplayName(raw string) string {
+	var b strings.Builder
+	for _, r := range raw {
+		if unicode.IsControl(r) || unicode.Is(unicode.Cf, r) {
+			continue
+		}
+		b.WriteRune(r)
+	}
+	name := strings.TrimSpace(b.String())
+	if name == "" {
+		return "Someone"
+	}
+	if utf8.RuneCountInString(name) > 80 {
+		name = string([]rune(name)[:80])
+	}
+	return name
 }
 
 // SendPasswordReset sends a reset-link email to the given address.

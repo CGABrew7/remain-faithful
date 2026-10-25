@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 	rfauth "remain-faithful/backend/internal/auth"
@@ -18,7 +17,10 @@ import (
 // POST /relationships
 // Body: { "partner_email": "...", "type": "partner" }
 func (h *H) CreateRelationship(w http.ResponseWriter, r *http.Request) {
-	userID, _ := rfauth.UserIDFromContext(r.Context())
+	userID, ok := h.requireConfirmedAccount(w, r)
+	if !ok {
+		return
+	}
 
 	var req struct {
 		PartnerEmail string `json:"partner_email"`
@@ -28,14 +30,18 @@ func (h *H) CreateRelationship(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.PartnerEmail = strings.ToLower(strings.TrimSpace(req.PartnerEmail))
-	if req.PartnerEmail == "" {
-		writeError(w, http.StatusBadRequest, "partner_email is required")
+	email, valid := normalizeWaitlistEmail(req.PartnerEmail)
+	if !valid {
+		writeError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
-	if req.Type == "" {
-		req.Type = "partner"
+	req.PartnerEmail = email
+	kind, allowed := allowedRelationshipType(req.Type)
+	if !allowed {
+		writeError(w, http.StatusBadRequest, "Relationship type is not recognized.")
+		return
 	}
+	req.Type = kind
 
 	var partnerID int64
 	err := h.DB.QueryRowContext(r.Context(),

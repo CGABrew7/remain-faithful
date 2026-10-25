@@ -45,8 +45,13 @@ func TestSetRelationshipPINPendingAndAccepted(t *testing.T) {
 		db.mu.Unlock()
 		h := &H{DB: db.open(t)}
 		rr := postPIN(h, 4, 2)
-		assertCodedError(t, rr, http.StatusConflict, "relationship_not_accepted")
-		if !strings.Contains(rr.Body.String(), "isn't accepted yet") {
+		if rr.Code != http.StatusForbidden {
+			t.Fatalf("status %d body %s", rr.Code, rr.Body.String())
+		}
+		if strings.Contains(rr.Body.String(), "relationship_not_accepted") {
+			t.Fatalf("pending pin used a distinct code: %s", rr.Body.String())
+		}
+		if !strings.Contains(rr.Body.String(), "not authorized to set PIN on this relationship") {
 			t.Fatalf("body %s", rr.Body.String())
 		}
 		if db.relRows()[0].pinHash != "" {

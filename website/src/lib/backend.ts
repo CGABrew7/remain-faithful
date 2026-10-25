@@ -2,31 +2,49 @@ export function backendBase() {
   return (process.env.BACKEND_URL || '').replace(/\/$/, '')
 }
 
+export const SERVER_UNREACHABLE = 'We could not reach the server. Check your connection and try again.'
+
+export function proxyHeaders(request?: Request): Record<string, string> {
+  const secret = process.env.SITE_PROXY_SECRET || ''
+  if (!secret || !request) return {}
+  return {
+    'X-RF-Proxy-Secret': secret,
+    'X-RF-Client-IP': clientAddress(request),
+  }
+}
+
 export async function backendJSON(
   path: string,
   body: unknown,
   token?: string,
+  request?: Request,
 ): Promise<{ ok: boolean; status: number; data: { error?: string; token?: string; status?: string } }> {
   const base = backendBase()
   if (!base) {
     return { ok: false, status: 503, data: { error: 'Account service is not configured.' } }
   }
-  const res = await fetch(`${base}${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-    cache: 'no-store',
-  })
-  let data: { error?: string; token?: string; status?: string } = {}
   try {
-    data = await res.json()
+    const res = await fetch(`${base}${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...proxyHeaders(request),
+      },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
+    })
+    let data: { error?: string; token?: string; status?: string } = {}
+    try {
+      data = await res.json()
+    } catch {
+      data = {}
+    }
+    return { ok: res.ok, status: res.status, data }
   } catch {
-    data = {}
+    return { ok: false, status: 504, data: { error: SERVER_UNREACHABLE } }
   }
-  return { ok: res.ok, status: res.status, data }
 }
 
 const hits = new Map<string, { n: number; start: number }>()
@@ -43,13 +61,15 @@ export function tooMany(ip: string, limit = 10) {
 }
 
 export function clientAddress(request: Request) {
-  // Vercel sets x-real-ip to the client address it observed. The docs describe
-  // it as identical to x-forwarded-for after Vercel replaces that header, and
-  // x-vercel-forwarded-for as the same address when another proxy rewrites
-  // x-forwarded-for. The first forwarded hop is not used.
-  // https://vercel.com/docs/headers/request-headers
+  // Vercel sets x-real-ip to the visitor it observed. When that header is
+  // missing, the first hop of x-forwarded-for is the same address on Vercel.
+  // x-vercel-forwarded-for is the fallback when another proxy rewrites the
+  // forwarded list. The API only trusts this value when the site sends the
+  // shared proxy secret.
   const real = request.headers.get('x-real-ip')?.split(',')[0]?.trim()
   if (real) return real
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  if (forwarded) return forwarded
   const platform = request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
   if (platform) return platform
   return 'local'

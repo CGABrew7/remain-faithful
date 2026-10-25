@@ -34,11 +34,12 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
-	if req.Email == "" || !strings.Contains(req.Email, "@") {
-		writeError(w, http.StatusBadRequest, "valid email is required")
+	email, valid := normalizeWaitlistEmail(req.Email)
+	if !valid {
+		writeError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
+	req.Email = email
 
 	var inviterName string
 	if err := h.DB.QueryRowContext(r.Context(),
@@ -155,41 +156,48 @@ func (h *H) AcceptPartnerInvite(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Token string `json:"token"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Token == "" {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || strings.TrimSpace(req.Token) == "" {
 		writeError(w, http.StatusBadRequest, "token is required")
 		return
 	}
 
+	tx, err := h.DB.BeginTx(r.Context(), nil)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to accept invite")
+		return
+	}
+	defer tx.Rollback()
+
 	var inviterID int64
-	var inviteeEmail string
-	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT inviter_id, invitee_email FROM relationship_invites
-		 WHERE token = $1 AND status = 'pending'
-		   AND created_at > NOW() - INTERVAL '7 days'`,
-		req.Token,
-	).Scan(&inviterID, &inviteeEmail); err != nil {
+	err = tx.QueryRowContext(r.Context(), `
+		UPDATE relationship_invites
+		SET status = 'accepted'
+		WHERE token = $1 AND invitee_email = $2 AND status = 'pending'
+		  AND created_at > NOW() - INTERVAL '7 days'
+		RETURNING inviter_id
+	`, strings.TrimSpace(req.Token), acceptingEmail).Scan(&inviterID)
+	if isNoRows(err) {
 		writeError(w, http.StatusNotFound, "invite not found or expired")
 		return
 	}
-
-	if acceptingEmail != inviteeEmail {
-		writeError(w, http.StatusForbidden, "this invite was sent to a different email address")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to accept invite")
 		return
 	}
-
 	var relID int64
-	if err := h.DB.QueryRowContext(r.Context(),
-		`INSERT INTO relationships (user_id, partner_id, type, status)
-		 VALUES ($1, $2, 'partner', 'accepted')
-		 ON CONFLICT (user_id, partner_id) DO UPDATE SET status = 'accepted'
-		 RETURNING id`,
-		inviterID, userID,
-	).Scan(&relID); err != nil {
+	if err := tx.QueryRowContext(r.Context(), `
+		INSERT INTO relationships (user_id, partner_id, type, status)
+		VALUES ($1, $2, 'partner', 'accepted')
+		ON CONFLICT (user_id, partner_id) DO UPDATE SET status = 'accepted'
+		RETURNING id
+	`, inviterID, userID).Scan(&relID); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to create relationship")
 		return
 	}
-	_, _ = h.DB.ExecContext(r.Context(),
-		`UPDATE relationship_invites SET status = 'accepted' WHERE token = $1`, req.Token)
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to accept invite")
+		return
+	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"relationship_id": relID,
@@ -217,11 +225,12 @@ func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
-	if req.Email == "" {
-		writeError(w, http.StatusBadRequest, "email is required")
+	email, valid := normalizeWaitlistEmail(req.Email)
+	if !valid {
+		writeError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
+	req.Email = email
 
 	if status, msg := h.checkCanInviteToGroup(r.Context(), groupID, userID); status != 0 {
 		writeError(w, status, msg)
@@ -531,6 +540,29 @@ func (h *H) requireVerifiedMailbox(w http.ResponseWriter, r *http.Request) (int6
 	return userID, email, true
 }
 
+// requireConfirmedAccount allows a confirmed mailbox, and also an Apple or
+// Google sign-in. Those providers already checked the address when they
+// shared one. Direct relationship creation still uses this check. Partner
+// invites, group invites, group creation, events, and protection alerts do not.
+func (h *H) requireConfirmedAccount(w http.ResponseWriter, r *http.Request) (int64, bool) {
+	userID, _ := rfauth.UserIDFromContext(r.Context())
+	var email, appleID, googleID string
+	var verified bool
+	err := h.DB.QueryRowContext(r.Context(), `
+		SELECT email, email_verified, COALESCE(apple_id, ''), COALESCE(google_id, '')
+		FROM users WHERE id = $1
+	`, userID).Scan(&email, &verified, &appleID, &googleID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify your account")
+		return 0, false
+	}
+	if verified || strings.TrimSpace(appleID) != "" || strings.TrimSpace(googleID) != "" {
+		return userID, true
+	}
+	writeUnverifiedMailbox(w, appleID, email)
+	return 0, false
+}
+
 // writeUnverifiedMailbox explains why invites are unavailable.
 // A sign-in that never received an email address cannot confirm one.
 func writeUnverifiedMailbox(w http.ResponseWriter, appleID, email string) {
@@ -577,28 +609,45 @@ func (h *H) decidePartnerInvite(w http.ResponseWriter, r *http.Request, accept b
 			return
 		}
 	}
-	var token string
+	next := "accepted"
+	if !accept {
+		next = "declined"
+	}
+	tx, err := h.DB.BeginTx(r.Context(), nil)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update invite")
+		return
+	}
+	defer tx.Rollback()
 	var inviterID int64
-	err = h.DB.QueryRowContext(r.Context(), `
-		SELECT token, inviter_id FROM relationship_invites
+	err = tx.QueryRowContext(r.Context(), `
+		UPDATE relationship_invites
+		SET status = $3
 		WHERE id = $1 AND invitee_email = $2 AND status = 'pending'
 		  AND created_at > NOW() - INTERVAL '7 days'
-	`, inviteID, email).Scan(&token, &inviterID)
-	if err != nil {
+		RETURNING inviter_id
+	`, inviteID, email, next).Scan(&inviterID)
+	if isNoRows(err) {
 		writeError(w, http.StatusNotFound, "invite not found or expired")
 		return
 	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update invite")
+		return
+	}
 	if !accept {
-		_, _ = h.DB.ExecContext(r.Context(),
-			`UPDATE relationship_invites SET status = 'declined' WHERE id = $1`, inviteID)
-		_, _ = h.DB.ExecContext(r.Context(),
+		_, _ = tx.ExecContext(r.Context(),
 			`DELETE FROM relationships WHERE user_id = $1 AND partner_id = $2 AND status = 'pending'`,
 			inviterID, userID)
+		if err := tx.Commit(); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update invite")
+			return
+		}
 		writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
 		return
 	}
 	var relID int64
-	if err := h.DB.QueryRowContext(r.Context(),
+	if err := tx.QueryRowContext(r.Context(),
 		`INSERT INTO relationships (user_id, partner_id, type, status)
 		 VALUES ($1, $2, 'partner', 'accepted')
 		 ON CONFLICT (user_id, partner_id) DO UPDATE SET status = 'accepted'
@@ -608,8 +657,10 @@ func (h *H) decidePartnerInvite(w http.ResponseWriter, r *http.Request, accept b
 		writeError(w, http.StatusInternalServerError, "failed to accept invite")
 		return
 	}
-	_, _ = h.DB.ExecContext(r.Context(),
-		`UPDATE relationship_invites SET status = 'accepted' WHERE id = $1`, inviteID)
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to accept invite")
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]any{"status": "accepted", "relationship_id": relID})
 }
 
@@ -677,13 +728,31 @@ func (h *H) decideGroupByID(w http.ResponseWriter, r *http.Request, accept bool)
 		return
 	}
 	if !accept {
-		_, _ = h.DB.ExecContext(r.Context(), `UPDATE group_invites SET status = 'declined' WHERE id = $1`, inviteID)
+		var claimed int64
+		err = h.DB.QueryRowContext(r.Context(), `
+			UPDATE group_invites SET status = 'declined'
+			WHERE id = $1 AND invitee_email = $2 AND status = 'pending'
+			  AND created_at > NOW() - INTERVAL '7 days'
+			RETURNING id
+		`, inviteID, email).Scan(&claimed)
+		if isNoRows(err) {
+			writeError(w, http.StatusNotFound, "invite not found or expired")
+			return
+		}
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update invite")
+			return
+		}
 		writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
 		return
 	}
 	if err := h.joinGroupFromInvite(r.Context(), userID, inviteID, groupID); err != nil {
 		if errors.Is(err, errGroupFull) {
 			writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
+			return
+		}
+		if errors.Is(err, errInviteGone) {
+			writeError(w, http.StatusNotFound, "invite not found or expired")
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "failed to join group")
@@ -727,13 +796,31 @@ func (h *H) decideGroupByToken(w http.ResponseWriter, r *http.Request, accept bo
 		return
 	}
 	if !accept {
-		_, _ = h.DB.ExecContext(r.Context(), `UPDATE group_invites SET status = 'declined' WHERE id = $1`, inviteID)
+		var claimed int64
+		err = h.DB.QueryRowContext(r.Context(), `
+			UPDATE group_invites SET status = 'declined'
+			WHERE token = $1 AND invitee_email = $2 AND status = 'pending'
+			  AND created_at > NOW() - INTERVAL '7 days'
+			RETURNING id
+		`, req.Token, email).Scan(&claimed)
+		if isNoRows(err) {
+			writeError(w, http.StatusNotFound, "invite not found or expired")
+			return
+		}
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to update invite")
+			return
+		}
 		writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
 		return
 	}
 	if err := h.joinGroupFromInvite(r.Context(), userID, inviteID, groupID); err != nil {
 		if errors.Is(err, errGroupFull) {
 			writeError(w, http.StatusUnprocessableEntity, "group has reached the maximum of 12 members")
+			return
+		}
+		if errors.Is(err, errInviteGone) {
+			writeError(w, http.StatusNotFound, "invite not found or expired")
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "failed to join group")
@@ -756,20 +843,34 @@ func (h *H) declineByToken(w http.ResponseWriter, r *http.Request, _ bool) {
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
 		return
 	}
-	var inviteID, inviterID int64
-	err = h.DB.QueryRowContext(r.Context(), `
-		SELECT id, inviter_id FROM relationship_invites
+	tx, err := h.DB.BeginTx(r.Context(), nil)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update invite")
+		return
+	}
+	defer tx.Rollback()
+	var inviterID int64
+	err = tx.QueryRowContext(r.Context(), `
+		UPDATE relationship_invites SET status = 'declined'
 		WHERE token = $1 AND invitee_email = $2 AND status = 'pending'
 		  AND created_at > NOW() - INTERVAL '7 days'
-	`, req.Token, email).Scan(&inviteID, &inviterID)
-	if err != nil {
+		RETURNING inviter_id
+	`, req.Token, email).Scan(&inviterID)
+	if isNoRows(err) {
 		writeError(w, http.StatusNotFound, "invite not found or expired")
 		return
 	}
-	_, _ = h.DB.ExecContext(r.Context(), `UPDATE relationship_invites SET status = 'declined' WHERE id = $1`, inviteID)
-	_, _ = h.DB.ExecContext(r.Context(),
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update invite")
+		return
+	}
+	_, _ = tx.ExecContext(r.Context(),
 		`DELETE FROM relationships WHERE user_id = $1 AND partner_id = $2 AND status = 'pending'`,
 		inviterID, userID)
+	if err := tx.Commit(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to update invite")
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "declined"})
 }
 
