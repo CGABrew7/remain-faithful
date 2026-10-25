@@ -166,7 +166,9 @@ func (s inviteScenario) router() func(q string, args []any) ([]string, [][]drive
 	return func(q string, _ []any) ([]string, [][]driver.Value) {
 		switch {
 		case strings.Contains(q, "email_verified"):
-			return []string{"email", "email_verified", "apple_id", "google_id"}, [][]driver.Value{{"owner@example.com", true, "", ""}}
+			// Unconfirmed callers can still invite. A confirmation check would
+			// read this row and refuse the request.
+			return []string{"email", "email_verified", "apple_id", "google_id"}, [][]driver.Value{{"owner@example.com", false, "", ""}}
 		case strings.Contains(q, "relationship_invites WHERE inviter_id"):
 			return one("n", int64(0))
 		case strings.Contains(q, "SELECT user_id FROM group_members WHERE group_id"):

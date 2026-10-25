@@ -3,6 +3,7 @@ package email
 import (
 	"strings"
 	"testing"
+	"unicode/utf8"
 )
 
 func TestInviteAndResetHTMLEscapesNamesAndURLs(t *testing.T) {
@@ -21,6 +22,40 @@ func TestInviteAndResetHTMLEscapesNamesAndURLs(t *testing.T) {
 	}
 	if err := c.SendPasswordReset("a@b.com", name, link); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestMailDisplayNameClipsAndStripsControls(t *testing.T) {
+	raw := "Ada\u202e" + strings.Repeat("B", 200) + "\r\nBcc: spam@evil.test"
+	got := mailDisplayName(raw)
+	if strings.ContainsRune(got, '\u202e') || strings.ContainsAny(got, "\r\n") {
+		t.Fatalf("name = %q", got)
+	}
+	if utf8.RuneCountInString(got) != 80 {
+		t.Fatalf("runes = %d, name = %q", utf8.RuneCountInString(got), got)
+	}
+	if mailDisplayName(" \u202e\n\t ") != "Someone" {
+		t.Fatal("blank name was not replaced")
+	}
+
+	subject, plain, htmlBody := partnerInviteMessage(raw, "https://remainfaithful.com/invite?token=abc")
+	for _, part := range []string{subject, plain, htmlBody} {
+		if strings.ContainsRune(part, '\u202e') || strings.Contains(part, strings.Repeat("B", 81)) {
+			t.Fatalf("partner mail kept the raw name:\n%s", part)
+		}
+	}
+	if !strings.HasPrefix(subject, strings.Repeat("B", 77)) && !strings.Contains(subject, "Ada"+strings.Repeat("B", 77)) {
+		t.Fatalf("subject = %q", subject)
+	}
+
+	groupSubject, groupPlain, groupHTML := groupInviteMessage(raw, "Home\r\nGroup", "https://remainfaithful.com/invite?token=abc")
+	for _, part := range []string{groupSubject, groupPlain, groupHTML} {
+		if strings.ContainsRune(part, '\u202e') || strings.Contains(part, strings.Repeat("B", 81)) {
+			t.Fatalf("group mail kept the raw name:\n%s", part)
+		}
+	}
+	if strings.Contains(groupSubject, "\n") || strings.Contains(groupPlain, "\r") {
+		t.Fatal("group name kept a line break")
 	}
 }
 

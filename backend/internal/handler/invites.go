@@ -25,10 +25,7 @@ import (
 // If the invitee already has an account the relationship is created immediately.
 // Otherwise a pending invite is stored and an email is sent with a deep link.
 func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.requireConfirmedAccount(w, r)
-	if !ok {
-		return
-	}
+	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	var req struct {
 		Email string `json:"email"`
@@ -213,10 +210,7 @@ func (h *H) AcceptPartnerInvite(w http.ResponseWriter, r *http.Request) {
 // POST /groups/{id}/email-invite
 // Body: { "email": "..." }
 func (h *H) GroupEmailInvite(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.requireConfirmedAccount(w, r)
-	if !ok {
-		return
-	}
+	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	groupID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -548,7 +542,8 @@ func (h *H) requireVerifiedMailbox(w http.ResponseWriter, r *http.Request) (int6
 
 // requireConfirmedAccount allows a confirmed mailbox, and also an Apple or
 // Google sign-in. Those providers already checked the address when they
-// shared one. A password account still has to confirm email first.
+// shared one. Direct relationship creation still uses this check. Partner
+// invites, group invites, group creation, events, and protection alerts do not.
 func (h *H) requireConfirmedAccount(w http.ResponseWriter, r *http.Request) (int64, bool) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 	var email, appleID, googleID string

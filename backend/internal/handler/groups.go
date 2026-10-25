@@ -53,10 +53,7 @@ func (h *H) ListMyGroups(w http.ResponseWriter, r *http.Request) {
 // POST /groups
 // Body: { "name": "...", "covenant": "..." }
 func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.requireConfirmedAccount(w, r)
-	if !ok {
-		return
-	}
+	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	var req struct {
 		Name     string `json:"name"`
@@ -381,10 +378,7 @@ func (h *H) SendEncouragement(w http.ResponseWriter, r *http.Request) {
 // POST /groups/:id/invite
 // Body: { "user_email": "..." } (the key "email" is also accepted)
 func (h *H) InviteMember(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.requireConfirmedAccount(w, r)
-	if !ok {
-		return
-	}
+	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	groupID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {

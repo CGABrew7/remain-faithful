@@ -109,10 +109,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, msg)
 		return
 	}
-	userID, ok := h.requireConfirmedAccount(w, r)
-	if !ok {
-		return
-	}
+	userID, _ := rfauth.UserIDFromContext(r.Context())
 
 	// Step 1: insert the event. One statement, independent of alert creation.
 	var eventID int64

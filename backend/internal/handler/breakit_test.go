@@ -97,18 +97,52 @@ func TestPartnerInviteDecisionIsSingleUse(t *testing.T) {
 	}
 }
 
-func TestConfirmedAccountGate(t *testing.T) {
+func TestUnconfirmedAccountCanCreateGroupInviteAndReport(t *testing.T) {
 	postGroup := func(h *H, userID int64) *httptest.ResponseRecorder {
 		rr := httptest.NewRecorder()
 		h.CreateGroup(rr, authed(http.MethodPost, "/groups", `{"name":"Home group","covenant":"We show up."}`, userID))
 		return rr
 	}
 
-	t.Run("unverified password account", func(t *testing.T) {
+	t.Run("unverified password account can create a group", func(t *testing.T) {
 		db := newMemDB()
 		db.addUser(memUser{id: 3, name: "Cam", email: "cam@example.com", verified: false})
 		rr := postGroup(&H{DB: db.open(t)}, 3)
-		if rr.Code != http.StatusForbidden || !strings.Contains(rr.Body.String(), "email_not_verified") {
+		if rr.Code != http.StatusCreated {
+			t.Fatalf("status %d %s", rr.Code, rr.Body.String())
+		}
+	})
+
+	t.Run("unverified password account can invite a partner", func(t *testing.T) {
+		db := newMemDB()
+		db.addUser(memUser{id: 3, name: "Cam", email: "cam@example.com", verified: false})
+		h := &H{DB: db.open(t)}
+		rr := httptest.NewRecorder()
+		h.InvitePartner(rr, authed(http.MethodPost, "/relationships/invite", `{"email":"new.person@example.com"}`, 3))
+		if rr.Code != http.StatusCreated || !strings.Contains(rr.Body.String(), `"invited"`) {
+			t.Fatalf("status %d %s", rr.Code, rr.Body.String())
+		}
+	})
+
+	t.Run("unverified password account can post an event", func(t *testing.T) {
+		db := newMemDB()
+		db.addUser(memUser{id: 3, name: "Cam", email: "cam@example.com", verified: false})
+		h := &H{DB: db.open(t)}
+		rr := httptest.NewRecorder()
+		h.CreateEvent(rr, authed(http.MethodPost, "/events",
+			`{"category":"adult_content","severity":"severe","summary":"Explicit content detected"}`, 3))
+		if rr.Code != http.StatusCreated {
+			t.Fatalf("status %d %s", rr.Code, rr.Body.String())
+		}
+	})
+
+	t.Run("unverified password account can send a protection alert", func(t *testing.T) {
+		db := newMemDB()
+		db.addUser(memUser{id: 3, name: "Cam", email: "cam@example.com", verified: false})
+		h := &H{DB: db.open(t)}
+		rr := httptest.NewRecorder()
+		h.SendProtectionAlert(rr, authed(http.MethodPost, "/protection/alerts", `{"type":"monitoring_disabled"}`, 3))
+		if rr.Code != http.StatusOK {
 			t.Fatalf("status %d %s", rr.Code, rr.Body.String())
 		}
 	})

@@ -143,9 +143,6 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 		}
 		collapseExtra = deviceCollapseKey(req.DeviceID)
 	}
-	if _, ok := h.requireConfirmedAccount(w, r); !ok {
-		return
-	}
 
 	var senderName string
 	if err := h.DB.QueryRowContext(r.Context(),
