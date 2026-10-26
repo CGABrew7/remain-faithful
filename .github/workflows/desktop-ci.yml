@@ -50,7 +50,7 @@ jobs:
       - name: Check release notes
         env:
           PUBLISH_DRY_RUN: "1"
-          GITHUB_REF_NAME: desktop-v1.2.3
+          DESKTOP_RELEASE_TAG: desktop-v1.2.3
         run: |
           tmp=$(mktemp -d)
           echo mac > "$tmp/RemainFaithful-macos.dmg"
@@ -63,7 +63,7 @@ jobs:
             "$tmp/RemainFaithful-windows-setup.exe" \
             "$tmp/win-status.txt" \
             "$tmp/out"
-          grep -F 'Remain Faithful Desktop 1.2.3' "$tmp/out/NOTES.txt"
+          grep -F 'Remain Faithful desktop 1.2.3' "$tmp/out/NOTES.txt"
           grep -F 'RemainFaithful-macos.dmg (signed)' "$tmp/out/NOTES.txt"
           grep -F 'signed with Azure Artifact Signing' "$tmp/out/NOTES.txt"
           printf 'mac=unsigned\n' > "$tmp/mac-status.txt"

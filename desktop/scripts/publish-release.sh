@@ -20,7 +20,8 @@ for input in "$mac_dmg" "$mac_status" "$win_setup" "$win_status"; do
   fi
 done
 
-tag=${GITHUB_REF_NAME:-}
+# GitHub does not let a step replace GITHUB_REF_NAME, so tests pass DESKTOP_RELEASE_TAG.
+tag=${DESKTOP_RELEASE_TAG:-${GITHUB_REF_NAME:-}}
 version=${tag#desktop-v}
 if [[ "$tag" == "$version" || ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.]+)?$ ]]; then
   echo "Refusing to publish. The tag must look like desktop-v1.0.0." >&2
