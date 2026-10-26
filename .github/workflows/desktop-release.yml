@@ -1,0 +1,40 @@
+name: Desktop release
+
+on:
+  push:
+    tags:
+      - 'desktop-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/desktop-ci.yml
+    secrets: inherit
+
+  release:
+    name: github-release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Download desktop builds
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          path: dist
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash desktop/scripts/publish-release.sh \
+            dist/remain-faithful-mac/RemainFaithful-macos.dmg \
+            dist/remain-faithful-mac/signing-status.txt \
+            dist/remain-faithful-windows/RemainFaithful-windows-setup.exe \
+            dist/remain-faithful-windows/signing-status.txt \
+            dist/publish
