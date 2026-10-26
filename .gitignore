@@ -26,6 +26,16 @@ backend/*.test
 .Spotlight-V100
 .Trashes
 
+# ── Android ──────────────────────────────────────────────────────────────────
+android/.gradle/
+android/**/build/
+android/local.properties
+android/captures/
+*.jks
+*.keystore
+*.apk
+*.aab
+
 # ── Node / website ───────────────────────────────────────────────────────────
 node_modules/
 .next/

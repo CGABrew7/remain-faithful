@@ -18,6 +18,7 @@ import (
 	rfauth "remain-faithful/backend/internal/auth"
 	"remain-faithful/backend/internal/clientaddr"
 	"remain-faithful/backend/internal/email"
+	"remain-faithful/backend/internal/fcm"
 	"remain-faithful/backend/internal/handler"
 	"remain-faithful/backend/internal/payment"
 
@@ -56,7 +57,19 @@ func main() {
 	emailClient := email.New()
 	stripeClient := payment.New()
 
-	h := &handler.H{DB: db, APNS: apnsClient, Email: emailClient, Stripe: stripeClient}
+	fcmClient, err := fcm.New(
+		os.Getenv("FCM_PROJECT_ID"),
+		os.Getenv("FCM_CLIENT_EMAIL"),
+		os.Getenv("FCM_PRIVATE_KEY"),
+	)
+	if err != nil {
+		log.Fatalf("fcm: %v", err)
+	}
+	if fcmClient.IsNoop() {
+		log.Println("fcm: WARNING: running as no-op, Android push will not be delivered. Set FCM_PROJECT_ID, FCM_CLIENT_EMAIL, and FCM_PRIVATE_KEY.")
+	}
+
+	h := &handler.H{DB: db, APNS: apnsClient, FCM: fcmClient, Email: emailClient, Stripe: stripeClient}
 
 	srv := &http.Server{
 		Addr:         ":" + port(),

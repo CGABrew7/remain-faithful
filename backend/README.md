@@ -53,6 +53,9 @@ go run ./cmd/server
 | `JWT_SECRET`    | `dev-secret-change-in-production` | HS256 signing secret — **always override in production** |
 | `SITE_PROXY_SECRET` | *(unset)*                    | Shared with the website. When set, the API uses `X-RF-Client-IP` only if `X-RF-Proxy-Secret` matches. When unset, the previous address rules stay in place. |
 | `CONTACT_TO_EMAIL` | *(unset)*                     | Inbox for contact and in-app feedback. The send fails when this is unset. |
+| `FCM_PROJECT_ID` | *(unset)* | Firebase project id for Android push. Unset keeps FCM as a no-op. |
+| `FCM_CLIENT_EMAIL` | *(unset)* | Service account email. Not the APNs key. |
+| `FCM_PRIVATE_KEY` | *(unset)* | Service account PEM. Newlines may be written as `\n`. Never commit this value. |
 
 ## API Reference
 

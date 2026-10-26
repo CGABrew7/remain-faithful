@@ -597,12 +597,26 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 		m.linkSocial(q, args, false)
 		return []string{"ok"}, nil
 
+	case containsAll(q, "SELECT token FROM device_tokens", "platform = 'android'", "user_id = $1"):
+		userID := asInt64(args[0])
+		var rows [][]driver.Value
+		for _, row := range m.tokens {
+			if row.userID == userID && row.active && row.platform == "android" {
+				rows = append(rows, []driver.Value{row.token})
+			}
+		}
+		return []string{"token"}, rows
+
 	case containsAll(q, "SELECT token FROM device_tokens", "environment"):
 		userID := asInt64(args[0])
 		env := asString(args[1])
+		skipAndroid := strings.Contains(q, "platform <> 'android'")
 		var rows [][]driver.Value
 		for _, row := range m.tokens {
 			if row.userID == userID && row.active && row.environment == env {
+				if skipAndroid && row.platform == "android" {
+					continue
+				}
 				rows = append(rows, []driver.Value{row.token})
 			}
 		}
