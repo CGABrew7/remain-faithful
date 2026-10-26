@@ -1,6 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import AppStoreLink from '@/components/AppStoreLink'
+
+function inviteError(message: string) {
+  const lower = message.toLowerCase()
+  if (lower.includes('invalid email or password') || lower.includes('did not match')) {
+    return 'That email and password did not match an account. If you do not have the app yet, download it and create an account with this email.'
+  }
+  if (lower.includes('not found') || lower.includes('expired')) {
+    return 'This invite link is no longer active. Ask the person who invited you to send a new one from the app.'
+  }
+  if (lower.includes('failed to fetch') || lower.includes('could not reach')) {
+    return 'We could not reach the server. Check your connection and try again.'
+  }
+  return message
+}
 
 export default function AcceptInviteForm({
   token,
@@ -26,10 +41,11 @@ export default function AcceptInviteForm({
         body: JSON.stringify({ email, password, token, type, decision, company }),
       })
       const body = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(body.error || 'Could not update this invite.')
+      if (!res.ok) throw new Error(inviteError(body.error || 'Could not update this invite.'))
       setDone(decision === 'decline' ? 'Invite declined.' : 'Invite accepted. Open the app to continue.')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update this invite.')
+      const message = err instanceof Error ? err.message : 'Could not update this invite.'
+      setError(inviteError(message))
     } finally {
       setLoading(null)
     }
@@ -88,9 +104,14 @@ export default function AcceptInviteForm({
         />
       </div>
       {error && (
-        <p className="form-error text-sm" role="alert">
-          {error}
-        </p>
+        <div role="alert">
+          <p className="form-error text-sm">{error}</p>
+          {error.includes('download it') && (
+            <div className="mt-3">
+              <AppStoreLink />
+            </div>
+          )}
+        </div>
       )}
       <div className="flex flex-col gap-3 sm:flex-row">
         <button type="submit" className="btn-wax" disabled={loading !== null}>

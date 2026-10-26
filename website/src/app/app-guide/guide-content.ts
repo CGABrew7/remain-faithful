@@ -55,7 +55,7 @@ export const guideParts: GuidePart[] = [
         intro: 'This is the first thing you see. It has two choices.',
         shots: [
           {
-            src: '/screens/welcome.png',
+            src: '/screens/welcome.webp',
             alt: 'Remain Faithful welcome screen with a gold shield, the tagline "Accountability between trusted friends," a Begin Your Journey button, and a Sign In link.',
             caption: 'Welcome screen',
           },
@@ -80,7 +80,7 @@ export const guideParts: GuidePart[] = [
         intro: 'Three boxes and one button.',
         shots: [
           {
-            src: '/screens/create.png',
+            src: '/screens/create.webp',
             alt: 'Create your account screen with fields for name, email address, and password, and a Get Started button.',
             caption: 'Create your account',
           },
@@ -332,7 +332,7 @@ export const guideParts: GuidePart[] = [
         intro: 'What you see once you are in a group.',
         shots: [
           {
-            src: '/screens/group.png',
+            src: '/screens/group.webp',
             alt: 'Group tab for Tuesday Men\'s Group with five members, each showing a status label and day streak, a Group Covenant row, and an Invite Member button.',
             caption: 'Group tab',
           },

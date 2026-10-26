@@ -29,6 +29,7 @@ export type Overview = {
     app_store_clicks: Count
     app_store_ctr_percent: Percent
     android_signups: Count
+    android_waitlist: Count
     trend: { day: string; visits: Count; visitors: Count }[]
   }
   growth: {

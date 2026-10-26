@@ -7,7 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { UpdatedStamp } from '@/components/UpdatedStamp'
 
 export const metadata: Metadata = {
-  title: 'Remain Faithful vs Accountable2You: Honest Comparison (2026)',
+  title: 'Remain Faithful vs Accountable2You: Direct Comparison (2026)',
   description: 'A detailed comparison of Remain Faithful and Accountable2You for Christian accountability. See how they differ on price, privacy, monitoring approach, and battery impact.',
   alternates: { canonical: 'https://remainfaithful.com/compare/accountable2you' },
 }
@@ -58,7 +58,7 @@ export default function Accountable2YouCompare() {
 
           <div className="mb-10">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <p className="text-wax text-sm font-semibold uppercase tracking-widest">Honest Comparison</p>
+              <p className="text-wax text-sm font-semibold uppercase tracking-widest">Direct Comparison</p>
               <UpdatedStamp />
             </div>
             <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-6 leading-tight text-balance">

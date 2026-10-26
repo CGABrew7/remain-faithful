@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"remain-faithful/backend/internal/apns"
 	rfauth "remain-faithful/backend/internal/auth"
@@ -29,21 +28,18 @@ func (h *H) RegisterDeviceToken(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if req.Token == "" {
-		writeError(w, http.StatusBadRequest, "token is required")
+	token, tokenErr := cleanDeviceToken(req.Token)
+	if tokenErr != "" {
+		writeError(w, http.StatusBadRequest, tokenErr)
 		return
 	}
-	switch strings.ToLower(strings.TrimSpace(req.Platform)) {
-	case "", "ios":
-		req.Platform = "ios"
-	case "android":
-		req.Platform = "android"
-	default:
-		req.Platform = strings.TrimSpace(req.Platform)
-		if req.Platform == "" {
-			req.Platform = "ios"
-		}
+	platform, platformErr := cleanDevicePlatform(req.Platform)
+	if platformErr != "" {
+		writeError(w, http.StatusBadRequest, platformErr)
+		return
 	}
+	req.Token = token
+	req.Platform = platform
 	if req.Environment != "sandbox" && req.Environment != "production" {
 		req.Environment = "sandbox"
 	}
@@ -137,7 +133,7 @@ func (h *H) SendTestPush(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if t.environment != env {
-			res.Error = fmt.Sprintf("token env=%s but server env=%s — skipped", t.environment, env)
+			res.Error = fmt.Sprintf("token env=%s but server env=%s, skipped", t.environment, env)
 			results = append(results, res)
 			continue
 		}
@@ -331,25 +327,25 @@ func metadataPush(title, body, notifType, senderName, collapse string) *apns.Not
 				"sound": "default",
 			},
 			"notification_type": notifType,
-			"sender_name":       senderName,
+			"sender_name":       clipPushName(senderName),
 		},
 	}
 }
 
 func encouragementBody(name string) string {
-	return name + " sent you encouragement."
+	return clipPushName(name) + " sent you encouragement."
 }
 
 func covenantUpdatedBody(name string) string {
-	return name + " updated the group covenant."
+	return clipPushName(name) + " updated the group covenant."
 }
 
 func groupLeftBody(name string) string {
-	return name + " left the group."
+	return clipPushName(name) + " left the group."
 }
 
 func partnershipEndedBody(name string) string {
-	return name + " ended the accountability partnership."
+	return clipPushName(name) + " ended the accountability partnership."
 }
 
 // notifyPartners queries all active device tokens belonging to accepted partners

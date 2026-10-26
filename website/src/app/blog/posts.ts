@@ -38,7 +38,7 @@ God already sees everything. Nothing on your phone or in your head is news to hi
 
 Mercy is what he gives. "If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness" (1 John 1:9). For everyone in Christ, the verdict is already in. "There is therefore now no condemnation for those who are in Christ Jesus" (Romans 8:1).
 
-That order matters. We do not confess to a brother to earn God's forgiveness. Christ earned it for us at the cross. We confess to each other because we are already forgiven, and forgiven people have nothing left to protect. John ties the two together: "if we walk in the light, as he is in the light, we have fellowship with one another, and the blood of Jesus his Son cleanses us from all sin" (1 John 1:7). Walking in the light with God leads straight into honest fellowship with his people.
+That order matters. We do not confess to a brother to earn God's forgiveness. Christ earned it for us at the cross. We confess to each other because we are already forgiven, and forgiven people have nothing left to protect. John ties the two together: "if we walk in the light, as he is in the light, we have fellowship with one another, and the blood of Jesus his Son cleanses us from all sin" (1 John 1:7). Walking in the light with God leads straight into real fellowship with his people.
 
 ## God Gave Us Each Other
 
@@ -133,7 +133,7 @@ It is gentle. Galatians 6:1 says to restore "in a spirit of gentleness." The goa
 
 It is humble. The same verse says, "Keep watch on yourself, lest you too be tempted." The person asking the hard questions is a sinner saved by grace too.
 
-It is honest and specific. "I've been struggling a little" gives a friend nothing to pray about. Say what happened.
+It is plain and specific. "I've been struggling a little" gives a friend nothing to pray about. Say what happened.
 
 It is regular. Hebrews says "every day." Most of us can't meet daily, but we can text, call, and meet often enough that the friendship is already real when the hard day comes.
 
@@ -219,7 +219,7 @@ Don't send someone a link to an app without context. The conversation matters. H
 
 - **What the app does:** ${ALERT_TRIGGER}
 - **What partners see:** ${PRIVACY_POINTER}
-- **The covenant:** Both parties commit to honesty, grace, and confidentiality. You'll see this in the app.
+- **The covenant:** Both parties commit to telling the truth, grace, and confidentiality. You'll see this in the app.
 - **It's voluntary:** Anyone can disable monitoring at any time. This is a choice, not a surveillance program.
 
 If someone isn't ready for that conversation, they probably aren't ready for the app. That's okay.
@@ -264,7 +264,7 @@ Plan a meeting within the first two weeks of launch. Use it to:
 - **Normalize the awkwardness.** Monitoring can feel weird at first. That's normal. Talk about it.
 - **Discuss the covenant.** What does "respond with grace" mean in practice for your group?
 - **Set response expectations.** When an alert comes in, what should the response look like? A text? A call? A prayer? Agree on norms.
-- **Talk about the goal.** This isn't about catching each other. It's about removing the barrier to honest conversation.
+- **Talk about the goal.** This isn't about catching each other. It's about removing the barrier to a real conversation.
 
 ## Common Questions from Members
 
@@ -279,7 +279,7 @@ Monitoring can be paused anytime from the Settings tab. Partners will see that m
 
 ## The First Month
 
-The first month is when habits form. Encourage your group to stay engaged: respond to alerts quickly, check in with each other weekly, and have the honest conversations the app makes available. The technology opens doors; the group has to walk through them.
+The first month is when habits form. Encourage your group to stay engaged: respond to alerts quickly, check in with each other weekly, and have the open conversations the app makes available. The technology opens doors; the group has to walk through them.
     `.trim(),
   },
   {
@@ -303,7 +303,7 @@ It's not about fear of getting caught. It's about having already made a decision
 
 ## Social Norming Effects
 
-There's also solid research on how people's behavior tracks what they think others around them are doing. Accountability groups that talk honestly about struggle tend to normalize it. That cuts down on shame and makes honest conversation more likely.
+There's also solid research on how people's behavior tracks what they think others around them are doing. Accountability groups that talk openly about struggle tend to normalize it. That cuts down on shame and makes that conversation more likely.
 
 RF gives that conversation a concrete starting point: an actual alert event, rather than asking someone to volunteer difficult information from scratch. It's a lot easier to respond to "I got an alert" than to wait for someone to work up the nerve to say "I need to tell you something."
 
@@ -345,9 +345,9 @@ Apple provides two relevant frameworks: Vision OCR (which extracts text from scr
 
 A lot of accountability tools say they're "private." What that usually means is that they've made a policy commitment not to look at your data.
 
-Policy commitments can change. Code is harder to change unnoticed. By running classification entirely on-device and making the codebase open source, we've created a system where the privacy guarantee doesn't depend on trusting us — it depends on reading the code.
+Policy commitments can change. Code is harder to change unnoticed. By running classification entirely on-device and making the codebase open source, we've created a system where the privacy guarantee doesn't depend on trusting us. It depends on reading the code.
 
-We think that's a more honest form of privacy.
+We think that is privacy you can check.
     `.trim(),
   },
   {
@@ -365,7 +365,7 @@ Every partner in Remain Faithful accepts a covenant before gaining access to any
 
 A contract specifies what happens when things go wrong. A covenant specifies what kind of relationship we're committing to. The biblical covenant language is deliberate: we believe accountability is fundamentally relational, and relationship is fundamentally covenantal.
 
-The RF covenant asks partners to commit to honesty, grace in response, confidentiality, and the genuine flourishing of the person they're accountable for. It doesn't describe remedies for breach. It describes the character of the relationship.
+The RF covenant asks partners to commit to telling the truth, grace in response, confidentiality, and the genuine flourishing of the person they're accountable for. It doesn't describe remedies for breach. It describes the character of the relationship.
 
 That's not a legal distinction. It's a theological one.
 

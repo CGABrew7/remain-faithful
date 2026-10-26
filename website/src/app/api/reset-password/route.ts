@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const result = await backendJSON('/auth/reset-password', {
     token: body.token,
     password: body.password,
-  })
+  }, undefined, request)
   if (!result.ok) {
     return Response.json(
       { error: result.data.error || 'That reset link is not valid.' },

@@ -274,7 +274,7 @@ func (h *H) pushProtection(userID int64, senderName, alertType, body string, par
 		},
 		"notification_type": "PROTECTION_ALERT",
 		"alert_type":        alertType,
-		"sender_name":       senderName,
+		"sender_name":       clipPushName(senderName),
 	}
 	n := &apns.Notification{
 		PushType:   "alert",
@@ -296,6 +296,7 @@ func (h *H) sendProtectionAlertToPartners(userID int64, senderName, alertType, _
 // detail is ignored so client-supplied text cannot inflate the APNs body.
 // Screen content is never included — only metadata.
 func protectionAlertBody(name, alertType, _ string) string {
+	name = clipPushName(name)
 	switch alertType {
 	case "monitoring_disabled":
 		return name + " turned off activity monitoring"
@@ -485,8 +486,7 @@ func (h *H) SetRelationshipPIN(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if status != "accepted" {
-		writeCodedError(w, http.StatusConflict, "relationship_not_accepted",
-			"Your partner request isn't accepted yet. Confirm your email, then accept the invite.")
+		writeError(w, http.StatusForbidden, "not authorized to set PIN on this relationship")
 		return
 	}
 

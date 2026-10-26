@@ -21,4 +21,5 @@ export const FAQ_SLIP =
 export const FAQ_DIFFERENT =
   'It is free, it is for adults who choose their own partners, and screenshots stay on the phone. The privacy section on this page says what a partner can receive. The iOS app, backend, and website source are public on GitHub.'
 
-export const FAQ_STREAMING = 'Deep Scan cannot see DRM streaming.'
+export const FAQ_STREAMING =
+  'Deep Scan is optional and runs on your phone. DRM video apps such as Netflix do not share frames, so there is nothing from those apps to classify. Screenshots and screen content stay on your phone. Only an event category, severity, time, a short summary, and a heartbeat leave the device.'

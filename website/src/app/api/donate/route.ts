@@ -8,8 +8,17 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Too many attempts. Wait a minute and try again.' }, { status: 429 })
     }
 
-    const body = await request.json()
-    if (typeof body?.company === 'string' && body.company.trim() !== '') {
+    let body: { company?: unknown; amount?: unknown; recurring?: unknown }
+    try {
+      const parsed = await request.json()
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return Response.json({ error: 'Invalid request' }, { status: 400 })
+      }
+      body = parsed
+    } catch {
+      return Response.json({ error: 'Invalid request' }, { status: 400 })
+    }
+    if (typeof body.company === 'string' && body.company.trim() !== '') {
       return Response.json({ url: null })
     }
     const { amount, recurring } = body

@@ -251,7 +251,7 @@ func (h *H) handleInvoicePaymentFailed(ctx context.Context, event stripe.Event) 
 	if userID > 0 {
 		h.pushDonationAlert(ctx, userID,
 			"Donation payment unsuccessful",
-			"We could not process your monthly gift. You can update your payment method anytime — Remain Faithful stays free.",
+			"We could not process your monthly gift. You can update your payment method anytime. Remain Faithful stays free.",
 			"DONATION_PAYMENT_FAILED")
 	}
 }

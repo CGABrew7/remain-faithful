@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -52,12 +53,14 @@ func (h *H) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toEmail := os.Getenv("CONTACT_TO_EMAIL")
+	toEmail := strings.TrimSpace(os.Getenv("CONTACT_TO_EMAIL"))
 	if toEmail == "" {
-		toEmail = "jeff@hanokventures.co"
+		log.Printf("[feedback] CONTACT_TO_EMAIL is not set")
+		writeError(w, http.StatusInternalServerError, "We could not send your message. Please email support@remainfaithful.com.")
+		return
 	}
 	if err := h.Email.SendContact(email, name, subject, message, toEmail); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to send message — please email us directly")
+		writeError(w, http.StatusInternalServerError, "We could not send your message. Please email support@remainfaithful.com.")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -87,7 +90,7 @@ func normalizeFeedback(typ, summary, details, appVersion, deviceModel, osVersion
 	deviceModel = clip(strings.TrimSpace(deviceModel), 80)
 	osVersion = clip(strings.TrimSpace(osVersion), 40)
 	if appVersion != "" || deviceModel != "" || osVersion != "" {
-		b.WriteString("\n\n—\n")
+		b.WriteString("\n\n----\n")
 		if appVersion != "" {
 			b.WriteString("App: " + appVersion + "\n")
 		}

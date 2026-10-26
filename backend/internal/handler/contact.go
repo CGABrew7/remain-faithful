@@ -2,9 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"strings"
+	"unicode/utf8"
 )
 
 // Contact handles website contact-form submissions.
@@ -26,26 +28,47 @@ func (h *H) Contact(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 		return
 	}
-	req.Name = strings.TrimSpace(req.Name)
-	req.Email = strings.TrimSpace(req.Email)
-	req.Subject = strings.TrimSpace(req.Subject)
-	req.Message = strings.TrimSpace(req.Message)
-
-	if req.Name == "" || req.Email == "" || req.Message == "" {
+	name, nameErr := cleanPersonName(req.Name)
+	if nameErr != "" {
+		writeError(w, http.StatusBadRequest, nameErr)
+		return
+	}
+	email, valid := normalizeWaitlistEmail(req.Email)
+	if !valid {
+		writeError(w, http.StatusBadRequest, "Please enter a valid email address.")
+		return
+	}
+	subject := strings.TrimSpace(req.Subject)
+	message := strings.TrimSpace(req.Message)
+	if containsDisallowedText(subject, false) || containsDisallowedText(message, true) {
+		writeError(w, http.StatusBadRequest, "That message contains characters that are not allowed.")
+		return
+	}
+	if message == "" {
 		writeError(w, http.StatusBadRequest, "name, email, and message are required")
 		return
 	}
-	if req.Subject == "" {
-		req.Subject = "General"
+	if utf8.RuneCountInString(subject) > maxContactSubject {
+		writeError(w, http.StatusBadRequest, "Subject must be 120 characters or fewer.")
+		return
+	}
+	if utf8.RuneCountInString(message) > maxContactMessage {
+		writeError(w, http.StatusBadRequest, "Message must be 4000 characters or fewer.")
+		return
+	}
+	if subject == "" {
+		subject = "General"
 	}
 
-	toEmail := os.Getenv("CONTACT_TO_EMAIL")
+	toEmail := strings.TrimSpace(os.Getenv("CONTACT_TO_EMAIL"))
 	if toEmail == "" {
-		toEmail = "jeff@hanokventures.co"
+		log.Printf("[contact] CONTACT_TO_EMAIL is not set")
+		writeError(w, http.StatusInternalServerError, "We could not send your message. Please email support@remainfaithful.com.")
+		return
 	}
 
-	if err := h.Email.SendContact(req.Email, req.Name, req.Subject, req.Message, toEmail); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to send message — please email us directly")
+	if err := h.Email.SendContact(email, name, subject, message, toEmail); err != nil {
+		writeError(w, http.StatusInternalServerError, "We could not send your message. Please email support@remainfaithful.com.")
 		return
 	}
 

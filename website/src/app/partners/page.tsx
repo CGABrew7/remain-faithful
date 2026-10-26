@@ -28,7 +28,7 @@ export default function PartnersPage() {
             Equip Your Church&apos;s Accountability Ministry
           </h1>
           <p className="max-w-2xl text-lg text-ink-soft">
-            Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and ministry programs — at no cost to your church.
+            Remain Faithful brings real accountability technology to small groups, discipleship cohorts, and ministry programs, at no cost to your church.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <AppStoreLink />
@@ -46,7 +46,7 @@ export default function PartnersPage() {
           </div>
           </div>
           <PhoneFrame
-            src="/screens/group.png"
+            src="/screens/group.webp"
             alt="Remain Faithful group screen listing five members with their status and day streaks, and Invite Member."
           />
         </div>
@@ -159,7 +159,7 @@ export default function PartnersPage() {
                   'The leader installs and uses RF personally before asking anyone else to join.',
                   'Review the Group Setup Guide and covenant text with co-leaders.',
                   'Decide on leader visibility settings before launch (leader-only alerts vs. group alerts).',
-                  'Brief your pastor on the approach — his awareness helps normalize the conversation.',
+                  'Brief your pastor on the approach. His awareness helps normalize the conversation.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
                     <span className="flex-shrink-0 w-5 h-5 rounded-sm bg-wax/20 flex items-center justify-center text-wax text-xs font-bold">{i + 1}</span>
@@ -172,9 +172,9 @@ export default function PartnersPage() {
               <h3 className="font-serif text-xl font-semibold text-ink mb-4">Phase 2: Group Launch</h3>
               <ul className="space-y-3">
                 {[
-                  'Introduce RF at an existing group meeting — not as an app, but as an accountability covenant.',
+                  'Introduce RF at an existing group meeting, as an accountability covenant rather than only as an app.',
                   'Read the covenant text together. Discuss what "responding with grace" means for your group.',
-                  'Allow members to ask questions. Invite honest hesitation — this is a trust-building moment.',
+                  'Allow members to ask questions. Invite open questions. This is a trust-building moment.',
                   'Set a 30-day trial. No pressure to continue; just try it and see.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
@@ -189,7 +189,7 @@ export default function PartnersPage() {
               <ul className="space-y-3">
                 {[
                   'Begin every meeting with a brief accountability check: "Did anything come up this week?"',
-                  'When an alert fires, respond within 24 hours — a short text asking "How are you doing?" is enough.',
+                  'When an alert fires, respond within 24 hours. A short text asking "How are you doing?" is enough.',
                   'After 90 days, revisit the covenant. Adjust based on what you\'ve learned.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
@@ -203,7 +203,7 @@ export default function PartnersPage() {
               <h3 className="font-serif text-xl font-semibold text-ink mb-4">What Not To Do</h3>
               <ul className="space-y-3">
                 {[
-                  'Don\'t mandate RF without conversation — it must be chosen, not required.',
+                  'Do not mandate RF without conversation. It must be chosen, not required.',
                   'Don\'t use alerts as discipline tools. They are conversation starters, not verdicts.',
                   'Don\'t respond to an alert with shame. The covenant requires grace.',
                   'Don\'t expect the app to do the relational work. RF is infrastructure, not relationship.',
@@ -234,17 +234,17 @@ export default function PartnersPage() {
                 Remain Faithful integrates naturally with Celebrate Recovery and similar programs. For participants working through sexual purity or addiction to pornography, RF provides an automatic accountability layer that works between weekly meetings.
               </p>
               <p className="text-ink-soft leading-relaxed mb-4">
-                The key alignment with 12-step and recovery models: RF removes the decision to self-disclose at the moment of greatest shame. It makes honesty automatic, which is exactly what recovery programs teach but struggle to enforce between meetings.
+                The key alignment with 12-step and recovery models: RF removes the decision to self-disclose at the moment of greatest shame. It makes accountability automatic, which is exactly what recovery programs teach but struggle to keep up between meetings.
               </p>
               <p className="text-ink-soft leading-relaxed mb-6">
-                RF can pair with any existing sponsor or accountability partner structure — the sponsor relationship already exists; RF simply adds a consistent signal layer to it.
+                RF can pair with any existing sponsor or accountability partner structure. The sponsor relationship already exists. RF simply adds a consistent signal layer to it.
               </p>
               <div className="space-y-3">
                 {[
                   'Compatible with Celebrate Recovery accountability structures',
                   'Works alongside existing sponsor relationships',
                   'Provides automatic accountability between weekly meetings',
-                  'Shame-resistant — partners see metadata, not content',
+                  'Shame-resistant. Partners receive event metadata, not screen content',
                   'Supports one-to-one sponsor relationships or CR small groups',
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2 text-sm text-ink-soft">
@@ -266,7 +266,7 @@ export default function PartnersPage() {
                   {[
                     'Introduce RF at Step 5 or Step 8 groups where accountability already exists.',
                     'Pair RF with existing accountability partner assignments.',
-                    'Use the Group feature for CR small groups of 4–8 participants.',
+                    'Use the Group feature for CR small groups of 4 to 8 participants.',
                     'CR leader can be a partner on alerts, same as any other member.',
                     'Use RF alerts as a bridge topic at weekly CR meetings.',
                   ].map((step, i) => (
@@ -379,12 +379,12 @@ export default function PartnersPage() {
               {
                 step: '3',
                 title: 'Train Group Leaders',
-                desc: 'Host a 30-minute leader training session — in person or via video — walking through the app, the covenant, and how to respond to alerts. Leaders who understand the "why" launch groups that stick.',
+                desc: 'Host a 30-minute leader training session, in person or on video, walking through the app, the covenant, and how to respond to alerts. Leaders who understand the "why" launch groups that stick.',
               },
               {
                 step: '4',
                 title: 'Roll Out by Ministry Cohort',
-                desc: 'Expand one ministry at a time — college students, young adults, adult small groups — rather than church-wide all at once. Each cohort gets its own launch conversation and covenant discussion.',
+                desc: 'Expand one ministry at a time, such as college students, young adults, or adult small groups, rather than church-wide all at once. Each cohort gets its own launch conversation and covenant discussion.',
               },
               {
                 step: '5',

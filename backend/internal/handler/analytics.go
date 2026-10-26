@@ -135,7 +135,7 @@ func cleanTrackPath(path string) string {
 }
 
 func referrerDomain(raw string) string {
-	raw = strings.TrimSpace(raw)
+	raw = cleanCampaignValue(raw, 253)
 	if raw == "" {
 		return ""
 	}
@@ -158,21 +158,7 @@ func referrerDomain(raw string) string {
 }
 
 func cleanUTM(s string) string {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return ""
-	}
-	var b strings.Builder
-	for _, r := range s {
-		if r < 32 || r == 127 {
-			continue
-		}
-		b.WriteRune(r)
-		if b.Len() >= 80 {
-			break
-		}
-	}
-	return b.String()
+	return cleanCampaignValue(s, 80)
 }
 
 func allowCollect(key string, limit int) bool {

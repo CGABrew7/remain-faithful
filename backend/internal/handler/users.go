@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"remain-faithful/backend/internal/apns"
@@ -62,17 +61,18 @@ func (h *H) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	req.Name = strings.TrimSpace(req.Name)
-	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
-	if req.Name == "" || req.Email == "" {
-		writeError(w, http.StatusBadRequest, "name and email are required")
+	name, nameErr := cleanPersonName(req.Name)
+	if nameErr != "" {
+		writeError(w, http.StatusBadRequest, nameErr)
 		return
 	}
-
-	if !strings.Contains(req.Email, "@") {
-		writeError(w, http.StatusBadRequest, "valid email is required")
+	email, valid := normalizeWaitlistEmail(req.Email)
+	if !valid {
+		writeError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
+	req.Name = name
+	req.Email = email
 	var current string
 	if err := h.DB.QueryRowContext(r.Context(), `SELECT email FROM users WHERE id = $1`, userID).Scan(&current); err != nil {
 		writeError(w, http.StatusNotFound, "user not found")
@@ -80,14 +80,14 @@ func (h *H) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var id int64
-	var name, email, createdAt string
+	var savedName, savedEmail, createdAt string
 	pending := ""
 	if req.Email == current {
 		err := h.DB.QueryRowContext(r.Context(),
 			`UPDATE users SET name = $1 WHERE id = $2
 			 RETURNING id, name, email, created_at`,
 			req.Name, userID,
-		).Scan(&id, &name, &email, &createdAt)
+		).Scan(&id, &savedName, &savedEmail, &createdAt)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to update profile")
 			return
@@ -114,7 +114,7 @@ func (h *H) UpdateMe(w http.ResponseWriter, r *http.Request) {
 			    pending_email_expires_at = NOW() + INTERVAL '24 hours'
 			WHERE id = $4
 			RETURNING id, name, email, created_at
-		`, req.Name, req.Email, hashToken(token), userID).Scan(&id, &name, &email, &createdAt)
+		`, req.Name, req.Email, hashToken(token), userID).Scan(&id, &savedName, &savedEmail, &createdAt)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to update profile")
 			return
@@ -122,14 +122,14 @@ func (h *H) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		pending = req.Email
 		if h.Email != nil {
 			link := getAppBaseURL() + "/verify-email?token=" + token + "&purpose=change"
-			_ = h.Email.SendEmailChange(req.Email, name, link)
+			_ = h.Email.SendEmailChange(req.Email, savedName, link)
 		}
 	}
 
 	resp := map[string]any{
 		"id":         id,
-		"name":       name,
-		"email":      email,
+		"name":       savedName,
+		"email":      savedEmail,
 		"created_at": createdAt,
 	}
 	if pending != "" {
@@ -286,6 +286,7 @@ func (h *H) collectDepartureTokens(ctx context.Context, userID int64) []string {
 
 // sendDepartureNotifications pushes a departure notice to every provided token.
 func (h *H) sendDepartureNotifications(ctx context.Context, userName string, tokens []string) {
+	userName = clipPushName(userName)
 	payload := map[string]any{
 		"aps": map[string]any{
 			"alert": map[string]string{
@@ -357,6 +358,7 @@ func (h *H) sendAndroidDeparture(ctx context.Context, userName string, tokens []
 	if h.FCM == nil {
 		return
 	}
+	userName = clipPushName(userName)
 	payload := map[string]any{
 		"aps": map[string]any{
 			"alert": map[string]string{

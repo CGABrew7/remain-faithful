@@ -61,6 +61,7 @@ export function previewOverview(range = '7d'): Overview {
       app_store_clicks: 96,
       app_store_ctr_percent: 7.5,
       android_signups: 18,
+      android_waitlist: 7,
       trend: labels.map((day, i) => ({
         day,
         visits: 140 + (i % 5) * 18,

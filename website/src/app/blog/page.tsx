@@ -20,7 +20,7 @@ export default function BlogPage() {
             Thoughts on Accountability
           </h1>
           <p className="text-ink-soft max-w-xl mx-auto">
-            Practical guides, theological reflections, and honest conversations about the struggle and the tools we&apos;ve built to face it together.
+            Practical guides, theological reflections, and open conversations about the struggle and the tools we&apos;ve built to face it together.
           </p>
         </div>
 

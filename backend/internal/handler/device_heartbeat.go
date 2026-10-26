@@ -93,7 +93,7 @@ func protectionBody(name, alertType, deviceLabel string) string {
 }
 
 func deviceSilenceBody(name, deviceLabel string) string {
-	return name + "'s " + deviceLabel + " has stopped sending heartbeats"
+	return clipPushName(name) + "'s " + deviceLabel + " has stopped sending heartbeats"
 }
 
 // MigrateDeviceHeartbeats adds the per-device tables. Safe to run on every startup.

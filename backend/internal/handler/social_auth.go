@@ -313,6 +313,9 @@ func (h *H) confirmProviderEmail(ctx context.Context, userID int64, idCol, idVal
 }
 
 func isNoRows(err error) bool {
+	if err == nil {
+		return false
+	}
 	return err == sql.ErrNoRows || strings.Contains(err.Error(), "no rows")
 }
 

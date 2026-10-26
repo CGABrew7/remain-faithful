@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --experimental-strip-types --test scripts/checkout-urls.test.ts scripts/donate-links.test.ts scripts/alert-copy.test.ts scripts/visitor-hash.test.ts scripts/client-address.test.ts"
+    "test": "node --experimental-strip-types --test scripts/checkout-urls.test.ts scripts/donate-links.test.ts scripts/alert-copy.test.ts scripts/visitor-hash.test.ts scripts/client-address.test.ts scripts/pilot-and-waitlist.test.ts scripts/plain-copy.test.ts"
   },
   "dependencies": {
     "next": "15.5.28",
