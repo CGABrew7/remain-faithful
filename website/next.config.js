@@ -6,6 +6,10 @@ function contentSecurityPolicy() {
   const imgSrc = ["'self'", 'data:']
   const connectSrc = ["'self'"]
 
+  scriptSrc.push('https://*.clarity.ms', 'https://c.bing.com')
+  imgSrc.push('https://*.clarity.ms', 'https://c.bing.com')
+  connectSrc.push('https://*.clarity.ms', 'https://c.bing.com')
+
   if (gaEnabled) {
     scriptSrc.push(
       'https://www.googletagmanager.com',

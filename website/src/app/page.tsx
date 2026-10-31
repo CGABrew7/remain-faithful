@@ -357,7 +357,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="donate" className="section scroll-mt-24">
+      <section id="donate" className="section scroll-mt-24" data-clarity-mask="true">
         <div className="shell">
           <div className="surface relative overflow-hidden px-6 py-14 text-center sm:px-12">
             <div

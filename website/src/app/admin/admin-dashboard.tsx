@@ -175,7 +175,7 @@ export default function AdminDashboard({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
+    <div className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pt-10" data-clarity-mask="true">
       <header className="rise flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="kicker">Remain Faithful</p>
