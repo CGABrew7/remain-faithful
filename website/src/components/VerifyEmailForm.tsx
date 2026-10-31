@@ -87,7 +87,7 @@ export default function VerifyEmailForm() {
   return (
     <section className="section pt-28 lg:pt-32">
       <div className="shell max-w-lg">
-        <div className="surface px-6 py-12 sm:px-10">
+        <div className="surface px-6 py-12 sm:px-10" data-clarity-mask="true">
           <p className="kicker">Account</p>
           <h1 className="mt-4 font-serif text-4xl font-bold text-white">Confirm your email</h1>
           <p className={`mt-4 ${status === 'error' ? 'form-error' : 'text-ink-soft'}`} role={status === 'error' ? 'alert' : 'status'}>

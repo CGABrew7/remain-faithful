@@ -4,6 +4,7 @@ import { Playfair_Display, Source_Sans_3 } from 'next/font/google'
 import './globals.css'
 import { JsonLd } from '@/components/JsonLd'
 import AnalyticsConsent from '@/components/AnalyticsConsent'
+import MicrosoftClarity from '@/components/MicrosoftClarity'
 import PageBeacon from '@/components/PageBeacon'
 import SiteChrome from '@/components/SiteChrome'
 import { organizationSchema, websiteSchema } from '@/lib/structured-data'
@@ -109,6 +110,7 @@ export default function RootLayout({
           <PageBeacon />
         </Suspense>
         <AnalyticsConsent gaId={gaId} />
+        <MicrosoftClarity />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <SiteChrome>{children}</SiteChrome>

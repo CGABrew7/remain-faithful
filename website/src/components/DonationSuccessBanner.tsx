@@ -19,7 +19,7 @@ export default function DonationSuccessBanner() {
   if (!show) return null
 
   return (
-    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
+    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4" data-clarity-mask="true">
       <div
         className="p-5 flex items-start gap-4 bg-paper-raised"
         style={{ boxShadow: 'var(--shadow-border)' }}
