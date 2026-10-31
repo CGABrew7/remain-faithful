@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Script from 'next/script'
-import { isPublicClarityPath } from '@/lib/clarity-paths'
+import { ANALYTICS_CONSENT_EVENT, readAnalyticsConsent } from '@/lib/analytics-consent'
+import { shouldLoadClarity } from '@/lib/clarity-paths'
 
 const CLARITY_PROJECT_ID = 'z6e76ynt8r'
 
@@ -13,7 +14,21 @@ type ClarityWindow = Window & {
 
 export default function MicrosoftClarity() {
   const pathname = usePathname() || ''
-  const enabled = isPublicClarityPath(pathname)
+  const [consent, setConsent] = useState<string | null>(null)
+  const enabled = shouldLoadClarity(pathname, consent)
+
+  useEffect(() => {
+    function sync() {
+      setConsent(readAnalyticsConsent(window.localStorage))
+    }
+    sync()
+    window.addEventListener('storage', sync)
+    window.addEventListener(ANALYTICS_CONSENT_EVENT, sync)
+    return () => {
+      window.removeEventListener('storage', sync)
+      window.removeEventListener(ANALYTICS_CONSENT_EVENT, sync)
+    }
+  }, [])
 
   useEffect(() => {
     const clarity = (window as ClarityWindow).clarity

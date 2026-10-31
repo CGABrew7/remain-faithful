@@ -62,7 +62,7 @@ export default function PrivacyPage() {
 
             <Subsection title="Usage Analytics">
               <p>
-                Website analytics stay off until you tap Allow analytics. The choice is saved in this browser. The iPhone app does not include analytics. The site also keeps a cookieless count of pages, referrer domain, campaign tags, country, US state, and device type for 13 months, with a daily anonymous visitor id and no IP address. Microsoft Clarity is used for anonymous usage analytics.
+                Website analytics stay off until you tap Allow analytics. The choice is saved in this browser. The iPhone app does not include analytics. The site also keeps a cookieless count of pages, referrer domain, campaign tags, country, US state, and device type for 13 months, with a daily anonymous visitor id and no IP address. Microsoft Clarity sets first-party cookies (_clck and _clsk) only after you allow analytics.
               </p>
             </Subsection>
 
