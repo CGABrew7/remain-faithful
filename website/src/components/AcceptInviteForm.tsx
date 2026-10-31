@@ -61,6 +61,7 @@ export default function AcceptInviteForm({
 
   return (
     <form
+      data-clarity-mask="true"
       className="relative mt-8 space-y-4 rounded-[14px] border border-white/10 bg-[#0C1D4C] p-5"
       onSubmit={(e) => {
         e.preventDefault()

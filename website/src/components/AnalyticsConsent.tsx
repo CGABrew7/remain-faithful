@@ -3,22 +3,22 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Script from 'next/script'
-
-const KEY = 'rf-analytics'
+import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY, readAnalyticsConsent } from '@/lib/analytics-consent'
 
 export default function AnalyticsConsent({ gaId }: { gaId?: string }) {
   const pathname = usePathname()
   const [choice, setChoice] = useState<'unknown' | 'allow' | 'deny'>('unknown')
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(KEY)
-    if (saved === 'allow' || saved === 'deny') setChoice(saved)
+    const saved = readAnalyticsConsent(window.localStorage)
+    if (saved) setChoice(saved)
   }, [])
 
   if (!gaId || pathname === '/admin' || pathname.startsWith('/admin/')) return null
 
   function choose(next: 'allow' | 'deny') {
-    window.localStorage.setItem(KEY, next)
+    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next)
+    window.dispatchEvent(new Event(ANALYTICS_CONSENT_EVENT))
     setChoice(next)
   }
 
