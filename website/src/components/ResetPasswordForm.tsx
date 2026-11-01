@@ -3,8 +3,11 @@
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useFormShield } from '@/components/FormShield'
 
 export default function ResetPasswordForm() {
+  const resetShield = useFormShield('reset-password')
+  const forgotShield = useFormShield('forgot-password')
   const params = useSearchParams()
   const token = params.get('token') || ''
   const [password, setPassword] = useState('')
@@ -27,7 +30,7 @@ export default function ResetPasswordForm() {
       const res = await fetch('/api/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token, password, ...resetShield.fields() }),
       })
       const body = await res.json().catch(() => ({}))
       if (!res.ok) {
@@ -45,6 +48,7 @@ export default function ResetPasswordForm() {
       const message = err instanceof Error ? err.message : 'Could not reset the password.'
       setError(message.includes('Failed to fetch') ? 'We could not reach the server. Check your connection and try again.' : message)
     } finally {
+      resetShield.reset()
       setLoading(false)
     }
   }
@@ -63,7 +67,9 @@ export default function ResetPasswordForm() {
               Password saved. Open Remain Faithful on your iPhone and sign in with the new password.
             </p>
           ) : (
-            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+            <form onSubmit={handleSubmit} className="relative mt-8">
+              {resetShield.slot}
+              <div className="space-y-4">
               <div>
                 <label htmlFor="new-password" className="mb-2 block text-sm text-white">
                   New password
@@ -87,11 +93,12 @@ export default function ResetPasswordForm() {
               <button type="submit" className="btn-wax w-full" disabled={loading}>
                 {loading ? 'Saving...' : 'Save password'}
               </button>
+              </div>
             </form>
           )}
           {!done && (
             <form
-              className="mt-8 space-y-3 border-t border-white/10 pt-6"
+              className="relative mt-8 border-t border-white/10 pt-6"
               onSubmit={async (e) => {
                 e.preventDefault()
                 setSending(true)
@@ -100,7 +107,7 @@ export default function ResetPasswordForm() {
                   const res = await fetch('/api/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email }),
+                    body: JSON.stringify({ email, ...forgotShield.fields() }),
                   })
                   const body = await res.json().catch(() => ({}))
                   if (!res.ok) {
@@ -111,10 +118,13 @@ export default function ResetPasswordForm() {
                 } catch {
                   setResetNote('We could not reach the server. Check your connection and try again.')
                 } finally {
+                  forgotShield.reset()
                   setSending(false)
                 }
               }}
             >
+              {forgotShield.slot}
+              <div className="space-y-3">
               <label htmlFor="reset-email" className="block text-sm text-white">
                 Send a new reset link
               </label>
@@ -131,6 +141,7 @@ export default function ResetPasswordForm() {
               <button type="submit" className="btn-ghost w-full" disabled={sending}>
                 {sending ? 'Sending...' : 'Send a new reset link'}
               </button>
+              </div>
             </form>
           )}
           <p className="mt-6 text-sm text-ink-faint">

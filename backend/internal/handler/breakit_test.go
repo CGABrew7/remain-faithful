@@ -209,12 +209,13 @@ func TestDeviceTokenAndCampaignLimits(t *testing.T) {
 
 func TestContactInboxRequired(t *testing.T) {
 	t.Setenv("CONTACT_TO_EMAIL", "")
+	t.Setenv("TURNSTILE_SECRET_KEY", "")
 	em := &capturingEmail{}
 	h := &H{Email: em}
 	rr := httptest.NewRecorder()
-	h.Contact(rr, httptest.NewRequest(http.MethodPost, "/contact", strings.NewReader(
+	h.Contact(rr, httptest.NewRequest(http.MethodPost, "/contact", strings.NewReader(withLoadedAt(
 		`{"name":"Ada","email":"ada@example.com","message":"Hello there"}`,
-	)))
+	))))
 	if rr.Code != http.StatusInternalServerError {
 		t.Fatalf("status %d %s", rr.Code, rr.Body.String())
 	}

@@ -10,22 +10,31 @@ import (
 )
 
 // Contact handles website contact-form submissions.
-// POST /contact (unauthenticated; 10 req/min/IP via authRateLimiter in main.go)
-// Body: { "name": "...", "email": "...", "subject": "...", "message": "..." }
+// POST /contact (unauthenticated; 10 req/min/IP via authRateLimiter in main.go,
+// plus 10 req/min for the same email).
+// Body: { "name", "email", "subject", "message", "company"?, "turnstileToken"?, "formAction"?, "loadedAt"? }
 func (h *H) Contact(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Name    string `json:"name"`
-		Email   string `json:"email"`
-		Subject string `json:"subject"`
-		Message string `json:"message"`
-		Company string `json:"company"` // honeypot; people never fill this in
+		Name           string `json:"name"`
+		Email          string `json:"email"`
+		Subject        string `json:"subject"`
+		Message        string `json:"message"`
+		Company        string `json:"company"` // honeypot; people never fill this in
+		TurnstileToken string `json:"turnstileToken"`
+		FormAction     string `json:"formAction"`
+		LoadedAt       int64  `json:"loadedAt"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if strings.TrimSpace(req.Company) != "" {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	if blockPublicForm(w, r, publicForm{
+		Company:        req.Company,
+		Email:          req.Email,
+		TurnstileToken: req.TurnstileToken,
+		FormAction:     req.FormAction,
+		LoadedAt:       req.LoadedAt,
+	}, "contact", "church-pilot", "feedback") {
 		return
 	}
 	name, nameErr := cleanPersonName(req.Name)
