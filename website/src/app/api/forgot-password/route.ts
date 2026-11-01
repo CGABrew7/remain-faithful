@@ -1,11 +1,19 @@
-import { backendJSON, clientAddress, tooMany } from '@/lib/backend'
+import { backendJSON } from '@/lib/backend'
+import { guardPublicPost } from '@/lib/form-guard'
+
+const RATE_LIMITED = 'Too many attempts. Wait a minute and try again.'
 
 export async function POST(request: Request) {
-  if (tooMany(clientAddress(request))) {
-    return Response.json({ error: 'Too many attempts. Wait a minute and try again.' }, { status: 429 })
-  }
-  const body = await request.json().catch(() => null)
-  const email = typeof body?.email === 'string' ? body.email : ''
+  const guarded = await guardPublicPost(request, {
+    actions: ['forgot-password'],
+    turnstile: 'verify',
+    rateMessage: RATE_LIMITED,
+    email: (body) => (typeof body.email === 'string' ? body.email : ''),
+    drop: () => Response.json({ status: 'ok' }),
+  })
+  if ('response' in guarded) return guarded.response
+
+  const email = typeof guarded.body.email === 'string' ? guarded.body.email : ''
   const result = await backendJSON('/auth/forgot-password', { email }, undefined, request)
   if (!result.ok && result.status !== 200) {
     return Response.json(

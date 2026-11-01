@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useFormShield } from '@/components/FormShield'
 
 export default function PilotForm() {
+  const shield = useFormShield('church-pilot')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -27,13 +29,24 @@ export default function PilotForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, type: 'church_pilot' }),
+        body: JSON.stringify({ ...form, type: 'church_pilot', ...shield.fields() }),
       })
-      if (!res.ok) throw new Error('Submit failed')
+      if (!res.ok) {
+        let msg = 'Something went wrong. Please try again or email us directly at support@remainfaithful.com'
+        try {
+          const body = await res.json()
+          if (body?.error) msg = body.error
+        } catch {
+          msg = 'Something went wrong. Please try again or email us directly at support@remainfaithful.com'
+        }
+        throw new Error(msg)
+      }
       setSubmitted(true)
-    } catch {
-      setError('Something went wrong. Please try again or email us directly at support@remainfaithful.com')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again or email us directly at support@remainfaithful.com'
+      setError(msg)
     } finally {
+      shield.reset()
       setLoading(false)
     }
   }
@@ -50,7 +63,9 @@ export default function PilotForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="relative">
+      {shield.slot}
+      <div className="space-y-5">
       <div className="grid sm:grid-cols-2 gap-5">
         <Field label="Your Name" required>
           <input
@@ -140,6 +155,7 @@ export default function PilotForm() {
       <p className="text-center font-mono text-[11px] tracking-[0.08em] uppercase text-ink-faint">
         We&apos;ll be in touch before launch. No spam, ever.
       </p>
+      </div>
     </form>
   )
 }

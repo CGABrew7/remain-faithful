@@ -40,8 +40,9 @@ func (m *memDB) waitlistRows() []memWaitlist {
 
 func postWaitlist(t *testing.T, h *H, body string) *httptest.ResponseRecorder {
 	t.Helper()
+	t.Setenv("TURNSTILE_SECRET_KEY", "")
 	rr := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/waitlist", strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/waitlist", strings.NewReader(withLoadedAt(body)))
 	req.Header.Set("Content-Type", "application/json")
 	h.JoinWaitlist(rr, req)
 	return rr

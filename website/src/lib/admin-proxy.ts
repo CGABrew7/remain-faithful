@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { backendBase, proxyHeaders, SERVER_UNREACHABLE } from '@/lib/backend'
+import { guardPublicPost } from '@/lib/form-guard'
 
 const COOKIE = 'rf_admin'
 const EIGHT_HOURS = 60 * 60 * 8
@@ -37,7 +38,19 @@ export async function proxyAdmin(request: Request, path: string) {
     cache: 'no-store',
   }
   if (request.method !== 'GET' && request.method !== 'HEAD') {
-    init.body = await request.text()
+    if (path === 'login') {
+      const guarded = await guardPublicPost(request, {
+        actions: ['admin-login'],
+        turnstile: 'verify',
+        rateMessage: 'Too many attempts. Wait a minute and try again.',
+        drop: () => Response.json({ ok: true }),
+      })
+      if ('response' in guarded) return guarded.response
+      const password = typeof guarded.body.password === 'string' ? guarded.body.password : ''
+      init.body = JSON.stringify({ password })
+    } else {
+      init.body = await request.text()
+    }
   }
 
   let res: Response

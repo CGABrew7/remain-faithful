@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useFormShield } from '@/components/FormShield'
 import { trackEvent } from '@/lib/track'
 
 interface WaitlistFormProps {
@@ -16,6 +17,7 @@ export default function WaitlistForm({
   heading,
   subheading,
 }: WaitlistFormProps) {
+  const shield = useFormShield('waitlist')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -30,7 +32,7 @@ export default function WaitlistForm({
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, ...shield.fields() }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
@@ -42,6 +44,7 @@ export default function WaitlistForm({
     } catch {
       setError('We could not reach the server. Check your connection and try again.')
     } finally {
+      shield.reset()
       setLoading(false)
     }
   }
@@ -59,7 +62,8 @@ export default function WaitlistForm({
 
   if (variant === 'footer') {
     return (
-      <form onSubmit={handleSubmit} className="flex flex-wrap gap-2">
+      <form onSubmit={handleSubmit} className="relative flex flex-wrap gap-2">
+        {shield.slot}
         <label htmlFor="waitlist-footer-email" className="sr-only">
           Email
         </label>
@@ -90,7 +94,8 @@ export default function WaitlistForm({
 
   if (variant === 'inline') {
     return (
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+      <form onSubmit={handleSubmit} className="relative flex flex-col sm:flex-row gap-3">
+        {shield.slot}
         <label htmlFor="waitlist-inline-email" className="sr-only">
           Email
         </label>
@@ -127,7 +132,8 @@ export default function WaitlistForm({
       {subheading && (
         <p className="text-ink-soft mb-5">{subheading}</p>
       )}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="relative flex flex-col gap-4">
+        {shield.slot}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
             <label htmlFor="waitlist-name" className="mb-2 block text-sm text-white">

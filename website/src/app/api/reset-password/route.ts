@@ -1,11 +1,19 @@
-import { backendJSON, clientAddress, tooMany } from '@/lib/backend'
+import { backendJSON } from '@/lib/backend'
+import { guardPublicPost } from '@/lib/form-guard'
+
+const RATE_LIMITED = 'Too many attempts. Wait a minute and try again.'
 
 export async function POST(request: Request) {
-  if (tooMany(clientAddress(request))) {
-    return Response.json({ error: 'Too many attempts. Wait a minute and try again.' }, { status: 429 })
-  }
-  const body = await request.json().catch(() => null)
-  if (!body?.token || !body?.password) {
+  const guarded = await guardPublicPost(request, {
+    actions: ['reset-password'],
+    turnstile: 'verify',
+    rateMessage: RATE_LIMITED,
+    drop: () => Response.json({ status: 'ok' }),
+  })
+  if ('response' in guarded) return guarded.response
+
+  const body = guarded.body
+  if (!body.token || !body.password) {
     return Response.json({ error: 'A reset link and a new password are required.' }, { status: 400 })
   }
   const result = await backendJSON('/auth/reset-password', {
