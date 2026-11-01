@@ -6,9 +6,9 @@ function contentSecurityPolicy() {
   const imgSrc = ["'self'", 'data:']
   const connectSrc = ["'self'"]
 
-  scriptSrc.push('https://*.clarity.ms', 'https://c.bing.com')
+  scriptSrc.push('https://*.clarity.ms', 'https://c.bing.com', 'https://challenges.cloudflare.com')
   imgSrc.push('https://*.clarity.ms', 'https://c.bing.com')
-  connectSrc.push('https://*.clarity.ms', 'https://c.bing.com')
+  connectSrc.push('https://*.clarity.ms', 'https://c.bing.com', 'https://challenges.cloudflare.com')
 
   if (gaEnabled) {
     scriptSrc.push(
@@ -39,7 +39,7 @@ function contentSecurityPolicy() {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "frame-src 'none'",
+    "frame-src https://challenges.cloudflare.com",
     'upgrade-insecure-requests',
   ].join('; ')
 }

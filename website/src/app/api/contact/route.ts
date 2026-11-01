@@ -1,4 +1,5 @@
 import { backendJSON } from '@/lib/backend'
+import { guardPublicPost } from '@/lib/form-guard'
 import { pilotContact } from '@/lib/pilot'
 
 const NOTE = 'Please add your name, email, and a short note.'
@@ -8,32 +9,34 @@ function filled(value: unknown) {
 }
 
 export async function POST(request: Request) {
-  let body: Record<string, unknown>
-  try {
-    const parsed = await request.json()
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return Response.json({ error: 'Invalid request' }, { status: 400 })
-    }
-    body = parsed as Record<string, unknown>
-  } catch {
-    return Response.json({ error: 'Invalid request' }, { status: 400 })
-  }
+  const guarded = await guardPublicPost(request, {
+    actions: ['contact', 'church-pilot', 'feedback'],
+    turnstile: 'forward',
+    email: (body) => (typeof body.email === 'string' ? body.email : ''),
+    drop: () => Response.json({ success: true }),
+  })
+  if ('response' in guarded) return guarded.response
 
-  if (typeof body.company === 'string' && body.company.trim() !== '') {
-    return Response.json({ success: true })
-  }
+  const body = guarded.body
   delete body.company
 
-  let payload: Record<string, unknown> = body
+  let payload: Record<string, unknown>
   if (body.type === 'church_pilot') {
     const pilot = pilotContact(body)
     if (!pilot.ok) {
       return Response.json({ error: pilot.error }, { status: 400 })
     }
-    payload = pilot.contact
+    payload = { ...pilot.contact }
   } else if (!filled(body.email) || !filled(body.name) || !filled(body.message)) {
     return Response.json({ error: NOTE }, { status: 400 })
+  } else {
+    payload = { ...body }
   }
+
+  payload.turnstileToken = guarded.turnstileToken
+  payload.formAction = guarded.formAction
+  payload.loadedAt = guarded.loadedAt
+  delete payload.company
 
   const result = await backendJSON('/contact', payload, undefined, request)
   if (!result.ok) {

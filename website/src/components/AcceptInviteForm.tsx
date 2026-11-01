@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import AppStoreLink from '@/components/AppStoreLink'
+import { useFormShield } from '@/components/FormShield'
 
 function inviteError(message: string) {
   const lower = message.toLowerCase()
@@ -24,9 +25,9 @@ export default function AcceptInviteForm({
   token: string
   type: 'partner' | 'group'
 }) {
+  const shield = useFormShield('accept-invite')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [company, setCompany] = useState('')
   const [loading, setLoading] = useState<'accept' | 'decline' | null>(null)
   const [error, setError] = useState('')
   const [done, setDone] = useState('')
@@ -38,7 +39,7 @@ export default function AcceptInviteForm({
       const res = await fetch('/api/accept-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, token, type, decision, company }),
+        body: JSON.stringify({ email, password, token, type, decision, ...shield.fields() }),
       })
       const body = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(inviteError(body.error || 'Could not update this invite.'))
@@ -47,6 +48,7 @@ export default function AcceptInviteForm({
       const message = err instanceof Error ? err.message : 'Could not update this invite.'
       setError(inviteError(message))
     } finally {
+      shield.reset()
       setLoading(null)
     }
   }
@@ -72,10 +74,7 @@ export default function AcceptInviteForm({
       <p className="text-sm leading-relaxed text-ink-soft">
         Sign in with the email this invite was sent to, then accept. Signing in on the iPhone by itself does not accept the invite.
       </p>
-      <div className="absolute left-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
-        <label htmlFor="invite-company">Company</label>
-        <input id="invite-company" name="company" tabIndex={-1} autoComplete="off" value={company} onChange={(e) => setCompany(e.target.value)} />
-      </div>
+      {shield.slot}
       <div>
         <label htmlFor="invite-email" className="mb-2 block text-sm text-white">
           Email

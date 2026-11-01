@@ -1,18 +1,22 @@
 import { NextResponse } from 'next/server'
-import { backendJSON, clientAddress, tooMany } from '@/lib/backend'
+import { backendJSON } from '@/lib/backend'
+import { guardPublicPost } from '@/lib/form-guard'
 import { plausibleEmail } from '@/lib/waitlist'
 
 const SAVE_FAILED = 'We could not save your signup. Please try again.'
+const RATE_LIMITED = 'Too many tries. Wait a minute and try again.'
 
 export async function POST(req: Request) {
-  if (tooMany(clientAddress(req))) {
-    return NextResponse.json({ error: 'Too many tries. Wait a minute and try again.' }, { status: 429 })
-  }
-  const body = await req.json().catch(() => null)
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
-  }
-  const { email, name, company } = body as { email?: unknown; name?: unknown; company?: unknown }
+  const guarded = await guardPublicPost(req, {
+    actions: ['waitlist'],
+    turnstile: 'forward',
+    rateMessage: RATE_LIMITED,
+    email: (body) => (typeof body.email === 'string' ? body.email : ''),
+    drop: () => NextResponse.json({ success: true }),
+  })
+  if ('response' in guarded) return guarded.response
+
+  const { email, name } = guarded.body
   if (!plausibleEmail(email)) {
     return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
   }
@@ -20,10 +24,12 @@ export async function POST(req: Request) {
   let result: Awaited<ReturnType<typeof backendJSON>>
   try {
     result = await backendJSON('/waitlist', {
-      email: email.trim(),
+      email: (email as string).trim(),
       name: typeof name === 'string' ? name : '',
       platform: 'android',
-      company: typeof company === 'string' ? company : '',
+      turnstileToken: guarded.turnstileToken,
+      formAction: guarded.formAction,
+      loadedAt: guarded.loadedAt,
     }, undefined, req)
   } catch (err) {
     console.error('[waitlist] backend unreachable:', err)
@@ -36,7 +42,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
     }
     if (result.status === 429) {
-      return NextResponse.json({ error: 'Too many tries. Wait a minute and try again.' }, { status: 429 })
+      return NextResponse.json({ error: RATE_LIMITED }, { status: 429 })
     }
     return NextResponse.json({ error: SAVE_FAILED }, { status: 502 })
   }
