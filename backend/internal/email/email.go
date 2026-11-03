@@ -8,25 +8,51 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/mail"
 	"os"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
 
-// Client sends transactional email via SendGrid's v3 mail/send API.
-// When SENDGRID_API_KEY is not set the client logs the email to stdout instead
-// (useful for local development without a SendGrid account).
+// Client sends transactional email. Resend (POST https://api.resend.com/emails)
+// is used when RESEND_API_KEY is set. SendGrid's v3 mail/send API is kept as a
+// fallback while SENDGRID_API_KEY is still set, so the cutover can be rolled
+// back by unsetting RESEND_API_KEY. With neither key set the client logs the
+// email to stdout (local development) and refuses to send in production.
 type Client struct {
-	apiKey string
-	from   string
+	resendKey   string
+	sendgridKey string
+	from        string
+	resendURL   string
+	sendgridURL string
+	httpClient  *http.Client
 }
 
-// New returns a Client using SENDGRID_API_KEY and SENDGRID_FROM_EMAIL env vars.
+// New reads RESEND_API_KEY / SENDGRID_API_KEY and the sender address from
+// EMAIL_FROM, falling back to SENDGRID_FROM_EMAIL so the existing Fly secret
+// keeps working.
 func New() *Client {
 	return &Client{
-		apiKey: os.Getenv("SENDGRID_API_KEY"),
-		from:   getenv("SENDGRID_FROM_EMAIL", "noreply@remainfaithful.app"),
+		resendKey:   os.Getenv("RESEND_API_KEY"),
+		sendgridKey: os.Getenv("SENDGRID_API_KEY"),
+		from:        getenv("EMAIL_FROM", getenv("SENDGRID_FROM_EMAIL", "noreply@remainfaithful.com")),
+		resendURL:   "https://api.resend.com/emails",
+		sendgridURL: "https://api.sendgrid.com/v3/mail/send",
+		httpClient:  &http.Client{Timeout: 15 * time.Second},
+	}
+}
+
+// Provider reports which backend send() will use: "resend", "sendgrid", or "log".
+func (c *Client) Provider() string {
+	switch {
+	case c.resendKey != "":
+		return "resend"
+	case c.sendgridKey != "":
+		return "sendgrid"
+	default:
+		return "log"
 	}
 }
 
@@ -196,15 +222,49 @@ func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 }
 
 func (c *Client) send(toEmail, toName, subject, plain, htmlBody string) error {
-	if c.apiKey == "" {
-		if os.Getenv("APP_ENV") == "production" {
-			log.Printf("[sendgrid] SENDGRID_API_KEY is not set; refusing to send subject=%q", subject)
-			return fmt.Errorf("email: SENDGRID_API_KEY is not set")
-		}
-		log.Printf("[sendgrid] SENDGRID_API_KEY not set; dev log subject=%q", subject)
-		fmt.Printf("[email] subject=%q\n%s\n", subject, plain)
-		return nil
+	switch c.Provider() {
+	case "resend":
+		return c.sendResend(toEmail, toName, subject, plain, htmlBody)
+	case "sendgrid":
+		return c.sendSendGrid(toEmail, toName, subject, plain, htmlBody)
 	}
+	if os.Getenv("APP_ENV") == "production" {
+		log.Printf("[email] no RESEND_API_KEY or SENDGRID_API_KEY; refusing to send subject=%q", subject)
+		return fmt.Errorf("email: RESEND_API_KEY is not set")
+	}
+	log.Printf("[email] no provider key set; dev log subject=%q", subject)
+	fmt.Printf("[email] subject=%q\n%s\n", subject, plain)
+	return nil
+}
+
+// formatAddress renders `Name <addr>`, quoting the name when needed.
+func formatAddress(name, addr string) string {
+	name = strings.TrimSpace(sanitizeMailHeader(name))
+	if name == "" {
+		return addr
+	}
+	return (&mail.Address{Name: name, Address: addr}).String()
+}
+
+func resendPayload(from, toEmail, toName, subject, plain, htmlBody string) map[string]any {
+	return map[string]any{
+		"from":    formatAddress("Remain Faithful", from),
+		"to":      []string{formatAddress(toName, toEmail)},
+		"subject": subject,
+		"text":    plain,
+		"html":    htmlBody,
+	}
+}
+
+func (c *Client) sendResend(toEmail, toName, subject, plain, htmlBody string) error {
+	body, err := json.Marshal(resendPayload(c.from, toEmail, toName, subject, plain, htmlBody))
+	if err != nil {
+		return fmt.Errorf("email: marshal: %w", err)
+	}
+	return c.post("resend", c.resendURL, c.resendKey, body, subject)
+}
+
+func (c *Client) sendSendGrid(toEmail, toName, subject, plain, htmlBody string) error {
 	payload := map[string]any{
 		"personalizations": []map[string]any{{
 			"to": []map[string]string{{"email": toEmail, "name": toName}},
@@ -218,35 +278,34 @@ func (c *Client) send(toEmail, toName, subject, plain, htmlBody string) error {
 	}
 	body, err := json.Marshal(payload)
 	if err != nil {
-		log.Printf("[sendgrid] error marshaling payload to=%s: %v", toEmail, err)
 		return fmt.Errorf("email: marshal: %w", err)
 	}
-	req, err := http.NewRequest(http.MethodPost,
-		"https://api.sendgrid.com/v3/mail/send", bytes.NewReader(body))
+	return c.post("sendgrid", c.sendgridURL, c.sendgridKey, body, subject)
+}
+
+func (c *Client) post(provider, url, key string, body []byte, subject string) error {
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		log.Printf("[sendgrid] error building request to=%s: %v", toEmail, err)
 		return fmt.Errorf("email: build request: %w", err)
 	}
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	req.Header.Set("Authorization", "Bearer "+key)
 	req.Header.Set("Content-Type", "application/json")
 
-	log.Printf("[sendgrid] sending subject=%q", subject)
-	resp, err := http.DefaultClient.Do(req)
+	log.Printf("[%s] sending subject=%q", provider, subject)
+	hc := c.httpClient
+	if hc == nil {
+		hc = http.DefaultClient
+	}
+	resp, err := hc.Do(req)
 	if err != nil {
-		log.Printf("[sendgrid] request error to=%s: %v", toEmail, err)
+		log.Printf("[%s] request error: %v", provider, err)
 		return fmt.Errorf("email: send: %w", err)
 	}
 	defer resp.Body.Close()
-
-	respBody, readErr := io.ReadAll(resp.Body)
-	if readErr != nil {
-		log.Printf("[sendgrid] response status=%d (body unreadable: %v)", resp.StatusCode, readErr)
-	} else {
-		log.Printf("[sendgrid] response status=%d", resp.StatusCode)
-	}
-
+	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+	log.Printf("[%s] response status=%d", provider, resp.StatusCode)
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("email: SendGrid returned %d: %s", resp.StatusCode, string(respBody))
+		return fmt.Errorf("email: %s returned %d: %s", provider, resp.StatusCode, string(respBody))
 	}
 	return nil
 }
