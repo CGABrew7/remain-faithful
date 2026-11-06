@@ -53,6 +53,7 @@ go run ./cmd/server
 | `JWT_SECRET`    | `dev-secret-change-in-production` | HS256 signing secret — **always override in production** |
 | `SITE_PROXY_SECRET` | *(unset)*                    | Shared with the website. When set, the API uses `X-RF-Client-IP` only if `X-RF-Proxy-Secret` matches. When unset, the previous address rules stay in place. |
 | `CONTACT_TO_EMAIL` | *(unset)*                     | Inbox for contact and in-app feedback. The send fails when this is unset. |
+| `TURNSTILE_SECRET_KEY` | *(unset)*                | Cloudflare Turnstile secret for `POST /contact` and `POST /waitlist`. Set this on Fly. When unset, those routes skip the check and log a warning. The website site key is `NEXT_PUBLIC_TURNSTILE_SITE_KEY` on Vercel, not here. |
 | `FCM_PROJECT_ID` | *(unset)* | Firebase project id for Android push. Unset keeps FCM as a no-op. |
 | `FCM_CLIENT_EMAIL` | *(unset)* | Service account email. Not the APNs key. |
 | `FCM_PRIVATE_KEY` | *(unset)* | Service account PEM. Newlines may be written as `\n`. Never commit this value. |

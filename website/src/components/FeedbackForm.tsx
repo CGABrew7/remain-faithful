@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useFormShield } from '@/components/FormShield'
 
 const TYPES = [
   { value: 'Idea', label: 'Idea', hint: 'Something new you would like the app to do' },
@@ -23,6 +24,7 @@ const AREAS = [
 type FeedbackType = (typeof TYPES)[number]['value']
 
 export default function FeedbackForm() {
+  const shield = useFormShield('feedback')
   const [type, setType] = useState<FeedbackType>('Idea')
   const [form, setForm] = useState({
     name: '',
@@ -31,7 +33,6 @@ export default function FeedbackForm() {
     summary: '',
     details: '',
     device: '',
-    company: '', // honeypot, left empty by people
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -64,7 +65,7 @@ export default function FeedbackForm() {
           subject: `[${type}] ${form.summary}`,
           message: lines.join('\n'),
           type: 'feedback',
-          company: form.company,
+          ...shield.fields(),
         }),
       })
       if (!res.ok) {
@@ -80,6 +81,7 @@ export default function FeedbackForm() {
       const msg = err instanceof Error ? err.message : 'Unknown error'
       setError(`${msg}. You can also email support@remainfaithful.com.`)
     } finally {
+      shield.reset()
       setLoading(false)
     }
   }
@@ -107,7 +109,7 @@ export default function FeedbackForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" noValidate={false}>
+    <form onSubmit={handleSubmit} className="relative space-y-6" noValidate={false}>
       <fieldset>
         <legend className="mb-3 block font-mono text-[12px] tracking-[0.06em] text-ink">
           What kind of feedback? <span className="text-wax">*</span>
@@ -250,19 +252,7 @@ export default function FeedbackForm() {
         </div>
       </div>
 
-      {/* Honeypot: hidden from people, bots tend to fill it in */}
-      <div className="hidden" aria-hidden="true">
-        <label htmlFor="fb-company">Company</label>
-        <input
-          id="fb-company"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          value={form.company}
-          onChange={(e) => update('company', e.target.value)}
-        />
-      </div>
-
+      {shield.slot}
       {error && (
         <p className="form-error text-sm" role="alert">
           {error}

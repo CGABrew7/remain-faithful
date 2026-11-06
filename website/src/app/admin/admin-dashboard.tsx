@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useFormShield } from '@/components/FormShield'
 import type { AccountStatus, Count, Health, NotTracked, Overview, Percent } from '@/lib/admin-types'
 
 const RANGES = [
@@ -91,6 +92,7 @@ export default function AdminDashboard({
   const [busy, setBusy] = useState(false)
   const [checked, setChecked] = useState(preview)
   const [sessionCheck, setSessionCheck] = useState(0)
+  const signInShield = useFormShield('admin-login')
 
   useEffect(() => {
     if (preview) {
@@ -147,7 +149,7 @@ export default function AdminDashboard({
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, ...signInShield.fields() }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
@@ -160,6 +162,7 @@ export default function AdminDashboard({
     } catch {
       setError('We could not reach the server. Check your connection and try again.')
     } finally {
+      signInShield.reset()
       setBusy(false)
     }
   }
@@ -200,7 +203,8 @@ export default function AdminDashboard({
       {!preview && !checked && <p className="mt-10 text-ink-soft">Checking your session...</p>}
 
       {checked && !authed && (
-        <form onSubmit={signIn} className="surface rise rise-2 mx-auto mt-10 max-w-md p-6 sm:p-8">
+        <form onSubmit={signIn} className="surface rise rise-2 relative mx-auto mt-10 max-w-md p-6 sm:p-8">
+          {signInShield.slot}
           <h2 className="font-serif text-2xl text-white">Sign in</h2>
           <p className="mt-2 text-sm text-ink-soft">The password is the one set on the API. It is not an app account.</p>
           <label className="mt-6 block text-sm font-semibold text-white" htmlFor="admin-password">

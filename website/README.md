@@ -36,6 +36,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `BACKEND_URL` | No | Base URL of the Go backend API (contact form fallback) |
 | `NEXT_PUBLIC_SITE_URL` | Yes | Canonical site URL (e.g. `https://remainfaithful.com`). Not used for Stripe Checkout return URLs. |
 | `NEXT_PUBLIC_GA_ID` | No | Google Analytics 4 Measurement ID (`G-XXXXXXXXXX`) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | Cloudflare Turnstile site key. Public. Set on Vercel. When unset, forms skip the widget. |
+| `TURNSTILE_SECRET_KEY` | No | Cloudflare Turnstile secret. Set on Vercel for the site API routes (invite, password reset, email confirmation, donate, owner sign-in). Also set the same value on Fly so the Go API can check `POST /contact` and `POST /waitlist`. When unset, that server skips the check and logs a warning. |
 
 ## Deploying to Vercel
 
@@ -49,6 +51,8 @@ Open [http://localhost:3000](http://localhost:3000).
    vercel env add NEXT_PUBLIC_SITE_URL
    vercel env add BACKEND_URL          # optional, for contact form forwarding
    vercel env add NEXT_PUBLIC_GA_ID    # optional, for analytics
+   vercel env add NEXT_PUBLIC_TURNSTILE_SITE_KEY  # optional, public Turnstile site key
+   vercel env add TURNSTILE_SECRET_KEY            # optional, Turnstile secret for site API routes
    ```
 5. Deploy
 
