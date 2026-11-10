@@ -35,7 +35,7 @@ export function WhatRemainFaithfulDoes() {
         <article className="p-5 rounded-sm border border-wax/25 bg-paper-deep">
           <h3 className="font-semibold text-wax mb-2">A group, and code you can read</h3>
           <p className="text-sm text-ink-soft leading-relaxed">
-            You can invite one partner, or a group of up to 12 people. A group needs a name. A written covenant can be added later. The default wording asks members to respond promptly, with grace, when an alert arrives. The iOS app, backend, and website source are public on{' '}
+            You can invite up to 10 partners. A group is separate and holds up to 12 people. A group needs a name. A written covenant can be added later. The default wording asks members to respond promptly, with grace, when an alert arrives. The iOS app, backend, and website source are public on{' '}
             <a href={GITHUB_URL} className="text-wax hover:underline underline-offset-2" rel="noreferrer">GitHub</a>.
           </p>
         </article>
