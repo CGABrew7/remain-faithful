@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/blog/on-device-privacy-explained`, lastModified: now, changeFrequency: 'monthly' as const, priority: 0.7 },
     { url: `${baseUrl}/blog/covenant-model`, lastModified: now, changeFrequency: 'monthly' as const, priority: 0.7 },
     { url: `${baseUrl}/blog/mens-ministry-accountability`, lastModified: now, changeFrequency: 'monthly' as const, priority: 0.7 },
+    { url: `${baseUrl}/compare`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
     { url: `${baseUrl}/compare/covenant-eyes`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
     { url: `${baseUrl}/compare/ever-accountable`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
     { url: `${baseUrl}/compare/accountable2you`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
