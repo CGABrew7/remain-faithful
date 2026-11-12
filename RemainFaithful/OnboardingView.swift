@@ -653,13 +653,13 @@ private struct MonitoringSetupStep: View {
                         icon: "bell.fill",
                         tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                         title: "Alerts",
-                        detail: "Your partner is told after about one minute of use in an app you choose, once a day."
+                        detail: "Your partner is told at 1, 5, 15, and 30 minutes of use in an app you choose."
                     )
                     tierRow(
                         icon: "hand.raised.fill",
                         tint: Color.rfGold,
                         title: "Blocking",
-                        detail: "Chosen apps show Apple’s Screen Time shield. You can still ask Apple for an override."
+                        detail: "Chosen apps show Apple's Screen Time shield, Apple's adult web filter turns on, and your partner gets an alert when a blocked app is opened. You can still ask Apple for an override."
                     )
                 }
                 .padding(.bottom, 20)

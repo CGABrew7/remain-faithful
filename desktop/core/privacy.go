@@ -26,23 +26,29 @@ const (
 // SummaryApp and SummaryCategory. The rest stay here so a value the phone
 // already uses is not treated as a new kind of payload.
 var allowedEventSummaries = map[string]struct{}{
-	"Explicit content detected":                 {},
-	"Gambling content detected":                 {},
-	"Violent content detected":                  {},
-	"Self-harm content detected":                {},
-	"Content reviewed — no concerns":            {},
-	"Blocked domain detected":                   {},
-	"Explicit keyword detected in screen text":  {},
-	"Monitored app used for 1+ minute":          {},
-	"Monitored app category used for 1+ minute": {},
-	"Monitored app activity detected":           {},
-	"App activity detected":                     {},
-	"Blocked app opened":                        {},
-	"Adult content flagged on screen":           {},
-	"Gambling flagged on screen":                {},
-	"Violence flagged on screen":                {},
-	"Self-harm content flagged on screen":       {},
-	"Content reviewed":                          {},
+	"Explicit content detected":                   {},
+	"Gambling content detected":                   {},
+	"Violent content detected":                    {},
+	"Self-harm content detected":                  {},
+	"Content reviewed — no concerns":              {},
+	"Blocked domain detected":                     {},
+	"Explicit keyword detected in screen text":    {},
+	"Monitored app used for 1+ minute":            {},
+	"Monitored app used for 5+ minutes":           {},
+	"Monitored app used for 15+ minutes":          {},
+	"Monitored app used for 30+ minutes":          {},
+	"Monitored app category used for 1+ minute":   {},
+	"Monitored app category used for 5+ minutes":  {},
+	"Monitored app category used for 15+ minutes": {},
+	"Monitored app category used for 30+ minutes": {},
+	"Monitored app activity detected":             {},
+	"App activity detected":                       {},
+	"Blocked app opened":                          {},
+	"Adult content flagged on screen":             {},
+	"Gambling flagged on screen":                  {},
+	"Violence flagged on screen":                  {},
+	"Self-harm content flagged on screen":         {},
+	"Content reviewed":                            {},
 }
 
 // Matches the server rule for repeated on-device classifications.
@@ -128,10 +134,22 @@ func (e OutboundEvent) Body() ([]byte, error) {
 	})
 }
 
+func usageSeverity(summary string) string {
+	switch summary {
+	case "Monitored app used for 15+ minutes",
+		"Monitored app used for 30+ minutes",
+		"Monitored app category used for 15+ minutes",
+		"Monitored app category used for 30+ minutes":
+		return "severe"
+	default:
+		return "concerning"
+	}
+}
+
 func UsageEvent(now time.Time, summary string) (OutboundEvent, error) {
 	e := OutboundEvent{
 		Category:  "app_usage",
-		Severity:  "concerning",
+		Severity:  usageSeverity(summary),
 		Summary:   summary,
 		Timestamp: now.UTC().Format(time.RFC3339),
 	}

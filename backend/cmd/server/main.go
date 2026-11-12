@@ -85,6 +85,7 @@ func main() {
 	silenceMinutes := heartbeatSilenceMinutes()
 	go h.StartHeartbeatWatcher(ctx)
 	go h.StartHeartbeatSweep(ctx, silenceMinutes)
+	go h.StartWeeklySummaries(ctx)
 	if err := h.PurgeOldPageviews(ctx); err != nil {
 		log.Printf("pageview retention: %v", err)
 	}
@@ -134,6 +135,11 @@ func (sw *statusWriter) WriteHeader(code int) {
 func authRateLimiter() mux.MiddlewareFunc {
 	return fixedWindowRateLimiter(10, clientIP)
 }
+
+// groupInvitePerMinute is the burst cap on group invite routes.
+// It stays above the 12 member cap so one person can invite a whole group
+// in the same minute, and it still stops a flood of invite requests.
+const groupInvitePerMinute = 30
 
 // authenticatedRateLimiter limits authenticated spam surfaces to `limit`
 // requests per minute. Keyed by user ID when JWT middleware has already
@@ -264,7 +270,7 @@ func routes(h *handler.H) http.Handler {
 
 	r.Use(limitRequestBody)
 	r.Use(loggingMiddleware)
-	origins := strings.Split(getenv("ALLOWED_ORIGINS", "https://remainfaithful.com"), ",")
+	origins := strings.Split(getenv("ALLOWED_ORIGINS", "https://www.remainfaithful.com,https://remainfaithful.com"), ",")
 	r.Use(corsMiddleware(origins))
 	// CORS middleware answers preflight only after a route matches.
 	// This catch-all lets every OPTIONS request reach that middleware.
@@ -275,6 +281,7 @@ func routes(h *handler.H) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"status":"ok"}`)
 	}).Methods(http.MethodGet)
+	r.HandleFunc("/weekly-summary/unsubscribe", h.UnsubscribeWeeklySummary).Methods(http.MethodGet)
 
 	// Public auth routes — rate-limited to 10 requests/minute per IP.
 	auth := r.PathPrefix("/auth").Subrouter()
@@ -298,6 +305,7 @@ func routes(h *handler.H) http.Handler {
 	}))
 
 	api.HandleFunc("/users/me", h.GetMe).Methods(http.MethodGet)
+	api.HandleFunc("/users/me/weekly-summary", h.SetWeeklySummaryPreference).Methods(http.MethodPost)
 	api.HandleFunc("/users/me", h.UpdateMe).Methods(http.MethodPut)
 	api.HandleFunc("/users/me", h.DeleteMe).Methods(http.MethodDelete)
 	api.HandleFunc("/users/me/stats", h.GetUserStats).Methods(http.MethodGet)
@@ -332,8 +340,8 @@ func routes(h *handler.H) http.Handler {
 	api.HandleFunc("/groups/{id}", h.UpdateGroup).Methods(http.MethodPatch)
 	api.Handle("/groups/{id}/encouragement", authenticatedRateLimiter(10)(http.HandlerFunc(h.SendEncouragement))).Methods(http.MethodPost)
 	api.HandleFunc("/groups/{id}/members/me", h.LeaveGroup).Methods(http.MethodDelete)
-	api.Handle("/groups/{id}/invite", authenticatedRateLimiter(10)(http.HandlerFunc(h.InviteMember))).Methods(http.MethodPost)
-	api.Handle("/groups/{id}/email-invite", authenticatedRateLimiter(10)(http.HandlerFunc(h.GroupEmailInvite))).Methods(http.MethodPost)
+	api.Handle("/groups/{id}/invite", authenticatedRateLimiter(groupInvitePerMinute)(http.HandlerFunc(h.InviteMember))).Methods(http.MethodPost)
+	api.Handle("/groups/{id}/email-invite", authenticatedRateLimiter(groupInvitePerMinute)(http.HandlerFunc(h.GroupEmailInvite))).Methods(http.MethodPost)
 	api.Handle("/events", authenticatedRateLimiter(30)(http.HandlerFunc(h.CreateEvent))).Methods(http.MethodPost)
 	api.HandleFunc("/events", h.ListEvents).Methods(http.MethodGet)
 	api.HandleFunc("/alerts", h.ListAlerts).Methods(http.MethodGet)
@@ -690,6 +698,12 @@ func migrate(db *sql.DB) error {
 		return err
 	}
 	if err := handler.MigrateDeviceHeartbeats(db); err != nil {
+		return err
+	}
+	if err := handler.MigrateWeeklySummary(db); err != nil {
+		return err
+	}
+	if err := handler.MigrateStreak(db); err != nil {
 		return err
 	}
 	return handler.MigrateWaitlist(db)

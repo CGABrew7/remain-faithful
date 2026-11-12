@@ -69,6 +69,14 @@ func TestSummaryMatchesPhone(t *testing.T) {
 	if summaryAllowed("Flagged during browsing session " + strings.Repeat("x", 40)) {
 		t.Fatal("free text is not a summary")
 	}
+	later, err := UsageEvent(time.Now(), "Monitored app used for 15+ minutes")
+	if err != nil || later.Severity != "severe" {
+		t.Fatalf("15 minute severity %+v %v", later, err)
+	}
+	mid, err := UsageEvent(time.Now(), "Monitored app used for 5+ minutes")
+	if err != nil || mid.Severity != "concerning" {
+		t.Fatalf("5 minute severity %+v %v", mid, err)
+	}
 }
 
 func TestNetworkVersusAPI(t *testing.T) {

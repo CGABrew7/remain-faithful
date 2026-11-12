@@ -134,7 +134,13 @@ func (a *App) SignOut(unlocked bool) error {
 	if err != nil {
 		return err
 	}
-	a.deliver([]core.ProtectionNotice{note})
+	ctx, cancel := a.ctxTimeout()
+	deviceID, deviceKind, _ := a.deviceIdentity()
+	err = a.client.SendProtection(ctx, note, deviceID, deviceKind)
+	cancel()
+	if err != nil {
+		return a.soften(err)
+	}
 	if id, kind, ok := a.deviceIdentity(); ok {
 		ctx, cancel := a.ctxTimeout()
 		_ = a.client.ReportDevice(ctx, id, kind, false)

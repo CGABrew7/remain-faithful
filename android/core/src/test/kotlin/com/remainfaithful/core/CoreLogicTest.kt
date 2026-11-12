@@ -27,7 +27,7 @@ class CoreLogicTest {
         )
         val result = MonitoringPolicy.decide(input)
         assertEquals(2, result.uploads.size)
-        assertEquals(setOf("com.example.browser"), result.alertedPackages)
+        assertEquals(setOf("com.example.browser#1"), result.alertedPackages)
         assertTrue(result.showShield)
         result.uploads.forEach { payload ->
             assertEquals(setOf("category", "severity", "summary"), payload.keys)
@@ -57,6 +57,27 @@ class CoreLogicTest {
             baseInput().copy(alreadyAlertedToday = first.alertedPackages, openedSinceLastCheck = emptySet()),
         )
         assertTrue(second.uploads.isEmpty())
+    }
+
+    @Test
+    fun laterThresholdsReachThePartner() {
+        val input = baseInput().copy(foregroundMsToday = mapOf("com.example.browser" to 1_800_000L))
+        val first = MonitoringPolicy.decide(input)
+        assertEquals(
+            listOf(
+                EventPolicy.SUMMARY_MINUTE,
+                "Monitored app used for 5+ minutes",
+                "Monitored app used for 15+ minutes",
+                "Monitored app used for 30+ minutes",
+            ),
+            first.uploads.map { it.getValue("summary") },
+        )
+        assertEquals("concerning", first.uploads[0].getValue("severity"))
+        assertEquals("concerning", first.uploads[1].getValue("severity"))
+        assertEquals("severe", first.uploads[2].getValue("severity"))
+        assertEquals("severe", first.uploads[3].getValue("severity"))
+        val again = MonitoringPolicy.decide(input.copy(alreadyAlertedToday = first.alertedPackages))
+        assertTrue(again.uploads.isEmpty())
     }
 
     @Test
@@ -187,6 +208,10 @@ class CoreLogicTest {
     fun streakAndStatus() {
         assertEquals(StreakMark.BeforeSignup, StreakWeek.mark("before_account"))
         assertEquals(StreakMark.Clean, StreakWeek.mark("true"))
+        assertEquals(StreakMark.Off, StreakWeek.mark("off"))
+        assertEquals(-300, DayOffset.minutes(-300 * 60))
+        assertEquals("offset_minutes=-300", DayOffset.query(-300))
+        assertFalse(DayOffset.query(DayOffset.minutes(-18000)).contains("/"))
         val status = MonitoringStatus.make(true, 2, true, false, false)
         assertEquals(MonitoringKind.On, status.kind)
         assertTrue(status.detail.contains("Alerts on"))

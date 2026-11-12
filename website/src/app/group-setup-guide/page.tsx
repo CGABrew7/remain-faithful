@@ -2,12 +2,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import PrintButton from '@/components/PrintButton'
 import { ALERT_TRIGGER, FAQ_STREAMING } from '@/lib/product-copy'
+import { donationsEnabled } from '@/lib/donations'
 
 export const metadata: Metadata = {
   title: 'Group Setup Guide',
   description: 'A complete guide for pastors and ministry leaders on setting up a Remain Faithful accountability group.',
   robots: { index: false },
-  alternates: { canonical: 'https://remainfaithful.com/group-setup-guide' },
+  alternates: { canonical: 'https://www.remainfaithful.com/group-setup-guide' },
 }
 
 export default function GroupSetupGuidePage() {
@@ -28,7 +29,7 @@ export default function GroupSetupGuidePage() {
           >
             <div className="flex justify-center mb-6">
               <svg width="56" height="64" viewBox="0 0 32 36" fill="none">
-                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="#D1AB4C"/>
+                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="#F0D030"/>
                 <path d="M11 18L14.5 21.5L21 14" stroke="#12214C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
@@ -59,7 +60,7 @@ export default function GroupSetupGuidePage() {
             </p>
             <div className="grid sm:grid-cols-3 gap-4">
               {[
-                { title: 'Always Free', desc: 'No subscription, no paywalls. Sustained by voluntary donations.' },
+                { title: 'Always Free', desc: donationsEnabled() ? 'No subscription, no paywalls. Sustained by voluntary donations.' : 'No subscription, no paywalls.' },
                 { title: 'On-Device Privacy', desc: 'Screenshots and screen content stay on the phone. The privacy page says what a partner can receive.' },
                 { title: 'Covenant-Based', desc: 'Every partner accepts a covenant before gaining any access.' },
               ].map((item) => (
@@ -227,7 +228,9 @@ export default function GroupSetupGuidePage() {
               {[
                 {
                   q: 'Does this cost anything?',
-                  a: 'No. Remain Faithful is free for everyone, forever. No subscription, no premium tier. The app is sustained by voluntary donations from users who find it valuable.',
+                  a: donationsEnabled()
+                    ? 'No. Remain Faithful is free for everyone, forever. No subscription, no premium tier. The app is sustained by voluntary donations from users who find it valuable.'
+                    : 'No. Remain Faithful is free for everyone, forever. No subscription, no premium tier.',
                 },
                 {
                   q: 'What devices does it work on?',
@@ -262,14 +265,14 @@ export default function GroupSetupGuidePage() {
           <div className="mt-12 pt-8 border-t border-hairline text-center">
             <div className="flex justify-center mb-4">
               <svg width="28" height="32" viewBox="0 0 32 36" fill="none">
-                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="#D1AB4C"/>
+                <path d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" fill="#F0D030"/>
                 <path d="M11 18L14.5 21.5L21 14" stroke="#12214C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <p className="font-serif text-lg text-ink mb-2">Remain Faithful</p>
             <p className="text-sm text-ink-soft mb-4">Free peer accountability for adults committed to purity.</p>
             <p className="text-xs text-ink-faint">
-              remainfaithful.com &nbsp;|&nbsp; support@remainfaithful.com &nbsp;|&nbsp; Free forever
+              www.remainfaithful.com &nbsp;|&nbsp; support@remainfaithful.com &nbsp;|&nbsp; Free forever
             </p>
           </div>
 

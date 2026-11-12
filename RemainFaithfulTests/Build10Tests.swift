@@ -88,7 +88,7 @@ final class Build10Tests: XCTestCase {
             extensionSignedOut: true
         )
         XCTAssertEqual(card.title, "Monitoring on")
-        XCTAssertTrue(card.deepScanLine.contains("sign in again"))
+        XCTAssertTrue(card.deepScanLine.localizedCaseInsensitiveContains("sign in again"))
         XCTAssertTrue(card.deepScanLine.localizedCaseInsensitiveContains("Deep Scan"))
     }
 
@@ -176,6 +176,9 @@ final class Build10Tests: XCTestCase {
         let states = Data(#"{"week":["before_account","clean","flagged"]}"#.utf8)
         let decoded = try JSONDecoder().decode(Box.self, from: states)
         XCTAssertEqual(decoded.week, [.beforeSignup, .clean, .flagged])
+        let coverage = Data(#"{"week":["off","unprotected","clean"]}"#.utf8)
+        let covered = try JSONDecoder().decode(Box.self, from: coverage)
+        XCTAssertEqual(covered.week, [.off, .off, .clean])
     }
 
     // MARK: - Invites and password

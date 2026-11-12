@@ -111,11 +111,6 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if status, msg := h.enforceInviteBudget(r.Context(), userID); status != 0 {
-		writeError(w, status, msg)
-		return
-	}
-
 	// Invitee has no account — store a pending invite and send an email.
 	token, err := inviteToken()
 	if err != nil {
@@ -336,9 +331,6 @@ func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, em
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to check membership"}
 		}
-		if status, msg := h.enforceInviteBudget(ctx, inviterID); status != 0 {
-			return groupInviteResult{}, &handlerError{status, msg}
-		}
 		token, err := inviteToken()
 		if err != nil {
 			return groupInviteResult{}, &handlerError{http.StatusInternalServerError, "failed to generate invite token"}
@@ -359,10 +351,6 @@ func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, em
 			}
 		}
 		return groupInviteResult{outcome: groupInviteInvited, inviteeID: inviteeID}, nil
-	}
-
-	if status, msg := h.enforceInviteBudget(ctx, inviterID); status != 0 {
-		return groupInviteResult{}, &handlerError{status, msg}
 	}
 
 	// No account yet — store a pending invite and send an email. The invite is
@@ -389,8 +377,8 @@ func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, em
 	return groupInviteResult{outcome: groupInviteInvited}, nil
 }
 
-// preparePartnerInvite enforces the partner cap for a new row and the daily
-// invite email cap. An already-accepted partnership is left alone.
+// preparePartnerInvite enforces the partner cap for a new row.
+// An already-accepted partnership is left alone.
 func (h *H) preparePartnerInvite(ctx context.Context, userID, inviteeID int64) (int, string) {
 	var status string
 	err := h.DB.QueryRowContext(ctx,
@@ -409,7 +397,7 @@ func (h *H) preparePartnerInvite(ctx context.Context, userID, inviteeID int64) (
 			return http.StatusUnprocessableEntity, "you can have up to 10 partners"
 		}
 	}
-	return h.enforceInviteBudget(ctx, userID)
+	return 0, ""
 }
 
 // ListPendingPartnerInvites returns partner invites addressed to the signed-in email.

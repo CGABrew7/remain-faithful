@@ -37,6 +37,26 @@ func TestSendUsesResendWhenKeySet(t *testing.T) {
 	if got["subject"] != "Reset your Remain Faithful password" || got["text"] == "" || got["html"] == "" {
 		t.Fatalf("payload=%v", got)
 	}
+	if got["reply_to"] != "support@remainfaithful.com" {
+		t.Fatalf("reply_to=%v", got["reply_to"])
+	}
+}
+
+func TestContactReplyGoesToSubmitter(t *testing.T) {
+	var got map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(b, &got)
+		w.WriteHeader(200)
+	}))
+	defer srv.Close()
+	c := &Client{resendKey: "re_test", from: "noreply@remainfaithful.com", resendURL: srv.URL, httpClient: srv.Client()}
+	if err := c.SendContact("person@example.com", "Pat", "Hello", "A question", "support@remainfaithful.com"); err != nil {
+		t.Fatal(err)
+	}
+	if got["reply_to"] != "person@example.com" {
+		t.Fatalf("reply_to=%v", got["reply_to"])
+	}
 }
 
 func TestSendResendErrorStatus(t *testing.T) {

@@ -16,6 +16,9 @@ import (
 	"unicode/utf8"
 )
 
+// supportReplyAddress is where replies to user-facing mail should go.
+const supportReplyAddress = "support@remainfaithful.com"
+
 // Client sends transactional email. Resend (POST https://api.resend.com/emails)
 // is used when RESEND_API_KEY is set. SendGrid's v3 mail/send API is kept as a
 // fallback while SENDGRID_API_KEY is still set, so the cutover can be rolled
@@ -59,7 +62,7 @@ func (c *Client) Provider() string {
 // SendPartnerInvite sends an accountability partner invitation email.
 func (c *Client) SendPartnerInvite(toEmail, inviterName, acceptURL string) error {
 	subject, plain, htmlBody := partnerInviteMessage(inviterName, acceptURL)
-	return c.send(toEmail, "", subject, plain, htmlBody)
+	return c.send(toEmail, "", subject, plain, htmlBody, supportReplyAddress)
 }
 
 func partnerInviteMessage(inviterName, acceptURL string) (subject, plain, htmlBody string) {
@@ -81,7 +84,7 @@ func partnerInviteHTML(inviterName, acceptURL string) string {
 		`<p>Hi,</p>`+
 			`<p><strong>%s</strong> has invited you to join them as an accountability partner on Remain Faithful.</p>`+
 			`<p>If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, use the button below.</p>`+
-			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
+			`<p><a href="%s" style="background:#F0D030;color:#12214C;padding:12px 24px;border-radius:8px;`+
 			`text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>`+
 			`<p>If you weren't expecting this, you can safely ignore this email.</p>`+
 			`<p>- Remain Faithful</p>`,
@@ -102,7 +105,7 @@ func (c *Client) SendVerifyEmail(toEmail, toName, verifyURL string) error {
 			`<p><a href="%s">Confirm email</a></p><p>The link expires in 24 hours.</p><p>- Remain Faithful</p>`,
 		html.EscapeString(toName), html.EscapeString(verifyURL),
 	)
-	return c.send(toEmail, toName, subject, plain, htmlBody)
+	return c.send(toEmail, toName, subject, plain, htmlBody, supportReplyAddress)
 }
 
 // SendEmailChange confirms a new address before it replaces the current one.
@@ -118,13 +121,13 @@ func (c *Client) SendEmailChange(toEmail, toName, verifyURL string) error {
 			`<p><a href="%s">Confirm new email</a></p><p>The link expires in 24 hours.</p><p>- Remain Faithful</p>`,
 		html.EscapeString(toName), html.EscapeString(verifyURL),
 	)
-	return c.send(toEmail, toName, subject, plain, htmlBody)
+	return c.send(toEmail, toName, subject, plain, htmlBody, supportReplyAddress)
 }
 
 // SendGroupInvite sends a group member invitation email.
 func (c *Client) SendGroupInvite(toEmail, inviterName, groupName, acceptURL string) error {
 	subject, plain, htmlBody := groupInviteMessage(inviterName, groupName, acceptURL)
-	return c.send(toEmail, "", subject, plain, htmlBody)
+	return c.send(toEmail, "", subject, plain, htmlBody, supportReplyAddress)
 }
 
 func groupInviteMessage(inviterName, groupName, acceptURL string) (subject, plain, htmlBody string) {
@@ -142,7 +145,7 @@ func groupInviteMessage(inviterName, groupName, acceptURL string) (subject, plai
 			`<p><strong>%s</strong> has invited you to join the accountability group `+
 			`<strong>%s</strong> on Remain Faithful.</p>`+
 			`<p>If you are new to Remain Faithful, create an account with this email and confirm it. Confirming the email accepts this invite. If you already have an account, use the button below.</p>`+
-			`<p><a href="%s" style="background:#D2AB4C;color:#0F2050;padding:12px 24px;border-radius:8px;`+
+			`<p><a href="%s" style="background:#F0D030;color:#12214C;padding:12px 24px;border-radius:8px;`+
 			`text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>`+
 			`<p style="color:#888;">If you weren't expecting this, you can safely ignore this email.</p>`+
 			`<p>- Remain Faithful</p>`,
@@ -178,7 +181,7 @@ func mailDisplayName(raw string) string {
 // subject cannot inject extra mail headers.
 func (c *Client) SendContact(fromEmail, fromName, subject, message, toEmail string) error {
 	subjectLine, plain, htmlBody := contactParts(fromEmail, fromName, subject, message)
-	return c.send(toEmail, "", subjectLine, plain, htmlBody)
+	return c.send(toEmail, "", subjectLine, plain, htmlBody, fromEmail)
 }
 
 // contactParts builds the subject, plain text, and HTML for a contact email.
@@ -204,6 +207,32 @@ func sanitizeMailHeader(s string) string {
 	return s
 }
 
+// SendWeeklySummary emails one partner the last 7 days for one person.
+func (c *Client) SendWeeklySummary(toEmail, toName, subjectName string, days, alerts, streak int, unsubURL string) error {
+	toName = sanitizeMailHeader(toName)
+	subject, plain, htmlBody := weeklySummaryMessage(toName, subjectName, days, alerts, streak, unsubURL)
+	return c.send(toEmail, toName, subject, plain, htmlBody, supportReplyAddress)
+}
+
+func weeklySummaryMessage(toName, subjectName string, days, alerts, streak int, unsubURL string) (subject, plain, htmlBody string) {
+	subjectName = mailDisplayName(subjectName)
+	if toName == "" {
+		toName = "there"
+	}
+	subject = "Weekly summary for " + subjectName
+	plain = fmt.Sprintf(
+		"Hi %s,\n\nHere is the last 7 days for %s.\n\nDays protected: %d\nAlerts: %d\nStreak: %d\n\nThis email stops if you open the link below.\n%s\n\n- Remain Faithful",
+		toName, subjectName, days, alerts, streak, unsubURL,
+	)
+	htmlBody = fmt.Sprintf(
+		`<p>Hi %s,</p><p>Here is the last 7 days for <strong>%s</strong>.</p>`+
+			`<p>Days protected: %d<br>Alerts: %d<br>Streak: %d</p>`+
+			`<p><a href="%s">Stop these weekly emails</a></p><p>- Remain Faithful</p>`,
+		html.EscapeString(toName), html.EscapeString(subjectName), days, alerts, streak, html.EscapeString(unsubURL),
+	)
+	return subject, plain, htmlBody
+}
+
 func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 	toName = sanitizeMailHeader(toName)
 	subject := "Reset your Remain Faithful password"
@@ -218,15 +247,15 @@ func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 			`<p>If you didn't request this, you can safely ignore this email.</p><p>- Remain Faithful</p>`,
 		html.EscapeString(toName), html.EscapeString(resetURL),
 	)
-	return c.send(toEmail, toName, subject, plain, htmlBody)
+	return c.send(toEmail, toName, subject, plain, htmlBody, supportReplyAddress)
 }
 
-func (c *Client) send(toEmail, toName, subject, plain, htmlBody string) error {
+func (c *Client) send(toEmail, toName, subject, plain, htmlBody, replyTo string) error {
 	switch c.Provider() {
 	case "resend":
-		return c.sendResend(toEmail, toName, subject, plain, htmlBody)
+		return c.sendResend(toEmail, toName, subject, plain, htmlBody, replyTo)
 	case "sendgrid":
-		return c.sendSendGrid(toEmail, toName, subject, plain, htmlBody)
+		return c.sendSendGrid(toEmail, toName, subject, plain, htmlBody, replyTo)
 	}
 	if os.Getenv("APP_ENV") == "production" {
 		log.Printf("[email] no RESEND_API_KEY or SENDGRID_API_KEY; refusing to send subject=%q", subject)
@@ -246,25 +275,37 @@ func formatAddress(name, addr string) string {
 	return (&mail.Address{Name: name, Address: addr}).String()
 }
 
-func resendPayload(from, toEmail, toName, subject, plain, htmlBody string) map[string]any {
-	return map[string]any{
+func replyAddress(raw string) string {
+	addr, err := mail.ParseAddress(strings.TrimSpace(raw))
+	if err != nil {
+		return ""
+	}
+	return addr.Address
+}
+
+func resendPayload(from, toEmail, toName, subject, plain, htmlBody, replyTo string) map[string]any {
+	payload := map[string]any{
 		"from":    formatAddress("Remain Faithful", from),
 		"to":      []string{formatAddress(toName, toEmail)},
 		"subject": subject,
 		"text":    plain,
 		"html":    htmlBody,
 	}
+	if addr := replyAddress(replyTo); addr != "" {
+		payload["reply_to"] = addr
+	}
+	return payload
 }
 
-func (c *Client) sendResend(toEmail, toName, subject, plain, htmlBody string) error {
-	body, err := json.Marshal(resendPayload(c.from, toEmail, toName, subject, plain, htmlBody))
+func (c *Client) sendResend(toEmail, toName, subject, plain, htmlBody, replyTo string) error {
+	body, err := json.Marshal(resendPayload(c.from, toEmail, toName, subject, plain, htmlBody, replyTo))
 	if err != nil {
 		return fmt.Errorf("email: marshal: %w", err)
 	}
 	return c.post("resend", c.resendURL, c.resendKey, body, subject)
 }
 
-func (c *Client) sendSendGrid(toEmail, toName, subject, plain, htmlBody string) error {
+func (c *Client) sendSendGrid(toEmail, toName, subject, plain, htmlBody, replyTo string) error {
 	payload := map[string]any{
 		"personalizations": []map[string]any{{
 			"to": []map[string]string{{"email": toEmail, "name": toName}},
@@ -275,6 +316,9 @@ func (c *Client) sendSendGrid(toEmail, toName, subject, plain, htmlBody string) 
 			{"type": "text/plain", "value": plain},
 			{"type": "text/html", "value": htmlBody},
 		},
+	}
+	if addr := replyAddress(replyTo); addr != "" {
+		payload["reply_to"] = map[string]string{"email": addr, "name": "Remain Faithful"}
 	}
 	body, err := json.Marshal(payload)
 	if err != nil {
