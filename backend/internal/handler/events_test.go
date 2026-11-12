@@ -20,7 +20,13 @@ func TestIsAllowedEventSummary(t *testing.T) {
 		"Blocked domain detected",
 		"Explicit keyword detected in screen text",
 		"Monitored app used for 1+ minute",
+		"Monitored app used for 5+ minutes",
+		"Monitored app used for 15+ minutes",
+		"Monitored app used for 30+ minutes",
 		"Monitored app category used for 1+ minute",
+		"Monitored app category used for 5+ minutes",
+		"Monitored app category used for 15+ minutes",
+		"Monitored app category used for 30+ minutes",
 		"Monitored app activity detected",
 		"App activity detected",
 		"Blocked app opened",
@@ -69,6 +75,17 @@ func TestIsAllowedEventSummary(t *testing.T) {
 		if isAllowedEventSummary(s) {
 			t.Errorf("expected rejected summary %q", s)
 		}
+	}
+}
+
+func TestUsagePushNamesTheThreshold(t *testing.T) {
+	got := alertBody("Alex", "app_usage", "concerning", "Monitored app used for 15+ minutes")
+	if !strings.Contains(got, "15+ minutes") || strings.Contains(got, "1+ minute") {
+		t.Fatal(got)
+	}
+	got = alertBody("Alex", "app_usage", "concerning", "Monitored app category used for 1+ minute")
+	if !strings.Contains(got, "1+ minute") {
+		t.Fatal(got)
 	}
 }
 

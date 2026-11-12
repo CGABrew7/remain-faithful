@@ -110,17 +110,7 @@ func (a *App) sample() {
 		return
 	}
 	_ = a.store.Update(func(state *core.LocalState) error {
-		if event.Summary == core.SummaryApp {
-			state.Ledger.AppSent = false
-			if state.Ledger.AppSeconds >= 60 {
-				state.Ledger.AppSeconds = 59
-			}
-		} else {
-			state.Ledger.BrowserSent = false
-			if state.Ledger.BrowserSeconds >= 60 {
-				state.Ledger.BrowserSeconds = 59
-			}
-		}
+		state.Ledger = core.RewindUsage(state.Ledger, event.Summary)
 		return nil
 	})
 }

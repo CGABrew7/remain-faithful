@@ -424,7 +424,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitor App Usage',
-            does: 'If Alerts is on, your partner gets one alert that day after a chosen app or category is used for a minute.',
+            does: 'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day.',
           },
           {
             name: 'Block Selected Apps',

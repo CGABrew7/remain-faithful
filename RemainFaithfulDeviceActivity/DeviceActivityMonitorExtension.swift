@@ -30,9 +30,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     // MARK: - Threshold callback
 
-    // Fires when cumulative usage of a monitored app set crosses the event threshold
-    // (minimum 1 minute per DeviceActivity API contract). One fire per event per
-    // schedule interval — the daily interval resets at midnight when repeats = true.
+    // Fires when cumulative usage crosses one registered threshold.
+    // Each of 1, 5, 15, and 30 minutes is its own event, so each fires once
+    // per daily interval. The interval resets at midnight when repeats = true.
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name,
                                           activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
@@ -149,9 +149,15 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     private func summarize(event: DeviceActivityEvent.Name) -> String {
         switch event {
-        case .appUsage:      return "Monitored app used for 1+ minute"
-        case .categoryUsage: return "Monitored app category used for 1+ minute"
-        default:             return "Monitored app activity detected"
+        case .appUsage:        return "Monitored app used for 1+ minute"
+        case .appUsage5:       return "Monitored app used for 5+ minutes"
+        case .appUsage15:      return "Monitored app used for 15+ minutes"
+        case .appUsage30:      return "Monitored app used for 30+ minutes"
+        case .categoryUsage:   return "Monitored app category used for 1+ minute"
+        case .categoryUsage5:  return "Monitored app category used for 5+ minutes"
+        case .categoryUsage15: return "Monitored app category used for 15+ minutes"
+        case .categoryUsage30: return "Monitored app category used for 30+ minutes"
+        default:               return "Monitored app activity detected"
         }
     }
 }
@@ -164,8 +170,14 @@ extension DeviceActivityName {
 }
 
 extension DeviceActivityEvent.Name {
-    // Threshold event for individually selected apps.
+    // Threshold events for individually selected apps.
     static let appUsage = DeviceActivityEvent.Name("com.remainfaithful.appusage")
-    // Threshold event for selected app categories.
+    static let appUsage5 = DeviceActivityEvent.Name("com.remainfaithful.appusage.5")
+    static let appUsage15 = DeviceActivityEvent.Name("com.remainfaithful.appusage.15")
+    static let appUsage30 = DeviceActivityEvent.Name("com.remainfaithful.appusage.30")
+    // Threshold events for selected app categories.
     static let categoryUsage = DeviceActivityEvent.Name("com.remainfaithful.categoryusage")
+    static let categoryUsage5 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.5")
+    static let categoryUsage15 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.15")
+    static let categoryUsage30 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.30")
 }

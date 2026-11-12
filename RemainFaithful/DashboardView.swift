@@ -229,7 +229,7 @@ private extension EventCategory {
         case .selfHarm:
             return "This is a self-harm alert. Check on them. The screen itself was not uploaded."
         case .appUsage:
-            return "An app you chose was used for about a minute today. This is once a day, not every time the app opens."
+            return "An app you chose was used today. Your partner is told at 1, 5, 15, and 30 minutes."
         case .clean:
             return "Nothing in this check needed an alert."
         case .tamper:

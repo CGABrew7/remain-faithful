@@ -29,7 +29,13 @@ var allowedEventSummaries = map[string]struct{}{
 	"Blocked domain detected":                         {},
 	"Explicit keyword detected in screen text":        {},
 	"Monitored app used for 1+ minute":                {},
+	"Monitored app used for 5+ minutes":               {},
+	"Monitored app used for 15+ minutes":              {},
+	"Monitored app used for 30+ minutes":              {},
 	"Monitored app category used for 1+ minute":       {},
+	"Monitored app category used for 5+ minutes":      {},
+	"Monitored app category used for 15+ minutes":     {},
+	"Monitored app category used for 30+ minutes":     {},
 	"Monitored app activity detected":                 {},
 	"App activity detected":                           {},
 	"Blocked app opened":                              {},
@@ -269,6 +275,19 @@ func alertTitle(severity, category string) string {
 	}
 }
 
+func usageDurationPhrase(summary string) string {
+	switch summary {
+	case "Monitored app used for 5+ minutes", "Monitored app category used for 5+ minutes":
+		return "5+ minutes"
+	case "Monitored app used for 15+ minutes", "Monitored app category used for 15+ minutes":
+		return "15+ minutes"
+	case "Monitored app used for 30+ minutes", "Monitored app category used for 30+ minutes":
+		return "30+ minutes"
+	default:
+		return "1+ minute"
+	}
+}
+
 // alertBody returns a conversation-starter notification body.
 func alertBody(name, category, severity, summary string) string {
 	name = clipPushName(name)
@@ -276,7 +295,7 @@ func alertBody(name, category, severity, summary string) string {
 		return name + " opened an app they asked to block."
 	}
 	if category == "app_usage" {
-		return fmt.Sprintf("%s spent 1+ minute today in an app they're monitoring. A quick check-in shows you care.", name)
+		return fmt.Sprintf("%s spent %s today in an app they're monitoring. A quick check-in shows you care.", name, usageDurationPhrase(summary))
 	}
 	if severity == "severe" {
 		switch category {

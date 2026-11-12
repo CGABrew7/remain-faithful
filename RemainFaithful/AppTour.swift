@@ -59,7 +59,7 @@ enum TourContent {
             TourStep(tab: 2, anchor: .settingsPartners, title: "Your partners",
                      body: "Add partners and star your primary partner."),
             TourStep(tab: 2, anchor: .settingsRestrictions, title: "Choose apps",
-                     body: "Pick the apps that tempt you. Blocking stops them from opening. Alerts tell your partner after one minute a day."),
+                     body: "Pick the apps that tempt you. Blocking stops them from opening. Alerts tell your partner at 1, 5, 15, and 30 minutes."),
             TourStep(tab: 2, anchor: .settingsFeedback, title: "Tell us what you think",
                      body: "Ideas, fixes, problems. We read every one."),
         ])
