@@ -154,6 +154,16 @@ object HeartbeatPolicy {
             "device_kind" to DevicePolicy.KIND_ANDROID,
         )
     }
+
+}
+
+object DayOffset {
+    fun minutes(totalSeconds: Int): Int {
+        val minutes = totalSeconds / 60
+        return minutes.coerceIn(-14 * 60, 14 * 60)
+    }
+
+    fun query(minutes: Int): String = "offset_minutes=$minutes"
 }
 
 object DevicePolicy {
@@ -351,13 +361,14 @@ object JwtClock {
     }
 }
 
-enum class StreakMark { Clean, Flagged, BeforeSignup }
+enum class StreakMark { Clean, Flagged, BeforeSignup, Off }
 
 object StreakWeek {
     fun mark(raw: String): StreakMark = when (raw.lowercase()) {
         "clean", "true", "1" -> StreakMark.Clean
         "before_signup", "before-signup", "before_account", "not_applicable", "na", "none" ->
             StreakMark.BeforeSignup
+        "off", "unprotected" -> StreakMark.Off
         else -> StreakMark.Flagged
     }
 
@@ -462,7 +473,7 @@ object TourContent {
         }
         val steps = mutableListOf(
             TourStep(0, "Monitoring status", monitoringBody),
-            TourStep(0, "Your clean streak", "Days in a row without a flag. The circles are this week."),
+            TourStep(0, "Your clean streak", "Days in a row with protection on and no flag. The circles are this week."),
             TourStep(0, "Recent flags", "Your latest alerts. Tap one to see what happened and a few questions to talk through with your partner."),
             TourStep(0, "When it gets hard", "One tap sends an urgent notice to your partners and your group."),
         )

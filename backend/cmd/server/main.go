@@ -696,5 +696,8 @@ func migrate(db *sql.DB) error {
 	if err := handler.MigrateDeviceHeartbeats(db); err != nil {
 		return err
 	}
+	if err := handler.MigrateStreak(db); err != nil {
+		return err
+	}
 	return handler.MigrateWaitlist(db)
 }

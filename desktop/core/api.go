@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -48,10 +49,11 @@ type RemoteAlert struct {
 }
 
 type Stats struct {
-	StreakDays int      `json:"streak_days"`
-	BestStreak int      `json:"best_streak"`
-	Week       []bool   `json:"week"`
-	WeekStates []string `json:"week_states"`
+	StreakDays   int      `json:"streak_days"`
+	BestStreak   int      `json:"best_streak"`
+	Week         []bool   `json:"week"`
+	WeekStates   []string `json:"week_states"`
+	WeekCoverage []string `json:"week_coverage"`
 }
 
 type Relationship struct {
@@ -207,7 +209,7 @@ func (c *Client) DeleteMe(ctx context.Context) error {
 
 func (c *Client) Stats(ctx context.Context) (Stats, error) {
 	var stats Stats
-	err := c.call(ctx, http.MethodGet, "/users/me/stats", nil, &stats, true)
+	err := c.call(ctx, http.MethodGet, "/users/me/stats?"+offsetQuery(time.Now()), nil, &stats, true)
 	return stats, err
 }
 
@@ -292,6 +294,18 @@ func (c *Client) HeartbeatMonitoring(ctx context.Context, deviceID, deviceKind s
 		DeviceID:   deviceID,
 		DeviceKind: deviceKind,
 	}, nil, true)
+}
+
+func offsetQuery(now time.Time) string {
+	_, seconds := now.Zone()
+	minutes := seconds / 60
+	if minutes < -14*60 {
+		minutes = -14 * 60
+	}
+	if minutes > 14*60 {
+		minutes = 14 * 60
+	}
+	return "offset_minutes=" + strconv.Itoa(minutes)
 }
 
 func (c *Client) ReportDevice(ctx context.Context, deviceID, deviceKind string, monitoring bool) error {
@@ -473,7 +487,7 @@ func (c *Client) CreateGroup(ctx context.Context, name string) (Group, error) {
 
 func (c *Client) GetGroup(ctx context.Context, id int64) (Group, error) {
 	var g Group
-	err := c.call(ctx, http.MethodGet, "/groups/"+itoa64(id), nil, &g, true)
+	err := c.call(ctx, http.MethodGet, "/groups/"+itoa64(id)+"?"+offsetQuery(time.Now()), nil, &g, true)
 	return g, err
 }
 

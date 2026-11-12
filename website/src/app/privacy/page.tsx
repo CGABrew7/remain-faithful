@@ -65,6 +65,7 @@ export default function PrivacyPage() {
               <p>
                 <strong className="text-ink">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, or raw screen content. Partner sharing does not include those items beyond the short summary above.
               </p>
+              <p>When the app loads a streak, it sends the current UTC offset in minutes so the days match the phone. That number is used for the response and is not saved.</p>
             </Subsection>
 
             <Subsection title="Website Analytics">
