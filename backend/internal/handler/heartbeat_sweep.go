@@ -98,6 +98,11 @@ func (h *H) purgeOldEvents(ctx context.Context) {
 	); err != nil {
 		log.Printf("[retention] alerts: %v", err)
 	}
+	if _, err := h.DB.ExecContext(ctx,
+		`DELETE FROM protection_heartbeats WHERE at < NOW() - INTERVAL '365 days'`,
+	); err != nil {
+		log.Printf("[retention] heartbeats: %v", err)
+	}
 }
 
 // sendSilenceAlertToPartner delivers a heartbeat_silence PROTECTION_ALERT push

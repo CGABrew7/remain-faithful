@@ -11,7 +11,7 @@ export default function ShieldMark({ size = 22 }: { size?: number }) {
     >
       <path
         d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z"
-        fill="#D1AB4C"
+        fill="#F0D030"
       />
       <path
         d="M11 18L14.5 21.5L21 14"

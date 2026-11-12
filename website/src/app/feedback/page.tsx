@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   title: 'Suggest an Idea or Report a Problem',
   description:
     'Send the Remain Faithful team an idea for a future update, a way to improve the app, or a problem you ran into.',
-  alternates: { canonical: 'https://remainfaithful.com/feedback' },
+  alternates: { canonical: 'https://www.remainfaithful.com/feedback' },
 }
 
 export default function FeedbackPage() {
   return (
     <>
       <div className="mx-auto max-w-5xl px-5 pt-24 sm:px-6">
-        <Breadcrumbs items={[{ name: 'Feedback', url: 'https://remainfaithful.com/feedback' }]} />
+        <Breadcrumbs items={[{ name: 'Feedback', url: 'https://www.remainfaithful.com/feedback' }]} />
       </div>
       <section className="pb-20 pt-4">
         <div className="mx-auto grid max-w-5xl gap-12 px-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">

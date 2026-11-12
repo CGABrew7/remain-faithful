@@ -27,6 +27,8 @@ final class PartnerPINManager: ObservableObject {
     static let shared = PartnerPINManager()
 
     @Published private(set) var isPINSet: Bool = false
+    /// False until a status check succeeds. A failed check does not treat the PIN as unset.
+    @Published private(set) var statusKnown: Bool = false
     @Published private(set) var isChecking: Bool = false
 
     private init() {}
@@ -39,8 +41,10 @@ final class PartnerPINManager: ObservableObject {
         defer { isChecking = false }
         do {
             isPINSet = try await APIClient.shared.getPartnerPINStatus()
+            statusKnown = true
             pinLogger.info("Partner PIN status: isSet=\(self.isPINSet)")
         } catch {
+            statusKnown = false
             pinLogger.info("Could not fetch partner PIN status: \(error.localizedDescription)")
         }
     }
@@ -59,12 +63,4 @@ final class PartnerPINManager: ObservableObject {
         }
     }
 
-    // MARK: - Wrong attempt notification
-
-    func notifyWrongAttempt(userName: String) async {
-        try? await APIClient.shared.sendProtectionAlert(
-            type: "wrong_pin_attempt",
-            detail: "\(userName) entered a wrong Protection PIN."
-        )
-    }
 }

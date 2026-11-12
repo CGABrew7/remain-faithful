@@ -3,6 +3,12 @@ import Foundation
 // Queues protection notices when the network fails, and retries them for the
 // same account. A later sign-in must not upload the previous person's queue.
 
+enum DeliveryResult {
+    case sent
+    case ended
+    case failed
+}
+
 enum ProtectionAlerts {
     private static let queueKey = "pendingProtectionAlerts"
     private static let defaults = UserDefaults(suiteName: "group.com.remainfaithful.app")
@@ -15,6 +21,21 @@ enum ProtectionAlerts {
 
     static func send(type: String, detail: String) {
         Task { await deliver(type: type, detail: detail) }
+    }
+
+    /// Asks the server to record one notice and waits for that request.
+    /// A network failure stays on this phone so the caller can retry.
+    static func confirmDelivery(type: String, detail: String) async -> DeliveryResult {
+        guard APIClient.shared.isAuthenticated else { return .ended }
+        do {
+            try await APIClient.shared.sendProtectionAlert(type: type, detail: detail)
+            return .sent
+        } catch let error as APIError {
+            if case .unauthenticated = error { return .ended }
+            return .failed
+        } catch {
+            return .failed
+        }
     }
 
     static func deliver(type: String, detail: String) async {

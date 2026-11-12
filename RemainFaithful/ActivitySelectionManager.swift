@@ -102,11 +102,15 @@ final class ActivitySelectionManager: ObservableObject {
         let cats = selection.categoryTokens
         store.shield.applications        = apps.isEmpty ? nil : apps
         store.shield.applicationCategories = cats.isEmpty ? nil : .specific(cats)
+        // Apple's built-in adult content filter for Safari and other apps that
+        // honor Screen Time web rules. It follows the Blocking switch.
+        store.webContent.blockedByFilter = .auto()
     }
 
     func clearShielding() {
         store.shield.applications          = nil
         store.shield.applicationCategories = nil
+        store.webContent.blockedByFilter   = nil
     }
 
     // MARK: - Activity monitoring (DeviceActivity)

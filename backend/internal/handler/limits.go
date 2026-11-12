@@ -4,13 +4,11 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"net/http"
 	"time"
 )
 
 const (
 	maxPartnersPerUser = 10
-	maxInvitesPerDay   = 20
 	eventPastWindow    = 7 * 24 * time.Hour
 	eventFutureSkew    = 5 * time.Minute
 	resetMailPerHour   = 3
@@ -60,27 +58,6 @@ func trimSpace(s string) string {
 		s = s[:len(s)-1]
 	}
 	return s
-}
-
-func (h *H) invitesSentToday(ctx context.Context, userID int64) (int, error) {
-	var n int
-	err := h.DB.QueryRowContext(ctx, `
-		SELECT (
-			(SELECT COUNT(*) FROM relationship_invites WHERE inviter_id = $1 AND created_at > NOW() - INTERVAL '1 day')
-		  + (SELECT COUNT(*) FROM group_invites WHERE inviter_id = $1 AND created_at > NOW() - INTERVAL '1 day')
-		)`, userID).Scan(&n)
-	return n, err
-}
-
-func (h *H) enforceInviteBudget(ctx context.Context, userID int64) (int, string) {
-	n, err := h.invitesSentToday(ctx, userID)
-	if err != nil {
-		return http.StatusInternalServerError, "could not check invite limit"
-	}
-	if n >= maxInvitesPerDay {
-		return http.StatusTooManyRequests, "invite limit reached for today"
-	}
-	return 0, ""
 }
 
 func (h *H) partnerCount(ctx context.Context, userID int64) (int, error) {

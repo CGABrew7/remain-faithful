@@ -17,7 +17,7 @@ const config: Config = {
           border: 'rgba(255,255,255,0.10)',
         },
         gold: {
-          DEFAULT: '#D1AB4C',
+          DEFAULT: '#F0D030',
         },
         paper: {
           DEFAULT: '#12214C',
@@ -31,8 +31,8 @@ const config: Config = {
           faint: '#B4BCD4',
         },
         wax: {
-          DEFAULT: '#D1AB4C',
-          deep: '#B08E3A',
+          DEFAULT: '#F0D030',
+          deep: '#C6A61E',
         },
         hairline: 'rgba(255, 255, 255, 0.10)',
       },

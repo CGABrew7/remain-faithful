@@ -80,7 +80,7 @@ export default function InviteLanding({
           <div
             className="pointer-events-none absolute inset-0"
             aria-hidden="true"
-            style={{ background: 'radial-gradient(60% 70% at 50% 0%, rgba(209,171,76,0.14), transparent 70%)' }}
+            style={{ background: 'radial-gradient(60% 70% at 50% 0%, rgba(240,208,48,0.14), transparent 70%)' }}
           />
           <div className="relative text-center">
             <p className="kicker">{c.kicker}</p>

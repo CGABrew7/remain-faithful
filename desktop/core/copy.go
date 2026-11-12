@@ -67,7 +67,7 @@ type TourStep struct {
 func TourSteps(inGroup bool) []TourStep {
 	steps := []TourStep{
 		{Tab: "home", Title: "Monitoring status", Body: "This shows whether Alerts and Blocking are on."},
-		{Tab: "home", Title: "Your clean streak", Body: "Days in a row without a flag. The circles are this week."},
+		{Tab: "home", Title: "Your clean streak", Body: "Days in a row with protection on and no flag. The circles are this week."},
 		{Tab: "home", Title: "Recent flags", Body: "Your latest alerts. Open one to see what happened."},
 		{Tab: "home", Title: "When it gets hard", Body: "One tap sends an urgent notice to your partners and your group."},
 	}

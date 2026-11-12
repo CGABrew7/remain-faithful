@@ -4,7 +4,7 @@
  */
 
 export const ALERT_TRIGGER =
-  'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day. If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield and does not itself send an alert.'
+  'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day. If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield, Apple\'s adult web filter is on, and your partner gets an alert that a blocked app was opened. That alert does not include the app name.'
 
 export const PRIVACY_PROMISE =
   'Only event metadata leaves the phone: category, severity, timestamp, and a short system summary, plus a heartbeat while protection is on. Screenshots and screen content stay on the device.'

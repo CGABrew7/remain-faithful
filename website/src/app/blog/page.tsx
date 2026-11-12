@@ -6,14 +6,14 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 export const metadata: Metadata = {
   title: 'Accountability Guides & Resources | Blog',
   description: 'Practical guides, theological reflections, and research on accountability, purity, and the technology behind Remain Faithful.',
-  alternates: { canonical: 'https://remainfaithful.com/blog' },
+  alternates: { canonical: 'https://www.remainfaithful.com/blog' },
 }
 
 export default function BlogPage() {
   return (
     <div className="pt-24 pb-24">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Breadcrumbs items={[{ name: 'Blog', url: 'https://remainfaithful.com/blog' }]} />
+        <Breadcrumbs items={[{ name: 'Blog', url: 'https://www.remainfaithful.com/blog' }]} />
         <div className="text-center mb-16">
           <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">The RF Blog</p>
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink mb-4">

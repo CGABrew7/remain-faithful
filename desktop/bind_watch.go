@@ -140,11 +140,6 @@ func (a *App) VerifyPIN(pin string) (PINView, error) {
 		}
 		return PINView{}, a.soften(err)
 	}
-	if !result.Success && result.Reason == "wrong_pin" {
-		if note, nerr := core.WrongPINNotice(a.store.User().Name); nerr == nil {
-			a.deliver([]core.ProtectionNotice{note})
-		}
-	}
 	return PINView{Success: result.Success, Message: result.Message}, nil
 }
 

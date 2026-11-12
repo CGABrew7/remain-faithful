@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Choose a new password',
   description: 'Set a new Remain Faithful password from the link in your email.',
   robots: { index: false, follow: false },
-  alternates: { canonical: 'https://remainfaithful.com/reset-password' },
+  alternates: { canonical: 'https://www.remainfaithful.com/reset-password' },
 }
 
 export default function ResetPasswordPage() {
