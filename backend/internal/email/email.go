@@ -207,6 +207,32 @@ func sanitizeMailHeader(s string) string {
 	return s
 }
 
+// SendWeeklySummary emails one partner the last 7 days for one person.
+func (c *Client) SendWeeklySummary(toEmail, toName, subjectName string, days, alerts, streak int, unsubURL string) error {
+	toName = sanitizeMailHeader(toName)
+	subject, plain, htmlBody := weeklySummaryMessage(toName, subjectName, days, alerts, streak, unsubURL)
+	return c.send(toEmail, toName, subject, plain, htmlBody, supportReplyAddress)
+}
+
+func weeklySummaryMessage(toName, subjectName string, days, alerts, streak int, unsubURL string) (subject, plain, htmlBody string) {
+	subjectName = mailDisplayName(subjectName)
+	if toName == "" {
+		toName = "there"
+	}
+	subject = "Weekly summary for " + subjectName
+	plain = fmt.Sprintf(
+		"Hi %s,\n\nHere is the last 7 days for %s.\n\nDays protected: %d\nAlerts: %d\nStreak: %d\n\nThis email stops if you open the link below.\n%s\n\n- Remain Faithful",
+		toName, subjectName, days, alerts, streak, unsubURL,
+	)
+	htmlBody = fmt.Sprintf(
+		`<p>Hi %s,</p><p>Here is the last 7 days for <strong>%s</strong>.</p>`+
+			`<p>Days protected: %d<br>Alerts: %d<br>Streak: %d</p>`+
+			`<p><a href="%s">Stop these weekly emails</a></p><p>- Remain Faithful</p>`,
+		html.EscapeString(toName), html.EscapeString(subjectName), days, alerts, streak, html.EscapeString(unsubURL),
+	)
+	return subject, plain, htmlBody
+}
+
 func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 	toName = sanitizeMailHeader(toName)
 	subject := "Reset your Remain Faithful password"

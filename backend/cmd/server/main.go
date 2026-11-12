@@ -85,6 +85,7 @@ func main() {
 	silenceMinutes := heartbeatSilenceMinutes()
 	go h.StartHeartbeatWatcher(ctx)
 	go h.StartHeartbeatSweep(ctx, silenceMinutes)
+	go h.StartWeeklySummaries(ctx)
 	if err := h.PurgeOldPageviews(ctx); err != nil {
 		log.Printf("pageview retention: %v", err)
 	}
@@ -280,6 +281,7 @@ func routes(h *handler.H) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"status":"ok"}`)
 	}).Methods(http.MethodGet)
+	r.HandleFunc("/weekly-summary/unsubscribe", h.UnsubscribeWeeklySummary).Methods(http.MethodGet)
 
 	// Public auth routes — rate-limited to 10 requests/minute per IP.
 	auth := r.PathPrefix("/auth").Subrouter()
@@ -303,6 +305,7 @@ func routes(h *handler.H) http.Handler {
 	}))
 
 	api.HandleFunc("/users/me", h.GetMe).Methods(http.MethodGet)
+	api.HandleFunc("/users/me/weekly-summary", h.SetWeeklySummaryPreference).Methods(http.MethodPost)
 	api.HandleFunc("/users/me", h.UpdateMe).Methods(http.MethodPut)
 	api.HandleFunc("/users/me", h.DeleteMe).Methods(http.MethodDelete)
 	api.HandleFunc("/users/me/stats", h.GetUserStats).Methods(http.MethodGet)
@@ -694,6 +697,9 @@ func migrate(db *sql.DB) error {
 		return err
 	}
 	if err := handler.MigrateDeviceHeartbeats(db); err != nil {
+		return err
+	}
+	if err := handler.MigrateWeeklySummary(db); err != nil {
 		return err
 	}
 	if err := handler.MigrateStreak(db); err != nil {
