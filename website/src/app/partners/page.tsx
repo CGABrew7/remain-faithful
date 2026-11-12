@@ -6,18 +6,19 @@ import PhoneFrame from '@/components/PhoneFrame'
 import PilotForm from '@/components/PilotForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { ALERT_TRIGGER } from '@/lib/product-copy'
+import { donationsEnabled } from '@/lib/donations'
 
 export const metadata: Metadata = {
   title: 'Church & Ministry Accountability Program | Partners',
   description: "Bring structured accountability to your church, small group, or men's ministry. Free tools, group setup guides, and pastoral resources for ministry leaders.",
-  alternates: { canonical: 'https://remainfaithful.com/partners' },
+  alternates: { canonical: 'https://www.remainfaithful.com/partners' },
 }
 
 export default function PartnersPage() {
   return (
     <>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <Breadcrumbs items={[{ name: 'Partners', url: 'https://remainfaithful.com/partners' }]} />
+        <Breadcrumbs items={[{ name: 'Partners', url: 'https://www.remainfaithful.com/partners' }]} />
       </div>
       {/* Hero */}
       <section className="border-b border-white/10 pb-20 pt-8">
@@ -111,7 +112,7 @@ export default function PartnersPage() {
             
           >
             <div className="w-16 h-16 rounded-sm bg-wax/15 border border-wax/30 flex items-center justify-center flex-shrink-0">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2" strokeLinecap="round">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0D030" strokeWidth="2" strokeLinecap="round">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
@@ -303,7 +304,7 @@ export default function PartnersPage() {
             {[
               {
                 phase: 'Before Launch',
-                color: '#D1AB4C',
+                color: '#F0D030',
                 items: [
                   'Leader has installed RF and authorized always-on filtering personally',
                   'Leader has read the Group Setup Guide',
@@ -314,7 +315,7 @@ export default function PartnersPage() {
               },
               {
                 phase: 'During Launch Week',
-                color: '#D1AB4C',
+                color: '#F0D030',
                 items: [
                   'Covenant discussed and agreed on by all members',
                   'All members have installed RF and created accounts',
@@ -325,7 +326,7 @@ export default function PartnersPage() {
               },
               {
                 phase: 'First 30 Days',
-                color: '#D1AB4C',
+                color: '#F0D030',
                 items: [
                   'At least one alert has been responded to with grace',
                   'Group has had at least one conversation that started with an alert',
@@ -410,8 +411,13 @@ export default function PartnersPage() {
           >
             <h3 className="font-semibold text-ink mb-3">A Note on Scale</h3>
             <p className="text-sm text-ink-soft leading-relaxed">
-              Remain Faithful is free regardless of how many groups your church runs. Whether you have 2 groups or 20, there is no cost. Our model is donor-funded so that no church faces a barrier to adoption. If your church has found RF valuable, consider{' '}
-              <Link href="/#donate" className="text-wax hover:underline">making a donation</Link> to support the infrastructure for others.
+              Remain Faithful is free regardless of how many groups your church runs. Whether you have 2 groups or 20, there is no cost.
+              {donationsEnabled() && (
+                <>
+                  {' '}Our model is donor-funded so that no church faces a barrier to adoption. If your church has found RF valuable, consider{' '}
+                  <Link href="/#donate" className="text-wax hover:underline">making a donation</Link> to support the infrastructure for others.
+                </>
+              )}
             </p>
           </div>
         </div>

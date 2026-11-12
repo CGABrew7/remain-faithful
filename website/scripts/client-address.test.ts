@@ -7,6 +7,15 @@ function requestWith(headers: Record<string, string>) {
 }
 
 describe('donate client address', () => {
+  it('uses the platform header ahead of a caller supplied list', () => {
+    const req = requestWith({
+      'x-forwarded-for': '203.0.113.5, 10.0.0.1',
+      'x-real-ip': '198.51.100.8',
+      'x-vercel-forwarded-for': '198.51.100.20',
+    })
+    assert.equal(clientAddress(req), '198.51.100.20')
+  })
+
   it('uses the platform client address instead of the first forwarded hop', () => {
     const req = requestWith({
       'x-forwarded-for': '203.0.113.5, 10.0.0.1',
@@ -15,8 +24,8 @@ describe('donate client address', () => {
     assert.equal(clientAddress(req), '198.51.100.20')
   })
 
-  it('uses the first forwarded hop when the platform client header is absent', () => {
+  it('does not use a caller supplied forwarded list on its own', () => {
     const req = requestWith({ 'x-forwarded-for': '203.0.113.5, 10.0.0.1' })
-    assert.equal(clientAddress(req), '203.0.113.5')
+    assert.equal(clientAddress(req), 'local')
   })
 })

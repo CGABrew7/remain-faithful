@@ -3,11 +3,12 @@ import Link from 'next/link'
 import { JsonLd } from '@/components/JsonLd'
 import { softwareApplicationSchema } from '@/lib/structured-data'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { donationsEnabled } from '@/lib/donations'
 
 export const metadata: Metadata = {
   title: 'Christian Accountability App | Built on Covenant, Not Surveillance',
   description: 'Remain Faithful is an accountability app built for Christians. Covenant-based partner system, on-device AI, small group support, and pastoral resources. Free forever.',
-  alternates: { canonical: 'https://remainfaithful.com/christian-accountability-app' },
+  alternates: { canonical: 'https://www.remainfaithful.com/christian-accountability-app' },
 }
 
 export default function ChristianAccountabilityApp() {
@@ -17,7 +18,7 @@ export default function ChristianAccountabilityApp() {
 
       <div className="pt-24 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs items={[{ name: 'Christian Accountability App', url: 'https://remainfaithful.com/christian-accountability-app' }]} />
+          <Breadcrumbs items={[{ name: 'Christian Accountability App', url: 'https://www.remainfaithful.com/christian-accountability-app' }]} />
 
           {/* Hero */}
           <div className="mb-14">
@@ -111,7 +112,7 @@ export default function ChristianAccountabilityApp() {
                 { label: 'Alert response', secular: 'Predetermined rules', rf: 'Agreed covenant to respond with grace' },
                 { label: 'Partner access', secular: 'Usually automatic upon install', rf: 'Requires explicit covenant acceptance' },
                 { label: 'Failure handling', secular: 'Report generated, consequences possible', rf: 'Alert opens a conversation, not a verdict' },
-                { label: 'Cost model', secular: 'Subscription (product = accountability)', rf: 'Free, donation-funded (mission = accountability)' },
+                { label: 'Cost model', secular: 'Subscription (product = accountability)', rf: donationsEnabled() ? 'Free, donation-funded (mission = accountability)' : 'Free (mission = accountability)' },
               ].map((row) => (
                 <div key={row.label} className="rounded-sm border border-hairline bg-paper-deep overflow-hidden">
                   <div className="px-4 py-2 border-b border-hairline bg-paper-deep">

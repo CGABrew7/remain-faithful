@@ -1,6 +1,6 @@
 # Remain Faithful — Website
 
-Marketing website for [remainfaithful.com](https://remainfaithful.com), built with Next.js 14 and Tailwind CSS.
+Marketing website for [remainfaithful.com](https://www.remainfaithful.com), built with Next.js 14 and Tailwind CSS.
 
 ## Tech Stack
 
@@ -34,7 +34,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `STRIPE_SECRET_KEY` | Yes | Stripe secret key (server-side) for creating Checkout sessions |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | Stripe publishable key (client-side) |
 | `BACKEND_URL` | No | Base URL of the Go backend API (contact form fallback) |
-| `NEXT_PUBLIC_SITE_URL` | Yes | Canonical site URL (e.g. `https://remainfaithful.com`). Not used for Stripe Checkout return URLs. |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Canonical site URL (e.g. `https://www.remainfaithful.com`). Not used for Stripe Checkout return URLs. |
 | `NEXT_PUBLIC_GA_ID` | No | Google Analytics 4 Measurement ID (`G-XXXXXXXXXX`) |
 
 ## Deploying to Vercel

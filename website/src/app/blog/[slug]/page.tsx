@@ -7,6 +7,7 @@ import { RelatedPosts } from '@/components/RelatedPosts'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { JsonLd } from '@/components/JsonLd'
 import { blogPostSchema } from '@/lib/structured-data'
+import { donationsEnabled } from '@/lib/donations'
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }))
@@ -45,7 +46,7 @@ export async function generateMetadata({
     // Root layout's title.template appends " | Remain Faithful".
     title: displayTitle,
     description: post.excerpt,
-    alternates: { canonical: `https://remainfaithful.com/blog/${post.slug}` },
+    alternates: { canonical: `https://www.remainfaithful.com/blog/${post.slug}` },
     openGraph: {
       title: `${displayTitle} | Remain Faithful`,
       description: post.excerpt,
@@ -159,8 +160,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Breadcrumbs items={[
-          { name: 'Blog', url: 'https://remainfaithful.com/blog' },
-          { name: blogTitles[post.slug] || post.title, url: `https://remainfaithful.com/blog/${post.slug}` },
+          { name: 'Blog', url: 'https://www.remainfaithful.com/blog' },
+          { name: blogTitles[post.slug] || post.title, url: `https://www.remainfaithful.com/blog/${post.slug}` },
         ]} />
         <div className="grid lg:grid-cols-[1fr_300px] gap-12">
           {/* Article */}
@@ -258,10 +259,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </div>
             </div>
 
-            {/* Donate nudge */}
-            <div
+            {donationsEnabled() && <div
               className="rounded-sm p-6 border border-wax/25 text-center"
-              
             >
               <div className="text-2xl mb-3">❤️</div>
               <h3 className="font-serif text-base font-bold text-ink mb-2">Keep RF Free</h3>
@@ -274,7 +273,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               >
                 Support the Project
               </Link>
-            </div>
+            </div>}
           </aside>
         </div>
       </div>

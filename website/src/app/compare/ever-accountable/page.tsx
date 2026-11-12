@@ -9,7 +9,7 @@ import { UpdatedStamp } from '@/components/UpdatedStamp'
 export const metadata: Metadata = {
   title: 'Remain Faithful vs Ever Accountable: Direct Comparison (2026)',
   description: 'A detailed comparison of Remain Faithful and Ever Accountable for Christian accountability. See how they differ on price, privacy, monitoring, and approach.',
-  alternates: { canonical: 'https://remainfaithful.com/compare/ever-accountable' },
+  alternates: { canonical: 'https://www.remainfaithful.com/compare/ever-accountable' },
 }
 
 const pageFaqSchema = {
@@ -52,8 +52,8 @@ export default function EverAccountableCompare() {
       <div className="pt-24 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={[
-            { name: 'Compare', url: 'https://remainfaithful.com/compare/ever-accountable' },
-            { name: 'Ever Accountable', url: 'https://remainfaithful.com/compare/ever-accountable' },
+            { name: 'Compare', url: 'https://www.remainfaithful.com/compare/ever-accountable' },
+            { name: 'Ever Accountable', url: 'https://www.remainfaithful.com/compare/ever-accountable' },
           ]} />
 
           <div className="mb-10">
