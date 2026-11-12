@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { SITE_ORIGIN } from '@/lib/site'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/_next/', '/admin', '/admin/'],
       },
     ],
-    sitemap: 'https://remainfaithful.com/sitemap.xml',
+    sitemap: `${SITE_ORIGIN}/sitemap.xml`,
   }
 }

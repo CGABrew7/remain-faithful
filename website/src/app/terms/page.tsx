@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { donationsEnabled } from '@/lib/donations'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of Service for Remain Faithful, the free, privacy-first accountability app.',
-  alternates: { canonical: 'https://remainfaithful.com/terms' },
+  alternates: { canonical: 'https://www.remainfaithful.com/terms' },
 }
 
 export default function TermsPage() {
@@ -39,11 +40,13 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="Donations">
-            <p>
-              Donations are voluntary and non-refundable. Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Payment processing is handled by Stripe, Inc. We do not store payment card information.
-            </p>
-          </Section>
+          {donationsEnabled() && (
+            <Section title="Donations">
+              <p>
+                Donations are voluntary and non-refundable. Donations are made through the Woodfield Foundation Inc., a registered 501(c)(3) nonprofit organization. All donations are tax-deductible. Payment processing is handled by Stripe, Inc. We do not store payment card information.
+              </p>
+            </Section>
+          )}
 
           <Section title="Disclaimer of Warranties">
             <p>

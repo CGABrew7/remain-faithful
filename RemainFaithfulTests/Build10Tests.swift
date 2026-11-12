@@ -88,7 +88,7 @@ final class Build10Tests: XCTestCase {
             extensionSignedOut: true
         )
         XCTAssertEqual(card.title, "Monitoring on")
-        XCTAssertTrue(card.deepScanLine.contains("sign in again"))
+        XCTAssertTrue(card.deepScanLine.localizedCaseInsensitiveContains("sign in again"))
         XCTAssertTrue(card.deepScanLine.localizedCaseInsensitiveContains("Deep Scan"))
     }
 

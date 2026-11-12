@@ -2,12 +2,14 @@
 
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { donationsEnabled } from '@/lib/donations'
 
 export default function DonationSuccessBanner() {
   const searchParams = useSearchParams()
   const [show, setShow] = useState(false)
 
   useEffect(() => {
+    if (!donationsEnabled()) return
     if (searchParams.get('donated') === 'true') {
       setShow(true)
       const url = new URL(window.location.href)
@@ -16,7 +18,7 @@ export default function DonationSuccessBanner() {
     }
   }, [searchParams])
 
-  if (!show) return null
+  if (!donationsEnabled() || !show) return null
 
   return (
     <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4" data-clarity-mask="true">

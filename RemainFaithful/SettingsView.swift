@@ -85,9 +85,6 @@ struct SettingsView: View {
                         pendingGatedAction = nil
                         showPINGate = false
                     }
-                } else if result == .wrong {
-                    let name = UserDefaults.standard.string(forKey: "userName") ?? "User"
-                    await PartnerPINManager.shared.notifyWrongAttempt(userName: name)
                 }
                 return result
             } onCancel: {
@@ -338,11 +335,22 @@ struct SettingsView: View {
     // If a partner PIN is set, stores the action and shows the PIN sheet.
     // If no PIN is set, executes the action immediately.
     private func withPINGate(_ action: @escaping () -> Void) {
-        if pinManager.isPINSet {
-            pendingGatedAction = action
-            showPINGate = true
-        } else {
-            action()
+        Task {
+            if !pinManager.statusKnown {
+                await pinManager.refreshStatus()
+            }
+            await MainActor.run {
+                if !pinManager.statusKnown {
+                    actionError = "Couldn't check the PIN. Check your connection and try again."
+                    return
+                }
+                if pinManager.isPINSet {
+                    pendingGatedAction = action
+                    showPINGate = true
+                } else {
+                    action()
+                }
+            }
         }
     }
 
@@ -437,11 +445,15 @@ struct SettingsView: View {
 
     private func performSignOut() {
         Task {
-            await ProtectionAlerts.deliver(
+            let result = await ProtectionAlerts.confirmDelivery(
                 type: "signed_out",
                 detail: "Signed out. Monitoring on this phone has stopped."
             )
             await MainActor.run {
+                if result == .failed {
+                    actionError = "Couldn't sign out. Check your connection and try again."
+                    return
+                }
                 ActivitySelectionManager.shared.resetForSignOut()
                 AppLockoutManager.shared.clearLocally()
                 ProtectionAlerts.dropCurrentUser()
@@ -1922,7 +1934,7 @@ private struct HowItWorksView: View {
          "Invite a trusted friend or join a small group of men who will walk honestly alongside you. Accountability works because you choose people who genuinely care."),
         ("shield.fill",
          "Turn on Alerts and Blocking",
-         "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking shows Apple’s Screen Time shield. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."),
+         "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking shows Apple's Screen Time shield, and your partner gets an alert when a blocked app is opened. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."),
         ("checkmark.shield.fill",
          "Stay Accountable",
          "Review your activity together, have honest conversations, and spur one another toward freedom. Iron sharpens iron — and so one man sharpens another."),

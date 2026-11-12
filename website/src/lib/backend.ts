@@ -60,17 +60,19 @@ export function tooMany(ip: string, limit = 10) {
   return window.n > limit
 }
 
+function platformAddress(raw: string | null): string {
+  const hop = raw?.split(',')[0]?.trim() ?? ''
+  if (!hop || hop.length > 64 || /\s/.test(hop)) return ''
+  return hop
+}
+
 export function clientAddress(request: Request) {
-  // Vercel sets x-real-ip to the visitor it observed. When that header is
-  // missing, the first hop of x-forwarded-for is the same address on Vercel.
-  // x-vercel-forwarded-for is the fallback when another proxy rewrites the
-  // forwarded list. The API only trusts this value when the site sends the
-  // shared proxy secret.
-  const real = request.headers.get('x-real-ip')?.split(',')[0]?.trim()
-  if (real) return real
-  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  if (forwarded) return forwarded
-  const platform = request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
+  // x-vercel-forwarded-for is the visitor address from the platform.
+  // x-real-ip is used when that header is absent. The API trusts this value
+  // only when the site sends the shared proxy secret.
+  const platform = platformAddress(request.headers.get('x-vercel-forwarded-for'))
   if (platform) return platform
+  const real = platformAddress(request.headers.get('x-real-ip'))
+  if (real) return real
   return 'local'
 }

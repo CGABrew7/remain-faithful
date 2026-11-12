@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { ALERT_TRIGGER, FAQ_STREAMING } from '@/lib/product-copy'
+import { FAQ_STREAMING } from '@/lib/product-copy'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How Remain Faithful collects, uses, and protects your data. Screenshots and screen text stay on your phone. Partners can receive a short summary with the category.',
-  alternates: { canonical: 'https://remainfaithful.com/privacy' },
+  description: 'How Remain Faithful collects, uses, and protects your data. Screenshots and screen text stay on your device. Partners can receive a short summary with the category.',
+  alternates: { canonical: 'https://www.remainfaithful.com/privacy' },
 }
 
 export default function PrivacyPage() {
@@ -20,10 +20,10 @@ export default function PrivacyPage() {
         <div className="prose-content space-y-12">
           <Section title="Our Commitment">
             <p className="font-semibold text-ink leading-relaxed">
-              We do not sell your name or email. Partners you accept can see the name and email on your account, plus alert metadata. Apple receives a device token so alerts can be delivered. Stripe processes donations on the website. Website analytics run only if you allow them.
+              We do not sell your name or email. People you accept as partners, and members of a group you join, can see the name and email on your account, plus alert metadata. Apple or Google may receive a device token so alerts can be delivered. Website analytics run only if you allow them.
             </p>
             <p>
-              Remain Faithful is an accountability app for adults committed to purity. Because of the deeply personal nature of what this app does, we have designed our privacy model first and built the technology to match it. This policy describes exactly what data we collect, what stays on your device, and what your partners can see.
+              Remain Faithful is an accountability app for adults. This policy describes what the iPhone app, the Android app, the desktop app, and this website collect today, what stays on your device, and what a partner can see.
             </p>
             <p>
               If you have any questions about this policy, contact us at{' '}
@@ -38,20 +38,27 @@ export default function PrivacyPage() {
               <p>When you create an account, we collect:</p>
               <ul>
                 <li>Your display name (the name your partners will see)</li>
-                <li>Your email address (used for authentication and communications)</li>
-                <li>A hashed password (we never store plaintext passwords)</li>
+                <li>Your email address (used for sign-in and email)</li>
+                <li>A hashed password, when you sign in with email (we never store plaintext passwords)</li>
               </ul>
+              <p>
+                You can also sign in with Apple or Google. We store the identifier those services give us, plus the name and email they share. We do not receive your Apple or Google password.
+              </p>
             </Subsection>
 
             <Subsection title="Device Information">
-              <p>We collect your APNs (Apple Push Notification service) device token to deliver accountability alerts to your partners. This token identifies your device to Apple&apos;s notification system but does not reveal your identity to us beyond what your account already provides.</p>
+              <p>
+                The iPhone app registers an Apple Push Notification device token so alerts can be delivered. The Android app registers a push token for the same purpose. The desktop app sends a device id so a protection notice can name the computer, not so we can see the screen. These tokens do not reveal anything beyond the account they are attached to.
+              </p>
             </Subsection>
 
             <Subsection title="Alert Metadata">
-              <p>{ALERT_TRIGGER} Optional Deep Scan can also store an alert when it flags a frame. {FAQ_STREAMING} The phone also sends a heartbeat while protection is on. That alert metadata is:</p>
+              <p>
+                If Alerts is on, your partner gets one alert that day after a chosen app or category is used for a minute. If Blocking is on and you open an app you asked to block, your partner gets an alert that a blocked app was opened, and Apple&apos;s Screen Time shield appears. That alert does not include the app name. Optional Deep Scan can also store an alert when it flags a frame. {FAQ_STREAMING} The same kind of alert metadata and heartbeat can leave the Android app and the desktop app. That alert metadata is:
+              </p>
               <ul>
                 <li>Timestamp of the alert</li>
-                <li>Content category (e.g., &quot;Adult Content&quot;, &quot;Explicit Text&quot;)</li>
+                <li>Content category (for example, &quot;Adult Content&quot; or &quot;Explicit Text&quot;)</li>
                 <li>Severity level (Low / Medium / High)</li>
                 <li>A short system-generated summary string</li>
               </ul>
@@ -61,27 +68,34 @@ export default function PrivacyPage() {
               <p>When the app loads a streak, it sends the current UTC offset in minutes so the days match the phone. That number is used for the response and is not saved.</p>
             </Subsection>
 
-            <Subsection title="Usage Analytics">
+            <Subsection title="Website Analytics">
               <p>
-                Website analytics stay off until you tap Allow analytics. The choice is saved in this browser. The iPhone app does not include analytics. The site also keeps a cookieless count of pages, referrer domain, campaign tags, country, US state, and device type for 13 months, with a daily anonymous visitor id and no IP address. Microsoft Clarity sets first-party cookies (_clck and _clsk) only after you allow analytics.
+                Website analytics stay off until you tap Allow analytics. The choice is saved in this browser. If you allow them, the site may load Google Analytics and Microsoft Clarity. Microsoft Clarity sets first-party cookies (_clck and _clsk) only after you allow analytics. The iPhone, Android, and desktop apps do not include this website analytics.
+              </p>
+              <p>
+                The site also keeps a cookieless count of pages, referrer domain, campaign tags, country, region, and device type for 13 months, with a daily anonymous visitor id and no IP address.
               </p>
             </Subsection>
 
-            <Subsection title="Donation Information">
-              <p>
-                Donations are processed by Stripe. We do not store your payment card information. Stripe stores payment data per their own privacy policy. We receive only a confirmation of donation amount for internal records.
-              </p>
+            <Subsection title="Forms">
+              <p>The website and the apps collect what you type into these forms:</p>
+              <ul>
+                <li>Waitlist: the name and email you submit so we can write when you ask us to</li>
+                <li>Pilot sign-up: name, email, organization, role, estimated number of groups, and how you heard about the app</li>
+                <li>Contact form: name, email, subject, and message</li>
+                <li>Ideas and problem reports: the type you pick, the words you type, and the name and email on your account so we can reply. App version, device model, and operating system version are included only if you turn that on. The form does not send logs, alerts, screenshots, Screen Time choices, partner names, or group names.</li>
+              </ul>
             </Subsection>
 
-            <Subsection title="Support Messages">
+            <Subsection title="Payments">
               <p>
-                If you use Send ideas or report a problem, we receive the type you pick, the words you type, and the name and email on your account so we can reply. App version, iPhone model, and iOS version are included only if you turn that on. The form does not send logs, alerts, screenshots, Screen Time choices, partner names, or group names.
+                We do not store payment card numbers. If a payment is processed on the website, Stripe handles the card. We may keep a confirmation of the amount on the account. That row is removed when the account is deleted. Stripe keeps its own payment records.
               </p>
             </Subsection>
           </Section>
 
           <Section title="What Stays On Your Device">
-            <p>Always-on Family Controls filtering and DeviceActivity usage monitoring do not capture screen frames. If you start an optional Deep Scan session, the following data is processed entirely on your device and is never transmitted to our servers or to your partners:</p>
+            <p>Always-on Family Controls filtering and DeviceActivity usage monitoring do not capture screen frames. If you start an optional Deep Scan session on iPhone, the following data is processed on your device and is not transmitted as raw screen content:</p>
             <ul>
               <li>Raw screen frames captured by the ReplayKit broadcast extension (Deep Scan only)</li>
               <li>OCR text extracted by Apple Vision</li>
@@ -91,18 +105,18 @@ export default function PrivacyPage() {
               <li>Any visual content from your screen</li>
             </ul>
             <p>
-              When Deep Scan flags a frame, the same alert metadata listed above can be uploaded. Screenshots, OCR text, and raw screen content never leave the device. {FAQ_STREAMING} The iOS app, backend, and website source are public on GitHub.
+              When Deep Scan flags a frame, the same alert metadata listed above can be uploaded. Screenshots, OCR text, and raw screen content never leave the device. {FAQ_STREAMING} The iOS app, Android app, desktop app, backend, and website source are public on GitHub.
             </p>
           </Section>
 
           <Section title="What Your Partners See">
-            <p>Your accountability partners have access to:</p>
+            <p>Accountability partners, and members of a group you belong to, can receive:</p>
             <ul>
-              <li>Your display name and account email (as provided by you when you initiated the partnership)</li>
-              <li>Alert metadata as described above: timestamp, category, severity level, and a short system-generated summary. Not which app, and not a bundle ID.</li>
+              <li>Your display name and account email</li>
+              <li>Alert metadata as described above: timestamp, category, severity level, and a short system-generated summary. A blocked-app alert does not include which app, and it does not include a bundle ID.</li>
               <li>Your streak count (aggregate, not individual events)</li>
             </ul>
-            <p>Partners do not have access to your screen content, browsing history, or any data beyond alert metadata and account-level statistics you have explicitly made visible.</p>
+            <p>They do not have access to your screen content, browsing history, or any data beyond alert metadata and the account details listed above.</p>
           </Section>
 
           <Section title="Data Retention">
@@ -111,20 +125,33 @@ export default function PrivacyPage() {
               <li><strong className="text-ink">Account data:</strong> deleted when you delete the account</li>
               <li><strong className="text-ink">Alert history:</strong> kept while your account exists, and deleted with the account. Older events and alerts are also removed after 365 days. Leaving a group notifies the other members. It does not delete your alert history.</li>
               <li><strong className="text-ink">Partnership records:</strong> removed when either person ends the relationship</li>
-              <li><strong className="text-ink">Donation rows on your account:</strong> removed with the account. Stripe keeps its own payment records.</li>
+              <li><strong className="text-ink">Website page counts:</strong> removed after 13 months</li>
+              <li><strong className="text-ink">Payment confirmation rows on your account:</strong> removed with the account. Stripe keeps its own payment records.</li>
             </ul>
           </Section>
 
-          <Section title="Third-Party Services">
+          <Section title="Who Helps Us Run This">
             <ul>
               <li>
-                <strong className="text-ink">Apple (APNs):</strong> We use Apple&apos;s Push Notification service to deliver alerts. Apple&apos;s privacy policy applies to their handling of device tokens.
+                <strong className="text-ink">Apple:</strong> Sign in with Apple, push delivery on iPhone, and Screen Time on the device. Apple&apos;s privacy policy applies to their handling of device tokens and sign-in.
               </li>
               <li>
-                <strong className="text-ink">Stripe:</strong> Donation payment processing. Stripe is PCI-compliant. We do not store card data. See Stripe&apos;s privacy policy for details.
+                <strong className="text-ink">Google:</strong> Sign in with Google, and push delivery for the Android app. Google Analytics runs on the website only after you allow analytics.
               </li>
               <li>
-                <strong className="text-ink">Google Analytics:</strong> Website analytics only. Not present in the iOS app.
+                <strong className="text-ink">Microsoft Clarity:</strong> Website session recordings and heatmaps, only after you allow analytics.
+              </li>
+              <li>
+                <strong className="text-ink">Resend:</strong> Sends account email, including invites, address confirmation, password reset, and the messages from the contact, pilot, waitlist, and feedback forms.
+              </li>
+              <li>
+                <strong className="text-ink">Stripe:</strong> Processes a website payment when one is made. We do not store card numbers.
+              </li>
+              <li>
+                <strong className="text-ink">Fly:</strong> Hosts the API.
+              </li>
+              <li>
+                <strong className="text-ink">Vercel:</strong> Hosts this website.
               </li>
             </ul>
           </Section>
@@ -132,9 +159,9 @@ export default function PrivacyPage() {
           <Section title="Your Rights">
             <p>You may, at any time:</p>
             <ul>
-              <li><strong className="text-ink">Access your data:</strong> Settings → View My Activity Log shows your flagged activity in the app. For anything else, email support@remainfaithful.com. There is no separate export button.</li>
-              <li><strong className="text-ink">Correct your data:</strong> update your display name and email in Settings → Edit Profile</li>
-              <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings, then Delete Account. The account, alerts, and donation rows tied to the account are removed then.</li>
+              <li><strong className="text-ink">Access your data:</strong> Settings, then View My Activity Log, shows your flagged activity in the app. For anything else, email support@remainfaithful.com. There is no separate export button.</li>
+              <li><strong className="text-ink">Correct your data:</strong> update your display name and email in Settings, then Edit Profile</li>
+              <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings, then Delete Account. The account, alerts, and payment confirmation rows tied to the account are removed then.</li>
               <li><strong className="text-ink">Change protection:</strong> you can change App Restrictions and turn off App Lockout in Settings. Pausing or turning off monitoring notifies your partners. Turning off App Lockout also sends a notice.</li>
             </ul>
             <p>
@@ -147,7 +174,7 @@ export default function PrivacyPage() {
 
           <Section title="Children">
             <p>
-              Remain Faithful is not intended for users under the age of 18. We do not knowingly collect data from anyone under 18. If you believe we have inadvertently collected data from a minor, contact us immediately at support@remainfaithful.com and we will delete it promptly.
+              Remain Faithful is not intended for anyone under 18. We do not knowingly collect data from anyone under 18. If you believe we have collected data from a minor, contact us at support@remainfaithful.com and we will delete it.
             </p>
           </Section>
 
@@ -159,7 +186,7 @@ export default function PrivacyPage() {
 
           <Section title="Changes to This Policy">
             <p>
-              We will post any material changes to this policy on this page with a new &quot;Last updated&quot; date. For significant changes, we will notify active users via push notification or email. Your continued use of the app after a policy change constitutes acceptance of the updated policy.
+              We will post any material changes to this policy on this page with a new &quot;Last updated&quot; date. For significant changes, we will notify active users by push notification or email. Your continued use of the app after a policy change constitutes acceptance of the updated policy.
             </p>
           </Section>
 

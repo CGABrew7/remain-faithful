@@ -3,11 +3,12 @@ import Link from 'next/link'
 import ContactForm from '@/components/ContactForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { ALERT_TRIGGER, FAQ_STREAMING } from '@/lib/product-copy'
+import { donationsEnabled } from '@/lib/donations'
 
 export const metadata: Metadata = {
   title: 'About Remain Faithful | Built by Jeff Brewer',
   description: 'Remain Faithful was built by Jeff Brewer to provide free, privacy-first accountability for Christians. Learn why we built it, how it is funded, and the team behind it.',
-  alternates: { canonical: 'https://remainfaithful.com/about' },
+  alternates: { canonical: 'https://www.remainfaithful.com/about' },
 }
 
 const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
@@ -16,7 +17,7 @@ export default function AboutPage() {
   return (
     <>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <Breadcrumbs items={[{ name: 'About', url: 'https://remainfaithful.com/about' }]} />
+        <Breadcrumbs items={[{ name: 'About', url: 'https://www.remainfaithful.com/about' }]} />
       </div>
       {/* Hero */}
       <section className="pt-8 pb-20 border-b border-hairline">
@@ -208,8 +209,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Donation Model */}
-      <section className="py-20 bg-paper-deep border-y border-hairline">
+      {donationsEnabled() && <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-serif text-3xl font-bold text-ink mb-5">Why Donations, Not Subscriptions</h2>
           <p className="text-ink-soft leading-relaxed mb-8">
@@ -238,7 +238,7 @@ export default function AboutPage() {
             Support the Project
           </Link>
         </div>
-      </section>
+      </section>}
 
       {/* Contact */}
       <section id="contact" className="py-20">

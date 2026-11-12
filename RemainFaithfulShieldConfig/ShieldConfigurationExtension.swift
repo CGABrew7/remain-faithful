@@ -35,7 +35,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     private func makeConfiguration() -> ShieldConfiguration {
         noteBlockedAppOpened()
         let navy  = UIColor(red: 0.04, green: 0.09, blue: 0.16, alpha: 1.0)
-        let gold  = UIColor(red: 0.87, green: 0.62, blue: 0.24, alpha: 1.0)
+        let gold  = UIColor(red: 240.0/255.0, green: 208.0/255.0, blue: 48.0/255.0, alpha: 1.0)
         let dim   = UIColor(white: 0.65, alpha: 1.0)
 
         let lockoutEnabled = UserDefaults(suiteName: "group.com.remainfaithful.app")?

@@ -44,6 +44,18 @@ func TestWrongSecretKeepsFlyAddress(t *testing.T) {
 	}
 }
 
+func TestNonIPFlyHeaderFallsThrough(t *testing.T) {
+	t.Setenv("APP_ENV", "production")
+	t.Setenv("SITE_PROXY_SECRET", "")
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.RemoteAddr = "192.0.2.10:1234"
+	req.Header.Set("Fly-Client-IP", "not-an-address")
+	req.Header.Set("X-Forwarded-For", "198.51.100.9")
+	if got := FromRequest(req); got != "192.0.2.10" {
+		t.Fatalf("address = %q", got)
+	}
+}
+
 func TestBadVisitorAddressFallsThrough(t *testing.T) {
 	t.Setenv("SITE_PROXY_SECRET", "shared-secret")
 	t.Setenv("APP_ENV", "production")

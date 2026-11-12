@@ -2,6 +2,7 @@ import Link from 'next/link'
 import AppStoreLink from './AppStoreLink'
 import ShieldMark from './ShieldMark'
 import FooterDonateLink from './FooterDonateLink'
+import { donationsEnabled } from '@/lib/donations'
 
 const columns = [
   {
@@ -78,7 +79,7 @@ export default function Footer() {
                       </Link>
                     </li>
                   ))}
-                  {col.title === 'Product' && (
+                  {col.title === 'Product' && donationsEnabled() && (
                     <li>
                       <FooterDonateLink />
                     </li>

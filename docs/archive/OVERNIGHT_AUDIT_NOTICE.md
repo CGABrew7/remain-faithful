@@ -7,7 +7,7 @@
 > - Partners may receive a short **system-generated summary** in addition to category, timestamp, and severity.
 > - There is **no Anthropic classify path** and no server-side OCR.
 >
-> The full June 2026 text is archived at [`docs/archive/OVERNIGHT_AUDIT.md`](docs/archive/OVERNIGHT_AUDIT.md) (same banner). Git history of this path is preserved. Design notes and audit markdown in this repo are historical working papers, not product promises.
+> The full June 2026 text is archived at [`OVERNIGHT_AUDIT.md`](OVERNIGHT_AUDIT.md) (same banner). Git history of this path is preserved. Design notes and audit markdown in this repo are historical working papers, not product promises.
 
 # Overnight Audit — Remain Faithful
 
