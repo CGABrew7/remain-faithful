@@ -44,4 +44,4 @@ Read these files. They are the behavior, not a separate promise.
 
 - Backend: `cd backend && go test ./...`
 - Website: `cd website && npm test`
-- iPhone: the `iOS CI` GitHub Action builds the app and runs `RemainFaithfulTests` on a simulator. It does not sign for distribution and it does not upload a build.
+- iPhone: the `iOS CI` GitHub Action builds the app and runs `RemainFaithfulTests` on a simulator. The simulator build uses an ad-hoc signature so the test host can launch. It does not use a distribution certificate and it does not upload a build.
