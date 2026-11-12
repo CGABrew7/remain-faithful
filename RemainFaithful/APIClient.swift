@@ -52,11 +52,14 @@ struct UserStats: Decodable {
     let week: [StreakDayInput]
     /// `before_account`, `clean`, or `flagged`. Empty on older servers.
     let weekStates: [StreakDayInput]
+    /// `before_account`, `clean`, `flagged`, or `off`. Empty on older servers.
+    let weekCoverage: [StreakDayInput]
     enum CodingKeys: String, CodingKey {
         case streakDays = "streak_days"
         case bestStreak = "best_streak"
         case week
         case weekStates = "week_states"
+        case weekCoverage = "week_coverage"
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +68,7 @@ struct UserStats: Decodable {
         bestStreak = try c.decode(Int.self, forKey: .bestStreak)
         week = try c.decode([StreakDayInput].self, forKey: .week)
         weekStates = (try? c.decode([StreakDayInput].self, forKey: .weekStates)) ?? []
+        weekCoverage = (try? c.decode([StreakDayInput].self, forKey: .weekCoverage)) ?? []
     }
 }
 
@@ -414,7 +418,12 @@ final class APIClient {
     // MARK: - Heartbeat
 
     func heartbeat(screen: String) async throws {
-        try await postVoid("/heartbeat", body: ["screen": screen])
+        var body = ["screen": screen]
+        let zone = TimeZone.current.identifier
+        if !zone.isEmpty {
+            body["timezone"] = zone
+        }
+        try await postVoid("/heartbeat", body: body)
     }
 
     /// Counts only: Screen Time yes or no, how many apps, the app version, and support taps.

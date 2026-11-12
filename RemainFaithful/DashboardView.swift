@@ -515,7 +515,9 @@ struct DashboardView: View {
             streakBest = userStats.bestStreak
             let created = AccountDate.parse(AuthState.shared.currentUser?.createdAt)
             let raw: [StreakDayInput]
-            if !userStats.weekStates.isEmpty {
+            if !userStats.weekCoverage.isEmpty {
+                raw = userStats.weekCoverage
+            } else if !userStats.weekStates.isEmpty {
                 raw = userStats.weekStates
             } else if !userStats.week.isEmpty {
                 raw = userStats.week
@@ -875,6 +877,7 @@ private struct StreakCard: View {
         case .clean: return Color.rfGold.opacity(0.18)
         case .flagged: return flagRed.opacity(0.18)
         case .beforeSignup: return Color.white.opacity(0.06)
+        case .off: return Color.white.opacity(0.22)
         }
     }
 
@@ -883,6 +886,7 @@ private struct StreakCard: View {
         case .clean: return Color.rfGold
         case .flagged: return flagRed
         case .beforeSignup: return Color.white.opacity(0.35)
+        case .off: return Color.white.opacity(0.55)
         }
     }
 
@@ -891,6 +895,7 @@ private struct StreakCard: View {
         case .clean: return "checkmark"
         case .flagged: return "xmark"
         case .beforeSignup: return "circle"
+        case .off: return "circle"
         }
     }
 }

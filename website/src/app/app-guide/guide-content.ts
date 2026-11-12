@@ -202,7 +202,7 @@ export const guideParts: GuidePart[] = [
           caption: 'What Home shows',
           lines: [
             { label: 'Status', detail: 'Whether Alerts and Blocking are on' },
-            { label: 'Clean streak', detail: 'Days in a row without a flag' },
+            { label: 'Clean streak', detail: 'Days in a row with protection on and no flag' },
             { label: 'Recent flags', detail: 'Your latest alerts' },
           ],
         },
@@ -217,7 +217,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Clean streak',
-            does: 'The big number is how many days in a row you have gone without a flag. "Best" is your longest streak. The row of circles is this week. A check mark is a clean day. An X is a day with a flag.',
+            does: 'The big number is how many days in a row protection was on with no flag. "Best" is your longest streak. The row of circles is this week. A check mark is a clean day. An X is a day with a flag. A plain circle is a day protection was off.',
             why: 'Seeing the days add up helps you keep going.',
           },
           {

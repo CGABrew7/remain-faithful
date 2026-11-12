@@ -48,10 +48,11 @@ type RemoteAlert struct {
 }
 
 type Stats struct {
-	StreakDays int      `json:"streak_days"`
-	BestStreak int      `json:"best_streak"`
-	Week       []bool   `json:"week"`
-	WeekStates []string `json:"week_states"`
+	StreakDays   int      `json:"streak_days"`
+	BestStreak   int      `json:"best_streak"`
+	Week         []bool   `json:"week"`
+	WeekStates   []string `json:"week_states"`
+	WeekCoverage []string `json:"week_coverage"`
 }
 
 type Relationship struct {
@@ -257,6 +258,7 @@ type heartbeatRequest struct {
 	Screen     string `json:"screen"`
 	DeviceID   string `json:"device_id"`
 	DeviceKind string `json:"device_kind"`
+	TimeZone   string `json:"timezone,omitempty"`
 }
 
 type protectionRequest struct {
@@ -291,7 +293,20 @@ func (c *Client) HeartbeatMonitoring(ctx context.Context, deviceID, deviceKind s
 		Screen:     "monitoring",
 		DeviceID:   deviceID,
 		DeviceKind: deviceKind,
+		TimeZone:   deviceTimeZone(),
 	}, nil, true)
+}
+
+func deviceTimeZone() string {
+	name := time.Local.String()
+	if name == "" || name == "Local" {
+		return ""
+	}
+	loc, err := time.LoadLocation(name)
+	if err != nil || loc == nil || loc.String() == "Local" {
+		return ""
+	}
+	return loc.String()
 }
 
 func (c *Client) ReportDevice(ctx context.Context, deviceID, deviceKind string, monitoring bool) error {

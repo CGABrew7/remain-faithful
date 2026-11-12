@@ -187,6 +187,10 @@ class CoreLogicTest {
     fun streakAndStatus() {
         assertEquals(StreakMark.BeforeSignup, StreakWeek.mark("before_account"))
         assertEquals(StreakMark.Clean, StreakWeek.mark("true"))
+        assertEquals(StreakMark.Off, StreakWeek.mark("off"))
+        val zoned = HeartbeatPolicy.withZone(HeartbeatPolicy.body("monitoring", "phone-1"), "America/Chicago")
+        assertEquals("America/Chicago", zoned.getValue("timezone"))
+        assertEquals(HeartbeatPolicy.body("monitoring", "phone-1").keys, HeartbeatPolicy.withZone(HeartbeatPolicy.body("monitoring", "phone-1"), "not a zone").keys)
         val status = MonitoringStatus.make(true, 2, true, false, false)
         assertEquals(MonitoringKind.On, status.kind)
         assertTrue(status.detail.contains("Alerts on"))

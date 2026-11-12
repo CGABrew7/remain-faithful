@@ -140,6 +140,7 @@ class ApiClient(
     fun stats(): RemoteStats {
         val body = get("/users/me/stats")
         val states = when {
+            body.has("week_coverage") -> body.getJSONArray("week_coverage").toStates()
             body.has("week_states") -> body.getJSONArray("week_states").toStates()
             body.has("week") -> body.getJSONArray("week").toStates()
             else -> emptyList()

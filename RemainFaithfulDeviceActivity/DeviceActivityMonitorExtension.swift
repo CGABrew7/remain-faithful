@@ -64,7 +64,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": "monitoring"])
+        var payload: [String: String] = ["screen": "monitoring"]
+        let zone = TimeZone.current.identifier
+        if !zone.isEmpty { payload["timezone"] = zone }
+        req.httpBody = try? JSONSerialization.data(withJSONObject: payload)
         if let (_, resp) = try? await URLSession.shared.data(for: req),
            let http = resp as? HTTPURLResponse, http.statusCode == 401 {
             defaults?.set(true, forKey: "extensionAuthFailed")

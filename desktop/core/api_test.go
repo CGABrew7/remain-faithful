@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -30,8 +31,17 @@ func TestClientLoginAndMetadataEvent(t *testing.T) {
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(`{"id":1}`))
 		case "/heartbeat":
-			if string(body) != `{"screen":"monitoring","device_id":"abc123device","device_kind":"windows"}` {
+			var beat map[string]string
+			if err := json.Unmarshal(body, &beat); err != nil {
+				t.Fatal(err)
+			}
+			if beat["screen"] != "monitoring" || beat["device_id"] != "abc123device" || beat["device_kind"] != "windows" {
 				t.Fatalf("heartbeat %s", body)
+			}
+			if zone := beat["timezone"]; zone != "" {
+				if _, err := time.LoadLocation(zone); err != nil {
+					t.Fatalf("timezone %s", zone)
+				}
 			}
 			if strings.Contains(string(body), ".exe") || strings.Contains(string(body), "http") {
 				t.Fatal(body)

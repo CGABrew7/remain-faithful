@@ -40,7 +40,7 @@ enum TourContent {
             TourStep(tab: 0, anchor: .homeStatus, title: "Monitoring status",
                      body: "This shows whether Alerts and Blocking are on. Deep Scan is the smaller line. It is optional."),
             TourStep(tab: 0, anchor: .homeStreak, title: "Your clean streak",
-                     body: "Days in a row without a flag. The circles are this week."),
+                     body: "Days in a row with protection on and no flag. The circles are this week."),
             TourStep(tab: 0, anchor: .homeFlags, title: "Recent flags",
                      body: "Your latest alerts. Tap one to see what happened and a few questions to talk through with your partner."),
             TourStep(tab: 0, anchor: .homeSupport, title: "When it gets hard",
