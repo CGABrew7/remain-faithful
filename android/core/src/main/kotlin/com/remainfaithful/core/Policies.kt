@@ -24,7 +24,6 @@ object EventPolicy {
         "Violent content detected",
         "Self-harm content detected",
         "Content reviewed $dash no concerns",
-        "Explicit image detected (perceptual hash match)",
         "Blocked domain detected",
         "Explicit keyword detected in screen text",
         SUMMARY_MINUTE,

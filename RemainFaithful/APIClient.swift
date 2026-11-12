@@ -421,6 +421,27 @@ final class APIClient {
         try await postVoid("/heartbeat", body: ["screen": screen])
     }
 
+    /// Saves the server domain list for Deep Scan. The broadcast extension
+    /// uses the bundled list when this has not succeeded.
+    func refreshDomainBlocklist() async {
+        guard isAuthenticated else { return }
+        struct Rule: Codable {
+            let host: String
+            let category: String
+        }
+        struct Body: Decodable {
+            let domains: [Rule]
+        }
+        do {
+            let body: Body = try await get("/protection/domain-blocklist")
+            guard !body.domains.isEmpty else { return }
+            let data = try JSONEncoder().encode(body.domains)
+            UserDefaults(suiteName: "group.com.remainfaithful.app")?.set(data, forKey: "serverDomainBlocklist")
+        } catch {
+            return
+        }
+    }
+
     /// Minutes east of UTC. Sent only on a stats read and not stored.
     static var offsetQuery: String {
         "offset_minutes=\(TimeZone.current.secondsFromGMT() / 60)"

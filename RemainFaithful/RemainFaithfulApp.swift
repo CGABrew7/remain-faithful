@@ -93,6 +93,7 @@ struct RemainFaithfulApp: App {
                     await ProtectionAlerts.flush()
                     await sendMonitoringHeartbeat()
                     await sendPhoneSignals()
+                    await APIClient.shared.refreshDomainBlocklist()
                 }
                 NotificationService.shared.ensureRegisteredIfAuthorized()
                 // Re-sync lockout shield — catches the case where the broadcast ended
@@ -104,7 +105,10 @@ struct RemainFaithfulApp: App {
             .onChange(of: authState.isAuthenticated) { _, signedIn in
                 if signedIn {
                     FamilyControlsManager.shared.noteRevocationIfNeeded()
-                    Task { await sendPhoneSignals() }
+                    Task {
+                        await sendPhoneSignals()
+                        await APIClient.shared.refreshDomainBlocklist()
+                    }
                 }
             }
             .onChange(of: fcManager.authorizationStatus) { oldStatus, newStatus in
