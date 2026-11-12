@@ -181,7 +181,7 @@ struct ScreenTimeMonitoringView: View {
                     Text("Blocking")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
-                    Text("Shows Apple's Screen Time shield. Your partner gets an alert when a blocked app is opened.")
+                    Text("Shows Apple's Screen Time shield, turns on Apple's adult web filter, and your partner gets an alert when a blocked app is opened.")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.white.opacity(0.45))
                 }
@@ -215,7 +215,7 @@ struct ScreenTimeMonitoringView: View {
                 .foregroundStyle(Color.rfGold.opacity(0.75))
                 .padding(.top, 1)
 
-            Text("Alerts tell your partner after one minute of use, once a day. Blocking shows Apple's Screen Time shield, and your partner gets an alert when a blocked app is opened. You can still ask Apple for an override inside the blocked app. Deep Scan does not see protected video such as Netflix.")
+            Text("Alerts tell your partner after one minute of use, once a day. Blocking shows Apple's Screen Time shield, turns on Apple's adult web filter, and your partner gets an alert when a blocked app is opened. You can still ask Apple for an override inside the blocked app. Deep Scan does not see protected video such as Netflix.")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.white.opacity(0.45))
                 .fixedSize(horizontal: false, vertical: true)

@@ -1934,7 +1934,7 @@ private struct HowItWorksView: View {
          "Invite a trusted friend or join a small group of men who will walk honestly alongside you. Accountability works because you choose people who genuinely care."),
         ("shield.fill",
          "Turn on Alerts and Blocking",
-         "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking shows Apple's Screen Time shield, and your partner gets an alert when a blocked app is opened. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."),
+         "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking shows Apple's Screen Time shield, turns on Apple's adult web filter, and your partner gets an alert when a blocked app is opened. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."),
         ("checkmark.shield.fill",
          "Stay Accountable",
          "Review your activity together, have honest conversations, and spur one another toward freedom. Iron sharpens iron — and so one man sharpens another."),
