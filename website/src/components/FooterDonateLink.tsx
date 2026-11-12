@@ -2,9 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { donationsEnabled } from '@/lib/donations'
 
 export default function FooterDonateLink() {
   const path = usePathname() || ''
+  if (!donationsEnabled()) return null
   if (path.startsWith('/join') || path.startsWith('/app-guide')) return null
   return (
     <Link

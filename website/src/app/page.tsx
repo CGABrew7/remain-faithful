@@ -12,6 +12,7 @@ import PhoneFrame from '@/components/PhoneFrame'
 const FaqAccordion = dynamic(() => import('@/components/FaqAccordion'))
 const WaitlistForm = dynamic(() => import('@/components/WaitlistForm'))
 import { JsonLd } from '@/components/JsonLd'
+import { donationsEnabled } from '@/lib/donations'
 import { softwareApplicationSchema, homepageFaqSchema } from '@/lib/structured-data'
 import {
   ALERT_TRIGGER,
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Remain Faithful | Free Christian Accountability App',
     description: 'A partner you trust stands with you. Free on iPhone. Screenshots stay on your phone.',
-    url: 'https://remainfaithful.com',
+    url: 'https://www.remainfaithful.com',
     siteName: 'Remain Faithful',
     type: 'website',
   },
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     description: 'A partner you trust stands with you. Free on iPhone. Screenshots stay on your phone.',
   },
   alternates: {
-    canonical: 'https://remainfaithful.com',
+    canonical: 'https://www.remainfaithful.com',
   },
 }
 
@@ -122,9 +123,11 @@ export default function HomePage() {
       <JsonLd data={softwareApplicationSchema} />
       <JsonLd data={homepageFaqSchema} />
 
-      <Suspense fallback={null}>
-        <DonationSuccessBanner />
-      </Suspense>
+      {donationsEnabled() && (
+        <Suspense fallback={null}>
+          <DonationSuccessBanner />
+        </Suspense>
+      )}
 
       <section className="shell grid items-center gap-8 pb-12 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-16 lg:pt-32">
         <div className="lg:col-start-1 lg:row-start-1">
@@ -253,7 +256,9 @@ export default function HomePage() {
             <Feature
               n="04"
               title="Always free"
-              body="Remain Faithful is free today and will remain free forever. No subscription tiers, no paywalls, no premium features. Sustained entirely by voluntary donations."
+              body={donationsEnabled()
+                ? "Remain Faithful is free today and will remain free forever. No subscription tiers, no paywalls, no premium features. Sustained entirely by voluntary donations."
+                : "Remain Faithful is free today and will remain free forever. No subscription tiers, no paywalls, no premium features."}
             />
           </ol>
         </div>
@@ -357,13 +362,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="donate" className="section scroll-mt-24" data-clarity-mask="true">
+      {donationsEnabled() && <section id="donate" className="section scroll-mt-24" data-clarity-mask="true">
         <div className="shell">
           <div className="surface relative overflow-hidden px-6 py-14 text-center sm:px-12">
             <div
               className="pointer-events-none absolute inset-0"
               aria-hidden="true"
-              style={{ background: 'radial-gradient(50% 80% at 50% 0%, rgba(209,171,76,0.16), transparent 70%)' }}
+              style={{ background: 'radial-gradient(50% 80% at 50% 0%, rgba(240,208,48,0.16), transparent 70%)' }}
             />
             <div className="relative">
               <p className="kicker mb-4">Sustain the work</p>
@@ -379,7 +384,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
     </>
   )
 }

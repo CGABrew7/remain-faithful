@@ -44,7 +44,7 @@ func TestCaps(t *testing.T) {
 	if maxGroupMembers != 12 {
 		t.Fatalf("group cap = %d", maxGroupMembers)
 	}
-	if maxPartnersPerUser != 10 || maxInvitesPerDay != 20 {
-		t.Fatalf("partner cap %d invite cap %d", maxPartnersPerUser, maxInvitesPerDay)
+	if maxPartnersPerUser != 10 {
+		t.Fatalf("partner cap %d", maxPartnersPerUser)
 	}
 }

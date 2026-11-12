@@ -152,6 +152,9 @@ private struct Tier1Rules {
 
     static func category(forDomain domain: String) -> ContentCategory? {
         let clean = domain.hasPrefix("www.") ? String(domain.dropFirst(4)) : domain
+        if let remote = serverRules() {
+            return category(matching: clean, rules: remote)
+        }
         func listed(_ hosts: Set<String>) -> Bool {
             hosts.contains { clean == $0 || clean.hasSuffix("." + $0) }
         }
@@ -159,6 +162,32 @@ private struct Tier1Rules {
         if listed(violenceHosts) { return .violence }
         let adult = urlBlocklist.subtracting(gamblingHosts).subtracting(violenceHosts)
         if listed(adult) { return .explicitSexual }
+        return nil
+    }
+
+    /// A non-empty server list replaces the bundled hosts. A missing or empty
+    /// list keeps the bundled fallback.
+    private static func serverRules() -> [(host: String, category: ContentCategory)]? {
+        guard let data = UserDefaults(suiteName: "group.com.remainfaithful.app")?.data(forKey: "serverDomainBlocklist"),
+              let raw = try? JSONDecoder().decode([ServerDomainRule].self, from: data),
+              !raw.isEmpty else { return nil }
+        let rules = raw.compactMap { rule -> (String, ContentCategory)? in
+            let host = rule.host.lowercased().trimmingCharacters(in: .whitespaces)
+            guard !host.isEmpty, !host.contains("/"), !host.contains(":") else { return nil }
+            switch rule.category {
+            case "adult_content": return (host, .explicitSexual)
+            case "gambling": return (host, .gambling)
+            case "violence": return (host, .violence)
+            default: return nil
+            }
+        }
+        return rules.isEmpty ? nil : rules
+    }
+
+    private static func category(matching domain: String, rules: [(host: String, category: ContentCategory)]) -> ContentCategory? {
+        for rule in rules where domain == rule.host || domain.hasSuffix("." + rule.host) {
+            return rule.category
+        }
         return nil
     }
 
@@ -195,30 +224,10 @@ private struct Tier1Rules {
     }
 }
 
-// MARK: - Perceptual hash (dHash — 64-bit difference hash)
-
-private func dHash(from ciImage: CIImage, context: CIContext) -> UInt64 {
-    let target = CGRect(x: 0, y: 0, width: 9, height: 8)
-    let scaled = ciImage.transformed(by: CGAffineTransform(
-        scaleX: 9.0 / ciImage.extent.width,
-        y: 8.0 / ciImage.extent.height
-    )).cropped(to: target)
-    let gray = scaled.applyingFilter("CIPhotoEffectNoir")
-    var pixels = [UInt8](repeating: 0, count: 9 * 8 * 4)
-    context.render(gray, toBitmap: &pixels, rowBytes: 9 * 4,
-                   bounds: target, format: .RGBA8, colorSpace: nil)
-    var hash: UInt64 = 0
-    for row in 0..<8 {
-        for col in 0..<8 {
-            if pixels[(row * 9 + col) * 4] < pixels[(row * 9 + col + 1) * 4] {
-                hash |= 1 << UInt64(row * 8 + col)
-            }
-        }
-    }
-    return hash
+private struct ServerDomainRule: Decodable {
+    let host: String
+    let category: String
 }
-
-private func hammingDistance(_ a: UInt64, _ b: UInt64) -> Int { (a ^ b).nonzeroBitCount }
 
 // MARK: - Dedup store
 
@@ -290,8 +299,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     // allocation from ~8 MB (1920×1080) to ~2 MB (960×540).
     private let analysisMaxDim: CGFloat = 960
 
-    private var lastAnalysisTime: Date  = Date()
-    private var lastHashMatchTime: Date = .distantPast
+    private var lastAnalysisTime: Date = Date()
     private var lastResourceReset: Date = Date()
     private var lastMemoryLogTime: Date = .distantPast
 
@@ -304,7 +312,6 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     private var heartbeatTask: Task<Void, Never>?
     private var retryTask:     Task<Void, Never>?
-    private var hashBlocklist: Set<UInt64> = []
     private let dedupStore = DedupStore(windowSeconds: 300)
 
     // MARK: - Lifecycle
@@ -313,7 +320,6 @@ class SampleHandler: RPBroadcastSampleHandler {
         sharedDefaults?.set(true, forKey: "isBroadcasting")
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "broadcastStartTime")
         postBroadcastStateChanged()
-        loadHashBlocklist()
         let policy = scaAnalyzer.analysisPolicy
         logger.info("Broadcast started — SCA policy: \(String(describing: policy)) — available: \(availableMemoryMB()) MB")
         startHeartbeatLoop()
@@ -456,21 +462,9 @@ class SampleHandler: RPBroadcastSampleHandler {
         // Wrap all per-frame work in an autorelease pool to flush Obj-C objects promptly.
         autoreleasepool {
             let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-
-            // — Tier 1a: perceptual hash check (every frame, ~0.1 ms) —
             logger.debug("Frame received")
-            let hash = dHash(from: ciImage, context: ciContext)
-            if hashBlocklist.contains(where: { hammingDistance($0, hash) < 10 }) {
-                if now.timeIntervalSince(lastHashMatchTime) >= 3.0 {
-                    lastHashMatchTime = now
-                    logger.warning("Tier 1 hash match — available: \(availableMemoryMB()) MB")
-                    let event = makeEvent(category: .explicitSexual, tier: 1, confidence: 1.0,
-                                         summary: "Explicit image detected (perceptual hash match)")
-                    Task.detached(priority: .utility) { [weak self] in await self?.handleEvent(event) }
-                }
-            }
 
-            // — Full Tier 2 processing every 3 seconds —
+            // Full text and sensitivity check every 3 seconds.
             guard now.timeIntervalSince(lastAnalysisTime) >= 3.0 else { return }
             lastAnalysisTime = now
 
@@ -839,11 +833,4 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
     }
 
-    private func loadHashBlocklist() {
-        guard let defaults = sharedDefaults,
-              let data   = defaults.data(forKey: "hashBlocklist"),
-              let hashes = try? JSONDecoder().decode([UInt64].self, from: data) else { return }
-        hashBlocklist = Set(hashes)
-        logger.info("Loaded \(hashes.count) perceptual hashes into blocklist")
-    }
 }

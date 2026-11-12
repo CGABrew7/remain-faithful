@@ -100,6 +100,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var apps by mutableStateOf(listOf<LocalApp>())
     var chosen by mutableStateOf(setOf<String>())
     var pinSet by mutableStateOf(false)
+    var pinKnown by mutableStateOf(false)
 
     var rels by mutableStateOf(listOf<RemoteRel>())
     var partnerInvites by mutableStateOf(listOf<PartnerInvite>())
@@ -216,6 +217,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
                 mine = withContext(Dispatchers.IO) { repo.api().events() }.map { it.toUi() }
                 alerts = withContext(Dispatchers.IO) { repo.api().alerts() }.map { it.toUi() }
                 pinSet = withContext(Dispatchers.IO) { repo.api().pinSet() }
+                pinKnown = true
                 rels = withContext(Dispatchers.IO) { repo.api().relationships() }
                 partnerInvites = withContext(Dispatchers.IO) { repo.api().pendingPartners() }
                 groups = withContext(Dispatchers.IO) { repo.api().groups() }
@@ -337,7 +339,19 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun signOut() {
         gate {
             launchIo {
-                runCatching { repo.protection("signed_out", "Signed out. Monitoring on this phone has stopped.") }
+                try {
+                    repo.protection("signed_out", "Signed out. Monitoring on this phone has stopped.")
+                } catch (e: ApiException) {
+                    if (e.status == 401) {
+                        signOutLocal()
+                    } else {
+                        banner = "Couldn't sign out. Check your connection and try again."
+                    }
+                    return@launchIo
+                } catch (_: Exception) {
+                    banner = "Couldn't sign out. Check your connection and try again."
+                    return@launchIo
+                }
                 runCatching { repo.reportMonitoring(false) }
                 signOutLocal()
             }
@@ -475,6 +489,19 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun gate(action: () -> Unit) {
+        if (!pinKnown) {
+            launchIo {
+                try {
+                    pinSet = repo.api().pinSet()
+                    pinKnown = true
+                } catch (_: Exception) {
+                    banner = "Couldn't check the PIN. Check your connection and try again."
+                    return@launchIo
+                }
+                gate(action)
+            }
+            return
+        }
         if (pinSet) {
             pendingAfterPin = action
             sheet = Sheet.Pin
@@ -486,9 +513,6 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     fun submitPin(pin: String, onDone: (PinCheck) -> Unit) {
         launchIo {
             val check = repo.api().verifyPin(pin)
-            if (!check.success && check.reason == "wrong_pin") {
-                runCatching { repo.protection("wrong_pin_attempt", "$name entered a wrong Protection PIN.") }
-            }
             if (check.success) {
                 val next = pendingAfterPin
                 pendingAfterPin = null

@@ -135,6 +135,12 @@ type recordingEmail struct {
 	groupInvite []string // acceptURL per call
 	groupTo     []string
 	verify      int
+	weekly      []weeklyCall
+}
+
+type weeklyCall struct {
+	to, subjectName, url string
+	days, alerts, streak int
 }
 
 func (e *recordingEmail) SendPasswordReset(string, string, string) error           { return nil }
@@ -145,6 +151,12 @@ func (e *recordingEmail) SendVerifyEmail(string, string, string) error {
 	return nil
 }
 func (e *recordingEmail) SendEmailChange(string, string, string) error { return nil }
+func (e *recordingEmail) SendWeeklySummary(to, _, subjectName string, days, alerts, streak int, unsubURL string) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.weekly = append(e.weekly, weeklyCall{to, subjectName, unsubURL, days, alerts, streak})
+	return nil
+}
 func (e *recordingEmail) SendGroupInvite(to, _, _, acceptURL string) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()

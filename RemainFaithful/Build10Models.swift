@@ -112,6 +112,7 @@ enum StreakDayInput: Decodable, Equatable {
     case clean
     case flagged
     case beforeSignup
+    case off
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -125,6 +126,8 @@ enum StreakDayInput: Decodable, Equatable {
             self = .clean
         case "before_signup", "before-signup", "before_account", "not_applicable", "na", "none":
             self = .beforeSignup
+        case "off", "unprotected":
+            self = .off
         default:
             self = .flagged
         }
@@ -135,12 +138,14 @@ enum StreakMark: Equatable {
     case clean
     case flagged
     case beforeSignup
+    case off
 
     var accessibilityName: String {
         switch self {
         case .clean: return "clean"
         case .flagged: return "flagged"
         case .beforeSignup: return "before you signed up"
+        case .off: return "protection off"
         }
     }
 }
@@ -195,6 +200,7 @@ enum StreakWeek {
             case .clean: return .clean
             case .beforeSignup: return .beforeSignup
             case .flagged: return .flagged
+            case .off: return .off
             }
         }
     }

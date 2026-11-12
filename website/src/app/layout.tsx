@@ -8,6 +8,7 @@ import MicrosoftClarity from '@/components/MicrosoftClarity'
 import PageBeacon from '@/components/PageBeacon'
 import SiteChrome from '@/components/SiteChrome'
 import { organizationSchema, websiteSchema } from '@/lib/structured-data'
+import { SITE_ORIGIN } from '@/lib/site'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -45,9 +46,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Jeff Brewer' }],
   creator: 'Jeff Brewer',
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://remainfaithful.com'
-  ),
+  metadataBase: new URL(SITE_ORIGIN),
   openGraph: {
     type: 'website',
     locale: 'en_US',

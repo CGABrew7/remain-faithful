@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: 'Accept a Remain Faithful group or partner invite. Signing in alone does not accept it.',
   robots: { index: false, follow: false },
   referrer: 'no-referrer',
-  alternates: { canonical: 'https://remainfaithful.com/invite' },
+  alternates: { canonical: 'https://www.remainfaithful.com/invite' },
 }
 
 export default async function InvitePage({

@@ -5,7 +5,7 @@
 /*
   Remain Faithful. Navy chapel, gold accent.
   Palette from the iOS app (OnboardingView.swift):
-  rfNavy #12214C, rfNavyMid #1C3066, rfGold #D1AB4C.
+  rfNavy #12214C, rfNavyMid #1C3066, rfGold #F0D030.
   Site-only shades of the same navy: lift #1A2D61 (raised panels), deep #0C1D4C.
   Muted text is #B4BCD4 so small type stays at least 4.5:1 on the lighter cards.
 */
@@ -18,12 +18,13 @@
   --ink-soft: #c5cbe0;
   --ink-faint: #b4bcd4;
   --hairline: rgba(255, 255, 255, 0.1);
-  --gold-line: rgba(209, 171, 76, 0.45);
-  --wax: #d1ab4c;
-  --wax-deep: #b08e3a;
-  /* Gradient stops and destructive fill shared with the iOS app (RFTheme). */
-  --wax-light: #f2d685;
-  --wax-grad-deep: #b88c2e;
+  --gold-line: rgba(240, 208, 48, 0.45);
+  --wax: #f0d030;
+  --wax-deep: #c6a61e;
+  /* Gradient stops shared with the iOS app. Navy text is 12.5:1 on the light
+     stop and 6.6:1 on the deep stop. Yellow text on navy is 10.2:1. */
+  --wax-light: #f8e78a;
+  --wax-grad-deep: #c6a61e;
   --danger: #9e2429;
   --dusk: #12214c;
   --dusk-mid: #1c3066;
@@ -33,7 +34,7 @@
     0 18px 40px -28px rgba(0, 0, 0, 0.75);
   --shadow-border-hover:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 0 1px rgba(209, 171, 76, 0.35),
+    0 0 0 1px rgba(240, 208, 48, 0.35),
     0 22px 44px -24px rgba(0, 0, 0, 0.7);
   --track-caps: 0.16em;
   --radius-card: 20px;
@@ -66,7 +67,7 @@
     inset: 0;
     z-index: -1;
     background:
-      radial-gradient(42% 28% at 82% 0%, rgba(209, 171, 76, 0.16), transparent 62%),
+      radial-gradient(42% 28% at 82% 0%, rgba(240, 208, 48, 0.16), transparent 62%),
       radial-gradient(36% 30% at 8% 18%, rgba(26, 45, 97, 0.9), transparent 70%),
       linear-gradient(180deg, #12214c 0%, #1c3066 100%);
   }
@@ -92,7 +93,7 @@
   }
 
   ::selection {
-    background: #d1ab4c;
+    background: #f0d030;
     color: #12214c;
   }
 
@@ -101,7 +102,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #d1ab4c;
+    outline: 2px solid #f0d030;
     outline-offset: 3px;
   }
 }
@@ -132,7 +133,7 @@
     z-index: 80;
     padding: 0.6rem 1rem;
     border-radius: var(--radius-control);
-    background: #d1ab4c;
+    background: #f0d030;
     color: #12214c;
     font-weight: 600;
   }
@@ -162,8 +163,8 @@
 
   .input-field:focus {
     outline: none;
-    border-color: #d1ab4c;
-    box-shadow: 0 0 0 3px rgba(209, 171, 76, 0.25);
+    border-color: #f0d030;
+    box-shadow: 0 0 0 3px rgba(240, 208, 48, 0.25);
   }
 
   .form-error {
@@ -174,7 +175,7 @@
      gold rim to ground it, and a layered shadow (tight contact + wide ambient)
      that collapses on press so the control sinks rather than just shrinking.
      Gradient stops match RFTheme's rfGoldLight / rfGoldDeep exactly.
-     Navy on the gradient measures 10.9:1 at the top and 5.1:1 at the bottom. */
+     Navy on the gradient measures 12.5:1 at the top and 6.6:1 at the bottom. */
   .btn-wax {
     position: relative;
     overflow: hidden;
@@ -191,12 +192,12 @@
     font-weight: 600;
     letter-spacing: 0.01em;
     min-height: 2.75rem;
-    border: 1px solid rgba(184, 140, 46, 0.55);
+    border: 1px solid rgba(198, 166, 30, 0.55);
     border-radius: var(--radius-control);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.45),
-      0 2px 3px -1px rgba(184, 140, 46, 0.42),
-      0 8px 18px -8px rgba(184, 140, 46, 0.5);
+      0 2px 3px -1px rgba(198, 166, 30, 0.42),
+      0 8px 18px -8px rgba(198, 166, 30, 0.5);
     transition-property: filter, transform, box-shadow;
     transition-duration: 160ms;
     transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
@@ -206,8 +207,8 @@
     filter: brightness(1.05);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.5),
-      0 3px 5px -1px rgba(184, 140, 46, 0.45),
-      0 12px 24px -8px rgba(184, 140, 46, 0.55);
+      0 3px 5px -1px rgba(198, 166, 30, 0.45),
+      0 12px 24px -8px rgba(198, 166, 30, 0.55);
   }
 
   .btn-wax:active:not(:disabled) {
@@ -215,8 +216,8 @@
     filter: brightness(0.96);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 1px 2px -1px rgba(184, 140, 46, 0.5),
-      0 3px 8px -4px rgba(184, 140, 46, 0.45);
+      0 1px 2px -1px rgba(198, 166, 30, 0.5),
+      0 3px 8px -4px rgba(198, 166, 30, 0.45);
   }
 
   .btn-wax:focus-visible {
@@ -248,7 +249,7 @@
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 60%),
       var(--paper);
-    border: 1px solid rgba(209, 171, 76, 0.75);
+    border: 1px solid rgba(240, 208, 48, 0.75);
     border-radius: var(--radius-control);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -330,7 +331,7 @@
     font-weight: 600;
     letter-spacing: var(--track-caps);
     text-transform: uppercase;
-    color: #d1ab4c;
+    color: #f0d030;
   }
 
   .ornament {
@@ -445,7 +446,7 @@
     position: absolute;
     inset: 8% -6%;
     z-index: 0;
-    background: radial-gradient(closest-side, rgba(209, 171, 76, 0.32), transparent 72%);
+    background: radial-gradient(closest-side, rgba(240, 208, 48, 0.32), transparent 72%);
     filter: blur(18px);
   }
 
@@ -537,7 +538,7 @@
     padding: 1rem;
     border-radius: 28px;
     background:
-      radial-gradient(90% 46% at 100% 0%, rgba(209, 171, 76, 0.2), transparent 60%),
+      radial-gradient(90% 46% at 100% 0%, rgba(240, 208, 48, 0.2), transparent 60%),
       linear-gradient(180deg, rgba(32, 54, 112, 0.78), rgba(12, 29, 76, 0.62));
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -553,10 +554,10 @@
     height: 3.25rem;
     margin-bottom: 1rem;
     border-radius: 12px;
-    background: rgba(209, 171, 76, 0.12);
+    background: rgba(240, 208, 48, 0.12);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 0 0 1px rgba(209, 171, 76, 0.32);
+      0 0 0 1px rgba(240, 208, 48, 0.32);
   }
 
   .feature-plate-title {
@@ -597,7 +598,7 @@
     font-size: 0.82rem;
     font-variant-numeric: tabular-nums;
     line-height: 1.35;
-    color: #d1ab4c;
+    color: #f0d030;
   }
 
   .feature-plate-spacer {
@@ -612,7 +613,7 @@
     display: block;
     width: 3rem;
     height: 1px;
-    background: rgba(209, 171, 76, 0.55);
+    background: rgba(240, 208, 48, 0.55);
   }
 
   .feature-plate-footer {

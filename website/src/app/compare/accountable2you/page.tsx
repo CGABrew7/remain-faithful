@@ -9,7 +9,7 @@ import { UpdatedStamp } from '@/components/UpdatedStamp'
 export const metadata: Metadata = {
   title: 'Remain Faithful vs Accountable2You: Direct Comparison (2026)',
   description: 'A detailed comparison of Remain Faithful and Accountable2You for Christian accountability. See how they differ on price, privacy, monitoring approach, and battery impact.',
-  alternates: { canonical: 'https://remainfaithful.com/compare/accountable2you' },
+  alternates: { canonical: 'https://www.remainfaithful.com/compare/accountable2you' },
 }
 
 const pageFaqSchema = {
@@ -52,8 +52,8 @@ export default function Accountable2YouCompare() {
       <div className="pt-24 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={[
-            { name: 'Compare', url: 'https://remainfaithful.com/compare/accountable2you' },
-            { name: 'Accountable2You', url: 'https://remainfaithful.com/compare/accountable2you' },
+            { name: 'Compare', url: 'https://www.remainfaithful.com/compare/accountable2you' },
+            { name: 'Accountable2You', url: 'https://www.remainfaithful.com/compare/accountable2you' },
           ]} />
 
           <div className="mb-10">

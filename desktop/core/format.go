@@ -41,14 +41,20 @@ func FormatWhen(raw string, now time.Time) string {
 }
 
 func WeekMarks(stats Stats) []string {
-	if len(stats.WeekStates) > 0 {
-		out := make([]string, len(stats.WeekStates))
-		for i, s := range stats.WeekStates {
+	raw := stats.WeekStates
+	if len(stats.WeekCoverage) > 0 {
+		raw = stats.WeekCoverage
+	}
+	if len(raw) > 0 {
+		out := make([]string, len(raw))
+		for i, s := range raw {
 			switch strings.ToLower(s) {
 			case "clean", "true", "1":
 				out[i] = "clean"
 			case "before_signup", "before-signup", "before_account", "not_applicable", "na", "none":
 				out[i] = "before_account"
+			case "off", "unprotected":
+				out[i] = "off"
 			default:
 				out[i] = "flagged"
 			}

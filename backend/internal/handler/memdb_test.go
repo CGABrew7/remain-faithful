@@ -30,6 +30,7 @@ type memDB struct {
 	waitlist  []memWaitlist
 	nextAlert int64
 	nextRel   int64
+	pinFails  map[int64]int
 	sqlLog    []string
 }
 
@@ -113,6 +114,7 @@ func newMemDB() *memDB {
 	return &memDB{
 		users:     map[int64]*memUser{},
 		groups:    map[int64]bool{},
+		pinFails:  map[int64]int{},
 		nextAlert: 1,
 		nextRel:   1,
 	}
@@ -414,6 +416,21 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 
 	case containsAll(q, "INSERT INTO relationships"):
 		return m.insertRel(q, args)
+
+	case containsAll(q, "SELECT pin_hash FROM relationships"):
+		userID := asInt64(args[0])
+		var pins [][]driver.Value
+		for _, rel := range m.rels {
+			if rel.userID == userID && rel.status == "accepted" && rel.pinHash != "" {
+				pins = append(pins, []driver.Value{rel.pinHash})
+			}
+		}
+		return []string{"pin_hash"}, pins
+
+	case containsAll(q, "INSERT INTO pin_verify_attempts"):
+		userID := asInt64(args[0])
+		m.pinFails[userID]++
+		return []string{"failures"}, [][]driver.Value{{int64(m.pinFails[userID])}}
 
 	case containsAll(q, "UPDATE relationships", "pin_hash = $1"):
 		id := asInt64(args[1])

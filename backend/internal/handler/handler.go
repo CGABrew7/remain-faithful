@@ -36,6 +36,7 @@ type EmailSender interface {
 	SendContact(fromEmail, fromName, subject, message, toEmail string) error
 	SendVerifyEmail(toEmail, toName, verifyURL string) error
 	SendEmailChange(toEmail, toName, verifyURL string) error
+	SendWeeklySummary(toEmail, toName, subjectName string, days, alerts, streak int, unsubURL string) error
 }
 
 // H holds shared dependencies for all HTTP handlers.

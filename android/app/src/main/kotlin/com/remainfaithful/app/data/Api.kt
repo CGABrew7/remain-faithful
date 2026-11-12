@@ -1,5 +1,6 @@
 package com.remainfaithful.app.data
 
+import com.remainfaithful.core.DayOffset
 import com.remainfaithful.core.PinCheck
 import com.remainfaithful.core.friendlyServerMessage
 import okhttp3.MediaType.Companion.toMediaType
@@ -11,6 +12,9 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 class ApiException(val status: Int, message: String, val code: String?) : Exception(message)
+
+private fun offsetQuery(): String =
+    DayOffset.query(DayOffset.minutes(java.time.ZonedDateTime.now().offset.totalSeconds))
 
 data class RemoteUser(
     val id: Long,
@@ -138,8 +142,9 @@ class ApiClient(
     }
 
     fun stats(): RemoteStats {
-        val body = get("/users/me/stats")
+        val body = get("/users/me/stats?${offsetQuery()}")
         val states = when {
+            body.has("week_coverage") -> body.getJSONArray("week_coverage").toStates()
             body.has("week_states") -> body.getJSONArray("week_states").toStates()
             body.has("week") -> body.getJSONArray("week").toStates()
             else -> emptyList()
@@ -267,7 +272,7 @@ class ApiClient(
 
     fun groups(): List<RemoteGroup> = getArray("/groups").toGroups(withMembers = false)
 
-    fun group(id: Long): RemoteGroup = get("/groups/$id").toGroup()
+    fun group(id: Long): RemoteGroup = get("/groups/$id?${offsetQuery()}").toGroup()
 
     fun createGroup(name: String, covenant: String): RemoteGroup =
         post("/groups", mapOf("name" to name, "covenant" to covenant)).toGroup()

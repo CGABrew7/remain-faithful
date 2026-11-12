@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	rfauth "remain-faithful/backend/internal/auth"
 
@@ -148,17 +149,15 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.DB.QueryContext(r.Context(), `
-		SELECT gm.user_id, gm.role, gm.joined_at, u.name, u.email,
-		       stats.flags_last_30, stats.streak_days
+		SELECT gm.user_id, gm.role, gm.joined_at, u.name, u.email, u.created_at,
+		       COALESCE(u.legacy_streak, 0),
+		       stats.flags_last_30
 		FROM   group_members gm
 		JOIN   users u ON u.id = gm.user_id
 		JOIN   LATERAL (
-		    SELECT
-		        COUNT(*) FILTER (WHERE e.timestamp > NOW() - INTERVAL '30 days' AND e.category <> 'clean') AS flags_last_30,
-		        COALESCE(
-		            (NOW()::date - (MAX(e.timestamp) FILTER (WHERE e.category <> 'clean'))::date),
-		            (NOW()::date - gm.joined_at::date)
-		        )                                                                  AS streak_days
+		    SELECT COUNT(*) FILTER (
+		             WHERE e.timestamp > NOW() - INTERVAL '30 days' AND e.category <> 'clean'
+		           ) AS flags_last_30
 		    FROM events e
 		    WHERE e.user_id = gm.user_id
 		) stats ON TRUE
@@ -186,14 +185,30 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	members := []member{}
+	metas := map[int64]streakMeta{}
 	for rows.Next() {
 		var m member
+		var created time.Time
+		var legacy int
 		if err := rows.Scan(&m.UserID, &m.Role, &m.JoinedAt, &m.User.Name, &m.User.Email,
-			&m.FlagsLast30, &m.StreakDays); err != nil {
+			&created, &legacy, &m.FlagsLast30); err != nil {
 			continue
 		}
 		m.User.ID = m.UserID
+		metas[m.UserID] = streakMeta{Created: created, Legacy: legacy}
 		members = append(members, m)
+	}
+	if err := rows.Err(); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to fetch members")
+		return
+	}
+	streaks, err := h.streaksAt(r.Context(), metas, time.Now(), requestOffsetMinutes(r))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to fetch members")
+		return
+	}
+	for i := range members {
+		members[i].StreakDays = streaks[members[i].UserID].Days
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
