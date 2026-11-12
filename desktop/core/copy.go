@@ -67,7 +67,7 @@ type TourStep struct {
 func TourSteps(inGroup bool) []TourStep {
 	steps := []TourStep{
 		{Tab: "home", Title: "Monitoring status", Body: "This shows whether Alerts and Blocking are on."},
-		{Tab: "home", Title: "Your clean streak", Body: "Days in a row without a flag. The circles are this week."},
+		{Tab: "home", Title: "Your clean streak", Body: "Days in a row with protection on and no flag. The circles are this week."},
 		{Tab: "home", Title: "Recent flags", Body: "Your latest alerts. Open one to see what happened."},
 		{Tab: "home", Title: "When it gets hard", Body: "One tap sends an urgent notice to your partners and your group."},
 	}
@@ -81,7 +81,7 @@ func TourSteps(inGroup bool) []TourStep {
 	}
 	steps = append(steps,
 		TourStep{Tab: "settings", Title: "Your partners", Body: "Add partners and star your primary partner."},
-		TourStep{Tab: "settings", Title: "Choose apps", Body: "Pick the apps that tempt you. Blocking stops them from opening. Alerts tell your partner after one minute a day."},
+		TourStep{Tab: "settings", Title: "Choose apps", Body: "Pick the apps that tempt you. Blocking stops them from opening. Alerts tell your partner at 1, 5, 15, and 30 minutes."},
 		TourStep{Tab: "settings", Title: "Tell us what you think", Body: "Ideas, fixes, problems. We read every one."},
 	)
 	return steps

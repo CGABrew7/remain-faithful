@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Confirm your email',
   description: 'Confirm the email address on your Remain Faithful account.',
   robots: { index: false, follow: false },
-  alternates: { canonical: 'https://remainfaithful.com/verify-email' },
+  alternates: { canonical: 'https://www.remainfaithful.com/verify-email' },
 }
 
 export default function VerifyEmailPage() {

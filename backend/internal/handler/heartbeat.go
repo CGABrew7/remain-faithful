@@ -87,6 +87,7 @@ func trimVersion(raw string) string {
 // POST /heartbeat
 // Body: {"screen":"active"|"idle"|"monitoring"}
 // Optional, for clients newer than iOS 1.0.2: {"device_id","device_kind"}.
+// A time zone sent on this request is ignored and is not stored.
 //
 // Shipped iOS 1.0.2 omits both device fields. That request still updates
 // users.last_heartbeat_at and nothing else, exactly as before.
@@ -104,7 +105,6 @@ func (h *H) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		Screen     string `json:"screen"`
 		DeviceID   string `json:"device_id"`
 		DeviceKind string `json:"device_kind"`
-		TimeZone   string `json:"timezone"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -127,7 +127,7 @@ func (h *H) Heartbeat(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "failed to update heartbeat")
 			return
 		}
-		h.recordProtectionDay(r.Context(), userID, req.TimeZone, time.Now())
+		h.recordProtectionHeartbeat(r.Context(), userID, time.Now())
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 		return
 	}
@@ -153,7 +153,7 @@ func (h *H) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to update heartbeat")
 		return
 	}
-	h.recordProtectionDay(r.Context(), userID, req.TimeZone, time.Now())
+	h.recordProtectionHeartbeat(r.Context(), userID, time.Now())
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 

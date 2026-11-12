@@ -16,22 +16,18 @@ import (
 
 	"remain-faithful/backend/internal/apns"
 	rfauth "remain-faithful/backend/internal/auth"
+
+	"github.com/lib/pq"
 )
 
 // MigrateWeeklySummary adds the weekly partner summary tables.
 // The job stays off until WEEKLY_PARTNER_SUMMARY is set to true.
 func MigrateWeeklySummary(db *sql.DB) error {
 	_, err := db.Exec(`
-		ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone TEXT NOT NULL DEFAULT 'UTC';
 		ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_summary_opt_out BOOLEAN NOT NULL DEFAULT FALSE;
 		ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_summary_token TEXT;
 		CREATE UNIQUE INDEX IF NOT EXISTS idx_users_weekly_summary_token
 			ON users (weekly_summary_token) WHERE weekly_summary_token IS NOT NULL;
-		CREATE TABLE IF NOT EXISTS protection_days (
-			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-			day     DATE   NOT NULL,
-			PRIMARY KEY (user_id, day)
-		);
 		CREATE TABLE IF NOT EXISTS weekly_summary_sends (
 			partner_id      BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 			subject_user_id BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -101,7 +97,6 @@ type weeklySubject struct {
 	id      int64
 	name    string
 	created time.Time
-	zone    string
 }
 
 type weeklyRecipient struct {
@@ -114,7 +109,7 @@ type weeklyRecipient struct {
 
 func (h *H) weeklySubjects(ctx context.Context) ([]weeklySubject, error) {
 	rows, err := h.DB.QueryContext(ctx, `
-		SELECT DISTINCT u.id, u.name, u.created_at, COALESCE(u.timezone, 'UTC')
+		SELECT DISTINCT u.id, u.name, u.created_at
 		FROM users u
 		WHERE EXISTS (
 			SELECT 1 FROM relationships r
@@ -135,7 +130,7 @@ func (h *H) weeklySubjects(ctx context.Context) ([]weeklySubject, error) {
 	var out []weeklySubject
 	for rows.Next() {
 		var s weeklySubject
-		if err := rows.Scan(&s.id, &s.name, &s.created, &s.zone); err != nil {
+		if err := rows.Scan(&s.id, &s.name, &s.created); err != nil {
 			continue
 		}
 		out = append(out, s)
@@ -145,11 +140,6 @@ func (h *H) weeklySubjects(ctx context.Context) ([]weeklySubject, error) {
 
 func (h *H) sendSubjectWeek(ctx context.Context, subject weeklySubject, now time.Time) (int, error) {
 	loc := time.UTC
-	if name, ok := weeklyZone(subject.zone); ok {
-		if loaded, err := time.LoadLocation(name); err == nil {
-			loc = loaded
-		}
-	}
 	weekStart, open := weeklySendOpen(now, loc)
 	if !open {
 		return 0, nil
@@ -237,43 +227,87 @@ type weekFacts struct {
 
 func (h *H) weeklyFacts(ctx context.Context, subject weeklySubject, now time.Time, loc *time.Location) (weekFacts, error) {
 	start, end := lastSevenDays(now, loc)
-	protected, err := h.daySet(ctx, `
-		SELECT to_char(day, 'YYYY-MM-DD')
-		FROM protection_days
+	beats, err := h.daySet(ctx, `
+		SELECT DISTINCT to_char(at AT TIME ZONE 'UTC', 'YYYY-MM-DD')
+		FROM protection_heartbeats
 		WHERE user_id = $1
+		  AND at >= NOW() - INTERVAL '400 days'
 	`, subject.id)
 	if err != nil {
 		return weekFacts{}, err
 	}
 	flagged, err := h.daySet(ctx, `
-		SELECT to_char((e.timestamp AT TIME ZONE COALESCE(NULLIF(u.timezone, ''), 'UTC')), 'YYYY-MM-DD')
-		FROM events e
-		JOIN users u ON u.id = e.user_id
-		WHERE e.user_id = $1
-		  AND e.category <> 'clean'
-		  AND e.timestamp >= NOW() - INTERVAL '4000 days'
+		SELECT DISTINCT to_char(timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD')
+		FROM events
+		WHERE user_id = $1
+		  AND category <> 'clean'
+		  AND timestamp >= NOW() - INTERVAL '4000 days'
 	`, subject.id)
 	if err != nil {
 		return weekFacts{}, err
 	}
+	offs, err := h.offDays(ctx, subject.id)
+	if err != nil {
+		return weekFacts{}, err
+	}
+	clean := map[string]struct{}{}
+	for day := range beats {
+		if _, bad := flagged[day]; bad {
+			continue
+		}
+		if _, bad := offs[day]; bad {
+			continue
+		}
+		clean[day] = struct{}{}
+	}
 	var eventCount int
 	err = h.DB.QueryRowContext(ctx, `
 		SELECT COUNT(*)
-		FROM events e
-		JOIN users u ON u.id = e.user_id
-		WHERE e.user_id = $1
-		  AND e.category <> 'clean'
-		  AND (e.timestamp AT TIME ZONE COALESCE(NULLIF(u.timezone, ''), 'UTC'))::date
-		      BETWEEN $2::date AND $3::date
+		FROM events
+		WHERE user_id = $1
+		  AND category <> 'clean'
+		  AND (timestamp AT TIME ZONE 'UTC')::date BETWEEN $2::date AND $3::date
 	`, subject.id, start, end).Scan(&eventCount)
 	if err != nil {
 		return weekFacts{}, err
 	}
+	var legacy int
+	if err := h.DB.QueryRowContext(ctx, `SELECT COALESCE(legacy_streak, 0) FROM users WHERE id = $1`, subject.id).Scan(&legacy); err != nil {
+		return weekFacts{}, err
+	}
+	got, err := h.streaksAt(ctx, map[int64]streakMeta{
+		subject.id: {Created: subject.created, Legacy: legacy},
+	}, now, 0)
+	if err != nil {
+		return weekFacts{}, err
+	}
 	return weekFacts{
-		days:   countDays(protected, start, end),
+		days:   countDays(clean, start, end),
 		alerts: eventCount,
-		streak: protectedStreak(subject.created, loc, protected, flagged, now),
+		streak: got[subject.id].Days,
 	}, nil
+}
+
+func (h *H) offDays(ctx context.Context, userID int64) (map[string]struct{}, error) {
+	rows, err := h.DB.QueryContext(ctx, `
+		SELECT DISTINCT to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')
+		FROM alerts
+		WHERE subject_user_id = $1
+		  AND alert_type = ANY($2)
+		  AND created_at >= NOW() - INTERVAL '4000 days'
+	`, userID, pq.Array(protectionOffTypes))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]struct{}{}
+	for rows.Next() {
+		var day string
+		if rows.Scan(&day) == nil && len(day) >= 10 {
+			out[day[:10]] = struct{}{}
+		}
+	}
+	return out, rows.Err()
 }
 
 func (h *H) daySet(ctx context.Context, query string, userID int64) (map[string]struct{}, error) {
@@ -384,19 +418,8 @@ func countPhrase(n int, singular, plural string) string {
 	return strconv.Itoa(n) + " " + plural
 }
 
-func weeklyZone(raw string) (string, bool) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" || len(raw) > 64 || strings.EqualFold(raw, "Local") {
-		return "", false
-	}
-	loc, err := time.LoadLocation(raw)
-	if err != nil || loc.String() == "" || loc.String() == "Local" {
-		return "", false
-	}
-	return loc.String(), true
-}
-
 // weeklySendOpen is true from Monday 08:00 in loc through the rest of that week.
+// The scheduled job passes UTC. It does not store a time zone.
 func weeklySendOpen(now time.Time, loc *time.Location) (string, bool) {
 	if loc == nil {
 		loc = time.UTC
@@ -486,40 +509,6 @@ func newUnsubToken() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(buf), nil
-}
-
-// recordProtectionDay stores the local day of a protection heartbeat.
-// A failure is logged and does not fail the heartbeat.
-func (h *H) recordProtectionDay(ctx context.Context, userID int64, rawZone string, at time.Time) {
-	if h == nil || h.DB == nil {
-		return
-	}
-	zone := "UTC"
-	if name, ok := weeklyZone(rawZone); ok {
-		zone = name
-		if _, err := h.DB.ExecContext(ctx, `UPDATE users SET timezone = $2 WHERE id = $1`, userID, zone); err != nil {
-			log.Printf("[weekly] timezone user=%d: %v", userID, err)
-		}
-	} else {
-		var stored string
-		err := h.DB.QueryRowContext(ctx, `SELECT COALESCE(timezone, 'UTC') FROM users WHERE id = $1`, userID).Scan(&stored)
-		if err == nil {
-			if name, ok := weeklyZone(stored); ok {
-				zone = name
-			}
-		}
-	}
-	loc := time.UTC
-	if loaded, err := time.LoadLocation(zone); err == nil {
-		loc = loaded
-	}
-	if _, err := h.DB.ExecContext(ctx, `
-		INSERT INTO protection_days (user_id, day)
-		VALUES ($1, $2::date)
-		ON CONFLICT DO NOTHING
-	`, userID, at.In(loc).Format("2006-01-02")); err != nil {
-		log.Printf("[weekly] protection day user=%d: %v", userID, err)
-	}
 }
 
 // UnsubscribeWeeklySummary stops weekly emails for the partner who opened the link.

@@ -27,7 +27,7 @@ object Copy {
     const val sharePartner = "I would like you as my accountability partner on Remain Faithful. https://www.remainfaithful.com"
     const val usageTitle = "Allow usage access"
     const val usageBody = "Remain Faithful reads which apps are open on this phone so it can time the apps you choose. The app name stays on this phone. Your partner receives an alert category, a short summary, and a heartbeat. Photos, messages, web addresses, and the screen stay here."
-    const val alertsRow = "Your partner is told after about one minute of use in an app you choose, once a day."
+    const val alertsRow = "Your partner is told at 1, 5, 15, and 30 minutes of use in an app you choose."
     const val blockingRow = "Chosen apps can be covered by a shield you turn on. You can dismiss it when App Lockout is off."
     const val deepScanTitle = "Deep Scan"
     const val deepScanSubtitle = "Optional. It does not replace Alerts or Blocking."
@@ -98,9 +98,9 @@ object Copy {
     fun howSteps(includeDeepScan: Boolean = true): List<Pair<String, String>> = listOf(
         "Choose Your Partners" to "Invite a trusted friend or join a small group of men who will walk with you. Accountability works because you choose people who care.",
         "Turn on Alerts and Blocking" to if (includeDeepScan) {
-            "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking covers those apps with a shield you asked for. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."
+            "Choose the apps you want help with. Alerts tell your partner at 1, 5, 15, and 30 minutes of use. Blocking covers those apps with a shield you asked for. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."
         } else {
-            "Choose the apps you want help with. Alerts tell your partner after about a minute of use, once a day. Blocking covers those apps with a shield you asked for. Only an alert and a heartbeat leave this phone."
+            "Choose the apps you want help with. Alerts tell your partner at 1, 5, 15, and 30 minutes of use. Blocking covers those apps with a shield you asked for. Only an alert and a heartbeat leave this phone."
         },
         "Stay Accountable" to "Review your activity together and spur one another toward freedom. Iron sharpens iron, and so one man sharpens another.",
     )

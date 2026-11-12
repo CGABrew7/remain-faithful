@@ -8,7 +8,7 @@ interface BreadcrumbItem {
 }
 
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
-  const allItems = [{ name: 'Home', url: 'https://remainfaithful.com' }, ...items]
+  const allItems = [{ name: 'Home', url: 'https://www.remainfaithful.com' }, ...items]
 
   return (
     <>

@@ -23,7 +23,7 @@ func FromRequest(r *http.Request) string {
 	if ip := trustedVisitor(r); ip != "" {
 		return ip
 	}
-	if ip := strings.TrimSpace(r.Header.Get("Fly-Client-IP")); ip != "" {
+	if ip := firstHop(r.Header.Get("Fly-Client-IP")); ip != "" {
 		return ip
 	}
 	if os.Getenv("APP_ENV") != "production" {

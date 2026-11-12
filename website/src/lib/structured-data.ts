@@ -7,17 +7,18 @@ import {
   FAQ_STREAMING,
   PRIVACY_POINTER,
 } from '@/lib/product-copy'
+import { donationsEnabled } from '@/lib/donations'
 
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Remain Faithful',
-  url: 'https://remainfaithful.com',
+  url: 'https://www.remainfaithful.com',
   description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
   founder: {
     '@type': 'Person',
     name: 'Jeff Brewer',
-    url: 'https://remainfaithful.com/about',
+    url: 'https://www.remainfaithful.com/about',
   },
   sameAs: [
     'https://github.com/CGABrew7/remain-faithful',
@@ -38,13 +39,13 @@ export const softwareApplicationSchema = {
     priceCurrency: 'USD',
   },
   featureList: [
-    'Alerts: one partner alert that day after a chosen app or category is used for a minute',
-    'Blocking: Screen Time shield when a chosen app opens, with no alert from the open itself',
+    'Alerts: partner alerts when a chosen app or category is used for 1, 5, 15, and 30 minutes',
+    'Blocking: Screen Time shield, Apple adult web filter, and an alert that a blocked app was opened',
     'Optional on-device Deep Scan',
     'One-to-one or group accountability',
     'Covenant-based partner system',
     'Open source codebase',
-    'Free forever, donation funded',
+    donationsEnabled() ? 'Free forever, donation funded' : 'Free forever, with no subscription',
   ],
   author: {
     '@type': 'Organization',
@@ -56,7 +57,7 @@ export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Remain Faithful',
-  url: 'https://remainfaithful.com',
+  url: 'https://www.remainfaithful.com',
   description: 'Free peer accountability for Christians committed to purity.',
 }
 
@@ -132,7 +133,9 @@ export const howItWorksFaqSchema = {
       name: 'Is Remain Faithful really free?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. This model is committed to indefinitely.',
+        text: donationsEnabled()
+          ? 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. This model is committed to indefinitely.'
+          : 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising.',
       },
     },
     {
@@ -174,22 +177,22 @@ export function blogPostSchema(post: {
     '@type': 'Article',
     headline: post.title,
     description: post.description,
-    url: `https://remainfaithful.com/blog/${post.slug}`,
+    url: `https://www.remainfaithful.com/blog/${post.slug}`,
     datePublished: post.datePublished,
     dateModified: post.datePublished,
     author: {
       '@type': 'Person',
       name: 'Jeff Brewer',
-      url: 'https://remainfaithful.com/about',
+      url: 'https://www.remainfaithful.com/about',
     },
     publisher: {
       '@type': 'Organization',
       name: 'Remain Faithful',
-      url: 'https://remainfaithful.com',
+      url: 'https://www.remainfaithful.com',
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://remainfaithful.com/blog/${post.slug}`,
+      '@id': `https://www.remainfaithful.com/blog/${post.slug}`,
     },
     timeRequired: post.readTime,
   }
@@ -201,7 +204,7 @@ export function comparisonSchema(competitor: string) {
     '@type': 'WebPage',
     name: `Remain Faithful vs ${competitor}: Detailed Comparison`,
     description: `A detailed comparison of Remain Faithful and ${competitor} for Christian accountability.`,
-    url: `https://remainfaithful.com/compare/${competitor.toLowerCase().replace(/\s+/g, '-')}`,
+    url: `https://www.remainfaithful.com/compare/${competitor.toLowerCase().replace(/\s+/g, '-')}`,
     dateModified: COMPARE_UPDATED_ON,
     mainEntity: {
       '@type': 'ItemList',

@@ -202,7 +202,7 @@ export const guideParts: GuidePart[] = [
           caption: 'What Home shows',
           lines: [
             { label: 'Status', detail: 'Whether Alerts and Blocking are on' },
-            { label: 'Clean streak', detail: 'Days in a row without a flag' },
+            { label: 'Clean streak', detail: 'Days in a row with protection on and no flag' },
             { label: 'Recent flags', detail: 'Your latest alerts' },
           ],
         },
@@ -217,7 +217,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Clean streak',
-            does: 'The big number is how many days in a row you have gone without a flag. "Best" is your longest streak. The row of circles is this week. A check mark is a clean day. An X is a day with a flag.',
+            does: 'The big number is how many days in a row protection was on with no flag. "Best" is your longest streak. The row of circles is this week. A check mark is a clean day. An X is a day with a flag. A plain circle is a day protection was off.',
             why: 'Seeing the days add up helps you keep going.',
           },
           {
@@ -424,11 +424,11 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitor App Usage',
-            does: 'If Alerts is on, your partner gets one alert that day after a chosen app or category is used for a minute.',
+            does: 'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day.',
           },
           {
             name: 'Block Selected Apps',
-            does: 'If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield and does not itself send an alert.',
+            does: 'If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield, Apple\'s adult web filter is on, and your partner gets an alert that a blocked app was opened. That alert does not include the app name.',
             why: 'A block that is already in place does more than willpower in the moment.',
           },
         ],

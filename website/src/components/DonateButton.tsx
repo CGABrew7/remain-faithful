@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { donationsEnabled } from '@/lib/donations'
 import {
   type DonateAmount,
   type DonateInterval,
@@ -15,6 +16,7 @@ export default function DonateButton() {
 
   const interval: DonateInterval = recurring ? 'monthly' : 'one-time'
   const donateUrl = woodfieldDonateUrl(selected, interval)
+  if (!donationsEnabled()) return null
 
   return (
     <div className="flex flex-col items-stretch sm:items-center gap-5">

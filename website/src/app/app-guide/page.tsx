@@ -9,14 +9,14 @@ export const metadata: Metadata = {
   title: 'App Guide: Every Screen and Button Explained',
   description:
     'A plain walkthrough of the Remain Faithful iPhone app. What each screen shows, what each button does, and why it is there.',
-  alternates: { canonical: 'https://remainfaithful.com/app-guide' },
+  alternates: { canonical: 'https://www.remainfaithful.com/app-guide' },
 }
 
 export default function AppGuidePage() {
   return (
     <>
       <div className="mx-auto max-w-6xl px-5 pt-24 sm:px-6">
-        <Breadcrumbs items={[{ name: 'App Guide', url: 'https://remainfaithful.com/app-guide' }]} />
+        <Breadcrumbs items={[{ name: 'App Guide', url: 'https://www.remainfaithful.com/app-guide' }]} />
       </div>
 
       {/* Hero */}
