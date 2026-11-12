@@ -8,7 +8,7 @@ import { donationsEnabled } from '@/lib/donations'
 export const metadata: Metadata = {
   title: 'About Remain Faithful | Built by Jeff Brewer',
   description: 'Remain Faithful was built by Jeff Brewer to provide free, privacy-first accountability for Christians. Learn why we built it, how it is funded, and the team behind it.',
-  alternates: { canonical: 'https://remainfaithful.com/about' },
+  alternates: { canonical: 'https://www.remainfaithful.com/about' },
 }
 
 const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
@@ -17,7 +17,7 @@ export default function AboutPage() {
   return (
     <>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <Breadcrumbs items={[{ name: 'About', url: 'https://remainfaithful.com/about' }]} />
+        <Breadcrumbs items={[{ name: 'About', url: 'https://www.remainfaithful.com/about' }]} />
       </div>
       {/* Hero */}
       <section className="pt-8 pb-20 border-b border-hairline">

@@ -12,7 +12,7 @@ import AppStoreLink from '@/components/AppStoreLink'
 export const metadata: Metadata = {
   title: 'How Remain Faithful Works: Always-On Filtering for iPhone',
   description: 'Create an account, invite a trusted partner, and turn on protection. Free on iPhone for adults.',
-  alternates: { canonical: 'https://remainfaithful.com/how-it-works' },
+  alternates: { canonical: 'https://www.remainfaithful.com/how-it-works' },
 }
 
 const faqs = [
@@ -61,7 +61,7 @@ export default function HowItWorksPage() {
     <>
       <JsonLd data={howItWorksFaqSchema} />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <Breadcrumbs items={[{ name: 'How It Works', url: 'https://remainfaithful.com/how-it-works' }]} />
+        <Breadcrumbs items={[{ name: 'How It Works', url: 'https://www.remainfaithful.com/how-it-works' }]} />
       </div>
       {/* Hero */}
       <section className="border-b border-white/10 pb-20 pt-8">

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'Group Setup Guide',
   description: 'A complete guide for pastors and ministry leaders on setting up a Remain Faithful accountability group.',
   robots: { index: false },
-  alternates: { canonical: 'https://remainfaithful.com/group-setup-guide' },
+  alternates: { canonical: 'https://www.remainfaithful.com/group-setup-guide' },
 }
 
 export default function GroupSetupGuidePage() {
@@ -272,7 +272,7 @@ export default function GroupSetupGuidePage() {
             <p className="font-serif text-lg text-ink mb-2">Remain Faithful</p>
             <p className="text-sm text-ink-soft mb-4">Free peer accountability for adults committed to purity.</p>
             <p className="text-xs text-ink-faint">
-              remainfaithful.com &nbsp;|&nbsp; support@remainfaithful.com &nbsp;|&nbsp; Free forever
+              www.remainfaithful.com &nbsp;|&nbsp; support@remainfaithful.com &nbsp;|&nbsp; Free forever
             </p>
           </div>
 

@@ -4,7 +4,7 @@ import { FAQ_STREAMING } from '@/lib/product-copy'
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'How Remain Faithful collects, uses, and protects your data. Screenshots and screen text stay on your device. Partners can receive a short summary with the category.',
-  alternates: { canonical: 'https://remainfaithful.com/privacy' },
+  alternates: { canonical: 'https://www.remainfaithful.com/privacy' },
 }
 
 export default function PrivacyPage() {

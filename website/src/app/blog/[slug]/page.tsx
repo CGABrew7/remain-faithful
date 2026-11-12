@@ -46,7 +46,7 @@ export async function generateMetadata({
     // Root layout's title.template appends " | Remain Faithful".
     title: displayTitle,
     description: post.excerpt,
-    alternates: { canonical: `https://remainfaithful.com/blog/${post.slug}` },
+    alternates: { canonical: `https://www.remainfaithful.com/blog/${post.slug}` },
     openGraph: {
       title: `${displayTitle} | Remain Faithful`,
       description: post.excerpt,
@@ -160,8 +160,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Breadcrumbs items={[
-          { name: 'Blog', url: 'https://remainfaithful.com/blog' },
-          { name: blogTitles[post.slug] || post.title, url: `https://remainfaithful.com/blog/${post.slug}` },
+          { name: 'Blog', url: 'https://www.remainfaithful.com/blog' },
+          { name: blogTitles[post.slug] || post.title, url: `https://www.remainfaithful.com/blog/${post.slug}` },
         ]} />
         <div className="grid lg:grid-cols-[1fr_300px] gap-12">
           {/* Article */}

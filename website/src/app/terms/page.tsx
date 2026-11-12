@@ -5,7 +5,7 @@ import { donationsEnabled } from '@/lib/donations'
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of Service for Remain Faithful, the free, privacy-first accountability app.',
-  alternates: { canonical: 'https://remainfaithful.com/terms' },
+  alternates: { canonical: 'https://www.remainfaithful.com/terms' },
 }
 
 export default function TermsPage() {

@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Remain Faithful | Free Christian Accountability App',
     description: 'A partner you trust stands with you. Free on iPhone. Screenshots stay on your phone.',
-    url: 'https://remainfaithful.com',
+    url: 'https://www.remainfaithful.com',
     siteName: 'Remain Faithful',
     type: 'website',
   },
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     description: 'A partner you trust stands with you. Free on iPhone. Screenshots stay on your phone.',
   },
   alternates: {
-    canonical: 'https://remainfaithful.com',
+    canonical: 'https://www.remainfaithful.com',
   },
 }
 

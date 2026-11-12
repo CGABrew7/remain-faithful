@@ -11,14 +11,14 @@ import { donationsEnabled } from '@/lib/donations'
 export const metadata: Metadata = {
   title: 'Church & Ministry Accountability Program | Partners',
   description: "Bring structured accountability to your church, small group, or men's ministry. Free tools, group setup guides, and pastoral resources for ministry leaders.",
-  alternates: { canonical: 'https://remainfaithful.com/partners' },
+  alternates: { canonical: 'https://www.remainfaithful.com/partners' },
 }
 
 export default function PartnersPage() {
   return (
     <>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <Breadcrumbs items={[{ name: 'Partners', url: 'https://remainfaithful.com/partners' }]} />
+        <Breadcrumbs items={[{ name: 'Partners', url: 'https://www.remainfaithful.com/partners' }]} />
       </div>
       {/* Hero */}
       <section className="border-b border-white/10 pb-20 pt-8">

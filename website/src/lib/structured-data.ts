@@ -13,12 +13,12 @@ export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Remain Faithful',
-  url: 'https://remainfaithful.com',
+  url: 'https://www.remainfaithful.com',
   description: 'Free peer accountability for Christians committed to purity. Always-on filtering, optional Deep Scan, privacy-first, open source.',
   founder: {
     '@type': 'Person',
     name: 'Jeff Brewer',
-    url: 'https://remainfaithful.com/about',
+    url: 'https://www.remainfaithful.com/about',
   },
   sameAs: [
     'https://github.com/CGABrew7/remain-faithful',
@@ -57,7 +57,7 @@ export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Remain Faithful',
-  url: 'https://remainfaithful.com',
+  url: 'https://www.remainfaithful.com',
   description: 'Free peer accountability for Christians committed to purity.',
 }
 
@@ -177,22 +177,22 @@ export function blogPostSchema(post: {
     '@type': 'Article',
     headline: post.title,
     description: post.description,
-    url: `https://remainfaithful.com/blog/${post.slug}`,
+    url: `https://www.remainfaithful.com/blog/${post.slug}`,
     datePublished: post.datePublished,
     dateModified: post.datePublished,
     author: {
       '@type': 'Person',
       name: 'Jeff Brewer',
-      url: 'https://remainfaithful.com/about',
+      url: 'https://www.remainfaithful.com/about',
     },
     publisher: {
       '@type': 'Organization',
       name: 'Remain Faithful',
-      url: 'https://remainfaithful.com',
+      url: 'https://www.remainfaithful.com',
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://remainfaithful.com/blog/${post.slug}`,
+      '@id': `https://www.remainfaithful.com/blog/${post.slug}`,
     },
     timeRequired: post.readTime,
   }
@@ -204,7 +204,7 @@ export function comparisonSchema(competitor: string) {
     '@type': 'WebPage',
     name: `Remain Faithful vs ${competitor}: Detailed Comparison`,
     description: `A detailed comparison of Remain Faithful and ${competitor} for Christian accountability.`,
-    url: `https://remainfaithful.com/compare/${competitor.toLowerCase().replace(/\s+/g, '-')}`,
+    url: `https://www.remainfaithful.com/compare/${competitor.toLowerCase().replace(/\s+/g, '-')}`,
     dateModified: COMPARE_UPDATED_ON,
     mainEntity: {
       '@type': 'ItemList',

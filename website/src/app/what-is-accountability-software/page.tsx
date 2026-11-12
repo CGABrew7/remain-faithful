@@ -7,7 +7,7 @@ import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 export const metadata: Metadata = {
   title: 'What Is Accountability Software? A Complete Guide (2026)',
   description: 'Accountability software monitors device activity and shares reports with a trusted partner. Learn how it works, who uses it, and how to choose the right tool for your situation.',
-  alternates: { canonical: 'https://remainfaithful.com/what-is-accountability-software' },
+  alternates: { canonical: 'https://www.remainfaithful.com/what-is-accountability-software' },
 }
 
 const faqSchema = {
@@ -64,7 +64,7 @@ export default function WhatIsAccountabilitySoftware() {
 
       <div className="pt-24 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs items={[{ name: 'What Is Accountability Software?', url: 'https://remainfaithful.com/what-is-accountability-software' }]} />
+          <Breadcrumbs items={[{ name: 'What Is Accountability Software?', url: 'https://www.remainfaithful.com/what-is-accountability-software' }]} />
 
           {/* Hero */}
           <div className="mb-10">

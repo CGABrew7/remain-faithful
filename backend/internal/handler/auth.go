@@ -673,5 +673,5 @@ func getAppBaseURL() string {
 	if u := os.Getenv("SITE_URL"); u != "" {
 		return strings.TrimRight(u, "/")
 	}
-	return "https://remainfaithful.com"
+	return "https://www.remainfaithful.com"
 }

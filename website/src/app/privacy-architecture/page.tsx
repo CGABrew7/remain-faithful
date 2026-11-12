@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Privacy Architecture',
   description:
     'How Remain Faithful protects privacy: on-device classification, no screenshots or screen text off the phone, and a short summary partners may receive with category, severity, and timestamp.',
-  alternates: { canonical: 'https://remainfaithful.com/privacy-architecture' },
+  alternates: { canonical: 'https://www.remainfaithful.com/privacy-architecture' },
 }
 
 const GITHUB_URL = 'https://github.com/CGABrew7/remain-faithful'
@@ -21,7 +21,7 @@ export default function PrivacyArchitecturePage() {
     publisher: {
       '@type': 'Organization',
       name: 'Remain Faithful',
-      url: 'https://remainfaithful.com',
+      url: 'https://www.remainfaithful.com',
     },
   }
 

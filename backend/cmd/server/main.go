@@ -269,7 +269,7 @@ func routes(h *handler.H) http.Handler {
 
 	r.Use(limitRequestBody)
 	r.Use(loggingMiddleware)
-	origins := strings.Split(getenv("ALLOWED_ORIGINS", "https://remainfaithful.com"), ",")
+	origins := strings.Split(getenv("ALLOWED_ORIGINS", "https://www.remainfaithful.com,https://remainfaithful.com"), ",")
 	r.Use(corsMiddleware(origins))
 	// CORS middleware answers preflight only after a route matches.
 	// This catch-all lets every OPTIONS request reach that middleware.

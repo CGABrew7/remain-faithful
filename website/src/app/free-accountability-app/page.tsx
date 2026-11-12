@@ -9,7 +9,7 @@ import { donationsEnabled } from '@/lib/donations'
 export const metadata: Metadata = {
   title: 'Free Accountability App for iPhone | No Subscription, No Ads',
   description: 'Remain Faithful is a free accountability app for iPhone. No subscription tiers. No premium features. No ads. On-device AI, privacy-first, built for Christians serious about purity.',
-  alternates: { canonical: 'https://remainfaithful.com/free-accountability-app' },
+  alternates: { canonical: 'https://www.remainfaithful.com/free-accountability-app' },
 }
 
 const faqSchema = {
@@ -59,7 +59,7 @@ export default function FreeAccountabilityApp() {
 
       <div className="pt-24 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs items={[{ name: 'Free Accountability App', url: 'https://remainfaithful.com/free-accountability-app' }]} />
+          <Breadcrumbs items={[{ name: 'Free Accountability App', url: 'https://www.remainfaithful.com/free-accountability-app' }]} />
 
           {/* Hero */}
           <div className="mb-14">
