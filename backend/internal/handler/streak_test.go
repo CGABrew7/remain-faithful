@@ -48,48 +48,64 @@ func TestFailedNewDayDoesNotKeepTheBaseline(t *testing.T) {
 	}
 }
 
-func TestWholeDayNeedsAChainAndIgnoresASingleCheckIn(t *testing.T) {
-	gap := 30 * time.Minute
-	// 02:30 UTC is 21:30 on the previous calendar day at UTC-5.
-	beat := time.Date(2026, 11, 12, 2, 30, 0, 0, time.UTC)
-	start := time.Date(2026, 11, 11, 5, 0, 0, 0, time.UTC) // local midnight, offset -300
-	end := start.Add(24 * time.Hour)
-	now := end.Add(time.Hour)
-	clean, pending := dayCovered([]time.Time{beat}, nil, start, end, now, gap)
-	if clean || pending {
-		t.Fatal("one evening check-in must not cover the whole day")
+func TestSparseCheckInsExtendTheBaseline(t *testing.T) {
+	until := time.Date(2026, 11, 12, 0, 0, 0, 0, time.UTC)
+	now := time.Date(2026, 11, 14, 22, 0, 0, 0, time.UTC)
+	var beats []time.Time
+	for day := 12; day <= 14; day++ {
+		base := time.Date(2026, 11, day, 0, 0, 0, 0, time.UTC)
+		beats = append(beats, base.Add(8*time.Hour), base.Add(12*time.Hour), base.Add(21*time.Hour))
 	}
-	nextClean, _ := dayCovered([]time.Time{beat}, nil, end, end.Add(24*time.Hour), now, gap)
-	if nextClean {
-		t.Fatal("that check-in must not cover the next day")
+	got := computeAccountStreak(streakMeta{
+		Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		Legacy:  20,
+	}, beats, nil, nil, until, 30*time.Minute, 0, now)
+	if got.Days != 23 {
+		t.Fatalf("streak %d, want 23", got.Days)
 	}
 }
 
-func TestCarryAndGaps(t *testing.T) {
-	gap := 30 * time.Minute
-	start := time.Date(2026, 11, 12, 0, 0, 0, 0, time.UTC)
-	end := start.Add(24 * time.Hour)
-	now := end.Add(time.Hour)
-	var beats []time.Time
-	for t := start.Add(-10 * time.Minute); !t.After(end); t = t.Add(20 * time.Minute) {
-		beats = append(beats, t)
+func TestOneCheckInThenOffIsNotClean(t *testing.T) {
+	now := time.Date(2026, 11, 14, 20, 0, 0, 0, time.UTC)
+	day := time.Date(2026, 11, 14, 0, 0, 0, 0, time.UTC)
+	got := computeAccountStreak(streakMeta{
+		Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		Legacy:  20,
+	}, []time.Time{day.Add(8 * time.Hour)}, nil, []time.Time{day.Add(15 * time.Hour)},
+		time.Date(2026, 11, 13, 0, 0, 0, 0, time.UTC), 30*time.Minute, 0, now)
+	if got.Coverage[6] != dayOff {
+		t.Fatalf("coverage %s, want off", got.Coverage[6])
 	}
-	clean, pending := dayCovered(beats, nil, start, end, now, gap)
-	if !clean || pending {
-		t.Fatal("a 20 minute chain carried from before midnight should cover the day")
+}
+
+func TestFlaggedDayIsNotClean(t *testing.T) {
+	now := time.Date(2026, 11, 14, 20, 0, 0, 0, time.UTC)
+	day := time.Date(2026, 11, 14, 0, 0, 0, 0, time.UTC)
+	got := computeAccountStreak(streakMeta{
+		Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		Legacy:  20,
+	}, []time.Time{day.Add(8 * time.Hour)}, []time.Time{day.Add(9 * time.Hour)}, nil,
+		time.Date(2026, 11, 13, 0, 0, 0, 0, time.UTC), 30*time.Minute, 0, now)
+	if got.Coverage[6] != dayFlagged || got.Week[6] {
+		t.Fatalf("coverage %s week %v", got.Coverage[6], got.Week[6])
 	}
-	beats = beats[:len(beats)-1]
-	// Drop the middle of the day.
-	var gapped []time.Time
-	for _, b := range beats {
-		if b.Hour() == 12 {
-			continue
-		}
-		gapped = append(gapped, b)
+}
+
+func TestOffsetChangeCannotCountADayWithNoCheckIn(t *testing.T) {
+	beat := time.Date(2026, 11, 12, 2, 0, 0, 0, time.UTC)
+	until := time.Date(2026, 11, 11, 0, 0, 0, 0, time.UTC)
+	now := time.Date(2026, 11, 12, 18, 0, 0, 0, time.UTC)
+	meta := streakMeta{Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), Legacy: 5}
+	utc := computeAccountStreak(meta, []time.Time{beat}, nil, nil, until, 30*time.Minute, 0, now)
+	if utc.Coverage[6] != dayClean {
+		t.Fatalf("utc today %s", utc.Coverage[6])
 	}
-	clean, _ = dayCovered(gapped, nil, start, end, now, gap)
-	if clean {
-		t.Fatal("a gap longer than the heartbeat interval is not a clean day")
+	if utc.Coverage[5] == dayClean {
+		t.Fatal("the previous UTC day has no check-in")
+	}
+	shifted := computeAccountStreak(meta, []time.Time{beat}, nil, nil, until, 30*time.Minute, -300, now)
+	if shifted.Coverage[6] == dayClean {
+		t.Fatal("a different offset must not mark a day with no check-in as clean")
 	}
 }
 

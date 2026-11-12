@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -163,14 +161,6 @@ func legacyStreakUTC(created, now time.Time, flagged map[string]struct{}) int {
 	return streak
 }
 
-func heartbeatGap() time.Duration {
-	raw := strings.TrimSpace(os.Getenv("HEARTBEAT_SILENCE_MINUTES"))
-	if n, err := strconv.Atoi(raw); err == nil && n > 0 && n <= 24*60 {
-		return time.Duration(n) * time.Minute
-	}
-	return 30 * time.Minute
-}
-
 func requestOffsetMinutes(r *http.Request) int {
 	raw := strings.TrimSpace(r.URL.Query().Get("offset_minutes"))
 	if raw == "" {
@@ -224,10 +214,9 @@ func (h *H) streaksAt(ctx context.Context, metas map[int64]streakMeta, now time.
 	for id := range metas {
 		ids = append(ids, id)
 	}
-	gap := heartbeatGap()
 	since := now.Add(-400 * 24 * time.Hour)
-	if !legacyUntil.IsZero() && legacyUntil.Add(-gap).Before(since) {
-		since = legacyUntil.Add(-gap)
+	if !legacyUntil.IsZero() && legacyUntil.Before(since) {
+		since = legacyUntil
 	}
 	beats, err := h.instants(ctx, `
 		SELECT user_id, at FROM protection_heartbeats
@@ -253,7 +242,7 @@ func (h *H) streaksAt(ctx context.Context, metas map[int64]streakMeta, now time.
 		return nil, err
 	}
 	for id, meta := range metas {
-		out[id] = computeAccountStreak(meta, beats[id], flags[id], offs[id], legacyUntil, gap, offsetMin, now)
+		out[id] = computeAccountStreak(meta, beats[id], flags[id], offs[id], legacyUntil, 0, offsetMin, now)
 	}
 	return out, nil
 }
@@ -278,7 +267,10 @@ func (h *H) instants(ctx context.Context, query string, ids []int64, since time.
 	return out, rows.Err()
 }
 
+// gap is the old silence interval. Callers still pass it. A day is clean with
+// one check-in, so the interval is not used to reject a sleeping phone.
 func computeAccountStreak(meta streakMeta, beats, flags, offs []time.Time, legacyUntil time.Time, gap time.Duration, offsetMin int, now time.Time) streakResult {
+	_ = gap
 	loc := offsetLocation(offsetMin)
 	today := localMidnight(now, offsetMin)
 	created := meta.Created.In(loc)
@@ -298,12 +290,12 @@ func computeAccountStreak(meta streakMeta, beats, flags, offs []time.Time, legac
 		if instantIn(offs, day, end) {
 			return dayOff, false
 		}
-		clean, pending := dayCovered(beats, offs, day, end, now, gap)
-		if pending {
-			return dayOff, true
-		}
-		if clean {
+		if instantIn(beats, day, end) {
 			return dayClean, false
+		}
+		// Today has not checked in yet. Do not end the streak at midnight.
+		if !now.Before(day) && now.Before(end) {
+			return dayOff, true
 		}
 		return dayOff, false
 	}
@@ -389,61 +381,4 @@ func instantIn(times []time.Time, start, end time.Time) bool {
 		}
 	}
 	return false
-}
-
-// dayCovered is true when heartbeats chain across the whole local day with
-// no gap longer than the normal heartbeat interval. A check-in covers only
-// the instants within that interval of its UTC timestamp.
-func dayCovered(beats, offs []time.Time, start, end, now time.Time, gap time.Duration) (clean, pending bool) {
-	requiredEnd := end
-	inProgress := !now.Before(start) && now.Before(end)
-	if inProgress {
-		requiredEnd = now
-	}
-	pts := make([]time.Time, 0, len(beats)+1)
-	if carriedIn(beats, offs, start, gap) {
-		pts = append(pts, start)
-	}
-	for _, b := range beats {
-		if !b.Before(start) && !b.After(requiredEnd) {
-			pts = append(pts, b)
-		}
-	}
-	sort.Slice(pts, func(i, j int) bool { return pts[i].Before(pts[j]) })
-	if len(pts) == 0 {
-		if inProgress && !now.After(start.Add(gap)) {
-			return false, true
-		}
-		return false, false
-	}
-	if pts[0].After(start.Add(gap)) {
-		return false, false
-	}
-	for i := 1; i < len(pts); i++ {
-		if pts[i].Sub(pts[i-1]) > gap {
-			return false, false
-		}
-	}
-	if requiredEnd.Sub(pts[len(pts)-1]) > gap {
-		return false, false
-	}
-	return true, false
-}
-
-func carriedIn(beats, offs []time.Time, start time.Time, gap time.Duration) bool {
-	var last time.Time
-	for _, b := range beats {
-		if !b.Before(start.Add(-gap)) && b.Before(start) && b.After(last) {
-			last = b
-		}
-	}
-	if last.IsZero() {
-		return false
-	}
-	for _, o := range offs {
-		if o.After(last) && o.Before(start) {
-			return false
-		}
-	}
-	return true
 }
