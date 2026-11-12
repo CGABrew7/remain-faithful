@@ -135,10 +135,22 @@ func (e OutboundEvent) Body() ([]byte, error) {
 	})
 }
 
+func usageSeverity(summary string) string {
+	switch summary {
+	case "Monitored app used for 15+ minutes",
+		"Monitored app used for 30+ minutes",
+		"Monitored app category used for 15+ minutes",
+		"Monitored app category used for 30+ minutes":
+		return "severe"
+	default:
+		return "concerning"
+	}
+}
+
 func UsageEvent(now time.Time, summary string) (OutboundEvent, error) {
 	e := OutboundEvent{
 		Category:  "app_usage",
-		Severity:  "concerning",
+		Severity:  usageSeverity(summary),
 		Summary:   summary,
 		Timestamp: now.UTC().Format(time.RFC3339),
 	}

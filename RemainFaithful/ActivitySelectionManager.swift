@@ -47,7 +47,7 @@ final class ActivitySelectionManager: ObservableObject {
         }
 
         if isShieldingEnabled  { applyShielding() }
-        if isMonitoringEnabled { startMonitoring() }
+        if isMonitoringEnabled { startMonitoringIfCurrent() }
     }
 
     // MARK: - Selection
@@ -183,6 +183,7 @@ final class ActivitySelectionManager: ObservableObject {
             try activityCenter.startMonitoring(.daily, during: schedule, events: events)
             isMonitoringEnabled = true
             defaults?.set(true, forKey: "deviceActivityMonitoringEnabled")
+            defaults?.set(scheduleSignature(), forKey: "deviceActivityScheduleSignature")
             logger.info("DeviceActivity monitoring started (\(events.count) event(s))")
         } catch {
             isMonitoringEnabled = false
@@ -195,10 +196,36 @@ final class ActivitySelectionManager: ObservableObject {
         }
     }
 
+    /// Launch must not restart a schedule that is already running. Restarting
+    /// clears Apple's usage total, so opening the app could stay under the thresholds.
+    func startMonitoringIfCurrent() {
+        let signature = scheduleSignature()
+        let running = activityCenter.activities.contains(.daily)
+        let saved = defaults?.string(forKey: "deviceActivityScheduleSignature")
+        if running && saved == signature {
+            isMonitoringEnabled = true
+            defaults?.set(true, forKey: "deviceActivityMonitoringEnabled")
+            logger.info("DeviceActivity monitoring already active")
+            return
+        }
+        startMonitoring()
+    }
+
+    private func scheduleSignature() -> String {
+        let data = (try? JSONEncoder().encode(selection)) ?? Data()
+        var hash: UInt64 = 1469598103934665603
+        for byte in data {
+            hash ^= UInt64(byte)
+            hash &*= 1099511628211
+        }
+        return "usage-thresholds-v2:\(hash)"
+    }
+
     func stopMonitoring() {
         activityCenter.stopMonitoring([.daily])
         isMonitoringEnabled = false
         defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
+        defaults?.removeObject(forKey: "deviceActivityScheduleSignature")
         logger.info("DeviceActivity monitoring stopped")
     }
 
@@ -209,6 +236,7 @@ final class ActivitySelectionManager: ObservableObject {
         isMonitoringEnabled = false
         isShieldingEnabled = false
         defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
+        defaults?.removeObject(forKey: "deviceActivityScheduleSignature")
         defaults?.set(false, forKey: "screenTimeShieldingEnabled")
         clearShielding()
         selection = FamilyActivitySelection()

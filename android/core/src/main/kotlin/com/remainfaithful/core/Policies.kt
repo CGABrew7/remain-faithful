@@ -112,6 +112,9 @@ object MonitoringPolicy {
     fun usageSummary(minutes: Int): String =
         if (minutes == 1) EventPolicy.SUMMARY_MINUTE else "Monitored app used for $minutes+ minutes"
 
+    fun usageSeverity(minutes: Int): String =
+        if (minutes >= 15) "severe" else EventPolicy.SEVERITY_CONCERNING
+
     fun wasSent(already: Set<String>, pkg: String, minutes: Int): Boolean {
         if ("$pkg#$minutes" in already) return true
         return minutes == 1 && pkg in already
@@ -128,7 +131,7 @@ object MonitoringPolicy {
                     if (wasSent(input.alreadyAlertedToday, pkg, minutes)) continue
                     uploads += EventPolicy.metadata(
                         EventPolicy.CATEGORY_APP,
-                        EventPolicy.SEVERITY_CONCERNING,
+                        usageSeverity(minutes),
                         usageSummary(minutes),
                     )
                     alerted += "$pkg#$minutes"

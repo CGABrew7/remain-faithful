@@ -72,6 +72,10 @@ class CoreLogicTest {
             ),
             first.uploads.map { it.getValue("summary") },
         )
+        assertEquals("concerning", first.uploads[0].getValue("severity"))
+        assertEquals("concerning", first.uploads[1].getValue("severity"))
+        assertEquals("severe", first.uploads[2].getValue("severity"))
+        assertEquals("severe", first.uploads[3].getValue("severity"))
         val again = MonitoringPolicy.decide(input.copy(alreadyAlertedToday = first.alertedPackages))
         assertTrue(again.uploads.isEmpty())
     }

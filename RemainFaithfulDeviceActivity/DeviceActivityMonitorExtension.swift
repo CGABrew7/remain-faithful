@@ -41,16 +41,17 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let id        = UUID().uuidString
         let timestamp = Date().timeIntervalSince1970
         let summary   = summarize(event: event)
+        let severity  = severity(for: event)
 
         // Write to pending queue so EventProcessor drains it on next app foreground,
         // guaranteeing delivery even if the direct POST below fails.
-        enqueue(id: id, timestamp: timestamp, summary: summary)
+        enqueue(id: id, timestamp: timestamp, summary: summary, severity: severity)
 
         // Stamp the alert time so the main app can surface a broadcast prompt on foreground.
         defaults?.set(timestamp, forKey: "lastAppUsageTimestamp")
 
         // Attempt direct backend POST — same pattern as the broadcast extension.
-        Task { await post(id: id, timestamp: timestamp, summary: summary) }
+        Task { await post(id: id, timestamp: timestamp, summary: summary, severity: severity) }
         Task { await postHeartbeat() }
     }
 
@@ -76,13 +77,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     // Stored as [[String: Any]] under "pendingRawEvents" — a separate key from
     // "pendingEvents" (which stores DetectedEvent-encoded Data). EventProcessor
     // checks both keys on foreground.
-    private func enqueue(id: String, timestamp: TimeInterval, summary: String) {
+    private func enqueue(id: String, timestamp: TimeInterval, summary: String, severity: String) {
         var queue = (defaults?.array(forKey: "pendingRawEvents") as? [[String: Any]]) ?? []
         var row: [String: Any] = [
             "id":         id,
             "timestamp":  timestamp,
             "category":   "app_usage",
-            "severity":   "concerning",
+            "severity":   severity,
             "summary":    summary,
             "tier":       4,
             "confidence": 1.0,
@@ -98,7 +99,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     // MARK: - Direct backend POST
 
-    private func post(id: String, timestamp: TimeInterval, summary: String) async {
+    private func post(id: String, timestamp: TimeInterval, summary: String, severity: String) async {
         guard let apiBase = defaults?.string(forKey: "apiBaseURL"),
               let token   = defaults?.string(forKey: "authToken"),
               let url     = URL(string: apiBase + "/events") else {
@@ -116,7 +117,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         guard let body = try? JSONSerialization.data(withJSONObject: [
             "category":  "app_usage",
-            "severity":  "concerning",
+            "severity":  severity,
             "summary":   summary,
             "timestamp": tsStr,
         ]) else { return }
@@ -158,6 +159,15 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         case .categoryUsage15: return "Monitored app category used for 15+ minutes"
         case .categoryUsage30: return "Monitored app category used for 30+ minutes"
         default:               return "Monitored app activity detected"
+        }
+    }
+
+    private func severity(for event: DeviceActivityEvent.Name) -> String {
+        switch event {
+        case .appUsage15, .appUsage30, .categoryUsage15, .categoryUsage30:
+            return "severe"
+        default:
+            return "concerning"
         }
     }
 }

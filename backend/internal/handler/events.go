@@ -206,18 +206,33 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		ctx := context.Background()
 		for _, pa := range capturedPartnerAlerts {
-			// Throttle: skip push if this partner already got one in the last 5 minutes.
+			// Non-severe pushes are limited to one per partner per 5 minutes.
+			// Usage thresholds are keyed by their own summary, so the 5 minute
+			// notice is not dropped because the 1 minute notice just went out.
+			// Severe notices, including the 15 and 30 minute thresholds, are not limited.
 			if capturedSeverity != "severe" {
 				var recentCount int
-				_ = h.DB.QueryRowContext(ctx, `
-					SELECT COUNT(*) FROM alerts a
-					JOIN events e ON e.id = a.event_id
-					WHERE a.recipient_user_id = $1
-					  AND e.user_id = $2
-					  AND e.severity <> 'severe'
-					  AND a.created_at > NOW() - INTERVAL '5 minutes'
-					  AND a.id < $3
-				`, pa.partnerID, userID, pa.alertID).Scan(&recentCount)
+				if usageEscalationSummary(capturedSummary) {
+					_ = h.DB.QueryRowContext(ctx, `
+						SELECT COUNT(*) FROM alerts a
+						JOIN events e ON e.id = a.event_id
+						WHERE a.recipient_user_id = $1
+						  AND e.user_id = $2
+						  AND e.summary = $4
+						  AND a.created_at > NOW() - INTERVAL '5 minutes'
+						  AND a.id < $3
+					`, pa.partnerID, userID, pa.alertID, capturedSummary).Scan(&recentCount)
+				} else {
+					_ = h.DB.QueryRowContext(ctx, `
+						SELECT COUNT(*) FROM alerts a
+						JOIN events e ON e.id = a.event_id
+						WHERE a.recipient_user_id = $1
+						  AND e.user_id = $2
+						  AND e.severity <> 'severe'
+						  AND a.created_at > NOW() - INTERVAL '5 minutes'
+						  AND a.id < $3
+					`, pa.partnerID, userID, pa.alertID).Scan(&recentCount)
+				}
 				if recentCount > 0 {
 					continue
 				}
@@ -258,6 +273,34 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		"summary":   req.Summary,
 		"timestamp": timestamp,
 	})
+}
+
+func usageEscalationSummary(summary string) bool {
+	switch summary {
+	case "Monitored app used for 1+ minute",
+		"Monitored app used for 5+ minutes",
+		"Monitored app used for 15+ minutes",
+		"Monitored app used for 30+ minutes",
+		"Monitored app category used for 1+ minute",
+		"Monitored app category used for 5+ minutes",
+		"Monitored app category used for 15+ minutes",
+		"Monitored app category used for 30+ minutes":
+		return true
+	default:
+		return false
+	}
+}
+
+// skipPartnerPush reports whether this push should be held back.
+// recentSame counts the same usage summary. recentAny counts any non-severe alert.
+func skipPartnerPush(severity, summary string, recentAny, recentSame int) bool {
+	if severity == "severe" {
+		return false
+	}
+	if usageEscalationSummary(summary) {
+		return recentSame > 0
+	}
+	return recentAny > 0
 }
 
 // alertTitle returns a push notification title based on category and severity.
