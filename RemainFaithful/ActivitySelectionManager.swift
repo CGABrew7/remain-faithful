@@ -13,8 +13,14 @@ extension DeviceActivityName {
     static let daily = DeviceActivityName("com.remainfaithful.daily")
 }
 extension DeviceActivityEvent.Name {
-    static let appUsage      = DeviceActivityEvent.Name("com.remainfaithful.appusage")
-    static let categoryUsage = DeviceActivityEvent.Name("com.remainfaithful.categoryusage")
+    static let appUsage       = DeviceActivityEvent.Name("com.remainfaithful.appusage")
+    static let appUsage5      = DeviceActivityEvent.Name("com.remainfaithful.appusage.5")
+    static let appUsage15     = DeviceActivityEvent.Name("com.remainfaithful.appusage.15")
+    static let appUsage30     = DeviceActivityEvent.Name("com.remainfaithful.appusage.30")
+    static let categoryUsage  = DeviceActivityEvent.Name("com.remainfaithful.categoryusage")
+    static let categoryUsage5 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.5")
+    static let categoryUsage15 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.15")
+    static let categoryUsage30 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.30")
 }
 
 // Manages the FamilyActivitySelection (apps and categories to block/monitor),
@@ -41,7 +47,7 @@ final class ActivitySelectionManager: ObservableObject {
         }
 
         if isShieldingEnabled  { applyShielding() }
-        if isMonitoringEnabled { startMonitoring() }
+        if isMonitoringEnabled { startMonitoringIfCurrent() }
     }
 
     // MARK: - Selection
@@ -110,9 +116,9 @@ final class ActivitySelectionManager: ObservableObject {
     // MARK: - Activity monitoring (DeviceActivity)
     //
     // DeviceActivityCenter fires DeviceActivityMonitorExtension.eventDidReachThreshold
-    // when cumulative usage of the monitored set crosses 1 minute within the daily
-    // schedule window (00:00–23:59, repeating). The minimum threshold enforced by
-    // the API is 1 minute — sub-minute values are rejected at startMonitoring time.
+    // when cumulative usage crosses a threshold inside the daily schedule
+    // (00:00 to 23:59, repeating). Each threshold is its own event, so 1, 5, 15,
+    // and 30 minutes each fire once per day. The API rejects a threshold under 1 minute.
 
     func setMonitoringEnabled(_ enabled: Bool) {
         if enabled {
@@ -151,21 +157,28 @@ final class ActivitySelectionManager: ObservableObject {
             repeats: true
         )
 
-        // Build event dictionary — separate events for apps vs. categories
-        // so the extension can distinguish them in its summarize() method.
+        // Separate events for apps and categories, and for each minute threshold,
+        // so the extension can name the one that fired.
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
+        let minutes = [1, 5, 15, 30]
+        let appEvents: [DeviceActivityEvent.Name] = [.appUsage, .appUsage5, .appUsage15, .appUsage30]
+        let categoryEvents: [DeviceActivityEvent.Name] = [.categoryUsage, .categoryUsage5, .categoryUsage15, .categoryUsage30]
 
         if !selection.applicationTokens.isEmpty {
-            events[.appUsage] = DeviceActivityEvent(
-                applications: selection.applicationTokens,
-                threshold: DateComponents(minute: 1)
-            )
+            for (index, minute) in minutes.enumerated() {
+                events[appEvents[index]] = DeviceActivityEvent(
+                    applications: selection.applicationTokens,
+                    threshold: DateComponents(minute: minute)
+                )
+            }
         }
         if !selection.categoryTokens.isEmpty {
-            events[.categoryUsage] = DeviceActivityEvent(
-                categories: selection.categoryTokens,
-                threshold: DateComponents(minute: 1)
-            )
+            for (index, minute) in minutes.enumerated() {
+                events[categoryEvents[index]] = DeviceActivityEvent(
+                    categories: selection.categoryTokens,
+                    threshold: DateComponents(minute: minute)
+                )
+            }
         }
 
         do {
@@ -174,6 +187,7 @@ final class ActivitySelectionManager: ObservableObject {
             try activityCenter.startMonitoring(.daily, during: schedule, events: events)
             isMonitoringEnabled = true
             defaults?.set(true, forKey: "deviceActivityMonitoringEnabled")
+            defaults?.set(scheduleSignature(), forKey: "deviceActivityScheduleSignature")
             logger.info("DeviceActivity monitoring started (\(events.count) event(s))")
         } catch {
             isMonitoringEnabled = false
@@ -186,10 +200,36 @@ final class ActivitySelectionManager: ObservableObject {
         }
     }
 
+    /// Launch must not restart a schedule that is already running. Restarting
+    /// clears Apple's usage total, so opening the app could stay under the thresholds.
+    func startMonitoringIfCurrent() {
+        let signature = scheduleSignature()
+        let running = activityCenter.activities.contains(.daily)
+        let saved = defaults?.string(forKey: "deviceActivityScheduleSignature")
+        if running && saved == signature {
+            isMonitoringEnabled = true
+            defaults?.set(true, forKey: "deviceActivityMonitoringEnabled")
+            logger.info("DeviceActivity monitoring already active")
+            return
+        }
+        startMonitoring()
+    }
+
+    private func scheduleSignature() -> String {
+        let data = (try? JSONEncoder().encode(selection)) ?? Data()
+        var hash: UInt64 = 1469598103934665603
+        for byte in data {
+            hash ^= UInt64(byte)
+            hash &*= 1099511628211
+        }
+        return "usage-thresholds-v2:\(hash)"
+    }
+
     func stopMonitoring() {
         activityCenter.stopMonitoring([.daily])
         isMonitoringEnabled = false
         defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
+        defaults?.removeObject(forKey: "deviceActivityScheduleSignature")
         logger.info("DeviceActivity monitoring stopped")
     }
 
@@ -200,6 +240,7 @@ final class ActivitySelectionManager: ObservableObject {
         isMonitoringEnabled = false
         isShieldingEnabled = false
         defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
+        defaults?.removeObject(forKey: "deviceActivityScheduleSignature")
         defaults?.set(false, forKey: "screenTimeShieldingEnabled")
         clearShielding()
         selection = FamilyActivitySelection()

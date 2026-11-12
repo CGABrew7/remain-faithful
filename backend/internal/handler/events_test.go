@@ -20,7 +20,13 @@ func TestIsAllowedEventSummary(t *testing.T) {
 		"Blocked domain detected",
 		"Explicit keyword detected in screen text",
 		"Monitored app used for 1+ minute",
+		"Monitored app used for 5+ minutes",
+		"Monitored app used for 15+ minutes",
+		"Monitored app used for 30+ minutes",
 		"Monitored app category used for 1+ minute",
+		"Monitored app category used for 5+ minutes",
+		"Monitored app category used for 15+ minutes",
+		"Monitored app category used for 30+ minutes",
 		"Monitored app activity detected",
 		"App activity detected",
 		"Blocked app opened",
@@ -69,6 +75,33 @@ func TestIsAllowedEventSummary(t *testing.T) {
 		if isAllowedEventSummary(s) {
 			t.Errorf("expected rejected summary %q", s)
 		}
+	}
+}
+
+func TestUsageEscalationPushesAreKeyedApart(t *testing.T) {
+	five := "Monitored app used for 5+ minutes"
+	if skipPartnerPush("concerning", five, 1, 0) {
+		t.Fatal("a different recent alert must not drop the 5 minute push")
+	}
+	if !skipPartnerPush("concerning", five, 0, 1) {
+		t.Fatal("the same summary inside 5 minutes should still be limited")
+	}
+	if skipPartnerPush("severe", "Monitored app used for 15+ minutes", 3, 3) {
+		t.Fatal("severe usage pushes are not limited")
+	}
+	if !skipPartnerPush("concerning", "Explicit content detected", 1, 0) {
+		t.Fatal("other non-severe alerts stay on the shared limit")
+	}
+}
+
+func TestUsagePushNamesTheThreshold(t *testing.T) {
+	got := alertBody("Alex", "app_usage", "concerning", "Monitored app used for 15+ minutes")
+	if !strings.Contains(got, "15+ minutes") || strings.Contains(got, "1+ minute") {
+		t.Fatal(got)
+	}
+	got = alertBody("Alex", "app_usage", "concerning", "Monitored app category used for 1+ minute")
+	if !strings.Contains(got, "1+ minute") {
+		t.Fatal(got)
 	}
 }
 

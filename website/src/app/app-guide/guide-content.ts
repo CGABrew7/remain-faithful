@@ -424,11 +424,11 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitor App Usage',
-            does: 'If Alerts is on, your partner gets one alert that day after a chosen app or category is used for a minute.',
+            does: 'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day.',
           },
           {
             name: 'Block Selected Apps',
-            does: 'If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield and does not itself send an alert.',
+            does: 'If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield, Apple\'s adult web filter is on, and your partner gets an alert that a blocked app was opened. That alert does not include the app name.',
             why: 'A block that is already in place does more than willpower in the moment.',
           },
         ],

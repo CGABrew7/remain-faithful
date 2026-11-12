@@ -81,7 +81,7 @@ func TourSteps(inGroup bool) []TourStep {
 	}
 	steps = append(steps,
 		TourStep{Tab: "settings", Title: "Your partners", Body: "Add partners and star your primary partner."},
-		TourStep{Tab: "settings", Title: "Choose apps", Body: "Pick the apps that tempt you. Blocking stops them from opening. Alerts tell your partner after one minute a day."},
+		TourStep{Tab: "settings", Title: "Choose apps", Body: "Pick the apps that tempt you. Blocking stops them from opening. Alerts tell your partner at 1, 5, 15, and 30 minutes."},
 		TourStep{Tab: "settings", Title: "Tell us what you think", Body: "Ideas, fixes, problems. We read every one."},
 	)
 	return steps

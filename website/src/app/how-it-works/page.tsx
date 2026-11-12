@@ -189,7 +189,7 @@ export default function HowItWorksPage() {
               },
               {
                 step: '2',
-                title: 'One alert after a minute of use',
+                title: 'Alerts at 1, 5, 15, and 30 minutes',
                 body: ALERT_TRIGGER,
               },
             ].map((item) => (

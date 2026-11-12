@@ -54,7 +54,7 @@ export default function PrivacyPage() {
 
             <Subsection title="Alert Metadata">
               <p>
-                If Alerts is on, your partner gets one alert that day after a chosen app or category is used for a minute. If Blocking is on and you open an app you asked to block, your partner gets an alert that a blocked app was opened, and Apple&apos;s Screen Time shield appears. That alert does not include the app name. Optional Deep Scan can also store an alert when it flags a frame. {FAQ_STREAMING} The same kind of alert metadata and heartbeat can leave the Android app and the desktop app. That alert metadata is:
+                If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day. If Blocking is on, Apple&apos;s adult web filter turns on. If you open an app you asked to block, your partner gets an alert that a blocked app was opened, and Apple&apos;s Screen Time shield appears. That alert does not include the app name. The web filter runs on the phone and does not send browsing history. Optional Deep Scan can also store an alert when it flags a frame. {FAQ_STREAMING} The same kind of alert metadata and heartbeat can leave the Android app and the desktop app. That alert metadata is:
               </p>
               <ul>
                 <li>Timestamp of the alert</li>

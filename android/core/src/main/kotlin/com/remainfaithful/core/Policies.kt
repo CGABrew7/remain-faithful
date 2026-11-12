@@ -28,7 +28,13 @@ object EventPolicy {
         "Blocked domain detected",
         "Explicit keyword detected in screen text",
         SUMMARY_MINUTE,
+        "Monitored app used for 5+ minutes",
+        "Monitored app used for 15+ minutes",
+        "Monitored app used for 30+ minutes",
         "Monitored app category used for 1+ minute",
+        "Monitored app category used for 5+ minutes",
+        "Monitored app category used for 15+ minutes",
+        "Monitored app category used for 30+ minutes",
         "Monitored app activity detected",
         "App activity detected",
         SUMMARY_BLOCKED,
@@ -101,6 +107,18 @@ data class MonitorResult(
 
 object MonitoringPolicy {
     const val minuteMs = 60_000L
+    private val usageSteps = listOf(1 to 60_000L, 5 to 300_000L, 15 to 900_000L, 30 to 1_800_000L)
+
+    fun usageSummary(minutes: Int): String =
+        if (minutes == 1) EventPolicy.SUMMARY_MINUTE else "Monitored app used for $minutes+ minutes"
+
+    fun usageSeverity(minutes: Int): String =
+        if (minutes >= 15) "severe" else EventPolicy.SEVERITY_CONCERNING
+
+    fun wasSent(already: Set<String>, pkg: String, minutes: Int): Boolean {
+        if ("$pkg#$minutes" in already) return true
+        return minutes == 1 && pkg in already
+    }
 
     fun decide(input: MonitorInput): MonitorResult {
         val uploads = mutableListOf<Map<String, String>>()
@@ -108,10 +126,15 @@ object MonitoringPolicy {
         if (input.alertsOn) {
             for ((pkg, ms) in input.foregroundMsToday) {
                 if (pkg.isBlank() || pkg == input.ownPackage || pkg !in input.selected) continue
-                if (pkg in input.alreadyAlertedToday) continue
-                if (ms >= minuteMs) {
-                    uploads += EventPolicy.minuteEvent()
-                    alerted += pkg
+                for ((minutes, threshold) in usageSteps) {
+                    if (ms < threshold) break
+                    if (wasSent(input.alreadyAlertedToday, pkg, minutes)) continue
+                    uploads += EventPolicy.metadata(
+                        EventPolicy.CATEGORY_APP,
+                        usageSeverity(minutes),
+                        usageSummary(minutes),
+                    )
+                    alerted += "$pkg#$minutes"
                 }
             }
         }
@@ -484,7 +507,7 @@ object TourContent {
             steps += TourStep(1, "Your group", "Start a group here. A name is enough. Groups hold up to 12 people.")
         }
         steps += TourStep(2, "Your partners", "Add partners and star your primary partner.")
-        steps += TourStep(2, "Choose apps", "Pick the apps that tempt you. Blocking covers them with a shield you asked for. Alerts tell your partner after one minute a day.")
+        steps += TourStep(2, "Choose apps", "Pick the apps that tempt you. Blocking covers them with a shield you asked for. Alerts tell your partner at 1, 5, 15, and 30 minutes.")
         steps += TourStep(2, "Tell us what you think", "Ideas, fixes, problems. We read every one.")
         return steps
     }

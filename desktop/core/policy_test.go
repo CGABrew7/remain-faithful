@@ -103,6 +103,49 @@ func TestDayResetsTheDailyAlert(t *testing.T) {
 	}
 }
 
+func TestUsageRepeatsAtLaterThresholds(t *testing.T) {
+	now := time.Date(2026, 10, 24, 9, 0, 0, 0, time.UTC)
+	cfg := WatchConfig{Consent: true, Alerts: true, Selected: []string{"discord.exe"}}
+	var ledger Ledger
+	var got []string
+	for i := 0; i < 80; i++ {
+		var out Outcome
+		ledger, out = Evaluate(now, "windows", cfg, ledger, "discord.exe", 30*time.Second)
+		if out.Event != nil {
+			got = append(got, out.Event.Summary)
+		}
+	}
+	want := []string{
+		"Monitored app used for 1+ minute",
+		"Monitored app used for 5+ minutes",
+		"Monitored app used for 15+ minutes",
+		"Monitored app used for 30+ minutes",
+	}
+	if len(got) != len(want) {
+		t.Fatalf("got %v", got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("got %v", got)
+		}
+	}
+	ledger = RewindUsage(ledger, "Monitored app used for 30+ minutes")
+	_, out := Evaluate(now, "windows", cfg, ledger, "discord.exe", 30*time.Second)
+	if out.Event == nil || out.Event.Summary != "Monitored app used for 30+ minutes" {
+		t.Fatalf("rewind %+v", out.Event)
+	}
+}
+
+func TestLegacyOneMinuteDoesNotBlockLaterThresholds(t *testing.T) {
+	now := time.Date(2026, 10, 24, 9, 0, 0, 0, time.UTC)
+	cfg := WatchConfig{Consent: true, Alerts: true, Selected: []string{"discord.exe"}}
+	ledger := Ledger{Day: "2026-10-24", AppSeconds: 300, AppSent: true}
+	_, out := Evaluate(now, "windows", cfg, ledger, "discord.exe", time.Second)
+	if out.Event == nil || out.Event.Summary != "Monitored app used for 5+ minutes" {
+		t.Fatalf("later threshold %+v", out.Event)
+	}
+}
+
 func TestHeartbeatOnlyWhileArmed(t *testing.T) {
 	if HeartbeatScreen(true, false, false, false) != "" {
 		t.Fatal("idle desktop must not heartbeat")
