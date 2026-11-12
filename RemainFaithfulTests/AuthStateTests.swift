@@ -16,6 +16,7 @@ final class AuthStateTests: XCTestCase {
         testKeychain = KeychainHelper(service: "com.remainfaithful.test")
         testKeychain.delete("authToken")
         testKeychain.delete("currentUser")
+        clearSharedSession()
         sut = AuthState(keychain: testKeychain)
     }
 
@@ -29,7 +30,16 @@ final class AuthStateTests: XCTestCase {
         } else {
             UserDefaults.standard.removeObject(forKey: AuthState.primaryGroupIDKey)
         }
+        clearSharedSession()
         super.tearDown()
+    }
+
+    /// Session state also lives in the app group. A previous test must not
+    /// leave a token there, or a new AuthState looks signed in.
+    private func clearSharedSession() {
+        let shared = UserDefaults(suiteName: "group.com.remainfaithful.app")
+        shared?.removeObject(forKey: "authToken")
+        shared?.removeObject(forKey: "authUserID")
     }
 
     // MARK: - clearSession
