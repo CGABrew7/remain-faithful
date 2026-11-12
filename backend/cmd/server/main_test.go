@@ -209,6 +209,12 @@ func TestClientIPIgnoresForwardedForInProduction(t *testing.T) {
 	}
 }
 
+func TestGroupInviteBurstFitsOneGroup(t *testing.T) {
+	if groupInvitePerMinute < 12 {
+		t.Fatalf("per-minute invite limit %d blocks a full group", groupInvitePerMinute)
+	}
+}
+
 func TestWaitlistRouteMountedAndRateLimited(t *testing.T) {
 	t.Setenv("JWT_SECRET", "test-secret-not-for-production")
 	router := routes(&handler.H{})

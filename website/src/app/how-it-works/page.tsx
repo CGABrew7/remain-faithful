@@ -6,6 +6,7 @@ import { JsonLd } from '@/components/JsonLd'
 import { howItWorksFaqSchema } from '@/lib/structured-data'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { ALERT_TRIGGER, FAQ_STREAMING, PRIVACY_POINTER } from '@/lib/product-copy'
+import { donationsEnabled } from '@/lib/donations'
 import AppStoreLink from '@/components/AppStoreLink'
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export const metadata: Metadata = {
 const faqs = [
   {
     q: 'Is it really free?',
-    a: 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. We have committed to this model indefinitely.',
+    a: donationsEnabled()
+      ? 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. We have committed to this model indefinitely.'
+      : 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising.',
   },
   {
     q: 'Who sees my data?',
@@ -364,7 +367,7 @@ function ModeCard({ title, points }: { title: string; points: string[] }) {
       <ul className="space-y-2.5">
         {points.map((p, i) => (
           <li key={i} className="flex gap-3 text-sm text-ink-soft leading-relaxed">
-            <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1AB4C" strokeWidth="2.5" strokeLinecap="round">
+            <svg className="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F0D030" strokeWidth="2.5" strokeLinecap="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             {p}

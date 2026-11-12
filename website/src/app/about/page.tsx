@@ -3,6 +3,7 @@ import Link from 'next/link'
 import ContactForm from '@/components/ContactForm'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { ALERT_TRIGGER, FAQ_STREAMING } from '@/lib/product-copy'
+import { donationsEnabled } from '@/lib/donations'
 
 export const metadata: Metadata = {
   title: 'About Remain Faithful | Built by Jeff Brewer',
@@ -208,8 +209,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Donation Model */}
-      <section className="py-20 bg-paper-deep border-y border-hairline">
+      {donationsEnabled() && <section className="py-20 bg-paper-deep border-y border-hairline">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-serif text-3xl font-bold text-ink mb-5">Why Donations, Not Subscriptions</h2>
           <p className="text-ink-soft leading-relaxed mb-8">
@@ -238,7 +238,7 @@ export default function AboutPage() {
             Support the Project
           </Link>
         </div>
-      </section>
+      </section>}
 
       {/* Contact */}
       <section id="contact" className="py-20">

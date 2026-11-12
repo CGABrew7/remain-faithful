@@ -4,6 +4,7 @@ import { JsonLd } from '@/components/JsonLd'
 import { softwareApplicationSchema } from '@/lib/structured-data'
 import { COMPETITOR_PRICING_NOTE } from '@/lib/competitor-pricing'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { donationsEnabled } from '@/lib/donations'
 
 export const metadata: Metadata = {
   title: 'Free Accountability App for iPhone | No Subscription, No Ads',
@@ -54,7 +55,7 @@ export default function FreeAccountabilityApp() {
   return (
     <>
       <JsonLd data={softwareApplicationSchema} />
-      <JsonLd data={faqSchema} />
+      {donationsEnabled() && <JsonLd data={faqSchema} />}
 
       <div className="pt-24 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,8 +98,7 @@ export default function FreeAccountabilityApp() {
             </p>
           </section>
 
-          {/* How it is funded */}
-          <section className="mb-14">
+          {donationsEnabled() && <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-ink mb-5">How Remain Faithful Is Funded</h2>
             <p className="text-ink-soft leading-relaxed mb-4">
               Remain Faithful is a project of the Woodfield Foundation, a registered 501(c)(3) nonprofit organization. Donations are tax-deductible. The model is simple: people who find the app valuable donate voluntarily. People who cannot afford to donate use it free.
@@ -116,7 +116,7 @@ export default function FreeAccountabilityApp() {
                 </div>
               ))}
             </div>
-          </section>
+          </section>}
 
           {/* Full feature list */}
           <section className="mb-14">
@@ -175,8 +175,7 @@ export default function FreeAccountabilityApp() {
             <p className="text-xs text-ink-faint mt-2">{COMPETITOR_PRICING_NOTE}</p>
           </section>
 
-          {/* FAQ */}
-          <section className="mb-14">
+          {donationsEnabled() && <section className="mb-14">
             <h2 className="font-serif text-2xl font-bold text-ink mb-6">Common Questions About the Free Model</h2>
             <div className="space-y-4">
               {[
@@ -191,7 +190,7 @@ export default function FreeAccountabilityApp() {
                 </div>
               ))}
             </div>
-          </section>
+          </section>}
 
           {/* CTA */}
           <div className="text-center p-10 rounded-sm border border-wax/25" >

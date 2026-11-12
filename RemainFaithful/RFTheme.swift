@@ -2,9 +2,8 @@ import SwiftUI
 
 // Shared visual language for Remain Faithful.
 //
-// The navy and gold brand palette is unchanged — rfNavy, rfNavyMid and rfGold
-// keep their exact values. Everything here is derived from those three colours
-// so surfaces, borders and controls read as one system.
+// Navy stays #12214C. The accent is the away-kit yellow #F0D030.
+// Surfaces, borders and controls are derived from those colours.
 //
 // Depth comes from three cues used consistently:
 //   1. A lit top edge   — a hairline that is brighter at the top of a shape,
@@ -24,13 +23,12 @@ extension Color {
     static let rfNavy    = Color(red: 0.07, green: 0.13, blue: 0.30)
     /// Page background, bottom of the gradient. Brand navy — do not change.
     static let rfNavyMid = Color(red: 0.11, green: 0.19, blue: 0.40)
-    /// Brand gold — do not change.
-    static let rfGold    = Color(red: 0.82, green: 0.67, blue: 0.30)
+    /// Away-kit yellow #F0D030. Navy text on this fill is 10.2:1.
+    static let rfGold    = Color(red: 240.0/255.0, green: 208.0/255.0, blue: 48.0/255.0)
 
-    // Derived gold stops for the primary gradient. Navy text measures
-    // 10.9:1 on the top stop and 5.1:1 on the bottom stop.
-    static let rfGoldLight = Color(red: 0.95, green: 0.84, blue: 0.52)
-    static let rfGoldDeep  = Color(red: 0.72, green: 0.55, blue: 0.18)
+    // Gradient stops. Navy text is 12.5:1 on the top stop and 6.6:1 on the bottom stop.
+    static let rfGoldLight = Color(red: 248.0/255.0, green: 231.0/255.0, blue: 138.0/255.0)
+    static let rfGoldDeep  = Color(red: 198.0/255.0, green: 166.0/255.0, blue: 30.0/255.0)
 
     /// Destructive fill. White text measures 7.7:1.
     static let rfDanger = Color(red: 0.62, green: 0.14, blue: 0.16)

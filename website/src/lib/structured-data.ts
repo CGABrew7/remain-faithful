@@ -7,6 +7,7 @@ import {
   FAQ_STREAMING,
   PRIVACY_POINTER,
 } from '@/lib/product-copy'
+import { donationsEnabled } from '@/lib/donations'
 
 export const organizationSchema = {
   '@context': 'https://schema.org',
@@ -44,7 +45,7 @@ export const softwareApplicationSchema = {
     'One-to-one or group accountability',
     'Covenant-based partner system',
     'Open source codebase',
-    'Free forever, donation funded',
+    donationsEnabled() ? 'Free forever, donation funded' : 'Free forever, with no subscription',
   ],
   author: {
     '@type': 'Organization',
@@ -132,7 +133,9 @@ export const howItWorksFaqSchema = {
       name: 'Is Remain Faithful really free?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. This model is committed to indefinitely.',
+        text: donationsEnabled()
+          ? 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising. The app is sustained by voluntary donations from users who find it valuable. This model is committed to indefinitely.'
+          : 'Yes, always. Remain Faithful has no subscription tier, no premium features, and no advertising.',
       },
     },
     {

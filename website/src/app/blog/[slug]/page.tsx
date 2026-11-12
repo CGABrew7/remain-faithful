@@ -7,6 +7,7 @@ import { RelatedPosts } from '@/components/RelatedPosts'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { JsonLd } from '@/components/JsonLd'
 import { blogPostSchema } from '@/lib/structured-data'
+import { donationsEnabled } from '@/lib/donations'
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }))
@@ -258,10 +259,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </div>
             </div>
 
-            {/* Donate nudge */}
-            <div
+            {donationsEnabled() && <div
               className="rounded-sm p-6 border border-wax/25 text-center"
-              
             >
               <div className="text-2xl mb-3">❤️</div>
               <h3 className="font-serif text-base font-bold text-ink mb-2">Keep RF Free</h3>
@@ -274,7 +273,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               >
                 Support the Project
               </Link>
-            </div>
+            </div>}
           </aside>
         </div>
       </div>
