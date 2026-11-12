@@ -38,10 +38,8 @@ func TestClientLoginAndMetadataEvent(t *testing.T) {
 			if beat["screen"] != "monitoring" || beat["device_id"] != "abc123device" || beat["device_kind"] != "windows" {
 				t.Fatalf("heartbeat %s", body)
 			}
-			if zone := beat["timezone"]; zone != "" {
-				if _, err := time.LoadLocation(zone); err != nil {
-					t.Fatalf("timezone %s", zone)
-				}
+			if _, ok := beat["timezone"]; ok {
+				t.Fatalf("heartbeat must not send a time zone: %s", body)
 			}
 			if strings.Contains(string(body), ".exe") || strings.Contains(string(body), "http") {
 				t.Fatal(body)

@@ -23,12 +23,12 @@ func (h *H) GetMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var id int64
-	var name, email, createdAt, zone string
+	var name, email, createdAt string
 	var emailVerified bool
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT id, name, email, created_at, email_verified, COALESCE(timezone, 'UTC') FROM users WHERE id = $1`,
+		`SELECT id, name, email, created_at, email_verified FROM users WHERE id = $1`,
 		userID,
-	).Scan(&id, &name, &email, &createdAt, &emailVerified, &zone)
+	).Scan(&id, &name, &email, &createdAt, &emailVerified)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "user not found")
 		return
@@ -40,7 +40,6 @@ func (h *H) GetMe(w http.ResponseWriter, r *http.Request) {
 		"email":          email,
 		"created_at":     createdAt,
 		"email_verified": emailVerified,
-		"timezone":       zone,
 	})
 }
 
@@ -385,12 +384,11 @@ func (h *H) sendAndroidDeparture(ctx context.Context, userName string, tokens []
 }
 
 // GetUserStats returns the authenticated user's streak.
-// A day counts only when protection checked in that day and nothing was flagged.
-// Days are the account time zone, which the device sends on heartbeat.
-// GET /users/me/stats
-// week and week_states keep the words older apps already show.
-// week_coverage uses off for a day protection did not check in.
-// Index 0 is 6 days ago and index 6 is today.
+// GET /users/me/stats?offset_minutes=-300
+// offset_minutes is the phone's current UTC offset. It is not stored.
+// week_states uses none for a day that is not clean under the new rule,
+// which older apps draw as an empty mark rather than a check.
+// week_coverage uses off for that same day.
 func (h *H) GetUserStats(w http.ResponseWriter, r *http.Request) {
 	userID, ok := rfauth.UserIDFromContext(r.Context())
 	if !ok {
@@ -399,17 +397,17 @@ func (h *H) GetUserStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var createdAt time.Time
-	var zone string
+	var legacy int
 	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT created_at, COALESCE(timezone, 'UTC') FROM users WHERE id = $1`, userID,
-	).Scan(&createdAt, &zone); err != nil {
+		`SELECT created_at, COALESCE(legacy_streak, 0) FROM users WHERE id = $1`, userID,
+	).Scan(&createdAt, &legacy); err != nil {
 		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 
 	results, err := h.streaksAt(r.Context(), map[int64]streakMeta{
-		userID: {Created: createdAt, Zone: zone},
-	}, time.Now())
+		userID: {Created: createdAt, Legacy: legacy},
+	}, time.Now(), requestOffsetMinutes(r))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to load stats")
 		return
@@ -421,6 +419,5 @@ func (h *H) GetUserStats(w http.ResponseWriter, r *http.Request) {
 		"week":          stats.Week,
 		"week_states":   stats.States,
 		"week_coverage": stats.Coverage,
-		"timezone":      zoneLocation(zone).String(),
 	})
 }

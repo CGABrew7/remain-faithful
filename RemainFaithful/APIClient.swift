@@ -301,7 +301,7 @@ final class APIClient {
     // MARK: - Events
 
     func getUserStats() async throws -> UserStats {
-        try await get("/users/me/stats")
+        try await get("/users/me/stats?\(Self.offsetQuery)")
     }
 
     func listEvents() async throws -> [RemoteEvent] {
@@ -418,12 +418,12 @@ final class APIClient {
     // MARK: - Heartbeat
 
     func heartbeat(screen: String) async throws {
-        var body = ["screen": screen]
-        let zone = TimeZone.current.identifier
-        if !zone.isEmpty {
-            body["timezone"] = zone
-        }
-        try await postVoid("/heartbeat", body: body)
+        try await postVoid("/heartbeat", body: ["screen": screen])
+    }
+
+    /// Minutes east of UTC. Sent only on a stats read and not stored.
+    static var offsetQuery: String {
+        "offset_minutes=\(TimeZone.current.secondsFromGMT() / 60)"
     }
 
     /// Counts only: Screen Time yes or no, how many apps, the app version, and support taps.
@@ -490,7 +490,7 @@ final class APIClient {
     }
 
     func getGroup(id: Int) async throws -> RemoteGroup {
-        try await get("/groups/\(id)")
+        try await get("/groups/\(id)?\(Self.offsetQuery)")
     }
 
     func createGroup(name: String, covenant: String = "") async throws -> RemoteGroup {

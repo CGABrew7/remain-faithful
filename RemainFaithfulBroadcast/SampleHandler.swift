@@ -816,10 +816,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        var payload: [String: String] = ["screen": screen]
-        let zone = TimeZone.current.identifier
-        if !zone.isEmpty { payload["timezone"] = zone }
-        req.httpBody = try? JSONSerialization.data(withJSONObject: payload)
+        req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": screen])
         if let (_, resp) = try? await URLSession.shared.data(for: req),
            let http = resp as? HTTPURLResponse {
             if http.statusCode == 401 { noteExtensionSignedOut() }

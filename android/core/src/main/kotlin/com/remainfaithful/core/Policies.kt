@@ -155,12 +155,15 @@ object HeartbeatPolicy {
         )
     }
 
-    fun withZone(body: Map<String, String>, zone: String): Map<String, String> {
-        val name = zone.trim()
-        if (name.isEmpty() || name.length > 64) return body
-        if (!name.all { it.isLetterOrDigit() || it == '/' || it == '_' || it == '-' || it == '+' }) return body
-        return body + ("timezone" to name)
+}
+
+object DayOffset {
+    fun minutes(totalSeconds: Int): Int {
+        val minutes = totalSeconds / 60
+        return minutes.coerceIn(-14 * 60, 14 * 60)
     }
+
+    fun query(minutes: Int): String = "offset_minutes=$minutes"
 }
 
 object DevicePolicy {

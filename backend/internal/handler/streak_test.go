@@ -1,117 +1,133 @@
 package handler
 
 import (
+	"net/http/httptest"
 	"testing"
 	"time"
 )
 
-func TestCanonicalZone(t *testing.T) {
-	name, ok := canonicalZone(" America/Chicago ")
-	if !ok || name != "America/Chicago" {
-		t.Fatalf("zone %q ok=%v", name, ok)
+func TestLegacyStreakMatchesTheOldUTCCount(t *testing.T) {
+	now := time.Date(2026, 11, 12, 15, 0, 0, 0, time.UTC)
+	created := time.Date(2026, 11, 8, 9, 0, 0, 0, time.UTC)
+	flagged := map[string]struct{}{"2026-11-11": {}}
+	if got := legacyStreakUTC(created, now, flagged); got != 1 {
+		t.Fatalf("streak %d, want 1 (today only)", got)
 	}
-	for _, raw := range []string{"", "Local", "local", "Not/AZone", "../etc/passwd", "UTC;drop"} {
-		if _, ok := canonicalZone(raw); ok {
-			t.Fatalf("accepted %q", raw)
+	if got := legacyStreakUTC(now, now, nil); got != 0 {
+		t.Fatalf("signup day %d", got)
+	}
+	if got := legacyStreakUTC(created, now, nil); got != 5 {
+		t.Fatalf("open streak %d", got)
+	}
+}
+
+func TestBaselineSurvivesLaunchDay(t *testing.T) {
+	now := time.Date(2026, 11, 12, 15, 0, 0, 0, time.UTC)
+	until := time.Date(2026, 11, 13, 0, 0, 0, 0, time.UTC)
+	got := computeAccountStreak(streakMeta{
+		Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		Legacy:  40,
+	}, nil, nil, nil, until, 30*time.Minute, -300, now)
+	if got.Days != 40 {
+		t.Fatalf("launch streak %d, want the baseline 40", got.Days)
+	}
+	if got.Best < 40 {
+		t.Fatalf("best %d", got.Best)
+	}
+}
+
+func TestFailedNewDayDoesNotKeepTheBaseline(t *testing.T) {
+	now := time.Date(2026, 11, 14, 18, 0, 0, 0, time.UTC)
+	until := time.Date(2026, 11, 13, 0, 0, 0, 0, time.UTC)
+	got := computeAccountStreak(streakMeta{
+		Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		Legacy:  40,
+	}, nil, nil, nil, until, 30*time.Minute, 0, now)
+	if got.Days != 0 {
+		t.Fatalf("streak %d, want 0 after an uncovered day", got.Days)
+	}
+}
+
+func TestWholeDayNeedsAChainAndIgnoresASingleCheckIn(t *testing.T) {
+	gap := 30 * time.Minute
+	// 02:30 UTC is 21:30 on the previous calendar day at UTC-5.
+	beat := time.Date(2026, 11, 12, 2, 30, 0, 0, time.UTC)
+	start := time.Date(2026, 11, 11, 5, 0, 0, 0, time.UTC) // local midnight, offset -300
+	end := start.Add(24 * time.Hour)
+	now := end.Add(time.Hour)
+	clean, pending := dayCovered([]time.Time{beat}, nil, start, end, now, gap)
+	if clean || pending {
+		t.Fatal("one evening check-in must not cover the whole day")
+	}
+	nextClean, _ := dayCovered([]time.Time{beat}, nil, end, end.Add(24*time.Hour), now, gap)
+	if nextClean {
+		t.Fatal("that check-in must not cover the next day")
+	}
+}
+
+func TestCarryAndGaps(t *testing.T) {
+	gap := 30 * time.Minute
+	start := time.Date(2026, 11, 12, 0, 0, 0, 0, time.UTC)
+	end := start.Add(24 * time.Hour)
+	now := end.Add(time.Hour)
+	var beats []time.Time
+	for t := start.Add(-10 * time.Minute); !t.After(end); t = t.Add(20 * time.Minute) {
+		beats = append(beats, t)
+	}
+	clean, pending := dayCovered(beats, nil, start, end, now, gap)
+	if !clean || pending {
+		t.Fatal("a 20 minute chain carried from before midnight should cover the day")
+	}
+	beats = beats[:len(beats)-1]
+	// Drop the middle of the day.
+	var gapped []time.Time
+	for _, b := range beats {
+		if b.Hour() == 12 {
+			continue
 		}
+		gapped = append(gapped, b)
 	}
-	if name, ok := canonicalZone("UTC"); !ok || name != "UTC" {
-		t.Fatalf("utc %q ok=%v", name, ok)
-	}
-}
-
-func TestProtectionDayUsesUserZone(t *testing.T) {
-	at := time.Date(2026, 11, 12, 2, 30, 0, 0, time.UTC)
-	if got := protectionDay(at, "America/New_York"); got != "2026-11-11" {
-		t.Fatalf("new york day %s", got)
-	}
-	if got := protectionDay(at, "UTC"); got != "2026-11-12" {
-		t.Fatalf("utc day %s", got)
-	}
-	if got := protectionDay(at, "nope"); got != "2026-11-12" {
-		t.Fatalf("unknown zone fell through to %s", got)
+	clean, _ = dayCovered(gapped, nil, start, end, now, gap)
+	if clean {
+		t.Fatal("a gap longer than the heartbeat interval is not a clean day")
 	}
 }
 
-func TestStreakCountsOnlyProtectedDays(t *testing.T) {
-	loc, err := time.LoadLocation("America/Chicago")
-	if err != nil {
-		t.Fatal(err)
+func TestOffEventVoidsTheDay(t *testing.T) {
+	now := time.Date(2026, 11, 14, 12, 0, 0, 0, time.UTC)
+	until := time.Date(2026, 11, 13, 0, 0, 0, 0, time.UTC)
+	start := time.Date(2026, 11, 14, 0, 0, 0, 0, time.UTC)
+	var beats []time.Time
+	for t := start; !t.After(now); t = t.Add(10 * time.Minute) {
+		beats = append(beats, t)
 	}
-	now := time.Date(2026, 11, 12, 15, 0, 0, 0, loc)
-	created := time.Date(2026, 11, 8, 9, 0, 0, 0, loc)
-	protected := days("2026-11-08", "2026-11-09", "2026-11-11", "2026-11-12")
-	flagged := days("2026-11-11")
-
-	got := computeStreak(streakMeta{Created: created, Zone: "America/Chicago"}, protected, flagged, now)
-	if got.Days != 1 {
-		t.Fatalf("streak %d, want 1 (today only; yesterday was flagged)", got.Days)
+	off := start.Add(2 * time.Hour)
+	got := computeAccountStreak(streakMeta{
+		Created: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		Legacy:  10,
+	}, beats, nil, []time.Time{off}, until, 30*time.Minute, 0, now)
+	if got.Days != 0 {
+		t.Fatalf("streak %d, an off event should end the run", got.Days)
 	}
-	if got.Best != 2 {
-		t.Fatalf("best %d, want 2 (Nov 8 and Nov 9)", got.Best)
+	if got.Coverage[6] != dayOff || got.States[6] != dayNone {
+		t.Fatalf("coverage %s states %s", got.Coverage[6], got.States[6])
 	}
-	if got.Coverage[6] != dayClean || got.Coverage[5] != dayFlagged || got.Coverage[4] != dayOff {
-		t.Fatalf("coverage %v", got.Coverage)
-	}
-	if got.Coverage[0] != dayBefore || got.Coverage[1] != dayBefore {
-		t.Fatalf("days before the account %v", got.Coverage)
-	}
-	if got.States[4] != dayClean {
-		t.Fatalf("older week word for an off day is %s", got.States[4])
-	}
-	if got.Week[4] {
-		t.Fatal("off day must not be a clean bool")
-	}
-	if !got.Week[6] {
-		t.Fatal("today should be a clean bool")
+	if got.Week[6] {
+		t.Fatal("an off day must not be a check in the old week field")
 	}
 }
 
-func TestStreakSkipsTodayUntilCheckIn(t *testing.T) {
-	protected := map[string]struct{}{}
-	for d := time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC); d.Before(time.Date(2026, 11, 12, 0, 0, 0, 0, time.UTC)); d = d.AddDate(0, 0, 1) {
-		protected[d.Format("2006-01-02")] = struct{}{}
+func TestOffsetIsNotPersistedAndOutOfRangeIsIgnored(t *testing.T) {
+	req := httptest.NewRequest("GET", "/users/me/stats?offset_minutes=-300", nil)
+	if requestOffsetMinutes(req) != -300 {
+		t.Fatal(requestOffsetMinutes(req))
 	}
-	now := time.Date(2026, 11, 12, 6, 30, 0, 0, time.UTC)
-	got := computeStreak(streakMeta{
-		Created: time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC),
-		Zone:    "UTC",
-	}, protected, nil, now)
-	if got.Days != 11 {
-		t.Fatalf("streak %d, want 11 days through yesterday while today has not checked in", got.Days)
+	req = httptest.NewRequest("GET", "/users/me/stats?offset_minutes=9999", nil)
+	if requestOffsetMinutes(req) != 0 {
+		t.Fatal("out of range offset should be ignored")
 	}
-	if got.Coverage[6] != dayOff {
-		t.Fatalf("today coverage %s", got.Coverage[6])
+	req = httptest.NewRequest("GET", "/users/me/stats", nil)
+	if requestOffsetMinutes(req) != 0 {
+		t.Fatal("missing offset")
 	}
-}
-
-func TestStreakSignupDayCountsWhenProtected(t *testing.T) {
-	now := time.Date(2026, 11, 12, 20, 0, 0, 0, time.UTC)
-	created := time.Date(2026, 11, 12, 8, 0, 0, 0, time.UTC)
-	got := computeStreak(streakMeta{Created: created, Zone: "UTC"}, days("2026-11-12"), nil, now)
-	if got.Days != 1 || got.Best != 1 {
-		t.Fatalf("signup day streak=%d best=%d", got.Days, got.Best)
-	}
-	quiet := computeStreak(streakMeta{Created: created, Zone: "UTC"}, nil, nil, now)
-	if quiet.Days != 0 {
-		t.Fatalf("signup day without a check-in counted %d", quiet.Days)
-	}
-}
-
-func TestOffDayBreaksTheRun(t *testing.T) {
-	now := time.Date(2026, 11, 12, 20, 0, 0, 0, time.UTC)
-	created := time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
-	protected := days("2026-11-10", "2026-11-12")
-	got := computeStreak(streakMeta{Created: created, Zone: "UTC"}, protected, nil, now)
-	if got.Days != 1 {
-		t.Fatalf("streak %d, want 1 because Nov 11 had no check-in", got.Days)
-	}
-}
-
-func days(list ...string) map[string]struct{} {
-	out := make(map[string]struct{}, len(list))
-	for _, day := range list {
-		out[day] = struct{}{}
-	}
-	return out
 }

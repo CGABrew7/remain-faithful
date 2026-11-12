@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -208,7 +209,7 @@ func (c *Client) DeleteMe(ctx context.Context) error {
 
 func (c *Client) Stats(ctx context.Context) (Stats, error) {
 	var stats Stats
-	err := c.call(ctx, http.MethodGet, "/users/me/stats", nil, &stats, true)
+	err := c.call(ctx, http.MethodGet, "/users/me/stats?"+offsetQuery(time.Now()), nil, &stats, true)
 	return stats, err
 }
 
@@ -258,7 +259,6 @@ type heartbeatRequest struct {
 	Screen     string `json:"screen"`
 	DeviceID   string `json:"device_id"`
 	DeviceKind string `json:"device_kind"`
-	TimeZone   string `json:"timezone,omitempty"`
 }
 
 type protectionRequest struct {
@@ -293,20 +293,19 @@ func (c *Client) HeartbeatMonitoring(ctx context.Context, deviceID, deviceKind s
 		Screen:     "monitoring",
 		DeviceID:   deviceID,
 		DeviceKind: deviceKind,
-		TimeZone:   deviceTimeZone(),
 	}, nil, true)
 }
 
-func deviceTimeZone() string {
-	name := time.Local.String()
-	if name == "" || name == "Local" {
-		return ""
+func offsetQuery(now time.Time) string {
+	_, seconds := now.Zone()
+	minutes := seconds / 60
+	if minutes < -14*60 {
+		minutes = -14 * 60
 	}
-	loc, err := time.LoadLocation(name)
-	if err != nil || loc == nil || loc.String() == "Local" {
-		return ""
+	if minutes > 14*60 {
+		minutes = 14 * 60
 	}
-	return loc.String()
+	return "offset_minutes=" + strconv.Itoa(minutes)
 }
 
 func (c *Client) ReportDevice(ctx context.Context, deviceID, deviceKind string, monitoring bool) error {
@@ -488,7 +487,7 @@ func (c *Client) CreateGroup(ctx context.Context, name string) (Group, error) {
 
 func (c *Client) GetGroup(ctx context.Context, id int64) (Group, error) {
 	var g Group
-	err := c.call(ctx, http.MethodGet, "/groups/"+itoa64(id), nil, &g, true)
+	err := c.call(ctx, http.MethodGet, "/groups/"+itoa64(id)+"?"+offsetQuery(time.Now()), nil, &g, true)
 	return g, err
 }
 

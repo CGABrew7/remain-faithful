@@ -14,7 +14,7 @@ export default function PrivacyPage() {
         <div className="mb-12">
           <p className="text-wax text-sm font-semibold uppercase tracking-widest mb-3">Legal</p>
           <h1 className="font-serif text-4xl font-bold text-ink mb-4">Privacy Policy</h1>
-          <p className="text-ink-soft text-sm">Last updated: October 2026</p>
+          <p className="text-ink-soft text-sm">Last updated: November 2026</p>
         </div>
 
         <div className="prose-content space-y-12">
@@ -58,6 +58,7 @@ export default function PrivacyPage() {
               <p>
                 <strong className="text-ink">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, or raw screen content. Partner sharing does not include those items beyond the short summary above.
               </p>
+              <p>When the app loads a streak, it sends the current UTC offset in minutes so the days match the phone. That number is used for the response and is not saved.</p>
             </Subsection>
 
             <Subsection title="Usage Analytics">

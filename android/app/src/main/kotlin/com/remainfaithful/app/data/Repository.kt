@@ -8,7 +8,6 @@ import com.remainfaithful.core.DevicePolicy
 import com.remainfaithful.core.HeartbeatPolicy
 import com.remainfaithful.core.Payloads
 import java.time.LocalDate
-import java.time.ZoneId
 
 class Repository private constructor(context: Context) {
     private val app = context.applicationContext
@@ -152,7 +151,7 @@ class Repository private constructor(context: Context) {
         val since = if (lastFrameAt == 0L) null else System.currentTimeMillis() - lastFrameAt
         val screen = HeartbeatPolicy.screen(alertsOn, blockingOn, deepScanRunning, since) ?: return
         try {
-            api.heartbeat(HeartbeatPolicy.withZone(HeartbeatPolicy.body(screen, deviceId), ZoneId.systemDefault().id))
+            api.heartbeat(HeartbeatPolicy.body(screen, deviceId))
         } catch (e: ApiException) {
             if (DevicePolicy.removed(e.status, e.code)) parkRemoved()
             throw e

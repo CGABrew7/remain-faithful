@@ -150,7 +150,7 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.DB.QueryContext(r.Context(), `
 		SELECT gm.user_id, gm.role, gm.joined_at, u.name, u.email, u.created_at,
-		       COALESCE(u.timezone, 'UTC'),
+		       COALESCE(u.legacy_streak, 0),
 		       stats.flags_last_30
 		FROM   group_members gm
 		JOIN   users u ON u.id = gm.user_id
@@ -189,20 +189,20 @@ func (h *H) GetGroup(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m member
 		var created time.Time
-		var zone string
+		var legacy int
 		if err := rows.Scan(&m.UserID, &m.Role, &m.JoinedAt, &m.User.Name, &m.User.Email,
-			&created, &zone, &m.FlagsLast30); err != nil {
+			&created, &legacy, &m.FlagsLast30); err != nil {
 			continue
 		}
 		m.User.ID = m.UserID
-		metas[m.UserID] = streakMeta{Created: created, Zone: zone}
+		metas[m.UserID] = streakMeta{Created: created, Legacy: legacy}
 		members = append(members, m)
 	}
 	if err := rows.Err(); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to fetch members")
 		return
 	}
-	streaks, err := h.streaksAt(r.Context(), metas, time.Now())
+	streaks, err := h.streaksAt(r.Context(), metas, time.Now(), requestOffsetMinutes(r))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to fetch members")
 		return
