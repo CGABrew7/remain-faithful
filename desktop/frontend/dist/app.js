@@ -241,7 +241,8 @@
     const h = state.home;
     if (!h) return '<p class="muted">Loading...</p>';
     const week = (h.week || []).map(function (mark) {
-      return '<span class="day ' + esc(mark) + '" title="' + esc(mark) + '"></span>';
+      const title = mark === "off" ? "protection off" : mark;
+      return '<span class="day ' + esc(mark) + '" title="' + esc(title) + '"></span>';
     }).join("");
     let action = "";
     if (h.statusAction) action = btn(h.statusAction, "status-action");

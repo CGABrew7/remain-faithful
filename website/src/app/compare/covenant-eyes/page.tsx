@@ -9,7 +9,7 @@ import { UpdatedStamp } from '@/components/UpdatedStamp'
 export const metadata: Metadata = {
   title: 'Remain Faithful vs Covenant Eyes: Direct Comparison (2026)',
   description: 'A detailed comparison of Remain Faithful and Covenant Eyes for Christian accountability. See how they differ on price, privacy, monitoring, and approach.',
-  alternates: { canonical: 'https://remainfaithful.com/compare/covenant-eyes' },
+  alternates: { canonical: 'https://www.remainfaithful.com/compare/covenant-eyes' },
 }
 
 const pageFaqSchema = {
@@ -52,8 +52,8 @@ export default function CovenantEyesCompare() {
       <div className="pt-24 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={[
-            { name: 'Compare', url: 'https://remainfaithful.com/compare/covenant-eyes' },
-            { name: 'Covenant Eyes', url: 'https://remainfaithful.com/compare/covenant-eyes' },
+            { name: 'Compare', url: 'https://www.remainfaithful.com/compare/covenant-eyes' },
+            { name: 'Covenant Eyes', url: 'https://www.remainfaithful.com/compare/covenant-eyes' },
           ]} />
 
           <div className="mb-10">

@@ -187,6 +187,10 @@ class CoreLogicTest {
     fun streakAndStatus() {
         assertEquals(StreakMark.BeforeSignup, StreakWeek.mark("before_account"))
         assertEquals(StreakMark.Clean, StreakWeek.mark("true"))
+        assertEquals(StreakMark.Off, StreakWeek.mark("off"))
+        assertEquals(-300, DayOffset.minutes(-300 * 60))
+        assertEquals("offset_minutes=-300", DayOffset.query(-300))
+        assertFalse(DayOffset.query(DayOffset.minutes(-18000)).contains("/"))
         val status = MonitoringStatus.make(true, 2, true, false, false)
         assertEquals(MonitoringKind.On, status.kind)
         assertTrue(status.detail.contains("Alerts on"))

@@ -659,7 +659,7 @@ private struct MonitoringSetupStep: View {
                         icon: "hand.raised.fill",
                         tint: Color.rfGold,
                         title: "Blocking",
-                        detail: "Chosen apps show Apple’s Screen Time shield, and Apple’s adult web filter turns on. You can still ask Apple for an override."
+                        detail: "Chosen apps show Apple's Screen Time shield, Apple's adult web filter turns on, and your partner gets an alert when a blocked app is opened. You can still ask Apple for an override."
                     )
                 }
                 .padding(.bottom, 20)

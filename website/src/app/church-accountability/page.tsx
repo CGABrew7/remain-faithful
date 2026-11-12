@@ -5,14 +5,14 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 export const metadata: Metadata = {
   title: 'Church Accountability Software | Free for Every Ministry',
   description: 'Bring structured accountability to your church, men\'s ministry, or small group. Remain Faithful is free for every church. Group mode, setup guides, and pastoral resources included.',
-  alternates: { canonical: 'https://remainfaithful.com/church-accountability' },
+  alternates: { canonical: 'https://www.remainfaithful.com/church-accountability' },
 }
 
 export default function ChurchAccountability() {
   return (
     <div className="pt-24 pb-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Breadcrumbs items={[{ name: 'Church Accountability', url: 'https://remainfaithful.com/church-accountability' }]} />
+        <Breadcrumbs items={[{ name: 'Church Accountability', url: 'https://www.remainfaithful.com/church-accountability' }]} />
 
         {/* Hero */}
         <div className="mb-14">

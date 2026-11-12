@@ -35,7 +35,7 @@ export default async function Image() {
               fontSize: 18,
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
-              color: '#D1AB4C',
+              color: '#F0D030',
               marginBottom: 24,
             }}
           >
@@ -68,7 +68,7 @@ export default async function Image() {
               width: 48,
               height: 48,
               borderRadius: 24,
-              background: '#D1AB4C',
+              background: '#F0D030',
             }}
           />
         </div>

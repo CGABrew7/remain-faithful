@@ -340,6 +340,7 @@ private fun HomeScreen(model: AppModel) {
                             StreakMark.Clean -> RfColors.success
                             StreakMark.Flagged -> RfColors.flag
                             StreakMark.BeforeSignup -> RfColors.hairline
+                            StreakMark.Off -> RfColors.stroke
                         }
                         Box(Modifier.size(18.dp).clip(CircleShape).background(color))
                     }
