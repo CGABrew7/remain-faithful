@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"remain-faithful/backend/internal/apns"
 	"remain-faithful/backend/internal/fcm"
@@ -47,6 +48,9 @@ type H struct {
 	// SyncPush runs notification side effects on the request goroutine.
 	// Production leaves it false. Tests set it so they can assert sends.
 	SyncPush bool
+	// bootAt is when this process started the silence sweeps.
+	// Zero means the grace period is not armed, which is what tests use.
+	bootAt time.Time
 }
 
 // writeJSON serialises v as JSON and writes it with the given status code.

@@ -379,6 +379,9 @@ func (h *H) sweepDeviceHeartbeatSilence(ctx context.Context, silenceMinutes int)
 	if silenceMinutes <= 0 {
 		silenceMinutes = 30
 	}
+	if !h.silenceGraceOpen(silenceMinutes) {
+		return
+	}
 	rows, err := h.DB.QueryContext(ctx, `
 		SELECT d.user_id, u.name, d.device_id, d.device_kind
 		FROM device_heartbeats d

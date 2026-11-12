@@ -25,9 +25,12 @@ import (
 // relationship re-enters the monitoring pool. The threshold check then prevents
 // a re-alert until the user goes silent again.
 func (h *H) StartHeartbeatSweep(ctx context.Context, silenceMinutes int) {
+	if h.bootAt.IsZero() {
+		h.bootAt = time.Now()
+	}
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
-	log.Printf("[heartbeat-sweep] started — silence threshold: %d minutes", silenceMinutes)
+	log.Printf("[heartbeat-sweep] started, silence threshold %d minutes, grace %d minutes", silenceMinutes, silenceMinutes)
 
 	for {
 		select {
@@ -48,8 +51,29 @@ type silenceRow struct {
 	partnerID int64
 }
 
+// silenceGraceElapsed reports whether silence alerts may go out.
+// A zero boot time is not a grace window. Production sets bootAt when the
+// sweep starts. After an outage, heartbeats that could not land would
+// otherwise look like every device went silent on the first sweeps.
+func silenceGraceElapsed(boot, now time.Time, grace time.Duration) bool {
+	if boot.IsZero() || grace <= 0 {
+		return true
+	}
+	return !now.Before(boot.Add(grace))
+}
+
+func (h *H) silenceGraceOpen(silenceMinutes int) bool {
+	if silenceMinutes <= 0 {
+		silenceMinutes = 30
+	}
+	return silenceGraceElapsed(h.bootAt, time.Now(), time.Duration(silenceMinutes)*time.Minute)
+}
+
 func (h *H) sweepHeartbeatSilence(ctx context.Context, silenceMinutes int) {
 	h.purgeOldEvents(ctx)
+	if !h.silenceGraceOpen(silenceMinutes) {
+		return
+	}
 	// Users who have never heartbeated are left alone. A null heartbeat is
 	// "not armed", not "monitoring is off".
 	// Recipients (accepted partners and group members) are chosen inside
