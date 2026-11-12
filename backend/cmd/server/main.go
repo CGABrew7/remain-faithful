@@ -317,6 +317,7 @@ func routes(h *handler.H) http.Handler {
 	// fixed-window limited per user (see authenticatedRateLimiter).
 	// Heartbeat is more generous so the 2-minute broadcast cadence is safe.
 	api.Handle("/protection/alerts", authenticatedRateLimiter(20)(http.HandlerFunc(h.SendProtectionAlert))).Methods(http.MethodPost)
+	api.HandleFunc("/protection/domain-blocklist", h.DomainBlocklist).Methods(http.MethodGet)
 	api.HandleFunc("/protection/pin", h.GetPINStatus).Methods(http.MethodGet)
 	api.HandleFunc("/protection/pin/verify", h.VerifyPIN).Methods(http.MethodPost)
 	api.HandleFunc("/groups/leave-all", h.LeaveAllGroups).Methods(http.MethodPost)

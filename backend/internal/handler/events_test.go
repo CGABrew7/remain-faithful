@@ -16,7 +16,6 @@ func TestIsAllowedEventSummary(t *testing.T) {
 		"Violent content detected",
 		"Self-harm content detected",
 		"Content reviewed — no concerns",
-		"Explicit image detected (perceptual hash match)",
 		"Blocked domain detected",
 		"Explicit keyword detected in screen text",
 		"Monitored app used for 1+ minute",
@@ -52,6 +51,7 @@ func TestIsAllowedEventSummary(t *testing.T) {
 
 	rejected := []string{
 		"",
+		"Explicit image detected (perceptual hash match)",
 		"he is watching porn",
 		"Explicit content detected on Safari",
 		"OCR text: something explicit",
