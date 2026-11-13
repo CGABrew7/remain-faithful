@@ -202,7 +202,7 @@ export const guideParts: GuidePart[] = [
           caption: 'What Home shows',
           lines: [
             { label: 'Status', detail: 'Whether Alerts and Blocking are on' },
-            { label: 'Clean streak', detail: 'Days in a row with protection on and no flag' },
+            { label: 'Clean streak', detail: 'A day counts with at least one check-in, protection on, and no flag. Your current streak carries over.' },
             { label: 'Recent flags', detail: 'Your latest alerts' },
           ],
         },
@@ -217,7 +217,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Clean streak',
-            does: 'The big number is how many days in a row protection was on with no flag. "Best" is your longest streak. The row of circles is this week. A check mark is a clean day. An X is a day with a flag. A plain circle is a day protection was off.',
+            does: 'The big number is your streak. A day counts when you check in at least once, protection stayed on, and there is no flag. The streak you already had carries over. "Best" is your longest streak. The row of circles is this week. A check mark is a clean day. An X is a day with a flag. A plain circle is a day protection was off.',
             why: 'Seeing the days add up helps you keep going.',
           },
           {
@@ -428,7 +428,7 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Block Selected Apps',
-            does: 'If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield, Apple\'s adult web filter is on, and your partner gets an alert that a blocked app was opened. That alert does not include the app name.',
+            does: 'If Blocking is on, Apple\'s adult web filter turns on, opening a chosen app shows Apple\'s Screen Time shield, and your partner gets an alert that a blocked app was opened.',
             why: 'A block that is already in place does more than willpower in the moment.',
           },
         ],

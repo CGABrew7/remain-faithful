@@ -59,7 +59,7 @@ export default function PrivacyPage() {
               <ul>
                 <li>Timestamp of the alert</li>
                 <li>Content category (for example, &quot;Adult Content&quot; or &quot;Explicit Text&quot;)</li>
-                <li>Severity level (Low / Medium / High)</li>
+                <li>Severity: Concerning for 1 and 5 minute alerts, Severe for 15 and 30 minute alerts</li>
                 <li>A short system-generated summary string</li>
               </ul>
               <p>
