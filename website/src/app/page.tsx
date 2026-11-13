@@ -330,6 +330,7 @@ export default function HomePage() {
                   <li>Timestamp</li>
                   <li>A short system summary</li>
                   <li>A heartbeat while protection is on</li>
+                  <li>The current UTC offset in minutes when a streak loads, used for that response and not saved</li>
                 </ul>
               </div>
             </div>

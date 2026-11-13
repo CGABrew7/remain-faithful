@@ -129,7 +129,7 @@ export default function PrivacyArchitecturePage() {
                 badge="Tier 1 · On-Device Rules"
                 badgeColor="#F0D030"
                 title="Rules: URL Blocklist + Keyword Matching"
-                desc="Known adult domains are checked against a local blocklist. Visible text is pattern-matched against regex rules. Fast, deterministic, 100% on-device. No AI required."
+                desc="Matching happens on the phone. The phone keeps a built-in blocklist and can refresh that list from the server. Visible text is matched on the phone."
                 icon={
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F0D030" strokeWidth="2" strokeLinecap="round">
                     <polyline points="9 11 12 14 22 4"/>
@@ -173,7 +173,7 @@ export default function PrivacyArchitecturePage() {
             className="mt-10 p-5 rounded-sm border border-wax/25 text-sm text-ink-soft text-center"
             
           >
-            Classification is fully on-device. What leaves your device is alert metadata: category, severity, timestamp, and a short system-generated summary. Screenshots, OCR text, and raw screen content never leave your device.
+            Classification is fully on-device. What leaves your device is alert metadata: category, severity, timestamp, and a short system-generated summary. When the app loads a streak, it sends the current UTC offset in minutes so the days match the phone. That number is used for the response and is not saved. Screenshots, OCR text, and raw screen content never leave your device.
           </div>
         </div>
       </section>
@@ -210,7 +210,7 @@ export default function PrivacyArchitecturePage() {
                   ['Message content', '✗ Never', '✗ Never'],
                   ['Photos and videos', '✗ Never', '✗ Never'],
                   ['Alert category (e.g. "Adult Content")', '✓ Encrypted metadata', '✓ Yes'],
-                  ['Severity level (Low / Medium / High)', '✓ Encrypted metadata', '✓ Yes'],
+                  ['Severity: Concerning for 1 and 5 minute alerts, Severe for 15 and 30 minute alerts', '✓ Encrypted metadata', '✓ Yes'],
                   ['Timestamp', '✓ Encrypted metadata', '✓ Yes'],
                   ['Short system-generated summary', '✓ Encrypted metadata', '✓ Yes'],
                   ['Your name and email (account info)', '✓ Encrypted at rest', '✗ No'],
@@ -264,7 +264,7 @@ export default function PrivacyArchitecturePage() {
           </div>
 
           <p className="text-center text-sm text-ink-soft mt-8">
-            The app and server talk over HTTPS. What leaves the phone is event metadata and a heartbeat: category, severity, timestamp, a short summary, and a check-in while monitoring is on. Screenshots and screen text stay on the phone. Deep Scan cannot see DRM streaming.
+            The app and server talk over HTTPS. What leaves the phone is event metadata and a heartbeat: category, severity, timestamp, a short summary, and a check-in while monitoring is on. When the app loads a streak, it sends the current UTC offset in minutes so the days match the phone. That number is used for the response and is not saved. Screenshots and screen text stay on the phone.
           </p>
         </div>
       </section>
@@ -287,7 +287,7 @@ export default function PrivacyArchitecturePage() {
               },
               {
                 threat: 'What if data is intercepted in transit?',
-                answer: 'The app, the server, and Apple push talk over HTTPS. What can leave the phone is event metadata and a heartbeat, not screenshots or screen text.',
+                answer: 'The app, the server, and Apple push talk over HTTPS. What can leave the phone is event metadata, a heartbeat, and the current UTC offset in minutes when a streak loads. That offset is used for the response and is not saved. Screenshots and screen text stay on the phone.',
               },
               {
                 threat: 'What if a partner is malicious?',

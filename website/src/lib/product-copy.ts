@@ -1,13 +1,12 @@
 /**
  * Paste-ready product sentences.
- * ALERT_TRIGGER must match the sentence in docs/alert-trigger-copy.md.
  */
 
 export const ALERT_TRIGGER =
-  'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day. If Blocking is on, opening a chosen app shows Apple\'s Screen Time shield, Apple\'s adult web filter is on, and your partner gets an alert that a blocked app was opened. That alert does not include the app name.'
+  'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day. If Blocking is on, Apple\'s adult web filter turns on, opening a chosen app shows Apple\'s Screen Time shield, and your partner gets an alert that a blocked app was opened.'
 
 export const PRIVACY_PROMISE =
-  'Only event metadata leaves the phone: category, severity, timestamp, and a short system summary, plus a heartbeat while protection is on. Screenshots and screen content stay on the device.'
+  'Only event metadata leaves the phone: category, severity, timestamp, and a short system summary, plus a heartbeat while protection is on. When the app loads a streak, it sends the current UTC offset in minutes so the days match the phone. That number is used for the response and is not saved. Screenshots and screen content stay on the device.'
 
 export const PRIVACY_POINTER =
   'Screenshots and screen content stay on the device. What a partner can receive is on the privacy page.'

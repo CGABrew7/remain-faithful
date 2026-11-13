@@ -337,7 +337,7 @@ That's not a policy commitment. Anyone can verify it by reading the open-source 
 ## Two Tiers of On-Device Classification
 
 **Tier 1: URL Blocklist + Keyword Matching**
-When a browser is detected, visible URLs are checked against a local blocklist of known adult domains. Visible text is pattern-matched against regex rules for explicit content categories. This is fast, deterministic, and 100% local.
+When a browser is detected, visible URLs are matched on the phone. The phone keeps a built-in blocklist and can refresh that list from the server. Visible text is matched on the phone against rules for explicit content categories.
 
 **Tier 2: Apple Vision + SensitiveContentAnalysis + Local Classifier**
 Apple provides two relevant frameworks: Vision OCR (which extracts text from screen frames) and SensitiveContentAnalysis (which detects nudity and explicit images). A local keyword classifier then scores the OCR output across content categories. All three run on the device's Neural Engine, the dedicated AI chip in modern iPhones. No server involved at any stage.
