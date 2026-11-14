@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useFormShield } from '@/components/FormShield'
 
 export default function ContactForm() {
+  const shield = useFormShield('contact')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -20,7 +22,7 @@ export default function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, type: 'general' }),
+        body: JSON.stringify({ ...form, type: 'general', ...shield.fields() }),
       })
       if (!res.ok) {
         let msg = `Error ${res.status}`
@@ -35,6 +37,7 @@ export default function ContactForm() {
       const msg = err instanceof Error ? err.message : 'Unknown error'
       setError(msg + '. You can also email support@remainfaithful.com')
     } finally {
+      shield.reset()
       setLoading(false)
     }
   }
@@ -49,7 +52,9 @@ export default function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="relative">
+      {shield.slot}
+      <div className="space-y-5">
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
           <label htmlFor="contact-name" className="block font-mono text-[12px] tracking-[0.06em] text-ink mb-2">
@@ -125,6 +130,7 @@ export default function ContactForm() {
       >
         {loading ? 'Sending...' : 'Send Message'}
       </button>
+      </div>
     </form>
   )
 }

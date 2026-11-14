@@ -1,27 +1,17 @@
 import Stripe from 'stripe'
 import { checkoutReturnUrls } from '@/lib/checkout-urls'
-import { clientAddress, tooMany } from '@/lib/backend'
+import { guardPublicPost } from '@/lib/form-guard'
 
 export async function POST(request: Request) {
   try {
-    if (tooMany(clientAddress(request))) {
-      return Response.json({ error: 'Too many attempts. Wait a minute and try again.' }, { status: 429 })
-    }
-
-    let body: { company?: unknown; amount?: unknown; recurring?: unknown }
-    try {
-      const parsed = await request.json()
-      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        return Response.json({ error: 'Invalid request' }, { status: 400 })
-      }
-      body = parsed
-    } catch {
-      return Response.json({ error: 'Invalid request' }, { status: 400 })
-    }
-    if (typeof body.company === 'string' && body.company.trim() !== '') {
-      return Response.json({ url: null })
-    }
-    const { amount, recurring } = body
+    const guarded = await guardPublicPost(request, {
+      actions: ['donate'],
+      turnstile: 'verify',
+      rateMessage: 'Too many attempts. Wait a minute and try again.',
+      drop: () => Response.json({ url: null }),
+    })
+    if ('response' in guarded) return guarded.response
+    const { amount, recurring } = guarded.body
 
     if (!amount || typeof amount !== 'number' || amount < 1 || amount > 10000) {
       return Response.json({ error: 'Invalid amount' }, { status: 400 })

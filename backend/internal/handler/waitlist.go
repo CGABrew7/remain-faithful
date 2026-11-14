@@ -89,22 +89,30 @@ func cleanWaitlistName(raw string) string {
 }
 
 // JoinWaitlist stores a website signup for news about an app that is not out yet.
-// POST /waitlist (unauthenticated, rate-limited per IP in main.go)
-// Body: { "email": "...", "name": "...", "platform": "android" }
+// POST /waitlist (unauthenticated, 10 req/min per IP in main.go and 10 req/min per email).
+// Body: { "email", "name", "platform", "company"?, "turnstileToken"?, "formAction"?, "loadedAt"? }
 // Signing up twice is fine: the second call answers the same way and changes nothing.
 func (h *H) JoinWaitlist(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Email    string `json:"email"`
-		Name     string `json:"name"`
-		Platform string `json:"platform"`
-		Company  string `json:"company"` // honeypot; people never fill this in
+		Email          string `json:"email"`
+		Name           string `json:"name"`
+		Platform       string `json:"platform"`
+		Company        string `json:"company"` // honeypot; people never fill this in
+		TurnstileToken string `json:"turnstileToken"`
+		FormAction     string `json:"formAction"`
+		LoadedAt       int64  `json:"loadedAt"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if strings.TrimSpace(req.Company) != "" {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	if blockPublicForm(w, r, publicForm{
+		Company:        req.Company,
+		Email:          req.Email,
+		TurnstileToken: req.TurnstileToken,
+		FormAction:     req.FormAction,
+		LoadedAt:       req.LoadedAt,
+	}, "waitlist") {
 		return
 	}
 	email, ok := normalizeWaitlistEmail(req.Email)
