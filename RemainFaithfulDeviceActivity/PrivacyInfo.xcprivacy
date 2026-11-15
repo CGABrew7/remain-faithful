@@ -6,12 +6,8 @@
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
-
-	<!--
-	  UserDefaults (App Group): reads apiBaseURL and authToken written by the host app;
-	  writes pendingRawEvents for retry and lastAppUsageTimestamp for foreground prompt.
-	  Reason CA92.1: own preferences and shared container, no third-party sharing.
-	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>
@@ -20,30 +16,6 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>CA92.1</string>
-			</array>
-		</dict>
-	</array>
-
-	<!--
-	  App-usage threshold events: fired when monitored app sets exceed a 1-minute
-	  usage threshold. Payload contains category ("app_usage"), severity, a short
-	  system-generated summary string, and timestamp. Specific app names or bundle
-	  IDs are never transmitted — only that a monitored threshold was crossed,
-	  plus that short summary. Screenshots, OCR text, and raw screen content
-	  never leave the device.
-	-->
-	<key>NSPrivacyCollectedDataTypes</key>
-	<array>
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeOtherUsageData</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<true/>
-			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
 	</array>

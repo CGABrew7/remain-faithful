@@ -376,6 +376,9 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 	case containsAll(q, "INSERT INTO events"):
 		return []string{"id", "timestamp"}, [][]driver.Value{{int64(1), "2026-10-25T00:00:00Z"}}
 
+	case containsAll(q, "INSERT INTO check_ins"):
+		return []string{"id"}, [][]driver.Value{{int64(7)}}
+
 	case containsAll(q, "INSERT INTO alerts"):
 		m.alerts = append(m.alerts, memAlert{
 			id:        m.nextAlert,

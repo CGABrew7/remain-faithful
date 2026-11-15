@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"remain-faithful/backend/internal/apns"
 	rfauth "remain-faithful/backend/internal/auth"
@@ -90,22 +91,55 @@ func validateCreateEvent(category, severity, summary string) string {
 	return ""
 }
 
+// normalizeEventSignals accepts the optional Deep Scan fields.
+// An omitted tier or bucket stays empty. A present value must be one of the known buckets.
+func normalizeEventSignals(tier *int, bucket string) (*int, string, string) {
+	bucket = strings.TrimSpace(strings.ToLower(bucket))
+	if bucket != "" && bucket != "low" && bucket != "medium" && bucket != "high" {
+		return nil, "", "invalid confidence_bucket"
+	}
+	if tier != nil && (*tier < 1 || *tier > 3) {
+		return nil, "", "invalid tier"
+	}
+	if bucket == "" {
+		return tier, "", ""
+	}
+	return tier, bucket, ""
+}
+
+func alertBodyWithConfidence(name, category, severity, summary, bucket string) string {
+	body := alertBody(name, category, severity, summary)
+	switch bucket {
+	case "low", "medium", "high":
+		return body + " Confidence: " + bucket + "."
+	default:
+		return body
+	}
+}
+
 // CreateEvent records a flagged monitoring event from a device and fans out
 // alerts to all accountability partners (via relationships AND group membership).
 // POST /events
 // Body: { "category": "...", "severity": "low|medium|high", "summary": "...", "timestamp": "..." }
 func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Category  string `json:"category"`
-		Severity  string `json:"severity"`
-		Summary   string `json:"summary"`
-		Timestamp string `json:"timestamp"` // optional ISO-8601; defaults to NOW()
+		Category         string `json:"category"`
+		Severity         string `json:"severity"`
+		Summary          string `json:"summary"`
+		Timestamp        string `json:"timestamp"` // optional ISO-8601; defaults to NOW()
+		Tier             *int   `json:"tier"`
+		ConfidenceBucket string `json:"confidence_bucket"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if msg := validateCreateEvent(req.Category, req.Severity, req.Summary); msg != "" {
+		writeError(w, http.StatusBadRequest, msg)
+		return
+	}
+	tier, bucket, msg := normalizeEventSignals(req.Tier, req.ConfidenceBucket)
+	if msg != "" {
 		writeError(w, http.StatusBadRequest, msg)
 		return
 	}
@@ -122,17 +156,17 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	var err error
 	if !eventTime.IsZero() {
 		err = h.DB.QueryRowContext(r.Context(),
-			`INSERT INTO events (user_id, category, severity, summary, timestamp)
-			 VALUES ($1, $2, $3, $4, $5::timestamptz)
+			`INSERT INTO events (user_id, category, severity, summary, timestamp, tier, confidence_bucket)
+			 VALUES ($1, $2, $3, $4, $5::timestamptz, $6, $7)
 			 RETURNING id, timestamp`,
-			userID, req.Category, req.Severity, req.Summary, eventTime,
+			userID, req.Category, req.Severity, req.Summary, eventTime, tier, bucket,
 		).Scan(&eventID, &timestamp)
 	} else {
 		err = h.DB.QueryRowContext(r.Context(),
-			`INSERT INTO events (user_id, category, severity, summary)
-			 VALUES ($1, $2, $3, $4)
+			`INSERT INTO events (user_id, category, severity, summary, tier, confidence_bucket)
+			 VALUES ($1, $2, $3, $4, $5, $6)
 			 RETURNING id, timestamp`,
-			userID, req.Category, req.Severity, req.Summary,
+			userID, req.Category, req.Severity, req.Summary, tier, bucket,
 		).Scan(&eventID, &timestamp)
 	}
 	if err != nil {
@@ -241,7 +275,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 				"aps": map[string]any{
 					"alert": map[string]string{
 						"title": alertTitle(capturedSeverity, capturedCategory),
-						"body":  alertBody(capturedCaller, capturedCategory, capturedSeverity, capturedSummary),
+						"body":  alertBodyWithConfidence(capturedCaller, capturedCategory, capturedSeverity, capturedSummary, bucket),
 					},
 					"sound": "default",
 				},
@@ -253,6 +287,7 @@ func (h *H) CreateEvent(w http.ResponseWriter, r *http.Request) {
 				"severity":          capturedSeverity,
 				"summary":           capturedSummary,
 				"timestamp":         capturedTimestamp,
+				"confidence_bucket": bucket,
 			}
 			n := &apns.Notification{
 				PushType:   "alert",

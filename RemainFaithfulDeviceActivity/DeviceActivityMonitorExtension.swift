@@ -1,5 +1,7 @@
 import DeviceActivity
+import FamilyControls
 import Foundation
+import ManagedSettings
 import os
 
 private let logger = Logger(
@@ -7,187 +9,82 @@ private let logger = Logger(
     category: "monitor"
 )
 
-// Registered as the extension's principal class via NSExtensionPrincipalClass.
-// The system launches this process when a DeviceActivityEvent threshold is crossed.
-// It does NOT run inside the host app — it survives app termination independently.
+// The system launches this process on the daily schedule.
+// It applies or clears shields on this phone. It does not open a network connection.
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     private let appGroupID = "group.com.remainfaithful.app"
     private lazy var defaults = UserDefaults(suiteName: appGroupID)
-
-    // MARK: - Schedule callbacks
+    private let store = ManagedSettingsStore()
 
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
         logger.info("Interval started: \(activity.rawValue)")
-        Task { await postHeartbeat() }
+        syncShields()
     }
 
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
         logger.info("Interval ended: \(activity.rawValue)")
+        syncShields()
     }
 
-    // MARK: - Threshold callback
-
-    // Fires when cumulative usage crosses one registered threshold.
-    // Each of 1, 5, 15, and 30 minutes is its own event, so each fires once
-    // per daily interval. The interval resets at midnight when repeats = true.
-    override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name,
-                                          activity: DeviceActivityName) {
+    override func eventDidReachThreshold(
+        _ event: DeviceActivityEvent.Name,
+        activity: DeviceActivityName
+    ) {
         super.eventDidReachThreshold(event, activity: activity)
-        logger.info("Usage threshold reached: event=\(event.rawValue) activity=\(activity.rawValue)")
-
-        let id        = UUID().uuidString
-        let timestamp = Date().timeIntervalSince1970
-        let summary   = summarize(event: event)
-        let severity  = severity(for: event)
-
-        // Write to pending queue so EventProcessor drains it on next app foreground,
-        // guaranteeing delivery even if the direct POST below fails.
-        enqueue(id: id, timestamp: timestamp, summary: summary, severity: severity)
-
-        // Stamp the alert time so the main app can surface a broadcast prompt on foreground.
-        defaults?.set(timestamp, forKey: "lastAppUsageTimestamp")
-
-        // Attempt direct backend POST — same pattern as the broadcast extension.
-        Task { await post(id: id, timestamp: timestamp, summary: summary, severity: severity) }
-        Task { await postHeartbeat() }
+        syncShields()
     }
 
-    /// A heartbeat while Screen Time monitoring is scheduled, so silence means
-    /// monitoring stopped rather than "Deep Scan is off". No screen content.
-    private func postHeartbeat() async {
-        guard let apiBase = defaults?.string(forKey: "apiBaseURL"),
-              let token = defaults?.string(forKey: "authToken"),
-              let url = URL(string: apiBase + "/heartbeat") else { return }
-        var req = URLRequest(url: url, timeoutInterval: 10)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": "monitoring"])
-        if let (_, resp) = try? await URLSession.shared.data(for: req),
-           let http = resp as? HTTPURLResponse, http.statusCode == 401 {
-            defaults?.set(true, forKey: "extensionAuthFailed")
-        }
-    }
+    private func syncShields() {
+        let now = Date().timeIntervalSince1970
+        let session = defaults?.bool(forKey: SessionShield.enabledKey) ?? false
+        let flag = defaults?.bool(forKey: SessionShield.broadcastingKey) ?? false
+        let stamp = defaults?.double(forKey: SessionShield.stampKey) ?? 0
+        let blocking = defaults?.bool(forKey: "screenTimeShieldingEnabled") ?? false
 
-    // MARK: - Queue (app group UserDefaults)
-
-    // Stored as [[String: Any]] under "pendingRawEvents" — a separate key from
-    // "pendingEvents" (which stores DetectedEvent-encoded Data). EventProcessor
-    // checks both keys on foreground.
-    private func enqueue(id: String, timestamp: TimeInterval, summary: String, severity: String) {
-        var queue = (defaults?.array(forKey: "pendingRawEvents") as? [[String: Any]]) ?? []
-        var row: [String: Any] = [
-            "id":         id,
-            "timestamp":  timestamp,
-            "category":   "app_usage",
-            "severity":   severity,
-            "summary":    summary,
-            "tier":       4,
-            "confidence": 1.0,
-            "processed":  false,
-        ]
-        let account = defaults?.integer(forKey: "authUserID") ?? 0
-        if account > 0 { row["accountID"] = account }
-        queue.append(row)
-        if queue.count > 50 { queue = Array(queue.suffix(50)) }
-        defaults?.set(queue, forKey: "pendingRawEvents")
-        logger.info("Queued raw event (depth: \(queue.count))")
-    }
-
-    // MARK: - Direct backend POST
-
-    private func post(id: String, timestamp: TimeInterval, summary: String, severity: String) async {
-        guard let apiBase = defaults?.string(forKey: "apiBaseURL"),
-              let token   = defaults?.string(forKey: "authToken"),
-              let url     = URL(string: apiBase + "/events") else {
-            logger.warning("post: missing apiBaseURL or authToken in shared defaults")
+        if session {
+            if SessionShield.shouldClearShields(
+                sessionShieldOn: true,
+                broadcastingFlag: flag,
+                stamp: stamp,
+                now: now
+            ) {
+                clearShields()
+                logger.info("Session Shield: broadcast confirmed, shields lifted")
+            } else {
+                applyShields()
+                logger.info("Session Shield: broadcast not confirmed, shields applied")
+            }
             return
         }
-
-        let iso = ISO8601DateFormatter()
-        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let tsStr = iso.string(from: Date(timeIntervalSince1970: timestamp))
-
-        var req = URLRequest(url: url, timeoutInterval: 10)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        guard let body = try? JSONSerialization.data(withJSONObject: [
-            "category":  "app_usage",
-            "severity":  severity,
-            "summary":   summary,
-            "timestamp": tsStr,
-        ]) else { return }
-        req.httpBody = body
-
-        do {
-            let (_, resp) = try await URLSession.shared.data(for: req)
-            let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
-            if (200...299).contains(code) {
-                logger.info("Event posted: HTTP \(code)")
-                // Mark as processed so EventProcessor skips it
-                markProcessed(id: id)
-            } else {
-                logger.warning("Event post HTTP \(code) — left in retry queue")
-            }
-        } catch {
-            logger.warning("Event post failed: \(error.localizedDescription) — left in retry queue")
+        if blocking {
+            applyShields()
         }
     }
 
-    private func markProcessed(id: String) {
-        guard var queue = defaults?.array(forKey: "pendingRawEvents") as? [[String: Any]] else { return }
-        for i in queue.indices where (queue[i]["id"] as? String) == id {
-            queue[i]["processed"] = true
-        }
-        defaults?.set(queue, forKey: "pendingRawEvents")
+    private func applyShields() {
+        guard let selection = loadSelection() else { return }
+        let apps = selection.applicationTokens
+        let cats = selection.categoryTokens
+        store.shield.applications = apps.isEmpty ? nil : apps
+        store.shield.applicationCategories = cats.isEmpty ? nil : .specific(cats)
+        store.webContent.blockedByFilter = .auto()
     }
 
-    // MARK: - Summary text
-
-    private func summarize(event: DeviceActivityEvent.Name) -> String {
-        switch event {
-        case .appUsage:        return "Monitored app used for 1+ minute"
-        case .appUsage5:       return "Monitored app used for 5+ minutes"
-        case .appUsage15:      return "Monitored app used for 15+ minutes"
-        case .appUsage30:      return "Monitored app used for 30+ minutes"
-        case .categoryUsage:   return "Monitored app category used for 1+ minute"
-        case .categoryUsage5:  return "Monitored app category used for 5+ minutes"
-        case .categoryUsage15: return "Monitored app category used for 15+ minutes"
-        case .categoryUsage30: return "Monitored app category used for 30+ minutes"
-        default:               return "Monitored app activity detected"
-        }
+    private func clearShields() {
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.webContent.blockedByFilter = nil
     }
 
-    private func severity(for event: DeviceActivityEvent.Name) -> String {
-        switch event {
-        case .appUsage15, .appUsage30, .categoryUsage15, .categoryUsage30:
-            return "severe"
-        default:
-            return "concerning"
-        }
+    private func loadSelection() -> FamilyActivitySelection? {
+        guard let data = defaults?.data(forKey: "screenTimeSelection") else { return nil }
+        return try? JSONDecoder().decode(FamilyActivitySelection.self, from: data)
     }
 }
-
-// MARK: - Typed activity and event names
 
 extension DeviceActivityName {
-    // The daily 00:00–23:59 repeating schedule window.
     static let daily = DeviceActivityName("com.remainfaithful.daily")
-}
-
-extension DeviceActivityEvent.Name {
-    // Threshold events for individually selected apps.
-    static let appUsage = DeviceActivityEvent.Name("com.remainfaithful.appusage")
-    static let appUsage5 = DeviceActivityEvent.Name("com.remainfaithful.appusage.5")
-    static let appUsage15 = DeviceActivityEvent.Name("com.remainfaithful.appusage.15")
-    static let appUsage30 = DeviceActivityEvent.Name("com.remainfaithful.appusage.30")
-    // Threshold events for selected app categories.
-    static let categoryUsage = DeviceActivityEvent.Name("com.remainfaithful.categoryusage")
-    static let categoryUsage5 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.5")
-    static let categoryUsage15 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.15")
-    static let categoryUsage30 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.30")
 }

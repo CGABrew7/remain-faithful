@@ -66,7 +66,7 @@ func TestProtectionAlertBodyKnownTypesIgnoreDetail(t *testing.T) {
 		{"pin_wrong_attempt", "Alex entered an incorrect Partner PIN"},
 		{"monitoring_disabled", "Alex turned off activity monitoring"},
 		{"shielding_disabled", "Alex turned off app blocking"},
-		{"lockout_disabled", "Alex disabled App Lockout"},
+		{"lockout_disabled", "Alex turned off Session Shield"},
 		{"pin_removed", "Alex's protection PIN was removed"},
 		{"pin_changed", "Alex's protection PIN was changed"},
 		{"family_controls_revoked", "Alex revoked Family Controls authorization"},

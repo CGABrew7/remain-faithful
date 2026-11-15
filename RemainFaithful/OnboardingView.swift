@@ -641,7 +641,7 @@ private struct MonitoringSetupStep: View {
                 )
                 .padding(.bottom, 20)
 
-                Text("Remain Faithful needs Apple's Screen Time permission so Alerts and Blocking can use the apps you choose. Your partner cannot browse your phone. Only an alert category and a heartbeat leave this device, not photos, messages, or the screen itself. If you skip this, monitoring stays off. You can turn it on later in Settings.")
+                Text("Remain Faithful needs Apple's Screen Time permission so Alerts and Blocking can use the apps you choose. If you skip this, monitoring stays off. You can turn it on later in Settings.")
                     .font(.subheadline)
                     .foregroundStyle(Color.white.opacity(0.78))
                     .multilineTextAlignment(.leading)
@@ -653,13 +653,13 @@ private struct MonitoringSetupStep: View {
                         icon: "bell.fill",
                         tint: Color(red: 0.28, green: 0.56, blue: 0.95),
                         title: "Alerts",
-                        detail: "Your partner is told at 1, 5, 15, and 30 minutes of use in an app you choose."
+                        detail: "Keeps an on-device schedule. Your partner is told when you turn this off."
                     )
                     tierRow(
                         icon: "hand.raised.fill",
                         tint: Color.rfGold,
                         title: "Blocking",
-                        detail: "Chosen apps show Apple's Screen Time shield, Apple's adult web filter turns on, and your partner gets an alert when a blocked app is opened. You can still ask Apple for an override."
+                        detail: "Chosen apps show Apple's Screen Time shield and Apple's adult web filter turns on. The shield button opens Remain Faithful so you can tell your partner."
                     )
                 }
                 .padding(.bottom, 20)
@@ -871,7 +871,7 @@ private struct SetupStatusStep: View {
                         .padding(.top, 4)
                 }
 
-                Text("Deep Scan stays off until you start it from Control Center. Protected video such as Netflix is not visible.")
+                Text("Deep Scan stays off until you start it from Control Center. Protected video such as Netflix stays in its own player.")
                     .font(.footnote)
                     .foregroundStyle(Color.white.opacity(0.72))
                     .fixedSize(horizontal: false, vertical: true)

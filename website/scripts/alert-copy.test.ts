@@ -9,6 +9,7 @@ describe('alert trigger copy', () => {
     assert.equal(ALERT_TRIGGER.includes('does not'), false)
     assert.match(ALERT_TRIGGER, /adult web filter turns on/)
     assert.match(ALERT_TRIGGER, /blocked app was opened/)
-    assert.match(ALERT_TRIGGER, /1 minute, then again at 5, 15, and 30 minutes/)
+    assert.match(ALERT_TRIGGER, /Tell my partner/)
+    assert.equal(ALERT_TRIGGER.includes('1 minute, then again at 5, 15, and 30 minutes'), false)
   })
 })

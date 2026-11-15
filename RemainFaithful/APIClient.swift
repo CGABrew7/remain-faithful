@@ -421,6 +421,43 @@ final class APIClient {
         try await postVoid("/heartbeat", body: ["screen": screen])
     }
 
+    /// Sent only after the person taps Tell my partner. Fixed text plus the shield time.
+    func sendBlockedOpen(at date: Date) async throws {
+        struct Body: Encodable {
+            let category: String
+            let severity: String
+            let summary: String
+            let timestamp: String
+        }
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        try await postVoid("/events", body: Body(
+            category: "app_usage",
+            severity: "concerning",
+            summary: BlockedOpenRequest.summary,
+            timestamp: iso.string(from: date)
+        ))
+    }
+
+    func sendCheckIn(_ draft: CheckInDraft) async throws {
+        struct Body: Encodable {
+            let status: String
+            let note: String
+            let shielding_on: Bool
+            let session_shield_on: Bool
+            let schedule_on: Bool
+            let deep_scan_on: Bool
+        }
+        try await postVoid("/check-ins", body: Body(
+            status: draft.status,
+            note: String(draft.note.prefix(140)),
+            shielding_on: draft.shieldingOn,
+            session_shield_on: draft.sessionShieldOn,
+            schedule_on: draft.scheduleOn,
+            deep_scan_on: draft.deepScanOn
+        ))
+    }
+
     /// Saves the server domain list for Deep Scan. The broadcast extension
     /// uses the bundled list when this has not succeeded.
     func refreshDomainBlocklist() async {

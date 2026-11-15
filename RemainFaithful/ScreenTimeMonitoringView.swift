@@ -143,7 +143,7 @@ struct ScreenTimeMonitoringView: View {
 
     private var blockingCard: some View {
         STSection(title: "ACTIONS") {
-            // Monitor toggle — DeviceActivity fires after 1 min of app usage per day
+            // On-device schedule. The monitor applies shields on this phone.
             HStack(spacing: 14) {
                 stBadge("chart.bar.fill",
                         tint: selManager.isMonitoringEnabled
@@ -153,7 +153,7 @@ struct ScreenTimeMonitoringView: View {
                     Text("Alerts")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
-                    Text("Tell your partner at 1, 5, 15, and 30 minutes of use")
+                    Text("Keeps an on-device schedule. Your partner is told when you turn this off.")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.white.opacity(0.45))
                 }
@@ -181,7 +181,7 @@ struct ScreenTimeMonitoringView: View {
                     Text("Blocking")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
-                    Text("Shows Apple's Screen Time shield, turns on Apple's adult web filter, and your partner gets an alert when a blocked app is opened.")
+                    Text("Shows Apple's Screen Time shield and turns on Apple's adult web filter. The shield button opens Remain Faithful so you can tell your partner.")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.white.opacity(0.45))
                 }
@@ -215,7 +215,7 @@ struct ScreenTimeMonitoringView: View {
                 .foregroundStyle(Color.rfGold.opacity(0.75))
                 .padding(.top, 1)
 
-            Text("Alerts tell your partner at 1, 5, 15, and 30 minutes of use. Blocking shows Apple's Screen Time shield, turns on Apple's adult web filter, and your partner gets an alert when a blocked app is opened. You can still ask Apple for an override inside the blocked app. Deep Scan does not see protected video such as Netflix.")
+            Text("Alerts keep an on-device schedule. Blocking shows Apple's Screen Time shield and turns on Apple's adult web filter. From the shield, Open Remain Faithful brings you here, and Tell my partner sends the time with the words A blocked app was opened. Protected video such as Netflix stays in its own player during Deep Scan.")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.white.opacity(0.45))
                 .fixedSize(horizontal: false, vertical: true)
@@ -248,7 +248,7 @@ struct ScreenTimeMonitoringView: View {
         case .denied:
             return "Screen Time access was denied. Tap above to open iOS Settings and re-enable it under Screen Time > Remain Faithful."
         default:
-            return "Remain Faithful needs Screen Time access for Alerts and Blocking. Your partner cannot browse your phone. If you skip it, monitoring stays off."
+            return "Remain Faithful needs Screen Time access for Alerts and Blocking. If you skip it, monitoring stays off."
         }
     }
 }

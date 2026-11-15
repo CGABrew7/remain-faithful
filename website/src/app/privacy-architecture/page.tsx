@@ -210,7 +210,7 @@ export default function PrivacyArchitecturePage() {
                   ['Message content', '✗ Never', '✗ Never'],
                   ['Photos and videos', '✗ Never', '✗ Never'],
                   ['Alert category (e.g. "Adult Content")', '✓ Encrypted metadata', '✓ Yes'],
-                  ['Severity: Concerning for 1 and 5 minute alerts, Severe for 15 and 30 minute alerts', '✓ Encrypted metadata', '✓ Yes'],
+                  ['Severity, and a confidence level of low, medium, or high during Deep Scan', 'Encrypted metadata', 'Yes'],
                   ['Timestamp', '✓ Encrypted metadata', '✓ Yes'],
                   ['Short system-generated summary', '✓ Encrypted metadata', '✓ Yes'],
                   ['Your name and email (account info)', '✓ Encrypted at rest', '✗ No'],
