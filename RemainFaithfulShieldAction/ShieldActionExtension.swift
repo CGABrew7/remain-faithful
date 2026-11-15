@@ -38,7 +38,7 @@ class ShieldActionExtension: ShieldActionDelegate {
             return
         }
         BlockedOpenRequest.record()
-        if #available(iOS 18.0, *) {
+        if #available(iOS 26.5, *) {
             completionHandler(.openParentalControlsApp)
         } else {
             postOpenNotification()
