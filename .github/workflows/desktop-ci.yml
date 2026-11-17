@@ -1,23 +1,27 @@
 name: Desktop CI
 
 on:
+  workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
       - 'desktop/**'
       - '.github/workflows/desktop-ci.yml'
+      - '.github/workflows/desktop-release.yml'
   push:
     branches:
       - main
     paths:
       - 'desktop/**'
       - '.github/workflows/desktop-ci.yml'
+      - '.github/workflows/desktop-release.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: desktop-${{ github.ref }}
-  cancel-in-progress: true
+  group: desktop-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -43,9 +47,40 @@ jobs:
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go test -c -o "$RUNNER_TEMP/monitor-darwin.test" ./monitor/
           CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o "$RUNNER_TEMP/RemainFaithful.exe" .
 
+      - name: Check release notes
+        env:
+          PUBLISH_DRY_RUN: "1"
+          DESKTOP_RELEASE_TAG: desktop-v1.2.3
+        run: |
+          tmp=$(mktemp -d)
+          echo mac > "$tmp/RemainFaithful-macos.dmg"
+          echo win > "$tmp/RemainFaithful-windows-setup.exe"
+          printf 'mac=signed\n' > "$tmp/mac-status.txt"
+          printf 'windows=azure\n' > "$tmp/win-status.txt"
+          bash scripts/publish-release.sh \
+            "$tmp/RemainFaithful-macos.dmg" \
+            "$tmp/mac-status.txt" \
+            "$tmp/RemainFaithful-windows-setup.exe" \
+            "$tmp/win-status.txt" \
+            "$tmp/out"
+          grep -F 'Remain Faithful desktop 1.2.3' "$tmp/out/NOTES.txt"
+          grep -F 'RemainFaithful-macos.dmg (signed)' "$tmp/out/NOTES.txt"
+          grep -F 'signed with Azure Artifact Signing' "$tmp/out/NOTES.txt"
+          printf 'mac=unsigned\n' > "$tmp/mac-status.txt"
+          printf 'windows=unsigned\n' > "$tmp/win-status.txt"
+          bash scripts/publish-release.sh \
+            "$tmp/RemainFaithful-macos.dmg" \
+            "$tmp/mac-status.txt" \
+            "$tmp/RemainFaithful-windows-setup.exe" \
+            "$tmp/win-status.txt" \
+            "$tmp/out"
+          grep -F 'unsigned, signing secrets were not set' "$tmp/out/NOTES.txt"
+          test ! -f "$tmp/out/signing-status.txt"
+
   windows:
     name: windows-installer
     runs-on: windows-latest
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: desktop
@@ -78,20 +113,181 @@ jobs:
           }
           $env:CGO_ENABLED = "0"
           wails build -nsis -platform windows/amd64 -clean
-          $installer = Get-ChildItem -Path build/bin -Filter *installer.exe
-          if (-not $installer) { throw "NSIS installer was not produced" }
+          $installer = @(Get-ChildItem -Path build/bin -Filter '*installer.exe')
+          if ($installer.Count -lt 1) { throw "NSIS installer was not produced" }
+
+      - name: Choose Windows signing
+        id: sign
+        shell: pwsh
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SIGNING_ENDPOINT: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
+          AZURE_SIGNING_ACCOUNT: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
+          AZURE_CERT_PROFILE: ${{ secrets.AZURE_CERT_PROFILE }}
+          WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        run: |
+          $azureNames = @(
+            'AZURE_TENANT_ID',
+            'AZURE_CLIENT_ID',
+            'AZURE_CLIENT_SECRET',
+            'AZURE_SIGNING_ENDPOINT',
+            'AZURE_SIGNING_ACCOUNT',
+            'AZURE_CERT_PROFILE'
+          )
+          $pfxNames = @('WINDOWS_PFX_BASE64', 'WINDOWS_PFX_PASSWORD')
+          $missingAzure = New-Object System.Collections.Generic.List[string]
+          $missingPfx = New-Object System.Collections.Generic.List[string]
+          foreach ($name in $azureNames) {
+            $value = [Environment]::GetEnvironmentVariable($name)
+            if ([string]::IsNullOrWhiteSpace($value)) {
+              $missingAzure.Add($name)
+            }
+          }
+          foreach ($name in $pfxNames) {
+            $value = [Environment]::GetEnvironmentVariable($name)
+            if ([string]::IsNullOrWhiteSpace($value)) {
+              $missingPfx.Add($name)
+            }
+          }
+          if ($missingAzure.Count -eq 0) {
+            $method = 'azure'
+            Write-Host 'Windows signing: Azure Artifact Signing.'
+          } elseif ($missingPfx.Count -eq 0) {
+            $method = 'pfx'
+            if ($missingAzure.Count -lt $azureNames.Count) {
+              Write-Host "Azure Artifact Signing is incomplete, so the PFX certificate will be used. Missing: $($missingAzure -join ', ')"
+            } else {
+              Write-Host 'Windows signing: PFX certificate.'
+            }
+          } else {
+            $method = 'none'
+            Write-Host 'Windows signing skipped. The installer will be unsigned and the job will stay green.'
+            if ($missingAzure.Count -lt $azureNames.Count) {
+              Write-Host "Incomplete Azure Artifact Signing secrets: $($missingAzure -join ', ')"
+            }
+            if ($missingPfx.Count -lt $pfxNames.Count) {
+              Write-Host "Incomplete PFX secrets: $($missingPfx -join ', ')"
+            }
+            if ($missingAzure.Count -eq $azureNames.Count -and $missingPfx.Count -eq $pfxNames.Count) {
+              Write-Host 'No Windows signing secrets are set.'
+            }
+          }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "method=$method"
+
+      - name: Sign app with Azure Artifact Signing
+        if: steps.sign.outputs.method == 'azure'
+        uses: azure/trusted-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE }}
+          files: ${{ github.workspace }}\desktop\build\bin\RemainFaithful.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          description: Remain Faithful
+
+      - name: Sign app with PFX
+        if: steps.sign.outputs.method == 'pfx'
+        shell: pwsh
+        working-directory: desktop
+        env:
+          WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/sign-windows-pfx.ps1 -Files "${{ github.workspace }}\desktop\build\bin\RemainFaithful.exe"
+
+      - name: Verify signed app
+        if: steps.sign.outputs.method != 'none'
+        shell: pwsh
+        working-directory: desktop
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-authenticode.ps1 -Files "${{ github.workspace }}\desktop\build\bin\RemainFaithful.exe"
+
+      - name: Rebuild installer around the signed app
+        if: steps.sign.outputs.method != 'none'
+        shell: pwsh
+        working-directory: desktop
+        run: |
+          $env:Path = "C:\Program Files (x86)\NSIS;C:\Program Files (x86)\NSIS\Bin;C:\ProgramData\chocolatey\bin;" + $env:Path
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/repackage-windows.ps1
+
+      - name: Stage Windows installer
+        shell: pwsh
+        working-directory: desktop
+        run: |
+          New-Item -ItemType Directory -Force -Path build/release | Out-Null
+          $installer = @(Get-ChildItem -Path build/bin -Filter '*installer.exe')
+          if ($installer.Count -lt 1) { throw "NSIS installer was not produced" }
+          Copy-Item -LiteralPath $installer[0].FullName -Destination build/release/RemainFaithful-windows-setup.exe -Force
+
+      - name: Sign installer with Azure Artifact Signing
+        if: steps.sign.outputs.method == 'azure'
+        uses: azure/trusted-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE }}
+          files: ${{ github.workspace }}\desktop\build\release\RemainFaithful-windows-setup.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          description: Remain Faithful
+
+      - name: Sign installer with PFX
+        if: steps.sign.outputs.method == 'pfx'
+        shell: pwsh
+        working-directory: desktop
+        env:
+          WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/sign-windows-pfx.ps1 -Files "${{ github.workspace }}\desktop\build\release\RemainFaithful-windows-setup.exe"
+
+      - name: Verify signed installer
+        if: steps.sign.outputs.method != 'none'
+        shell: pwsh
+        working-directory: desktop
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-authenticode.ps1 -Files "${{ github.workspace }}\desktop\build\release\RemainFaithful-windows-setup.exe"
+
+      - name: Record Windows signing status
+        shell: pwsh
+        working-directory: desktop
+        run: |
+          $method = '${{ steps.sign.outputs.method }}'
+          $label = 'unsigned'
+          $summary = 'Windows installer: unsigned. Signing secrets were not set.'
+          if ($method -eq 'azure') {
+            $label = 'azure'
+            $summary = 'Windows installer: signed with Azure Artifact Signing.'
+          } elseif ($method -eq 'pfx') {
+            $label = 'pfx'
+            $summary = 'Windows installer: signed with a PFX certificate.'
+          }
+          New-Item -ItemType Directory -Force -Path build/release | Out-Null
+          [System.IO.File]::WriteAllText((Join-Path (Get-Location) 'build\release\signing-status.txt'), "windows=$label`n")
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
+          Write-Host $summary
 
       - name: Upload Windows build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: remain-faithful-windows
           path: |
-            desktop/build/bin/*.exe
+            desktop/build/release/RemainFaithful-windows-setup.exe
+            desktop/build/release/signing-status.txt
           if-no-files-found: error
 
   macos:
     name: macos-app
     runs-on: macos-latest
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: desktop
@@ -110,17 +306,34 @@ jobs:
           GOTOOLCHAIN: go1.26.10
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2
 
-      - name: Build app
+      - name: Build universal app
         env:
           GOTOOLCHAIN: go1.26.10
-        run: CGO_ENABLED=1 wails build -clean
+        run: |
+          chmod +x scripts/clang-arch.sh
+          export CC="$PWD/scripts/clang-arch.sh"
+          CGO_ENABLED=1 wails build -platform darwin/universal -clean
 
       - name: Stamp bundle and helper
+        env:
+          DESKTOP_REQUIRE_UNIVERSAL: "1"
         run: bash macos/stamp.sh
+
+      - name: Sign, notarize, and package
+        env:
+          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: bash scripts/finish-macos.sh
 
       - name: Upload Mac build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: remain-faithful-mac
-          path: desktop/build/bin/RemainFaithful-mac.zip
+          path: |
+            desktop/build/bin/RemainFaithful-macos.dmg
+            desktop/build/bin/signing-status.txt
           if-no-files-found: error
