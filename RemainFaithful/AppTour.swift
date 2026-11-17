@@ -59,7 +59,7 @@ enum TourContent {
             TourStep(tab: 2, anchor: .settingsPartners, title: "Your partners",
                      body: "Add partners and star your primary partner."),
             TourStep(tab: 2, anchor: .settingsRestrictions, title: "Choose apps",
-                     body: "Pick the apps that tempt you. Blocking stops them from opening, Apple's adult web filter turns on, and your partner gets an alert when a blocked app is opened. Alerts tell your partner at 1, 5, 15, and 30 minutes."),
+                     body: "Pick the apps you want help with. Blocking shows the Screen Time shield and turns on Apple's adult web filter. Alerts keep an on-device schedule, and you tell your partner from the app when you choose to."),
             TourStep(tab: 2, anchor: .settingsFeedback, title: "Tell us what you think",
                      body: "Ideas, fixes, problems. We read every one."),
         ])

@@ -424,11 +424,11 @@ export const guideParts: GuidePart[] = [
           },
           {
             name: 'Monitor App Usage',
-            does: 'If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day.',
+            does: 'If Alerts is on, an on-device schedule stays running and your partner is told when you turn it off.',
           },
           {
             name: 'Block Selected Apps',
-            does: 'If Blocking is on, Apple\'s adult web filter turns on, opening a chosen app shows Apple\'s Screen Time shield, and your partner gets an alert that a blocked app was opened.',
+            does: 'If Blocking is on, Apple\'s adult web filter turns on and opening a chosen app shows Apple\'s Screen Time shield. Tell my partner sends the time and the words a blocked app was opened.',
             why: 'A block that is already in place does more than willpower in the moment.',
           },
         ],
@@ -444,12 +444,12 @@ export const guideParts: GuidePart[] = [
             does: 'Opens iPhone Settings for Remain Faithful, where you turn alerts on or off.',
           },
           {
-            name: 'App Lockout (Deep Scan)',
-            does: 'Optional. When on, the apps you chose stay blocked unless Deep Scan is running. If you stop Deep Scan, the block comes back. Pausing or turning off monitoring notifies your partners, whether or not this is on. Turning App Lockout off also sends a notice.',
+            name: 'Session Shield',
+            does: 'Optional. When on, the apps you chose stay shielded until you start Deep Scan from the system broadcast picker. iOS shows the recording indicator while it runs. Stopping Deep Scan shields those apps again. Pausing or turning off monitoring notifies your partners. Turning Session Shield off also sends a notice.',
           },
           {
             name: 'Partner PIN',
-            does: 'Shows whether a partner has set a PIN for you. Your partner sets it from their own phone in Manage Partners. Once it is set, opening App Restrictions or turning off App Lockout asks for that PIN. A wrong PIN sends your partner a notice.',
+            does: 'Shows whether a partner has set a PIN for you. Your partner sets it from their own phone in Manage Partners. Once it is set, opening App Restrictions or turning off Session Shield asks for that PIN. A wrong PIN sends your partner a notice.',
             why: 'It keeps a weak moment from undoing a decision you made on a strong day.',
           },
         ],

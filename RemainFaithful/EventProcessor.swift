@@ -115,6 +115,8 @@ final class EventProcessor {
     }
 
     func isBroadcasting() -> Bool {
-        sharedDefaults?.bool(forKey: "isBroadcasting") ?? false
+        let flag = sharedDefaults?.bool(forKey: SessionShield.broadcastingKey) ?? false
+        let stamp = sharedDefaults?.double(forKey: SessionShield.stampKey) ?? 0
+        return SessionShield.broadcastIsRunning(flag: flag, stamp: stamp, now: Date().timeIntervalSince1970)
     }
 }

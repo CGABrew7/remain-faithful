@@ -131,6 +131,12 @@ final class NotificationService: NSObject {
         case NotificationType.panicAlert:
             AppState.shared.navigate(to: .panicView)
 
+        case BlockedOpenRequest.notificationType:
+            AppState.shared.presentBlockedOpenIfNeeded()
+
+        case CheckInReminder.notificationType:
+            AppState.shared.presentCheckIn()
+
         case NotificationType.appDeleted,
              NotificationType.monitoringPaused,
              NotificationType.monitoringResumed,
@@ -159,6 +165,10 @@ final class NotificationService: NSObject {
         Task {
             // Drain any events the broadcast extension queued in shared defaults.
             await EventProcessor.shared.processPendingEvents()
+            let mgr = ActivitySelectionManager.shared
+            if mgr.isMonitoringEnabled || mgr.isShieldingEnabled || AppLockoutManager.shared.isEnabled {
+                try? await APIClient.shared.heartbeat(screen: "monitoring")
+            }
             do {
                 let events = try await APIClient.shared.listEvents()
                 completionHandler(events.isEmpty ? .noData : .newData)

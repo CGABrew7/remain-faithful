@@ -247,17 +247,6 @@ private actor DedupStore {
         return false
     }
 
-    func drainExpired(now: Date = Date()) -> [(category: String, severity: String, count: Int)] {
-        var result: [(String, String, Int)] = []
-        for (key, entry) in state where
-                now.timeIntervalSince(entry.windowStart) >= windowSeconds &&
-                entry.suppressedCount > 0 {
-            let parts = key.components(separatedBy: "|")
-            result.append((parts[0], parts.count > 1 ? parts[1] : "concerning", entry.suppressedCount))
-            state.removeValue(forKey: key)
-        }
-        return result
-    }
 }
 
 // MARK: - Memory helpers
@@ -303,47 +292,48 @@ class SampleHandler: RPBroadcastSampleHandler {
     private var lastResourceReset: Date = Date()
     private var lastMemoryLogTime: Date = .distantPast
 
-    private var _lastFrameTime: Date = .distantPast
-    private let frameTimeLock = NSLock()
-    private var lastFrameTime: Date {
-        get { frameTimeLock.withLock { _lastFrameTime } }
-        set { frameTimeLock.withLock { _lastFrameTime = newValue } }
-    }
-
-    private var heartbeatTask: Task<Void, Never>?
-    private var retryTask:     Task<Void, Never>?
+    private var retryTask: Task<Void, Never>?
+    private var lastStampWrite: Date = .distantPast
     private let dedupStore = DedupStore(windowSeconds: 300)
 
     // MARK: - Lifecycle
 
     override func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
-        sharedDefaults?.set(true, forKey: "isBroadcasting")
-        sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "broadcastStartTime")
+        markBroadcast(running: true)
         postBroadcastStateChanged()
         let policy = scaAnalyzer.analysisPolicy
-        logger.info("Broadcast started — SCA policy: \(String(describing: policy)) — available: \(availableMemoryMB()) MB")
-        startHeartbeatLoop()
+        logger.info("Broadcast started. SCA policy: \(String(describing: policy)). Available: \(availableMemoryMB()) MB")
         startRetryLoop()
     }
 
     override func broadcastPaused() {
-        sharedDefaults?.set(false, forKey: "isBroadcasting")
+        markBroadcast(running: false)
         noteDeepScanReduced()
         postBroadcastStateChanged()
     }
 
     override func broadcastResumed() {
-        sharedDefaults?.set(true, forKey: "isBroadcasting")
+        markBroadcast(running: true)
         postBroadcastStateChanged()
     }
 
     override func broadcastFinished() {
-        sharedDefaults?.set(false, forKey: "isBroadcasting")
+        markBroadcast(running: false)
         noteDeepScanReduced()
         postBroadcastStateChanged()
-        heartbeatTask?.cancel()
         retryTask?.cancel()
-        logger.info("Broadcast finished — available: \(availableMemoryMB()) MB")
+        logger.info("Broadcast finished. Available: \(availableMemoryMB()) MB")
+    }
+
+    /// Local flag only. A missing or stale stamp means the apps stay shielded.
+    private func markBroadcast(running: Bool) {
+        sharedDefaults?.set(running, forKey: SessionShield.broadcastingKey)
+        let stamp = running ? Date().timeIntervalSince1970 : 0
+        sharedDefaults?.set(stamp, forKey: SessionShield.stampKey)
+        if running {
+            sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "broadcastStartTime")
+        }
+        lastStampWrite = Date()
     }
 
     // MARK: - Darwin notification helpers
@@ -450,7 +440,11 @@ class SampleHandler: RPBroadcastSampleHandler {
               let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
         let now = Date()
-        lastFrameTime = now
+        if now.timeIntervalSince(lastStampWrite) >= 10 {
+            sharedDefaults?.set(true, forKey: SessionShield.broadcastingKey)
+            sharedDefaults?.set(now.timeIntervalSince1970, forKey: SessionShield.stampKey)
+            lastStampWrite = now
+        }
 
         // Periodic resource reset every 10 minutes — flush Core Image texture cache,
         // SCA model memory, and any ML fragmentation. Does NOT end or pause the broadcast.
@@ -651,8 +645,14 @@ class SampleHandler: RPBroadcastSampleHandler {
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        let body: [String: Any] = ["category": event.category, "severity": event.severity,
-                                   "summary": event.summary, "timestamp": tsStr]
+        let body: [String: Any] = [
+            "category": event.category,
+            "severity": event.severity,
+            "summary": event.summary,
+            "timestamp": tsStr,
+            "tier": event.tier,
+            "confidence_bucket": ConfidenceBucket.name(for: event.confidence),
+        ]
         guard let data = try? JSONSerialization.data(withJSONObject: body) else { return false }
         req.httpBody = data
         do {
@@ -707,7 +707,6 @@ class SampleHandler: RPBroadcastSampleHandler {
                 guard !Task.isCancelled else { break }
                 logger.info("Retry loop tick — available: \(availableMemoryMB()) MB")
                 await self?.drainRetryQueue()
-                await self?.flushContinuedActivity()
             }
         }
     }
@@ -730,29 +729,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
     }
 
-    private func flushContinuedActivity() async {
-        let expired = await dedupStore.drainExpired()
-        for (cat, _, count) in expired {
-            guard let category = ContentCategory(rawValue: cat) else { continue }
-            let summary  = continuedActivitySummary(category: category, count: count + 1)
-            logger.info("Continued-activity: \(summary)")
-            await postEvent(makeEvent(category: category, tier: 2, confidence: 0.85, summary: summary))
-        }
-    }
-
-    private func continuedActivitySummary(category: ContentCategory, count: Int) -> String {
-        let base: String
-        switch category {
-        case .explicitSexual: base = "Explicit content"
-        case .gambling:       base = "Gambling content"
-        case .violence:       base = "Violent content"
-        case .selfHarm:       base = "Self-harm content"
-        case .clean:          base = "Activity"
-        }
-        return "\(base) — detected \(count) time\(count == 1 ? "" : "s") in 5 min"
-    }
-
-    // MARK: - Vision OCR (synchronous via perform — safe to wrap in autoreleasepool)
+    // MARK: - Vision OCR (synchronous via perform, wrapped in autoreleasepool)
 
     private func extractDomains(from text: String) -> [String] {
         guard let detector = try? NSDataDetector(
@@ -782,39 +759,6 @@ class SampleHandler: RPBroadcastSampleHandler {
         case .violence:       return "Violent content detected"
         case .selfHarm:       return "Self-harm content detected"
         case .clean:          return "Content reviewed — no concerns"
-        }
-    }
-
-    // MARK: - Heartbeat
-
-    private func startHeartbeatLoop() {
-        heartbeatTask = Task.detached(priority: .utility) { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 2 * 60 * 1_000_000_000)
-                guard !Task.isCancelled else { break }
-                await self?.sendHeartbeat()
-            }
-        }
-    }
-
-    private func sendHeartbeat() async {
-        let screen = Date().timeIntervalSince(lastFrameTime) < 120 ? "active" : "idle"
-        logger.info("Heartbeat: screen=\(screen) available=\(availableMemoryMB()) MB")
-        guard let apiBase = sharedDefaults?.string(forKey: "apiBaseURL"),
-              let token   = sharedDefaults?.string(forKey: "authToken"),
-              let url     = URL(string: apiBase + "/heartbeat") else {
-            logger.error("Heartbeat skipped — missing apiBaseURL or authToken")
-            return
-        }
-        var req = URLRequest(url: url, timeoutInterval: 10)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        req.httpBody = try? JSONSerialization.data(withJSONObject: ["screen": screen])
-        if let (_, resp) = try? await URLSession.shared.data(for: req),
-           let http = resp as? HTTPURLResponse {
-            if http.statusCode == 401 { noteExtensionSignedOut() }
-            logger.info("Heartbeat response: \(http.statusCode)")
         }
     }
 

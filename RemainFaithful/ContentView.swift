@@ -38,6 +38,22 @@ struct ContentView: View {
         .toolbarBackground(.visible, for: .tabBar)
         .accessibilityHidden(tourVisible)
         .fullScreenCover(isPresented: $showPanic) { PanicView() }
+        .sheet(isPresented: Binding(
+            get: { appState.blockedOpenAt != nil },
+            set: { if !$0 { appState.blockedOpenAt = nil } }
+        )) {
+            if let openedAt = appState.blockedOpenAt {
+                BlockedOpenView(openedAt: openedAt) {
+                    appState.blockedOpenAt = nil
+                }
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { appState.showCheckIn },
+            set: { appState.showCheckIn = $0 }
+        )) {
+            CheckInView()
+        }
         .overlayPreferenceValue(TourAnchorKey.self) { anchors in
             if tourVisible, tourSteps.indices.contains(tourStep) {
                 GeometryReader { proxy in

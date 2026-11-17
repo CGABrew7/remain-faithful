@@ -44,7 +44,7 @@ const rows = [
   ['Devices', 'iPhone (iOS 17+)', 'iOS 15.1+, Mac 11+, Android 11+, Windows 10+. Not Chromebooks, Kindle devices and tablets, Smart TVs, VR headsets, or Linux.'],
   ['How it watches', 'Apple Family Controls for apps and categories you choose. Optional Deep Scan classifies on the phone.', 'Screen Accountability sends screenshots to an ally. On iOS, screenshots are listed for Safari only. The same iOS list also says it reviews, reports, and blocks explicit domains across apps.'],
   ['What a partner receives', 'Time, category, severity, and a short summary. Not a screenshot. The summary does not name the app.', 'Screenshots. Under the heading "Confident Security," the Victory page says, "Screenshots are blurred, distorted, and encrypted with AES 256-bit security." The page does not say how long those images are kept.'],
-  ['Blocking', 'Chosen apps and categories, with Apple’s Screen Time shield. Opening a blocked app does not itself send an alert.', 'Explicit domains, plus custom block and allow lists. On iOS they say to add Screen Time limits and app restrictions.'],
+  ['Blocking', 'Chosen apps and categories, with Apple’s Screen Time shield. You can open Remain Faithful from the shield and tap Tell my partner.', 'Explicit domains, plus custom block and allow lists. On iOS they say to add Screen Time limits and app restrictions.'],
   ['Source you can read', 'iOS app, backend, and website on GitHub.', 'Not published as open source on the Victory page.'],
 ]
 

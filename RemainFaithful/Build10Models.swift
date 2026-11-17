@@ -81,7 +81,7 @@ struct MonitoringPresentation: Equatable {
             return "Deep Scan stopped. Sign in again on this phone."
         }
         if on {
-            return "Deep Scan is on. Protected video such as Netflix is not visible."
+            return "Deep Scan is on. Protected video such as Netflix stays in its own player."
         }
         return "Deep Scan is off. It is optional and separate from Alerts and Blocking."
     }
@@ -93,13 +93,13 @@ struct MonitoringPresentation: Equatable {
 
 enum DeepScanOnboarding {
     static let title = "Deep Scan"
-    static let subtitle = "Optional. It does not replace Alerts or Blocking."
-    static let summary = "Deep Scan looks at this phone only while you start it from Control Center. Alerts and Blocking stay as you set them."
+    static let subtitle = "Optional. Alerts and Blocking stay as you set them."
+    static let summary = "Deep Scan looks at this phone only while you start it from Control Center. You choose Remain Faithful under Screen Recording."
     static let steps = [
         "Open Control Center. If you do not see Screen Recording, add it in Settings.",
         "Touch and hold Screen Recording, choose Remain Faithful, then start it.",
     ]
-    static let limits = "Protected video such as Netflix is not visible. Stopping or pausing Deep Scan notifies your partners."
+    static let limits = "Protected video such as Netflix stays in its own player. Stopping or pausing Deep Scan notifies your partners."
     static let later = "Set up later"
 }
 

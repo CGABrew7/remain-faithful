@@ -39,6 +39,8 @@ final class AppState: ObservableObject {
     @Published var deepLink: DeepLink?
     @Published var partnerFlagAlert: PartnerFlagAlert?
     @Published var unreadAlertCount: Int = 0
+    @Published var blockedOpenAt: Date?
+    @Published var showCheckIn = false
     /// Simulator-only: bypass auth and show the dashboard with sample data.
     @Published var isDemoMode: Bool = false
 
@@ -46,6 +48,18 @@ final class AppState: ObservableObject {
 
     func navigate(to link: DeepLink) {
         DispatchQueue.main.async { self.deepLink = link }
+    }
+
+    func presentBlockedOpenIfNeeded() {
+        DispatchQueue.main.async {
+            if let date = BlockedOpenRequest.pendingDate() {
+                self.blockedOpenAt = date
+            }
+        }
+    }
+
+    func presentCheckIn() {
+        DispatchQueue.main.async { self.showCheckIn = true }
     }
 
     func showPartnerAlert(senderName: String, category: String, event: ActivityEvent?) {

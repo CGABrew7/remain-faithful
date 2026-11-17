@@ -7,6 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BO1000000000000000000002 /* BlockedOpenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BO1000000000000000000001 /* BlockedOpenView.swift */; };
+		CI1000000000000000000002 /* CheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CI1000000000000000000001 /* CheckInView.swift */; };
+		DC1000000000000000000002 /* DeepScanConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1000000000000000000001 /* DeepScanConsentView.swift */; };
+		SA1000000000000000000001 /* ShieldActionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = SA1000000000000000000004 /* ShieldActionExtension.swift */; };
+		SA1000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = SA1000000000000000000007 /* PrivacyInfo.xcprivacy */; };
+		SA1000000000000000000003 /* RemainFaithfulShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = SA1000000000000000000008 /* RemainFaithfulShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		SA1000000000000000000013 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C8BA6B71076BB00F097166 /* ManagedSettings.framework */; };
+		SS1000000000000000000002 /* SessionShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = SS1000000000000000000001 /* SessionShield.swift */; };
+		SS1000000000000000000003 /* SessionShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = SS1000000000000000000001 /* SessionShield.swift */; };
+		SS1000000000000000000004 /* SessionShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = SS1000000000000000000001 /* SessionShield.swift */; };
+		SS1000000000000000000005 /* SessionShield.swift in Sources */ = {isa = PBXBuildFile; fileRef = SS1000000000000000000001 /* SessionShield.swift */; };
 		239AB3000C53658EEC810727 /* FamilyControlsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4CAD23CFD4AD96CC364AE3 /* FamilyControlsManager.swift */; };
 		2665C2D9BF6D50BC7D667208 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53205080DD5CB66E93B07EAD /* UIKit.framework */; };
 		369BCD23691CBB84AD8E1C63 /* ActivitySelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7BC25A552140467191F7 /* ActivitySelectionManager.swift */; };
@@ -63,6 +74,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		SA1000000000000000000011 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CF1000000000000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = SA100000000000000000000A;
+			remoteInfo = RemainFaithfulShieldAction;
+		};
 		7150E91E7155C236154AB813 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CF1000000000000000000009 /* Project object */;
@@ -110,6 +128,7 @@
 				CF1000000000000000000028 /* RemainFaithfulBroadcast.appex in Embed Foundation Extensions */,
 				D39FA2F5F3CCBF2E9238DFA3 /* RemainFaithfulDeviceActivity.appex in Embed Foundation Extensions */,
 				7CBF6CD5000785890E729A86 /* RemainFaithfulShieldConfig.appex in Embed Foundation Extensions */,
+				SA1000000000000000000003 /* RemainFaithfulShieldAction.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -117,6 +136,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BO1000000000000000000001 /* BlockedOpenView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockedOpenView.swift; sourceTree = "<group>"; };
+		CI1000000000000000000001 /* CheckInView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckInView.swift; sourceTree = "<group>"; };
+		DC1000000000000000000001 /* DeepScanConsentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeepScanConsentView.swift; sourceTree = "<group>"; };
+		SA1000000000000000000004 /* ShieldActionExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldActionExtension.swift; sourceTree = "<group>"; };
+		SA1000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		SA1000000000000000000006 /* RemainFaithfulShieldAction.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RemainFaithfulShieldAction.entitlements; sourceTree = "<group>"; };
+		SA1000000000000000000007 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		SA1000000000000000000008 /* RemainFaithfulShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		SS1000000000000000000001 /* SessionShield.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionShield.swift; sourceTree = "<group>"; };
 		062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RemainFaithfulDeviceActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1449106D2018917FAF7D08EE /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/ManagedSettingsUI.framework; sourceTree = DEVELOPER_DIR; };
 		1EA28F59B5D27D9AABFBD64F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -189,6 +217,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		SA100000000000000000000C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				SA1000000000000000000013 /* ManagedSettings.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3E4EADFAC00ED4211F3AF1D6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -273,6 +309,7 @@
 				984C3679981C78BB4D533B4A /* Frameworks */,
 				8AD013D8FC5B8AFFC531AD8E /* RemainFaithfulDeviceActivity */,
 				7A4F9E2F05AAC1283F30A60D /* RemainFaithfulShieldConfig */,
+				SA1000000000000000000009 /* RemainFaithfulShieldAction */,
 			);
 			sourceTree = "<group>";
 		};
@@ -285,6 +322,7 @@
 				CF5000000000000000000060 /* RemainFaithfulUITests.xctest */,
 				062B769C6E838506C4886555 /* RemainFaithfulDeviceActivity.appex */,
 				F6A655C8ECB765BDBE5CD24C /* RemainFaithfulShieldConfig.appex */,
+				SA1000000000000000000008 /* RemainFaithfulShieldAction.appex */,
 				E5EE199CFE102F01D9039E99 /* RemainFaithfulShieldConfig.appex */,
 			);
 			name = Products;
@@ -325,6 +363,10 @@
 				B10D00000000000000000004 /* RFButton.swift */,
 				B10D0000000000000000000A /* RFTheme.swift */,
 				B10D00000000000000000006 /* ProtectionAlerts.swift */,
+				SS1000000000000000000001 /* SessionShield.swift */,
+				BO1000000000000000000001 /* BlockedOpenView.swift */,
+				CI1000000000000000000001 /* CheckInView.swift */,
+				DC1000000000000000000001 /* DeepScanConsentView.swift */,
 				EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */,
 			);
 			path = RemainFaithful;
@@ -383,6 +425,18 @@
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
+		SA1000000000000000000009 /* RemainFaithfulShieldAction */ = {
+			isa = PBXGroup;
+			children = (
+				SA1000000000000000000004 /* ShieldActionExtension.swift */,
+				SA1000000000000000000005 /* Info.plist */,
+				SA1000000000000000000006 /* RemainFaithfulShieldAction.entitlements */,
+				SA1000000000000000000007 /* PrivacyInfo.xcprivacy */,
+			);
+			name = RemainFaithfulShieldAction;
+			path = RemainFaithfulShieldAction;
+			sourceTree = "<group>";
+		};
 
 /* Begin PBXNativeTarget section */
 		79AC8D8C1087C0A223C54B67 /* RemainFaithfulShieldConfig */ = {
@@ -434,6 +488,7 @@
 				CF1000000000000000000029 /* PBXTargetDependency */,
 				C015F24860D6CCCB02B71522 /* PBXTargetDependency */,
 				13B607C752CEB682198F02DE /* PBXTargetDependency */,
+				SA1000000000000000000012 /* PBXTargetDependency */,
 			);
 			name = RemainFaithful;
 			packageProductDependencies = (
@@ -495,6 +550,23 @@
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
+		SA100000000000000000000A /* RemainFaithfulShieldAction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = SA1000000000000000000010 /* Build configuration list for PBXNativeTarget "RemainFaithfulShieldAction" */;
+			buildPhases = (
+				SA100000000000000000000B /* Sources */,
+				SA100000000000000000000C /* Frameworks */,
+				SA100000000000000000000D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RemainFaithfulShieldAction;
+			productName = RemainFaithfulShieldAction;
+			productReference = SA1000000000000000000008 /* RemainFaithfulShieldAction.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 
 /* Begin PBXProject section */
 		CF1000000000000000000009 /* Project object */ = {
@@ -534,11 +606,20 @@
 				CF5000000000000000000061 /* RemainFaithfulUITests */,
 				C25024C7EBA6191BE43312B4 /* RemainFaithfulDeviceActivity */,
 				79AC8D8C1087C0A223C54B67 /* RemainFaithfulShieldConfig */,
+				SA100000000000000000000A /* RemainFaithfulShieldAction */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		SA100000000000000000000D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				SA1000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5B2C3BC738E3C44DA525EAC8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -591,6 +672,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		SA100000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				SA1000000000000000000001 /* ShieldActionExtension.swift in Sources */,
+				SS1000000000000000000005 /* SessionShield.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		41864BA568D6A0C41B17C097 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -604,6 +694,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE769AD83ECF543F758EDAE1 /* DeviceActivityMonitorExtension.swift in Sources */,
+				SS1000000000000000000003 /* SessionShield.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -638,6 +729,10 @@
 				B10D00000000000000000003 /* RFButton.swift in Sources */,
 				B10D00000000000000000009 /* RFTheme.swift in Sources */,
 				B10D00000000000000000005 /* ProtectionAlerts.swift in Sources */,
+				SS1000000000000000000002 /* SessionShield.swift in Sources */,
+				BO1000000000000000000002 /* BlockedOpenView.swift in Sources */,
+				CI1000000000000000000002 /* CheckInView.swift in Sources */,
+				DC1000000000000000000002 /* DeepScanConsentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -646,6 +741,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CF100000000000000000001F /* SampleHandler.swift in Sources */,
+				SS1000000000000000000004 /* SessionShield.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -673,6 +769,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		SA1000000000000000000012 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = SA100000000000000000000A /* RemainFaithfulShieldAction */;
+			targetProxy = SA1000000000000000000011 /* PBXContainerItemProxy */;
+		};
 		13B607C752CEB682198F02DE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 79AC8D8C1087C0A223C54B67 /* RemainFaithfulShieldConfig */;
@@ -708,11 +809,11 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.ShieldConfig;
 				PRODUCT_NAME = RemainFaithfulShieldConfig;
 				SDKROOT = iphoneos;
@@ -729,7 +830,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
@@ -739,7 +840,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.DeviceActivityMonitor;
 				PRODUCT_NAME = RemainFaithfulDeviceActivity;
 				SDKROOT = iphoneos;
@@ -757,11 +858,11 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldConfig/RemainFaithfulShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulShieldConfig/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.ShieldConfig;
 				PRODUCT_NAME = RemainFaithfulShieldConfig;
 				SDKROOT = iphoneos;
@@ -779,7 +880,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulDeviceActivity/RemainFaithfulDeviceActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithfulDeviceActivity/Info.plist;
@@ -789,7 +890,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.DeviceActivityMonitor;
 				PRODUCT_NAME = RemainFaithfulDeviceActivity;
 				SDKROOT = iphoneos;
@@ -923,7 +1024,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.Debug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithful/Info.plist;
@@ -932,7 +1033,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -948,7 +1049,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RemainFaithful/RemainFaithful.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RemainFaithful/Info.plist;
@@ -957,7 +1058,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -971,7 +1072,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -980,7 +1081,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.broadcast;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -994,7 +1095,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RemainFaithfulBroadcast/RemainFaithfulBroadcast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 144;
 				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
 				INFOPLIST_FILE = RemainFaithfulBroadcast/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1003,7 +1104,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.broadcast;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1075,6 +1176,49 @@
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
+		SA100000000000000000000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldAction/RemainFaithfulShieldAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 144;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				INFOPLIST_FILE = RemainFaithfulShieldAction/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.ShieldAction;
+				PRODUCT_NAME = RemainFaithfulShieldAction;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Debug;
+		};
+		SA100000000000000000000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = RemainFaithfulShieldAction/RemainFaithfulShieldAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 144;
+				DEVELOPMENT_TEAM = 8NXBLJBMQ6;
+				INFOPLIST_FILE = RemainFaithfulShieldAction/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.remainfaithful.app.ShieldAction;
+				PRODUCT_NAME = RemainFaithfulShieldAction;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+				WRAPPER_EXTENSION = appex;
+			};
+			name = Release;
+		};
 
 /* Begin XCConfigurationList section */
 		14C193CBBD7DDFA7989E24E3 /* Build configuration list for PBXNativeTarget "RemainFaithfulDeviceActivity" */ = {
@@ -1141,6 +1285,15 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+		SA1000000000000000000010 /* Build configuration list for PBXNativeTarget "RemainFaithfulShieldAction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				SA100000000000000000000F /* Release */,
+				SA100000000000000000000E /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 
 /* Begin XCRemoteSwiftPackageReference section */
 		CF2000000000000000000020 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {

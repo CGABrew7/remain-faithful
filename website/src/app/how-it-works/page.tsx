@@ -189,7 +189,7 @@ export default function HowItWorksPage() {
               },
               {
                 step: '2',
-                title: 'Alerts at 1, 5, 15, and 30 minutes',
+                title: 'You decide when a partner is told',
                 body: ALERT_TRIGGER,
               },
             ].map((item) => (
@@ -207,7 +207,7 @@ export default function HowItWorksPage() {
             <div className="ml-4 pb-1 pt-4">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-wax/10 border border-wax/25 text-wax text-xs font-bold uppercase tracking-widest">
                 <span className="w-1.5 h-1.5 rounded-sm bg-wax" />
-                Layer 2: DeviceActivity usage monitoring
+                Layer 2: on-device schedule
               </span>
             </div>
 
@@ -216,9 +216,9 @@ export default function HowItWorksPage() {
                 3
               </div>
               <div>
-                <h3 className="font-semibold text-ink mb-1">Category Events, Not Screen Content</h3>
+                <h3 className="font-semibold text-ink mb-1">The schedule stays on the phone</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">
-                  DeviceActivity watches usage as category-level events in the background. It does not capture screen frames or page content. {ALERT_TRIGGER}
+                  The on-device schedule keeps shields ready. Screen frames stay on the phone. {ALERT_TRIGGER}
                 </p>
               </div>
             </div>

@@ -343,6 +343,7 @@ func routes(h *handler.H) http.Handler {
 	api.Handle("/groups/{id}/invite", authenticatedRateLimiter(groupInvitePerMinute)(http.HandlerFunc(h.InviteMember))).Methods(http.MethodPost)
 	api.Handle("/groups/{id}/email-invite", authenticatedRateLimiter(groupInvitePerMinute)(http.HandlerFunc(h.GroupEmailInvite))).Methods(http.MethodPost)
 	api.Handle("/events", authenticatedRateLimiter(30)(http.HandlerFunc(h.CreateEvent))).Methods(http.MethodPost)
+	api.Handle("/check-ins", authenticatedRateLimiter(20)(http.HandlerFunc(h.CreateCheckIn))).Methods(http.MethodPost)
 	api.HandleFunc("/events", h.ListEvents).Methods(http.MethodGet)
 	api.HandleFunc("/alerts", h.ListAlerts).Methods(http.MethodGet)
 	api.HandleFunc("/alerts/count", h.AlertUnreadCount).Methods(http.MethodGet)
@@ -611,6 +612,21 @@ func migrate(db *sql.DB) error {
 	ALTER TABLE groups ADD COLUMN IF NOT EXISTS covenant TEXT NOT NULL DEFAULT '';
 
 	ALTER TABLE relationships ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE;
+
+	ALTER TABLE events ADD COLUMN IF NOT EXISTS tier SMALLINT;
+	ALTER TABLE events ADD COLUMN IF NOT EXISTS confidence_bucket TEXT;
+
+	CREATE TABLE IF NOT EXISTS check_ins (
+		id                BIGSERIAL PRIMARY KEY,
+		user_id           BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		status            TEXT NOT NULL,
+		note              TEXT NOT NULL DEFAULT '',
+		shielding_on      BOOLEAN NOT NULL DEFAULT FALSE,
+		session_shield_on BOOLEAN NOT NULL DEFAULT FALSE,
+		schedule_on       BOOLEAN NOT NULL DEFAULT FALSE,
+		deep_scan_on      BOOLEAN NOT NULL DEFAULT FALSE,
+		created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	);
 
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS last_heartbeat_at    TIMESTAMPTZ;
 	ALTER TABLE users ADD COLUMN IF NOT EXISTS heartbeat_screen_state TEXT;

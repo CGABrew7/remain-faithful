@@ -61,7 +61,7 @@ final class Build10Tests: XCTestCase {
         XCTAssertTrue(copy.contains("Settings"))
         XCTAssertTrue(copy.contains("Netflix"))
         XCTAssertTrue(copy.contains("notifies your partners"))
-        XCTAssertTrue(copy.contains("does not replace Alerts or Blocking"))
+        XCTAssertTrue(copy.contains("Alerts and Blocking stay as you set them"))
     }
 
     func testNoAppsBeatsALeftoverToggle() {
@@ -330,5 +330,38 @@ final class Build10Tests: XCTestCase {
         PhoneSignals.recordSupportTap(userID: id)
         XCTAssertEqual(PhoneSignals.supportTaps(userID: id), 2)
         XCTAssertEqual(PhoneSignals.supportTaps(userID: 0), 0)
+    }
+
+    func testSessionShieldStaysOnWhenBroadcastStateIsUnknown() {
+        let now: TimeInterval = 1_000_000
+        XCTAssertFalse(SessionShield.shouldClearShields(
+            sessionShieldOn: true, broadcastingFlag: false, stamp: now, now: now))
+        XCTAssertFalse(SessionShield.shouldClearShields(
+            sessionShieldOn: true, broadcastingFlag: true, stamp: 0, now: now))
+        XCTAssertFalse(SessionShield.shouldClearShields(
+            sessionShieldOn: true, broadcastingFlag: true, stamp: now - 120, now: now))
+        XCTAssertTrue(SessionShield.shouldClearShields(
+            sessionShieldOn: true, broadcastingFlag: true, stamp: now - 10, now: now))
+        XCTAssertFalse(SessionShield.shouldClearShields(
+            sessionShieldOn: false, broadcastingFlag: true, stamp: now, now: now))
+    }
+
+    func testConfidenceBucketUsesThreeLevels() {
+        XCTAssertEqual(ConfidenceBucket.name(for: 0.2), "low")
+        XCTAssertEqual(ConfidenceBucket.name(for: 0.5), "medium")
+        XCTAssertEqual(ConfidenceBucket.name(for: 0.74), "medium")
+        XCTAssertEqual(ConfidenceBucket.name(for: 0.75), "high")
+        XCTAssertEqual(ConfidenceBucket.name(for: 1), "high")
+    }
+
+    func testSharingRecipientsNamesPeopleWhenKnown() {
+        XCTAssertEqual(
+            SharingRecipients.line(partners: [], groups: []),
+            "Your accountability partners and your covenant group"
+        )
+        XCTAssertEqual(
+            SharingRecipients.line(partners: ["Ada"], groups: ["North"]),
+            "Ada and North"
+        )
     }
 }

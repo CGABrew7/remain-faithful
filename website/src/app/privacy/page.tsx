@@ -54,13 +54,13 @@ export default function PrivacyPage() {
 
             <Subsection title="Alert Metadata">
               <p>
-                If Alerts is on, your partner is told when a chosen app or category is used for 1 minute, then again at 5, 15, and 30 minutes that day. If Blocking is on, Apple&apos;s adult web filter turns on. If you open an app you asked to block, your partner gets an alert that a blocked app was opened, and Apple&apos;s Screen Time shield appears. That alert does not include the app name. The web filter runs on the phone and does not send browsing history. Optional Deep Scan can also store an alert when it flags a frame. {FAQ_STREAMING} The same kind of alert metadata and heartbeat can leave the Android app and the desktop app. That alert metadata is:
+                If Alerts is on, an on-device schedule stays running and your partner is told when you turn it off. If Blocking is on, Apple&apos;s adult web filter turns on and opening a chosen app shows Apple&apos;s Screen Time shield. You can open Remain Faithful from that shield and tap Tell my partner. That notice is the time and the words &quot;A blocked app was opened.&quot; The web filter runs on the phone. Optional Deep Scan, which you start from the system broadcast picker, can send a category, a severity, a confidence level, and a time when it flags a frame. {FAQ_STREAMING} A daily check-in leaves the phone only after you tap Send, and it includes the status you pick, the note you write, whether Blocking and Session Shield are on, whether the schedule is on, whether Deep Scan is running, and the time. The Android app&apos;s current build can still send a usage notice at 1, 5, 15, and 30 minutes and a blocked-app notice. The iPhone notice fields are:
               </p>
               <ul>
                 <li>Timestamp of the alert</li>
-                <li>Content category (for example, &quot;Adult Content&quot; or &quot;Explicit Text&quot;)</li>
-                <li>Severity: Concerning for 1 and 5 minute alerts, Severe for 15 and 30 minute alerts</li>
-                <li>A short system-generated summary string</li>
+                <li>Content category, such as adult content, gambling, violence, or self-harm</li>
+                <li>Severity, and for Deep Scan a confidence level of low, medium, or high</li>
+                <li>A fixed summary, or the check-in note you wrote</li>
               </ul>
               <p>
                 <strong className="text-ink">We do not collect, store, or transmit:</strong> screenshots, screen recordings, raw OCR text, browsing history, or raw screen content. Partner sharing does not include those items beyond the short summary above.
@@ -113,7 +113,7 @@ export default function PrivacyPage() {
             <p>Accountability partners, and members of a group you belong to, can receive:</p>
             <ul>
               <li>Your display name and account email</li>
-              <li>Alert metadata as described above: timestamp, category, severity level, and a short system-generated summary. A blocked-app alert does not include which app, and it does not include a bundle ID.</li>
+                <li>Alert metadata as described above: time, category, severity, confidence level when Deep Scan sends one, and a fixed summary or the check-in note you wrote. A blocked-app notice uses the words &quot;A blocked app was opened&quot; and the time.</li>
               <li>Your streak count (aggregate, not individual events)</li>
             </ul>
             <p>They do not have access to your screen content, browsing history, or any data beyond alert metadata and the account details listed above.</p>
@@ -162,7 +162,7 @@ export default function PrivacyPage() {
               <li><strong className="text-ink">Access your data:</strong> Settings, then View My Activity Log, shows your flagged activity in the app. For anything else, email support@remainfaithful.com. There is no separate export button.</li>
               <li><strong className="text-ink">Correct your data:</strong> update your display name and email in Settings, then Edit Profile</li>
               <li><strong className="text-ink">Delete your data:</strong> delete your account in Settings, then Delete Account. The account, alerts, and payment confirmation rows tied to the account are removed then.</li>
-              <li><strong className="text-ink">Change protection:</strong> you can change App Restrictions and turn off App Lockout in Settings. Pausing or turning off monitoring notifies your partners. Turning off App Lockout also sends a notice.</li>
+              <li><strong className="text-ink">Change protection:</strong> you can change App Restrictions and turn off Session Shield in Settings. Pausing or turning off monitoring notifies your partners. Turning off Session Shield also sends a notice.</li>
             </ul>
             <p>
               For data requests or concerns, contact{' '}

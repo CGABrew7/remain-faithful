@@ -35,6 +35,8 @@ struct SettingsView: View {
     @State private var showPINGate          = false
     @State private var pendingGatedAction:  (() -> Void)? = nil
     @State private var showSignOutConfirm   = false
+    @State private var showDeepScanConsent  = false
+    @State private var showCheckIn          = false
 
     private var initials: String {
         let parts = userName.components(separatedBy: " ").filter { !$0.isEmpty }
@@ -104,6 +106,15 @@ struct SettingsView: View {
         .sheet(isPresented: $showHowItWorks)      { HowItWorksView() }
         .sheet(isPresented: $showFeedback)       { FeedbackSheet(replyEmail: userEmail) }
         .sheet(isPresented: $showEditProfile)    { EditProfileSheet() }
+        .sheet(isPresented: $showDeepScanConsent) {
+            DeepScanConsentView {
+                showDeepScanConsent = false
+                lockoutManager.setEnabled(true)
+            } onDecline: {
+                showDeepScanConsent = false
+            }
+        }
+        .sheet(isPresented: $showCheckIn) { CheckInView() }
         .alert("Couldn't finish", isPresented: Binding(
             get: { actionError != nil },
             set: { if !$0 { actionError = nil } }
@@ -266,28 +277,66 @@ struct SettingsView: View {
 
     private var protectionSection: some View {
         SettingsSection(title: "PROTECTION") {
-            // Feature 1 — App Lockout tied to Deep Scan
             HStack(spacing: 14) {
                 iconBadge("lock.shield.fill", tint: Color(red: 0.52, green: 0.36, blue: 0.92))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Keep apps blocked unless Deep Scan is running")
+                    Text("Session Shield")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
                     Text(lockoutManager.isEnabled
-                         ? "Blocking lifts only while Deep Scan is running"
-                         : "Off — apps stay blocked only by your normal Blocking setting.")
+                         ? "Chosen apps open while Deep Scan is running"
+                         : "Off. Blocking follows the switch you set.")
                         .font(.system(size: 12))
                         .foregroundStyle(lockoutManager.isEnabled
                                          ? Color(red: 0.52, green: 0.36, blue: 0.92).opacity(0.80)
                                          : Color.white.opacity(0.38))
                 }
                 Spacer()
-                Toggle("Keep apps blocked unless Deep Scan is running", isOn: lockoutToggleBinding)
+                Toggle("Session Shield", isOn: lockoutToggleBinding)
                     .toggleStyle(RFToggleStyle(showsLabel: false))
-                    .accessibilityLabel("Keep apps blocked unless Deep Scan is running")
+                    .accessibilityLabel("Session Shield")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
+            if lockoutManager.isEnabled || DeepScanConsent.hasAccepted {
+                rowDivider
+                HStack(spacing: 14) {
+                    iconBadge("record.circle", tint: Color.rfGold)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Start Deep Scan")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.white)
+                        Text("Opens the system broadcast picker. iOS shows the recording indicator.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                    }
+                    Spacer()
+                    SystemBroadcastPicker()
+                        .frame(width: 52, height: 52)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+            rowDivider
+            Button { showCheckIn = true } label: {
+                HStack(spacing: 14) {
+                    iconBadge("paperplane.fill", tint: Color(red: 0.28, green: 0.56, blue: 0.95))
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Send a check-in")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.white)
+                        Text("You choose the status and the note. Sending happens when you tap.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.20))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
             rowDivider
             // Feature 2 — Partner PIN status (read-only for the monitored user)
             HStack(spacing: 14) {
@@ -298,8 +347,8 @@ struct SettingsView: View {
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
                     Text(pinManager.isPINSet
-                         ? "Active — your partner controls gated actions"
-                         : "Not set — ask your partner to enable in Manage Partners")
+                         ? "Active. Your partner controls gated actions."
+                         : "Not set. Ask your partner to enable it in Manage Partners.")
                         .font(.system(size: 12))
                         .foregroundStyle(pinManager.isPINSet
                                          ? Color(red: 0.20, green: 0.78, blue: 0.45).opacity(0.80)
@@ -318,13 +367,17 @@ struct SettingsView: View {
             get: { lockoutManager.isEnabled },
             set: { newValue in
                 if newValue {
-                    lockoutManager.setEnabled(true)
+                    if DeepScanConsent.hasAccepted {
+                        lockoutManager.setEnabled(true)
+                    } else {
+                        showDeepScanConsent = true
+                    }
                 } else {
                     withPINGate {
                         lockoutManager.setEnabled(false)
                         ProtectionAlerts.send(
                             type: "lockout_disabled",
-                            detail: "App Lockout was turned off."
+                            detail: "Session Shield was turned off."
                         )
                     }
                 }
@@ -1931,13 +1984,13 @@ private struct HowItWorksView: View {
     private let steps: [(icon: String, title: String, body: String)] = [
         ("person.2.fill",
          "Choose Your Partners",
-         "Invite a trusted friend or join a small group of men who will walk honestly alongside you. Accountability works because you choose people who genuinely care."),
+         "Invite a partner or join a covenant group of up to 12. You choose the people who receive your notices."),
         ("shield.fill",
          "Turn on Alerts and Blocking",
-         "Choose the apps you want help with. Alerts tell your partner at 1, 5, 15, and 30 minutes of use. Blocking shows Apple's Screen Time shield, turns on Apple's adult web filter, and your partner gets an alert when a blocked app is opened. Deep Scan is optional and cannot see protected video such as Netflix. Only an alert and a heartbeat leave this phone."),
+         "Choose the apps you want help with. Alerts keep an on-device schedule, and your partner is told when you turn that off. Blocking shows Apple's Screen Time shield and turns on Apple's adult web filter. Open Remain Faithful on the shield, then tap Tell my partner to send the time and the words A blocked app was opened. Session Shield keeps those apps shielded until you start Deep Scan. Protected video such as Netflix stays in its own player."),
         ("checkmark.shield.fill",
          "Stay Accountable",
-         "Review your activity together, have honest conversations, and spur one another toward freedom. Iron sharpens iron — and so one man sharpens another."),
+         "Send a check-in when you want to, and review notices with the people you chose."),
     ]
 
     var body: some View {

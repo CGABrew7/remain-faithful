@@ -39,8 +39,9 @@ export const softwareApplicationSchema = {
     priceCurrency: 'USD',
   },
   featureList: [
-    'Alerts: partner alerts when a chosen app or category is used for 1, 5, 15, and 30 minutes',
-    'Blocking: Screen Time shield, Apple adult web filter, and an alert that a blocked app was opened',
+    'Alerts: an on-device schedule, with a partner notice when you turn it off',
+    'Blocking: Screen Time shield, Apple adult web filter, and a notice you send with Tell my partner',
+    'Session Shield: chosen apps stay shielded until you start a Deep Scan broadcast',
     'Optional on-device Deep Scan',
     'One-to-one or group accountability',
     'Covenant-based partner system',

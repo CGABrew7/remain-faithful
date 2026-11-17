@@ -10,9 +10,11 @@ A partner, or someone in a group you join, can receive:
 
 - the name and email on the account
 - the time, category, severity, and a short summary of an alert
-- a heartbeat while protection is on
+- a confidence level when Deep Scan sends one
+- a check-in note you write and send
+- a heartbeat from the app while protection is on
 
-If Blocking is on and a blocked app is opened, the partner gets an alert that a blocked app was opened. That alert does not include the app name.
+If Blocking is on, opening a chosen app shows the Screen Time shield. Tell my partner, from the main app, sends the time and the words "A blocked app was opened."
 
 Sign in can use email, Apple, or Google. The API runs on Fly. The website runs on Vercel. Account email is sent with Resend. Website analytics stay off until a visitor allows them.
 

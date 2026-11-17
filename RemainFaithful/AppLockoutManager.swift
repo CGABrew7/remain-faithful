@@ -4,12 +4,11 @@ import os
 
 private let lockoutLogger = Logger(subsystem: "com.remainfaithful.app", category: "AppLockout")
 
-// Feature 1 — App Lockout tied to Deep Scan (optional, default OFF).
+// Session Shield (optional, default off).
 //
-// When enabled, the selected apps remain shielded via ManagedSettings except
-// while the ReplayKit broadcast (Deep Scan) is active. When Deep Scan stops,
-// the shield re-applies. Partners are notified on every pause or stop, even
-// when this lockout is off.
+// When enabled, the selected apps stay shielded except while a fresh Deep Scan
+// broadcast is running. A missing or stale broadcast flag stays shielded.
+// Partners are notified on every pause or stop, even when Session Shield is off.
 //
 // Cross-process IPC: the broadcast extension posts a Darwin notification whenever
 // isBroadcasting changes. This manager observes that notification and immediately
@@ -46,6 +45,7 @@ final class AppLockoutManager: ObservableObject {
         defaults?.set(enabled, forKey: "appLockoutEnabled")
         if enabled {
             syncShieldState()
+            ActivitySelectionManager.shared.startShieldSchedule()
         } else {
             // Restore normal (user-configured) shield state when lockout is turned off.
             let asm = ActivitySelectionManager.shared
@@ -62,15 +62,25 @@ final class AppLockoutManager: ObservableObject {
     // Call on scene becoming active and on Darwin notification from broadcast extension.
     func syncShieldState() {
         guard isEnabled else { return }
-        let isBroadcasting = defaults?.bool(forKey: "isBroadcasting") ?? false
         let asm = ActivitySelectionManager.shared
-        if isBroadcasting {
+        if broadcastConfirmed() {
             asm.clearShielding()
-            lockoutLogger.info("Lockout: broadcast active — shield lifted")
+            lockoutLogger.info("Session Shield: broadcast confirmed, shields lifted")
         } else {
             asm.applyShielding()
-            lockoutLogger.info("Lockout: broadcast inactive — shield applied")
+            lockoutLogger.info("Session Shield: broadcast not confirmed, shields applied")
         }
+    }
+
+    private func broadcastConfirmed() -> Bool {
+        let flag = defaults?.bool(forKey: SessionShield.broadcastingKey) ?? false
+        let stamp = defaults?.double(forKey: SessionShield.stampKey) ?? 0
+        return SessionShield.shouldClearShields(
+            sessionShieldOn: true,
+            broadcastingFlag: flag,
+            stamp: stamp,
+            now: Date().timeIntervalSince1970
+        )
     }
 
     // MARK: - Darwin notification observer
@@ -89,15 +99,15 @@ final class AppLockoutManager: ObservableObject {
     }
 
     func handleBroadcastStateChange() {
-        let isBroadcasting = defaults?.bool(forKey: "isBroadcasting") ?? false
+        let isBroadcasting = self.broadcastConfirmed()
         DispatchQueue.main.async {
             if self.isEnabled {
                 if isBroadcasting {
                     ActivitySelectionManager.shared.clearShielding()
-                    lockoutLogger.info("Lockout (Darwin): broadcast started, shield lifted")
+                    lockoutLogger.info("Session Shield: broadcast started, shields lifted")
                 } else {
                     ActivitySelectionManager.shared.applyShielding()
-                    lockoutLogger.info("Lockout (Darwin): broadcast ended, shield re-applied")
+                    lockoutLogger.info("Session Shield: broadcast ended, shields applied")
                 }
             }
             // Partners are told whether or not lockout is on. The extension

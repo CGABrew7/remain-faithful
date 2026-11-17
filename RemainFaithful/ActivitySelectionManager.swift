@@ -12,17 +12,6 @@ private let logger = Logger(subsystem: "com.remainfaithful.app",
 extension DeviceActivityName {
     static let daily = DeviceActivityName("com.remainfaithful.daily")
 }
-extension DeviceActivityEvent.Name {
-    static let appUsage       = DeviceActivityEvent.Name("com.remainfaithful.appusage")
-    static let appUsage5      = DeviceActivityEvent.Name("com.remainfaithful.appusage.5")
-    static let appUsage15     = DeviceActivityEvent.Name("com.remainfaithful.appusage.15")
-    static let appUsage30     = DeviceActivityEvent.Name("com.remainfaithful.appusage.30")
-    static let categoryUsage  = DeviceActivityEvent.Name("com.remainfaithful.categoryusage")
-    static let categoryUsage5 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.5")
-    static let categoryUsage15 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.15")
-    static let categoryUsage30 = DeviceActivityEvent.Name("com.remainfaithful.categoryusage.30")
-}
-
 // Manages the FamilyActivitySelection (apps and categories to block/monitor),
 // the ManagedSettingsStore shield, and the DeviceActivityCenter schedule.
 // Selection is persisted to the shared app group so extensions can read it.
@@ -115,10 +104,8 @@ final class ActivitySelectionManager: ObservableObject {
 
     // MARK: - Activity monitoring (DeviceActivity)
     //
-    // DeviceActivityCenter fires DeviceActivityMonitorExtension.eventDidReachThreshold
-    // when cumulative usage crosses a threshold inside the daily schedule
-    // (00:00 to 23:59, repeating). Each threshold is its own event, so 1, 5, 15,
-    // and 30 minutes each fire once per day. The API rejects a threshold under 1 minute.
+    // The daily schedule wakes the monitor extension so it can re-apply shields.
+    // It does not register usage thresholds and it does not upload usage.
 
     func setMonitoringEnabled(_ enabled: Bool) {
         if enabled {
@@ -150,45 +137,15 @@ final class ActivitySelectionManager: ObservableObject {
             return
         }
 
-        // Always-on daily window; threshold resets at midnight each day.
-        let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
-            intervalEnd:   DateComponents(hour: 23, minute: 59, second: 59),
-            repeats: true
-        )
-
-        // Separate events for apps and categories, and for each minute threshold,
-        // so the extension can name the one that fired.
-        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-        let minutes = [1, 5, 15, 30]
-        let appEvents: [DeviceActivityEvent.Name] = [.appUsage, .appUsage5, .appUsage15, .appUsage30]
-        let categoryEvents: [DeviceActivityEvent.Name] = [.categoryUsage, .categoryUsage5, .categoryUsage15, .categoryUsage30]
-
-        if !selection.applicationTokens.isEmpty {
-            for (index, minute) in minutes.enumerated() {
-                events[appEvents[index]] = DeviceActivityEvent(
-                    applications: selection.applicationTokens,
-                    threshold: DateComponents(minute: minute)
-                )
-            }
-        }
-        if !selection.categoryTokens.isEmpty {
-            for (index, minute) in minutes.enumerated() {
-                events[categoryEvents[index]] = DeviceActivityEvent(
-                    categories: selection.categoryTokens,
-                    threshold: DateComponents(minute: minute)
-                )
-            }
-        }
+        let schedule = dailySchedule()
 
         do {
-            // stopMonitoring first to update the token set on re-starts
             activityCenter.stopMonitoring([.daily])
-            try activityCenter.startMonitoring(.daily, during: schedule, events: events)
+            try activityCenter.startMonitoring(.daily, during: schedule, events: [:])
             isMonitoringEnabled = true
             defaults?.set(true, forKey: "deviceActivityMonitoringEnabled")
             defaults?.set(scheduleSignature(), forKey: "deviceActivityScheduleSignature")
-            logger.info("DeviceActivity monitoring started (\(events.count) event(s))")
+            logger.info("DeviceActivity schedule started")
         } catch {
             isMonitoringEnabled = false
             defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
@@ -200,8 +157,8 @@ final class ActivitySelectionManager: ObservableObject {
         }
     }
 
-    /// Launch must not restart a schedule that is already running. Restarting
-    /// clears Apple's usage total, so opening the app could stay under the thresholds.
+    /// Launch restarts the schedule when the signature changed.
+    /// There is no usage total to preserve.
     func startMonitoringIfCurrent() {
         let signature = scheduleSignature()
         let running = activityCenter.activities.contains(.daily)
@@ -222,14 +179,41 @@ final class ActivitySelectionManager: ObservableObject {
             hash ^= UInt64(byte)
             hash &*= 1099511628211
         }
-        return "usage-thresholds-v2:\(hash)"
+        return "session-shield-v1:\(hash)"
+    }
+
+    private func dailySchedule() -> DeviceActivitySchedule {
+        DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
+            repeats: true
+        )
+    }
+
+    /// Keeps the monitor extension scheduled while Session Shield is on,
+    /// without turning the Alerts switch on.
+    func startShieldSchedule() {
+        guard !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty else { return }
+        if isMonitoringEnabled {
+            startMonitoring()
+            return
+        }
+        do {
+            activityCenter.stopMonitoring([.daily])
+            try activityCenter.startMonitoring(.daily, during: dailySchedule(), events: [:])
+            logger.info("Session Shield schedule started")
+        } catch {
+            logger.error("Session Shield schedule failed: \(error.localizedDescription)")
+        }
     }
 
     func stopMonitoring() {
-        activityCenter.stopMonitoring([.daily])
+        if !AppLockoutManager.shared.isEnabled {
+            activityCenter.stopMonitoring([.daily])
+            defaults?.removeObject(forKey: "deviceActivityScheduleSignature")
+        }
         isMonitoringEnabled = false
         defaults?.set(false, forKey: "deviceActivityMonitoringEnabled")
-        defaults?.removeObject(forKey: "deviceActivityScheduleSignature")
         logger.info("DeviceActivity monitoring stopped")
     }
 
@@ -250,70 +234,9 @@ final class ActivitySelectionManager: ObservableObject {
         defaults?.removeObject(forKey: "lastAppUsageTimestamp")
     }
 
-    // MARK: - Pending raw event drain
-    //
-    // The DeviceActivityMonitor extension writes to "pendingRawEvents" in the shared
-    // app group when it fires. EventProcessor calls this on every app foreground to
-    // upload any queued events that the extension couldn't post directly.
+    /// Drops any usage queue left by an older build. Those rows are not uploaded.
     func drainPendingRawEvents() async {
-        guard let queue = defaults?.array(forKey: "pendingRawEvents") as? [[String: Any]],
-              !queue.isEmpty else { return }
-
-        guard let apiBase = defaults?.string(forKey: "apiBaseURL"),
-              let token   = defaults?.string(forKey: "authToken") else { return }
-
-        let iso = ISO8601DateFormatter()
-        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        let signedIn = defaults?.integer(forKey: "authUserID") ?? 0
-        var updated: [[String: Any]] = []
-        var stop = false
-        for var row in queue {
-            if (row["processed"] as? Bool) == true {
-                updated.append(row)
-                continue
-            }
-            let owner = (row["accountID"] as? Int) ?? (row["accountID"] as? NSNumber)?.intValue
-            if !QueuedEventGate.shouldUpload(ownerAccountID: owner, signedInAccountID: signedIn) {
-                continue
-            }
-            if stop {
-                updated.append(row)
-                continue
-            }
-            let ts  = row["timestamp"] as? TimeInterval ?? Date().timeIntervalSince1970
-            let cat = row["category"]  as? String ?? "app_usage"
-            let sev = row["severity"]  as? String ?? "concerning"
-            let sum = row["summary"]   as? String ?? "App activity detected"
-
-            guard let url  = URL(string: apiBase + "/events") else {
-                updated.append(row)
-                continue
-            }
-            var req = URLRequest(url: url, timeoutInterval: 10)
-            req.httpMethod = "POST"
-            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            guard let body = try? JSONSerialization.data(withJSONObject: [
-                "category": cat, "severity": sev, "summary": sum,
-                "timestamp": iso.string(from: Date(timeIntervalSince1970: ts)),
-            ]) else {
-                updated.append(row)
-                continue
-            }
-            req.httpBody = body
-
-            if let (_, resp) = try? await URLSession.shared.data(for: req),
-               let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) {
-                row["processed"] = true
-                updated.append(row)
-                logger.info("Drained raw event: HTTP \(http.statusCode)")
-            } else {
-                updated.append(row)
-                stop = true
-            }
-        }
-        defaults?.set(updated, forKey: "pendingRawEvents")
+        defaults?.removeObject(forKey: "pendingRawEvents")
     }
 
     // MARK: - App usage prompt

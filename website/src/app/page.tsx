@@ -325,11 +325,10 @@ export default function HomePage() {
               <div className="border-t border-white/10 p-7 sm:border-l sm:border-t-0 sm:p-8">
                 <h4 className="kicker mb-4">Can leave the phone</h4>
                 <ul className="space-y-2.5 text-sm leading-relaxed text-white">
-                  <li>Category</li>
-                  <li>Severity</li>
-                  <li>Timestamp</li>
-                  <li>A short system summary</li>
-                  <li>A heartbeat while protection is on</li>
+                  <li>Category, severity, and a confidence level during Deep Scan</li>
+                  <li>Time</li>
+                  <li>A fixed summary, or a check-in note you write</li>
+                  <li>A heartbeat from the app while protection is on</li>
                   <li>The current UTC offset in minutes when a streak loads, used for that response and not saved</li>
                 </ul>
               </div>

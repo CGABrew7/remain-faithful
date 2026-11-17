@@ -85,8 +85,23 @@ struct RemainFaithfulApp: App {
                 // Re-sync app lockout shield in case broadcast state changed while
                 // the app was closed (Darwin notification would have been missed).
                 AppLockoutManager.shared.syncShieldState()
+                AppState.shared.presentBlockedOpenIfNeeded()
+            }
+            .onOpenURL { url in
+                guard url.scheme == "remainfaithful" else { return }
+                if url.host == "blocked-open" {
+                    AppState.shared.presentBlockedOpenIfNeeded()
+                } else if url.host == "check-in" {
+                    AppState.shared.presentCheckIn()
+                }
             }
             .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .background {
+                    Task { await sendMonitoringHeartbeat() }
+                }
+                if newPhase == .active {
+                    AppState.shared.presentBlockedOpenIfNeeded()
+                }
                 guard newPhase == .active, AuthState.shared.isAuthenticated else { return }
                 Task {
                     try? await APIClient.shared.refreshTokenIfNeeded()
@@ -119,11 +134,10 @@ struct RemainFaithfulApp: App {
         }
     }
 
-    /// Heartbeat while Alerts or Blocking are on, even when Deep Scan is off.
-    /// The extension posts its own heartbeat during a broadcast.
+    /// Heartbeat from the main app only. The payload is the word "monitoring" and carries no usage data.
     private func sendMonitoringHeartbeat() async {
         let mgr = ActivitySelectionManager.shared
-        guard mgr.isMonitoringEnabled || mgr.isShieldingEnabled else { return }
+        guard mgr.isMonitoringEnabled || mgr.isShieldingEnabled || AppLockoutManager.shared.isEnabled else { return }
         guard APIClient.shared.isAuthenticated else { return }
         try? await APIClient.shared.heartbeat(screen: "monitoring")
     }

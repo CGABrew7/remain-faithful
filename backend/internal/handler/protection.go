@@ -303,7 +303,7 @@ func protectionAlertBody(name, alertType, _ string) string {
 	case "shielding_disabled":
 		return name + " turned off app blocking"
 	case "lockout_disabled":
-		return name + " disabled App Lockout"
+		return name + " turned off Session Shield"
 	case "lockout_broadcast_stopped", "deep_scan_stopped":
 		return name + " stopped Deep Scan"
 	case "selection_cleared":

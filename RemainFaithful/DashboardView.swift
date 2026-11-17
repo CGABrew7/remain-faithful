@@ -229,7 +229,7 @@ private extension EventCategory {
         case .selfHarm:
             return "This is a self-harm alert. Check on them. The screen itself was not uploaded."
         case .appUsage:
-            return "An app you chose was used today. Your partner is told at 1, 5, 15, and 30 minutes."
+            return "You sent this notice. It says a blocked app was opened, with the time."
         case .clean:
             return "Nothing in this check needed an alert."
         case .tamper:
@@ -358,7 +358,6 @@ struct DashboardView: View {
     @State private var eventsLoadError:  String?
     @State private var partnerLoadError: String?
     @State private var isBroadcasting       = false
-    @State private var showAppUsagePrompt   = false
     @State private var showBlockingSetup    = false
     @ObservedObject private var selection = ActivitySelectionManager.shared
     @ObservedObject private var familyControls = FamilyControlsManager.shared
@@ -389,15 +388,6 @@ struct DashboardView: View {
                         onAction: { handleStatusAction() }
                     )
                     .tourAnchor(.homeStatus)
-                    if showAppUsagePrompt && !isBroadcasting {
-                        AppUsagePromptBanner(
-                            onDismiss: {
-                                ActivitySelectionManager.shared.clearAppUsagePrompt()
-                                withAnimation(.easeOut(duration: 0.2)) { showAppUsagePrompt = false }
-                            }
-                        )
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                    }
                     VerseCard()
                     StreakCard(days: streakDays, best: streakBest, marks: streakMarks)
                         .tourAnchor(.homeStreak)
@@ -478,11 +468,6 @@ struct DashboardView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             isBroadcasting = EventProcessor.shared.isBroadcasting()
-            if ActivitySelectionManager.shared.recentAppUsageDate != nil && !isBroadcasting {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    showAppUsagePrompt = true
-                }
-            }
         }
     }
 
@@ -1133,51 +1118,6 @@ private struct ActivityRow: View {
         }
         .padding(14)
         .background(card)
-    }
-}
-
-// MARK: - Optional Deep Scan prompt
-
-private struct AppUsagePromptBanner: View {
-    let onDismiss: () -> Void
-
-    private let blue   = Color(red: 0.28, green: 0.56, blue: 0.95)
-    private let bgFill = Color(red: 0.07, green: 0.13, blue: 0.28)
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(blue.opacity(0.18))
-                    .frame(width: 38, height: 38)
-                Image(systemName: "apps.iphone")
-                    .font(.body)
-                    .foregroundStyle(blue)
-            }
-            .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("An app you chose was used")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .fixedSize(horizontal: false, vertical: true)
-                Text("Alerts and Blocking stay as you set them. Deep Scan is optional.")
-                    .font(.footnote)
-                    .foregroundStyle(Color.white.opacity(0.75))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-            RFCloseButton(action: onDismiss)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(bgFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(blue.opacity(0.35), lineWidth: 1.5)
-                )
-        )
     }
 }
 
