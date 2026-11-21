@@ -88,7 +88,7 @@ enum RFStroke {
 
     /// Gold hairline for secondary buttons and selected states.
     static let gold = LinearGradient(
-        colors: [Color.rfGold.opacity(0.95), Color.rfGold.opacity(0.55)],
+        colors: [Color.rfGold, Color.rfGold],
         startPoint: .top,
         endPoint: .bottom
     )
@@ -170,12 +170,9 @@ struct RFToggleStyle: ToggleStyle {
             }
             ZStack(alignment: on ? .trailing : .leading) {
                 Capsule()
-                    .fill(on
-                          ? AnyShapeStyle(LinearGradient(colors: [.rfGoldLight, .rfGoldDeep],
-                                                         startPoint: .top, endPoint: .bottom))
-                          : AnyShapeStyle(Color.white.opacity(0.16)))
+                    .fill(on ? AnyShapeStyle(Color.rfGold) : AnyShapeStyle(Color.white.opacity(0.16)))
                     .overlay(Capsule().strokeBorder(
-                        on ? Color.rfGoldDeep.opacity(0.55) : Color.white.opacity(0.10),
+                        on ? Color.rfGold : Color.white.opacity(0.10),
                         lineWidth: 1))
                     .frame(width: 51, height: 31)
 

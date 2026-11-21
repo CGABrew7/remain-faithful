@@ -30,11 +30,7 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.rfNavy, Color.rfNavyMid],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            Color.rfNavy
             .ignoresSafeArea()
 
             RFAmbientRings()

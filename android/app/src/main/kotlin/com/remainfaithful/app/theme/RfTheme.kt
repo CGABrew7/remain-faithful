@@ -60,8 +60,7 @@ object RfColors {
     val stroke = Color.White.copy(alpha = 0.16f)
     val scrim = Color(0xC712214C)
 
-    val page: Brush = Brush.verticalGradient(listOf(navy, navyMid))
-    val goldFill: Brush = Brush.verticalGradient(listOf(goldLight, goldDeep))
+    val page: Brush = Brush.verticalGradient(listOf(navy, navy))
 }
 
 object RfMetrics {
@@ -131,7 +130,7 @@ fun RfButton(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed && enabled) 0.96f else 1f, label = "press")
+    val scale by animateFloatAsState(if (pressed && enabled) 0.98f else 1f, label = "press")
     val container = when {
         destructive -> RfColors.danger
         secondary -> Color.Transparent

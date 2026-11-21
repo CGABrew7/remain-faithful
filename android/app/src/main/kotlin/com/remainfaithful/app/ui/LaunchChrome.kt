@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -60,6 +61,7 @@ import kotlinx.coroutines.isActive
 data class LaunchState(
     val draw: Float,
     val glow: Float,
+    val letters: Float,
     val travel: Float,
     val contentAlpha: Float,
     val reduceMotion: Boolean,
@@ -70,6 +72,7 @@ val LocalLaunch = staticCompositionLocalOf {
     LaunchState(
         draw = 1f,
         glow = 0f,
+        letters = 1f,
         travel = 1f,
         contentAlpha = 1f,
         reduceMotion = false,
@@ -116,7 +119,8 @@ fun LaunchLockup(maxHeight: Dp, modifier: Modifier = Modifier) {
     val mark = lerp(104.dp, 52.dp, travel)
     val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val top = lerp((maxHeight - mark - 44.dp) / 2, topInset + 8.dp, travel)
-    val titleAlpha = if (launch.reduceMotion) 1f else ((draw - 0.62f) / 0.28f).coerceIn(0f, 1f)
+    val reveal = if (launch.reduceMotion) 1f else launch.letters
+    val titleSize = (40f + (30f - 40f) * travel).sp
     Column(
         modifier
             .padding(top = top)
@@ -128,13 +132,20 @@ fun LaunchLockup(maxHeight: Dp, modifier: Modifier = Modifier) {
             glow = launch.glow,
             modifier = Modifier.size(mark * 0.89f, mark),
         )
-        Text(
-            Copy.appName,
-            color = RfColors.textPrimary.copy(alpha = titleAlpha),
-            fontFamily = FontFamily.Serif,
-            fontWeight = FontWeight.Bold,
-            fontSize = (40f + (30f - 40f) * travel).sp,
-        )
+        Row {
+            Copy.appName.forEachIndexed { index, ch ->
+                val span = 1f / Copy.appName.length
+                val start = index * span * 0.84f
+                val shown = ((reveal - start) / span.coerceAtLeast(0.08f)).coerceIn(0f, 1f)
+                Text(
+                    if (ch == ' ') " " else ch.toString(),
+                    color = RfColors.textPrimary.copy(alpha = shown),
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = titleSize,
+                )
+            }
+        }
     }
 }
 
@@ -193,6 +204,7 @@ private fun rememberLaunch(
 ): LaunchState {
     var draw by remember { mutableFloatStateOf(if (reduce) 1f else 0f) }
     var glow by remember { mutableFloatStateOf(0f) }
+    var letters by remember { mutableFloatStateOf(if (reduce) 1f else 0f) }
     var travel by remember { mutableFloatStateOf(if (reduce) 1f else 0f) }
     var contentAlpha by remember { mutableFloatStateOf(if (reduce) 1f else 0f) }
     var skip by remember { mutableStateOf(false) }
@@ -204,14 +216,17 @@ private fun rememberLaunch(
     LaunchedEffect(reduce, skip) {
         if (reduce || skip) {
             draw = 1f
+            letters = 1f
             travel = 1f
             contentAlpha = 1f
             return@LaunchedEffect
         }
-        val drawMs = 1550f
-        val holdMs = 450f
-        val travelMs = 850f
-        val total = drawMs + holdMs + travelMs
+        val drawMs = 2400f
+        val letterLead = 2150f
+        val letterMs = 1400f
+        val holdMs = 700f
+        val travelMs = 1200f
+        val total = letterLead + letterMs + holdMs + travelMs
         var elapsed = 0f
         var last = 0L
         while (isActive && elapsed < total && !skip) {
@@ -229,19 +244,25 @@ private fun rememberLaunch(
             last = now
             elapsed += dt
             draw = ease(elapsed / drawMs)
-            glow = if (elapsed > drawMs) ease((elapsed - drawMs) / 400f) else 0f
-            val moved = if (elapsed > drawMs + holdMs) ease((elapsed - drawMs - holdMs) / travelMs) else 0f
+            val bloom = if (elapsed > drawMs) ease((elapsed - drawMs) / 900f) else 0f
+            val settle = ((elapsed - letterLead - 400f) / 1200f).coerceIn(0f, 1f)
+            glow = bloom * (1f - settle * 0.65f)
+            letters = if (elapsed > letterLead) ease((elapsed - letterLead) / letterMs) else 0f
+            val moved = if (elapsed > letterLead + letterMs + holdMs) {
+                ease((elapsed - letterLead - letterMs - holdMs) / travelMs)
+            } else 0f
             travel = moved
             contentAlpha = moved
         }
         draw = 1f
+        letters = 1f
         travel = 1f
-        glow = 0.28f
+        glow = 0.16f
         contentAlpha = 1f
     }
 
     val blocks = !reduce && !skip && model.phase != Phase.App && travel < 1f
-    return LaunchState(draw, glow, travel, contentAlpha, reduce, blocks)
+    return LaunchState(draw, glow, letters, travel, contentAlpha, reduce, blocks)
 }
 
 private fun ease(t: Float): Float {
@@ -266,15 +287,13 @@ private fun AmbientRings(paused: Boolean) {
     }
     Canvas(Modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height * 0.42f)
-        val maxR = maxOf(size.width, size.height) * 0.78f
-        val period = 18000f
+        val maxR = maxOf(size.width, size.height) * 0.62f
         repeat(3) { index ->
             val shift = index / 3f
-            val u = ((time / period) + shift) % 1f
-            val radius = maxR * u
-            if (radius < 1f) return@repeat
+            val breathe = 0.5f + 0.5f * kotlin.math.sin(time / 1000f * 0.32f + shift * Math.PI.toFloat() * 2f)
+            val radius = maxR * (0.34f + 0.22f * index) * (0.94f + 0.07f * breathe)
             drawCircle(
-                color = RfColors.gold.copy(alpha = (1f - u) * 0.10f),
+                color = RfColors.gold.copy(alpha = 0.035f + 0.045f * breathe),
                 radius = radius,
                 center = center,
                 style = Stroke(width = 1.dp.toPx()),
