@@ -13,7 +13,7 @@ import UniformTypeIdentifiers
 // MARK: - Color constants (matches app palette)
 
 let navy   = CGColor(red: 0.07, green: 0.13, blue: 0.30, alpha: 1)
-let gold   = CGColor(red: 0.82, green: 0.67, blue: 0.30, alpha: 1)
+let gold   = CGColor(red: 240.0/255.0, green: 208.0/255.0, blue: 48.0/255.0, alpha: 1)
 let white  = CGColor(red: 1,    green: 1,    blue: 1,    alpha: 1)
 
 // MARK: - Icon sizes required by iOS / App Store

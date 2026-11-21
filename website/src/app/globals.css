@@ -6,6 +6,7 @@
   Remain Faithful. Navy chapel, gold accent.
   Palette from the iOS app (OnboardingView.swift):
   rfNavy #12214C, rfNavyMid #1C3066, rfGold #F0D030.
+  --wax is the single accent token (#F0D030). On navy it measures 10.22:1.
   Site-only shades of the same navy: lift #1A2D61 (raised panels), deep #0C1D4C.
   Muted text is #B4BCD4 so small type stays at least 4.5:1 on the lighter cards.
 */
@@ -21,8 +22,8 @@
   --gold-line: rgba(240, 208, 48, 0.45);
   --wax: #f0d030;
   --wax-deep: #c6a61e;
-  /* Gradient stops shared with the iOS app. Navy text is 12.5:1 on the light
-     stop and 6.6:1 on the deep stop. Yellow text on navy is 10.2:1. */
+  /* Gradient stops shared with the iOS app. Navy text is 12.46:1 on the light
+     stop and 6.59:1 on the deep stop. Yellow text on navy is 10.22:1. */
   --wax-light: #f8e78a;
   --wax-grad-deep: #c6a61e;
   --danger: #9e2429;
@@ -112,8 +113,19 @@
     scroll-behavior: auto;
   }
 
-  .rise {
+  .rise,
+  .hero-rings span,
+  .hero-mark-line {
     animation: none !important;
+  }
+
+  .hero-mark-line {
+    stroke-dashoffset: 0;
+    filter: none;
+  }
+
+  .hero-rings {
+    display: none;
   }
 
   .btn-wax:active:not(:disabled),
@@ -644,6 +656,111 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+.hero-stage {
+  position: relative;
+}
+
+.hero-rings {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-rings span {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 8rem;
+  height: 8rem;
+  margin-left: -4rem;
+  margin-top: -4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(240, 208, 48, 0.28);
+  opacity: 0;
+  transform: scale(0.2);
+  animation: hero-ring 18s linear infinite;
+  will-change: transform, opacity;
+}
+
+.hero-rings span:nth-child(2) {
+  animation-delay: -6s;
+}
+
+.hero-rings span:nth-child(3) {
+  animation-delay: -12s;
+}
+
+.hero-mark {
+  display: block;
+  margin-bottom: 1.25rem;
+}
+
+.hero-mark-line {
+  fill: none;
+  stroke: var(--wax);
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation:
+    hero-draw 1.5s ease-in-out forwards,
+    hero-glow 0.8s ease-in-out 1.5s forwards;
+}
+
+.hero-mark-check {
+  animation-delay: 0.95s, 1.5s;
+  animation-duration: 0.55s, 0.8s;
+}
+
+.hero-stage > .shell {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes hero-ring {
+  0% {
+    transform: scale(0.25);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(7);
+    opacity: 0;
+  }
+}
+
+@keyframes hero-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hero-glow {
+  from {
+    filter: drop-shadow(0 0 0 rgba(240, 208, 48, 0));
+  }
+  to {
+    filter: drop-shadow(0 0 10px rgba(240, 208, 48, 0.45));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rings {
+    display: none;
+  }
+
+  .hero-mark-line {
+    animation: none;
+    stroke-dashoffset: 0;
+    filter: none;
   }
 }
 

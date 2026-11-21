@@ -6,7 +6,6 @@ import AppStoreLink from '@/components/AppStoreLink'
 import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
 import FeaturePlate from '@/components/FeaturePlate'
-import Ornament from '@/components/Ornament'
 import PhoneFrame from '@/components/PhoneFrame'
 
 const FaqAccordion = dynamic(() => import('@/components/FaqAccordion'))
@@ -129,13 +128,28 @@ export default function HomePage() {
         </Suspense>
       )}
 
-      <section className="shell grid items-center gap-8 pb-12 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-16 lg:pt-32">
+      <section className="hero-stage">
+        <div className="hero-rings" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      <div className="shell grid items-center gap-8 pb-12 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-16 lg:pt-32">
         <div className="lg:col-start-1 lg:row-start-1">
           <p className="kicker rise">Free · iPhone (iOS 17+)</p>
-          <Ornament className="rise rise-2 mb-6 mt-5" />
+          <svg className="hero-mark rise rise-2 mt-6" width="72" height="81" viewBox="0 0 32 36" fill="none" aria-hidden="true">
+            <path className="hero-mark-line" pathLength="100" d="M16 0L2 6V18C2 26.284 8.268 33.916 16 36C23.732 33.916 30 26.284 30 18V6L16 0Z" />
+            <path className="hero-mark-line hero-mark-check" pathLength="100" d="M11 18L14.5 21.5L21 14" />
+          </svg>
           <h1 className="rise rise-2 font-serif text-[2.75rem] font-bold leading-[1.04] tracking-[-0.03em] text-white sm:text-6xl lg:text-[4.15rem]">
             Remain Faithful
           </h1>
+          <ul className="rise rise-3 mt-6 space-y-1.5 font-serif text-xl leading-snug text-white/90">
+            <li>A covenant group</li>
+            <li>A partner who has your back</li>
+            <li>A daily check-in</li>
+            <li>Session Shield</li>
+          </ul>
           <p className="rise rise-3 mt-6 max-w-[22ch] font-serif text-2xl leading-snug text-white/90 sm:text-[1.7rem]">
             A partner you trust stands with you.
           </p>
@@ -161,6 +175,7 @@ export default function HomePage() {
             priority
           />
         </div>
+      </div>
       </section>
 
       <section id="how-it-works" className="shell scroll-mt-24 pb-8" aria-labelledby="how-strip-heading">

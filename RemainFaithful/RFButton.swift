@@ -9,7 +9,7 @@ import SwiftUI
 // reads as being pushed toward the screen rather than merely shrinking.
 //
 // Contrast (measured, see RFTheme):
-//   primary    navy on gold   10.9:1 top → 5.1:1 bottom
+//   primary    navy on gold   12.46:1 top, 6.59:1 bottom
 //   secondary  white on navy  12.4:1, gold border 5.7:1
 //   destructive white on red   7.7:1
 //   disabled   white on tint   6.5:1
