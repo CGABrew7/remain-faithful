@@ -2,5 +2,5 @@
 <!-- Mirror of RfColors in theme/RfTheme.kt. Change both together. -->
 <resources>
     <color name="rf_navy">#12214C</color>
-    <color name="rf_gold">#D1AB4C</color>
+    <color name="rf_gold">#F0D030</color>
 </resources>

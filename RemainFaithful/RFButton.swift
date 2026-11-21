@@ -1,15 +1,11 @@
 import SwiftUI
 
-// Premium navy-and-gold buttons. Primary is a gold gradient with navy text.
-// Secondary is a navy fill with a thin gold border. Destructive stays red.
-//
-// Depth comes from the same three cues used by RFSurface: a lit top edge, a
-// layered shadow (tight contact + wide ambient), and an inner highlight on the
-// filled face. Pressing collapses the shadow and dips the scale, so the control
-// reads as being pushed toward the screen rather than merely shrinking.
+// Flat buttons. Primary is solid #F0D030 with navy text.
+// Secondary is a navy fill with a thin yellow border. Destructive stays red.
+// Press darkens slightly and scales to 0.98. No gradient, shine, or glow.
 //
 // Contrast (measured, see RFTheme):
-//   primary    navy on gold   10.9:1 top → 5.1:1 bottom
+//   primary    navy on #F0D030   10.22:1
 //   secondary  white on navy  12.4:1, gold border 5.7:1
 //   destructive white on red   7.7:1
 //   disabled   white on tint   6.5:1
@@ -114,36 +110,15 @@ struct RFButton: View {
         } else {
             switch role {
             case .primary:
-                shape
-                    .fill(LinearGradient(colors: [.rfGoldLight, .rfGoldDeep],
-                                         startPoint: .top, endPoint: .bottom))
-                    .overlay(innerHighlight)
+                shape.fill(Color.rfGold)
             case .secondary:
-                // Lifted a touch off the page so the fill reads as a surface
-                // and not a hole, while white text stays at 12.4:1.
                 shape
                     .fill(Color.rfNavy)
-                    .overlay(shape.fill(Color.white.opacity(0.06)))
-                    .overlay(innerHighlight.opacity(0.5))
+                    .overlay(shape.fill(Color.white.opacity(0.04)))
             case .destructive:
-                shape
-                    .fill(LinearGradient(
-                        colors: [Color.rfDanger.opacity(0.98), Color.rfDanger.opacity(0.82)],
-                        startPoint: .top, endPoint: .bottom))
-                    .overlay(innerHighlight.opacity(0.6))
+                shape.fill(Color.rfDanger)
             }
         }
-    }
-
-    /// Soft sheen across the top third, as if lit from above.
-    private var innerHighlight: some View {
-        LinearGradient(
-            colors: [Color.white.opacity(0.38), Color.white.opacity(0)],
-            startPoint: .top,
-            endPoint: .center
-        )
-        .clipShape(shape)
-        .allowsHitTesting(false)
     }
 
     // MARK: - Border
@@ -155,10 +130,9 @@ struct RFButton: View {
         } else {
             switch role {
             case .primary:
-                // Darker gold rim grounds the gradient against the page.
-                shape.strokeBorder(Color.rfGoldDeep.opacity(0.55), lineWidth: 1)
+                shape.strokeBorder(Color.clear, lineWidth: 0)
             case .secondary:
-                shape.strokeBorder(RFStroke.gold, lineWidth: 1.5)
+                shape.strokeBorder(Color.rfGold, lineWidth: 1.5)
             case .destructive:
                 shape.strokeBorder(Color.white.opacity(0.20), lineWidth: 1)
             }
@@ -168,7 +142,7 @@ struct RFButton: View {
     private var shadowColor: Color {
         guard appearsEnabled else { return .clear }
         switch role {
-        case .primary:     return Color.rfGoldDeep.opacity(0.42)
+        case .primary:     return .clear
         case .destructive: return Color.rfDanger.opacity(0.42)
         case .secondary:   return Color.black.opacity(0.30)
         }
@@ -184,8 +158,7 @@ struct RFButton: View {
     }
 }
 
-/// Press feel: a small dip plus a shadow that collapses toward the surface.
-/// Both are driven by one spring so they stay in step.
+/// Press feel: a slight darken and a scale of 0.98. No bounce.
 private struct RFPressStyle: ButtonStyle {
     var animates: Bool
     var liftsShadow: Bool
@@ -193,19 +166,11 @@ private struct RFPressStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         let pressed = animates && configuration.isPressed
+        _ = (liftsShadow, shadowTint)
         return configuration.label
-            .scaleEffect(pressed ? 0.975 : 1)
-            .brightness(pressed ? -0.04 : 0)
-            // Tight contact shadow.
-            .shadow(color: liftsShadow ? shadowTint.opacity(0.9) : .clear,
-                    radius: pressed ? 1 : 3,
-                    x: 0, y: pressed ? 1 : 2)
-            // Wide ambient shadow; collapses on press so the control sinks.
-            .shadow(color: liftsShadow ? shadowTint.opacity(0.55) : .clear,
-                    radius: pressed ? 4 : 12,
-                    x: 0, y: pressed ? 2 : 7)
-            .animation(.spring(response: 0.26, dampingFraction: 0.7),
-                       value: configuration.isPressed)
+            .scaleEffect(pressed ? 0.98 : 1)
+            .brightness(pressed ? -0.06 : 0)
+            .animation(.easeInOut(duration: 0.16), value: configuration.isPressed)
     }
 }
 

@@ -10,6 +10,8 @@ import UIKit
 
 struct OnboardingView: View {
     var showDismissButton: Bool = false
+    /// True only for the root entry screen, so the splash can land in this header.
+    var isLaunchTarget: Bool = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showLogin = false
     @Environment(\.dismiss) private var dismiss
@@ -28,12 +30,11 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.rfNavy, Color.rfNavyMid],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            Color.rfNavy
             .ignoresSafeArea()
+
+            RFAmbientRings()
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 stepDots
@@ -43,7 +44,11 @@ struct OnboardingView: View {
                 ZStack {
                     switch step {
                     case 0:
-                        WelcomeStep(onContinue: advance, onSignIn: { showLogin = true })
+                        WelcomeStep(
+                            isLaunchTarget: isLaunchTarget,
+                            onContinue: advance,
+                            onSignIn: { showLogin = true }
+                        )
                             .transition(.push(from: .trailing))
                     case 1:
                         CreateAccountStep(name: $name, email: $email, password: $password) {
@@ -96,7 +101,7 @@ struct OnboardingView: View {
                 Capsule()
                     .fill(i == step ? Color.rfGold : Color.white.opacity(0.25))
                     .frame(width: i == step ? 20 : 7, height: 7)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.7), value: step)
+                    .animation(.easeInOut(duration: 0.35), value: step)
             }
         }
     }
@@ -109,84 +114,96 @@ struct OnboardingView: View {
 // MARK: - Step 1: Welcome
 
 private struct WelcomeStep: View {
+    var isLaunchTarget: Bool = false
     let onContinue: () -> Void
     var onSignIn: (() -> Void)? = nil
 
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+    @Environment(\.rfLaunch) private var launch
 
-            // Halo + cross icon
-            ZStack {
-                Circle()
-                    .fill(Color.rfGold.opacity(0.08))
-                    .frame(width: 180, height: 180)
-                Circle()
-                    .fill(Color.rfGold.opacity(0.12))
-                    .frame(width: 130, height: 130)
-                Image(systemName: "checkmark.shield.fill")
-                    .font(.system(size: 54, weight: .medium))
-                    .foregroundStyle(Color.rfGold)
-            }
-            .accessibilityHidden(true)
-            .padding(.bottom, 44)
+    private let gifts = [
+        "A covenant group",
+        "A partner who has your back",
+        "A daily check-in",
+        "Session Shield",
+    ]
 
-            Text("Remain Faithful")
-                .font(.largeTitle.bold())
-                .fontDesign(.serif)
-                .foregroundStyle(.white)
-                .multilineTextAlignment(.center)
-                .accessibilityAddTraits(.isHeader)
-
-            // Decorative rule
-            HStack(spacing: 12) {
-                line
-                Image(systemName: "leaf.fill")
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.rfGold.opacity(0.7))
-                line
-            }
-            .padding(.vertical, 20)
-            .padding(.horizontal, 60)
-
-            Text("Accountability between\ntrusted friends")
-                .font(.system(size: 19, weight: .regular, design: .serif))
-                .foregroundStyle(Color.white.opacity(0.75))
-                .multilineTextAlignment(.center)
-                .lineSpacing(5)
-
-            Text("\"But you must remain faithful to the things you have been taught.\"  —  2 Timothy 3:14")
-                .font(.footnote)
-                .fontDesign(.serif)
-                .foregroundStyle(Color.white.opacity(0.72))
-                .multilineTextAlignment(.center)
-                .padding(.top, 24)
-
-            Spacer()
-            Spacer()
-
-            RFButton(title: "Begin Your Journey", action: onContinue)
-                .padding(.bottom, 16)
-
-            Button { onSignIn?() } label: {
-                HStack(spacing: 4) {
-                    Text("Already have an account?")
-                        .foregroundStyle(Color.white.opacity(0.50))
-                    Text("Sign In")
-                        .foregroundStyle(Color.rfGold)
-                        .fontWeight(.semibold)
-                }
-                .font(.system(size: 15))
-            }
-            .padding(.bottom, 44)
-        }
-        .padding(.horizontal, 32)
+    private var introSettled: Bool {
+        guard isLaunchTarget, let launch else { return true }
+        return launch.settled
     }
 
-    private var line: some View {
-        Rectangle()
-            .fill(Color.rfGold.opacity(0.35))
-            .frame(height: 1)
+    private var introRevealed: Bool {
+        guard isLaunchTarget, let launch else { return true }
+        return launch.revealed
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                if introSettled {
+                    RFLaunchMark(
+                        compact: true,
+                        draw: 1,
+                        glow: launch?.glow ?? 0.2,
+                        namespace: launch?.namespace,
+                        linked: (launch?.linkMark ?? false) && isLaunchTarget
+                    )
+                }
+            }
+            .frame(minHeight: 136)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 8)
+
+            VStack(spacing: 0) {
+                VStack(spacing: 6) {
+                    ForEach(Array(gifts.enumerated()), id: \.offset) { index, line in
+                        Text(line)
+                            .font(.title3)
+                            .fontDesign(.serif)
+                            .foregroundStyle(Color.white.opacity(0.92))
+                            .rfRise(shown: introRevealed, index: index)
+                    }
+                }
+                .padding(.top, 8)
+
+                Text("Accountability between\ntrusted friends")
+                    .font(.system(size: 19, weight: .regular, design: .serif))
+                    .foregroundStyle(Color.white.opacity(0.75))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(5)
+                    .padding(.top, 22)
+                    .rfRise(shown: introRevealed, index: 4)
+
+                Text("\"But you must remain faithful to the things you have been taught.\"  —  2 Timothy 3:14")
+                    .font(.footnote)
+                    .fontDesign(.serif)
+                    .foregroundStyle(Color.white.opacity(0.72))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 24)
+                    .rfRise(shown: introRevealed, index: 5)
+
+                Spacer(minLength: 24)
+
+                RFButton(title: "Begin Your Journey", action: onContinue)
+                    .padding(.bottom, 16)
+                    .rfRise(shown: introRevealed, index: 6)
+
+                Button { onSignIn?() } label: {
+                    HStack(spacing: 4) {
+                        Text("Already have an account?")
+                            .foregroundStyle(Color.white.opacity(0.50))
+                        Text("Sign In")
+                            .foregroundStyle(Color.rfGold)
+                            .fontWeight(.semibold)
+                    }
+                    .font(.system(size: 15))
+                }
+                .padding(.bottom, 44)
+                .rfRise(shown: introRevealed, index: 7)
+            }
+        }
+        .padding(.horizontal, 32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -220,6 +237,7 @@ private struct CreateAccountStep: View {
             Spacer()
 
             stepHeader(
+                lead: "Your covenant group, your partner, and your daily check-in live with this account.",
                 title: "Create your\naccount",
                 subtitle: "Your journey begins here"
             )
@@ -501,6 +519,7 @@ private struct InvitePartnerStep: View {
             .padding(.bottom, 36)
 
             stepHeader(
+                lead: "A partner who has your back.",
                 title: "Invite your\naccountability partner",
                 subtitle: "If someone already invited you, accept it in Settings after you sign in. You don't have to invite them back."
             )
@@ -636,6 +655,7 @@ private struct MonitoringSetupStep: View {
                 .padding(.bottom, 24)
 
                 stepHeader(
+                    lead: "Alerts, Blocking, and Session Shield.",
                     title: "Allow Screen Time",
                     subtitle: "Two things to set up now: Alerts and Blocking."
                 )
@@ -768,6 +788,7 @@ private struct DeepScanStep: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 16) {
                 stepHeader(
+                    lead: "You decide when a deeper look runs.",
                     title: DeepScanOnboarding.title,
                     subtitle: DeepScanOnboarding.subtitle
                 )
@@ -837,6 +858,7 @@ private struct SetupStatusStep: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 stepHeader(
+                    lead: "Your partner can stand with what you set up.",
                     title: "You are set up",
                     subtitle: "Here is what is on, and what you can turn on later."
                 )
@@ -903,6 +925,7 @@ private struct AppPickerStep: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 16) {
                 stepHeader(
+                    lead: "You choose the apps Session Shield covers with you.",
                     title: "Choose apps",
                     subtitle: "Select the apps you want included. You can change this later."
                 )
@@ -948,8 +971,16 @@ private struct AppPickerStep: View {
     }
 }
 
-private func stepHeader(title: String, subtitle: String) -> some View {
+private func stepHeader(lead: String? = nil, title: String, subtitle: String) -> some View {
     VStack(spacing: 10) {
+        if let lead {
+            Text(lead)
+                .font(.title3)
+                .fontDesign(.serif)
+                .foregroundStyle(Color.rfGold)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
         Text(title)
             .font(.largeTitle.bold())
             .fontDesign(.serif)

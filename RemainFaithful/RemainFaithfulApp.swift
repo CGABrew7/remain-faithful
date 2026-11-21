@@ -53,15 +53,18 @@ struct RemainFaithfulApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if isUITestReset {
-                    OnboardingView()
-                } else if showDashboard {
-                    ContentView()
-                } else if hasCompletedOnboarding || authState.currentUser != nil {
-                    LoginView()
-                } else {
-                    OnboardingView()
+            let entry = isUITestReset || !showDashboard
+            RFLaunchHost(enabled: entry, skipsIntro: isUITestReset || !entry) {
+                Group {
+                    if isUITestReset {
+                        OnboardingView(isLaunchTarget: true)
+                    } else if showDashboard {
+                        ContentView()
+                    } else if hasCompletedOnboarding || authState.currentUser != nil {
+                        LoginView(isLaunchTarget: true)
+                    } else {
+                        OnboardingView(isLaunchTarget: true)
+                    }
                 }
             }
             .environmentObject(appState)

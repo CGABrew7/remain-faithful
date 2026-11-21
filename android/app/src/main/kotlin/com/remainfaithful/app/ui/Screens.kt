@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,7 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -32,7 +36,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -74,9 +77,10 @@ import com.remainfaithful.core.StreakMark
 
 @Composable
 fun RootScreen(model: AppModel) {
-    Box(Modifier.fillMaxSize().background(RfColors.page)) {
+    LaunchChrome(model) {
+    Box(Modifier.fillMaxSize()) {
         when (model.phase) {
-            Phase.Loading -> CircularProgressIndicator(color = RfColors.gold, modifier = Modifier.align(Alignment.Center))
+            Phase.Loading -> Box(Modifier.fillMaxSize())
             Phase.Onboarding -> Onboarding(model)
             Phase.Login -> LoginScreen(model)
             Phase.App -> MainTabs(model)
@@ -95,10 +99,15 @@ fun RootScreen(model: AppModel) {
         if (model.sheet != null) SheetHost(model)
         if (model.tourOn && model.phase == Phase.App) TourCard(model)
     }
+    }
 }
 
 @Composable
 private fun Onboarding(model: AppModel) {
+    if (model.step == 0) {
+        Welcome(model)
+        return
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(RfMetrics.gutter)) {
         if (model.step in 1..6) {
             val total = if (BuildConfig.DEEP_SCAN_ENABLED) 6 else 5
@@ -107,11 +116,11 @@ private fun Onboarding(model: AppModel) {
             Spacer(Modifier.height(12.dp))
         }
         when (model.step) {
-            0 -> Welcome(model)
             1 -> CreateAccount(model)
             2 -> InviteStep(model)
             3 -> DisclosureStep(
                 model,
+                Copy.usageLead,
                 Copy.usageTitle,
                 Copy.usageBody,
                 Copy.alertsRow,
@@ -130,20 +139,42 @@ private fun Onboarding(model: AppModel) {
 
 @Composable
 private fun Welcome(model: AppModel) {
-    Spacer(Modifier.height(48.dp))
-    Text(Copy.appName, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 40.sp)
-    Spacer(Modifier.height(8.dp))
-    Text(Copy.welcomeSubtitle, color = RfColors.textSecondary, fontSize = 18.sp)
-    Spacer(Modifier.height(28.dp))
-    Text(Copy.scripture, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontSize = 16.sp)
-    Text(Copy.scriptureRef, color = RfColors.gold, modifier = Modifier.padding(top = 8.dp))
-    Spacer(Modifier.height(36.dp))
-    RfButton(Copy.begin, onClick = { model.step = 1 })
-    TextButtonRow(Copy.alreadyAccount, Copy.signIn) { model.phase = Phase.Login }
+    val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        LaunchLockup(maxHeight = maxHeight, modifier = Modifier.align(Alignment.TopCenter))
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .launchReveal()
+                .padding(horizontal = RfMetrics.gutter)
+                .padding(top = topInset + 128.dp, bottom = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            listOf(Copy.giftCovenant, Copy.giftPartner, Copy.giftCheckIn, Copy.giftShield).forEach { line ->
+                Text(line, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontSize = 20.sp)
+                Spacer(Modifier.height(6.dp))
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                Copy.welcomeSubtitle,
+                color = RfColors.textSecondary,
+                fontFamily = FontFamily.Serif,
+                fontSize = 18.sp,
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(Copy.scripture, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontSize = 16.sp)
+            Text(Copy.scriptureRef, color = RfColors.gold, modifier = Modifier.padding(top = 8.dp))
+            Spacer(Modifier.height(36.dp))
+            RfButton(Copy.begin, onClick = { model.step = 1 })
+            TextButtonRow(Copy.alreadyAccount, Copy.signIn) { model.phase = Phase.Login }
+        }
+    }
 }
 
 @Composable
 private fun CreateAccount(model: AppModel) {
+    Lead(Copy.createLead)
     Text(Copy.createTitle, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 34.sp)
     Text(Copy.createSubtitle, color = RfColors.textSecondary, modifier = Modifier.padding(top = 8.dp, bottom = 16.dp))
     Field("Name", model.formName) { model.formName = it }
@@ -178,6 +209,7 @@ private fun CreateAccount(model: AppModel) {
 @Composable
 private fun InviteStep(model: AppModel) {
     var address by remember { mutableStateOf("") }
+    Lead(Copy.inviteLead)
     Text(Copy.inviteTitle, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 34.sp)
     Text("They accept in Settings. Or share a link they can open. They still accept from the email you send. ${Copy.groupCap}", color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 12.dp))
     Field("Partner email", address, KeyboardType.Email) { address = it }
@@ -193,6 +225,7 @@ private fun InviteStep(model: AppModel) {
 @Composable
 private fun DisclosureStep(
     model: AppModel,
+    lead: String,
     title: String,
     body: String,
     row1: String,
@@ -201,6 +234,7 @@ private fun DisclosureStep(
     nextStep: Int,
     onAllow: () -> Unit,
 ) {
+    Lead(lead)
     Text(title, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp)
     Text(body, color = RfColors.textPrimary, modifier = Modifier.padding(vertical = 16.dp))
     Text("Alerts", color = RfColors.gold, fontWeight = FontWeight.Bold)
@@ -213,6 +247,7 @@ private fun DisclosureStep(
 
 @Composable
 private fun DeepScanStep(model: AppModel) {
+    Lead(Copy.deepScanLead)
     Text(Copy.deepScanTitle, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp)
     Text(Copy.deepScanSubtitle, color = RfColors.gold, modifier = Modifier.padding(vertical = 8.dp))
     Text(Copy.deepScanSummary, color = RfColors.textPrimary)
@@ -225,6 +260,7 @@ private fun DeepScanStep(model: AppModel) {
 
 @Composable
 private fun ChooseStep(model: AppModel) {
+    Lead(Copy.chooseLead)
     Text("Choose apps", color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp)
     Text("Pick the apps that tempt you. The names stay on this phone.", color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 8.dp))
     if (model.apps.isEmpty()) {
@@ -251,6 +287,7 @@ private fun ChooseStep(model: AppModel) {
 
 @Composable
 private fun DoneStep(model: AppModel) {
+    Lead(Copy.doneLead)
     Text(Copy.youAreSet, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 34.sp)
     if (BuildConfig.DEEP_SCAN_ENABLED) {
         Text(Copy.deepScanHomeNote, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 16.dp))
@@ -260,8 +297,17 @@ private fun DoneStep(model: AppModel) {
 
 @Composable
 private fun LoginScreen(model: AppModel) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(RfMetrics.gutter)) {
-        Spacer(Modifier.height(48.dp))
+    val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        LaunchLockup(maxHeight = maxHeight, modifier = Modifier.align(Alignment.TopCenter))
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .launchReveal()
+                .padding(horizontal = RfMetrics.gutter)
+                .padding(top = topInset + 128.dp, bottom = 28.dp),
+        ) {
         Text(Copy.welcomeBack, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 36.sp)
         Text(Copy.signInSubtitle, color = RfColors.textSecondary, modifier = Modifier.padding(bottom = 20.dp))
         Field("Email", model.formEmail, KeyboardType.Email) { model.formEmail = it }
@@ -277,7 +323,19 @@ private fun LoginScreen(model: AppModel) {
             model.phase = Phase.Onboarding
             model.step = 1
         }
+        }
     }
+}
+
+@Composable
+private fun Lead(text: String) {
+    Text(
+        text,
+        color = RfColors.gold,
+        fontFamily = FontFamily.Serif,
+        fontSize = 18.sp,
+        modifier = Modifier.padding(bottom = 8.dp),
+    )
 }
 
 @Composable

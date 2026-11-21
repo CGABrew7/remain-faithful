@@ -6,6 +6,8 @@ import GoogleSignIn
 
 struct LoginView: View {
     var showDismissButton: Bool = false
+    /// True only when this login screen is the first screen after the splash.
+    var isLaunchTarget: Bool = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showCreateAccount = false
     @AppStorage("userName")  private var storedName  = ""
@@ -19,7 +21,18 @@ struct LoginView: View {
     @Environment(\.dismiss) private var dismiss
 
     @FocusState private var focused: Field?
+    @Environment(\.rfLaunch) private var launch
     private enum Field { case email, password }
+
+    private var introSettled: Bool {
+        guard isLaunchTarget, let launch else { return true }
+        return launch.settled
+    }
+
+    private var introRevealed: Bool {
+        guard isLaunchTarget, let launch else { return true }
+        return launch.revealed
+    }
 
     @StateObject private var appleCoordinator = AppleSignInCoordinator()
 
@@ -33,42 +46,47 @@ struct LoginView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color.rfNavy, Color.rfNavyMid],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            Color.rfNavy
+                .ignoresSafeArea()
+
+            RFAmbientRings()
                 .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     logoSection
-                        .padding(.top, 60)
-                        .padding(.bottom, 44)
+                        .padding(.top, 28)
+                        .padding(.bottom, 28)
 
-                    formSection
-                        .padding(.horizontal, 24)
-
-                    if let msg = errorMsg {
-                        Text(msg)
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
-                            .multilineTextAlignment(.center)
-                            .padding(.top, 12)
+                    VStack(spacing: 0) {
+                        formSection
                             .padding(.horizontal, 24)
-                            .transition(.opacity)
+
+                        if let msg = errorMsg {
+                            Text(msg)
+                                .font(.system(size: 13))
+                                .foregroundStyle(Color(red: 0.90, green: 0.35, blue: 0.35))
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 12)
+                                .padding(.horizontal, 24)
+                                .transition(.opacity)
+                        }
+
+                        signInButton
+                            .padding(.horizontal, 24)
+                            .padding(.top, 20)
+
+                        forgotPasswordButton
+                            .padding(.top, 14)
+
+                        orDivider
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 24)
+
+                        socialButtons
+                            .padding(.horizontal, 24)
                     }
-
-                    signInButton
-                        .padding(.horizontal, 24)
-                        .padding(.top, 20)
-
-                    forgotPasswordButton
-                        .padding(.top, 14)
-
-                    orDivider
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 24)
-
-                    socialButtons
-                        .padding(.horizontal, 24)
+                    .rfRise(shown: introRevealed, index: 1)
 
                     Spacer(minLength: 48)
                 }
@@ -96,17 +114,24 @@ struct LoginView: View {
     private var logoSection: some View {
         VStack(spacing: 16) {
             ZStack {
-                Circle()
-                    .fill(Color.rfGold.opacity(0.08))
-                    .frame(width: 100, height: 100)
-                Circle()
-                    .fill(Color.rfGold.opacity(0.12))
-                    .frame(width: 72, height: 72)
-                Image(systemName: "checkmark.shield.fill")
-                    .font(.system(size: 32, weight: .medium))
-                    .foregroundStyle(Color.rfGold)
+                if introSettled {
+                    if isLaunchTarget {
+                        RFLaunchMark(
+                            compact: true,
+                            draw: 1,
+                            glow: launch?.glow ?? 0.2,
+                            namespace: launch?.namespace,
+                            linked: launch?.linkMark ?? false
+                        )
+                    } else {
+                        RFDrawnMark(draw: 1, glow: 0.15)
+                            .frame(width: 44, height: 50)
+                    }
+                }
             }
-            .accessibilityHidden(true)
+            .frame(minHeight: isLaunchTarget ? 136 : 64)
+            .frame(maxWidth: .infinity)
+
             VStack(spacing: 6) {
                 Text("Welcome Back")
                     .font(.largeTitle.bold())
@@ -116,6 +141,7 @@ struct LoginView: View {
                     .font(.body)
                     .foregroundStyle(Color.white.opacity(0.72))
             }
+            .rfRise(shown: introRevealed, index: 0)
         }
     }
 

@@ -6,8 +6,9 @@ import AppStoreLink from '@/components/AppStoreLink'
 import DonateButton from '@/components/DonateButton'
 import DonationSuccessBanner from '@/components/DonationSuccessBanner'
 import FeaturePlate from '@/components/FeaturePlate'
-import Ornament from '@/components/Ornament'
+import HeroIntro from '@/components/HeroIntro'
 import PhoneFrame from '@/components/PhoneFrame'
+import WelcomePhone from '@/components/WelcomePhone'
 
 const FaqAccordion = dynamic(() => import('@/components/FaqAccordion'))
 const WaitlistForm = dynamic(() => import('@/components/WaitlistForm'))
@@ -129,15 +130,20 @@ export default function HomePage() {
         </Suspense>
       )}
 
-      <section className="shell grid items-center gap-8 pb-12 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-16 lg:pt-32">
+      <section className="hero-stage">
+        <div className="hero-rings" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      <div className="shell grid items-center gap-8 pb-12 pt-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.8fr)] lg:gap-x-16 lg:gap-y-6 lg:pb-16 lg:pt-32">
         <div className="lg:col-start-1 lg:row-start-1">
           <p className="kicker rise">Free · iPhone (iOS 17+)</p>
-          <Ornament className="rise rise-2 mb-6 mt-5" />
-          <h1 className="rise rise-2 font-serif text-[2.75rem] font-bold leading-[1.04] tracking-[-0.03em] text-white sm:text-6xl lg:text-[4.15rem]">
-            Remain Faithful
-          </h1>
-          <p className="rise rise-3 mt-6 max-w-[22ch] font-serif text-2xl leading-snug text-white/90 sm:text-[1.7rem]">
-            A partner you trust stands with you.
+          <div className="mt-6">
+            <HeroIntro />
+          </div>
+          <p className="rise rise-3 mt-6 max-w-[28ch] font-serif text-2xl leading-snug text-white/90 sm:text-[1.7rem]">
+            A covenant group, a partner, and Session Shield.
           </p>
           <p className="mt-4 max-w-[42ch] text-[1.05rem] leading-relaxed text-ink-soft">
             Free peer accountability for adults committed to purity. You do not have to carry the hard moments alone.
@@ -155,12 +161,9 @@ export default function HomePage() {
           </div>
         </div>
         <div className="rise rise-3 lg:col-start-2 lg:row-start-1 lg:justify-self-end">
-          <PhoneFrame
-            src="/screens/welcome.webp"
-            alt="Remain Faithful iPhone welcome screen: Remain Faithful, accountability between trusted friends, and Begin Your Journey."
-            priority
-          />
+          <WelcomePhone />
         </div>
+      </div>
       </section>
 
       <section id="how-it-works" className="shell scroll-mt-24 pb-8" aria-labelledby="how-strip-heading">
@@ -365,11 +368,6 @@ export default function HomePage() {
       {donationsEnabled() && <section id="donate" className="section scroll-mt-24" data-clarity-mask="true">
         <div className="shell">
           <div className="surface relative overflow-hidden px-6 py-14 text-center sm:px-12">
-            <div
-              className="pointer-events-none absolute inset-0"
-              aria-hidden="true"
-              style={{ background: 'radial-gradient(50% 80% at 50% 0%, rgba(240,208,48,0.16), transparent 70%)' }}
-            />
             <div className="relative">
               <p className="kicker mb-4">Sustain the work</p>
               <h2 className="font-serif text-4xl font-bold text-white sm:text-5xl">

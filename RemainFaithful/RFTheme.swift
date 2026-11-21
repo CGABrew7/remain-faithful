@@ -23,10 +23,11 @@ extension Color {
     static let rfNavy    = Color(red: 0.07, green: 0.13, blue: 0.30)
     /// Page background, bottom of the gradient. Brand navy — do not change.
     static let rfNavyMid = Color(red: 0.11, green: 0.19, blue: 0.40)
-    /// Away-kit yellow #F0D030. Navy text on this fill is 10.2:1.
+    /// Away-kit yellow #F0D030. The one accent token.
+    /// Measured against navy #12214C: 10.22:1 either way (WCAG AA is 4.5:1).
     static let rfGold    = Color(red: 240.0/255.0, green: 208.0/255.0, blue: 48.0/255.0)
 
-    // Gradient stops. Navy text is 12.5:1 on the top stop and 6.6:1 on the bottom stop.
+    // Gradient stops. Navy text is 12.46:1 on the top stop and 6.59:1 on the bottom stop.
     static let rfGoldLight = Color(red: 248.0/255.0, green: 231.0/255.0, blue: 138.0/255.0)
     static let rfGoldDeep  = Color(red: 198.0/255.0, green: 166.0/255.0, blue: 30.0/255.0)
 
@@ -87,7 +88,7 @@ enum RFStroke {
 
     /// Gold hairline for secondary buttons and selected states.
     static let gold = LinearGradient(
-        colors: [Color.rfGold.opacity(0.95), Color.rfGold.opacity(0.55)],
+        colors: [Color.rfGold, Color.rfGold],
         startPoint: .top,
         endPoint: .bottom
     )
@@ -169,12 +170,9 @@ struct RFToggleStyle: ToggleStyle {
             }
             ZStack(alignment: on ? .trailing : .leading) {
                 Capsule()
-                    .fill(on
-                          ? AnyShapeStyle(LinearGradient(colors: [.rfGoldLight, .rfGoldDeep],
-                                                         startPoint: .top, endPoint: .bottom))
-                          : AnyShapeStyle(Color.white.opacity(0.16)))
+                    .fill(on ? AnyShapeStyle(Color.rfGold) : AnyShapeStyle(Color.white.opacity(0.16)))
                     .overlay(Capsule().strokeBorder(
-                        on ? Color.rfGoldDeep.opacity(0.55) : Color.white.opacity(0.10),
+                        on ? Color.rfGold : Color.white.opacity(0.10),
                         lineWidth: 1))
                     .frame(width: 51, height: 31)
 

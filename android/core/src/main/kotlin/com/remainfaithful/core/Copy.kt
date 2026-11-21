@@ -2,6 +2,16 @@ package com.remainfaithful.core
 
 object Copy {
     const val appName = "Remain Faithful"
+    const val giftCovenant = "A covenant group"
+    const val giftPartner = "A partner who has your back"
+    const val giftCheckIn = "A daily check-in"
+    const val giftShield = "App Lockout"
+    const val createLead = "Your covenant group, your partner, and your daily check-in live with this account."
+    const val inviteLead = "A partner who has your back."
+    const val usageLead = "Alerts, Blocking, and App Lockout."
+    const val deepScanLead = "You decide when a deeper look runs."
+    const val chooseLead = "You choose the apps App Lockout covers with you."
+    const val doneLead = "Your partner can stand with what you set up."
     const val welcomeSubtitle = "Accountability between\ntrusted friends"
     const val scripture = "But you must remain faithful to the things you have been taught."
     const val scriptureRef = "2 Timothy 3:14"
@@ -110,7 +120,9 @@ object Copy {
 
     fun allStrings(): List<String> {
         val base = listOf(
-            appName, welcomeSubtitle, scripture, scriptureRef, begin, alreadyAccount, signIn,
+            appName, giftCovenant, giftPartner, giftCheckIn, giftShield,
+            createLead, inviteLead, usageLead, deepScanLead, chooseLead, doneLead,
+            welcomeSubtitle, scripture, scriptureRef, begin, alreadyAccount, signIn,
             google, googleContinue, googleUnavailable, googleFailed, googleNone,
             createTitle, createSubtitle, ageGate, legalLead, terms, privacy, getStarted, creating,
             inviteTitle, inviteSkip, groupCap, sharePartner, usageTitle, usageBody, alertsRow,

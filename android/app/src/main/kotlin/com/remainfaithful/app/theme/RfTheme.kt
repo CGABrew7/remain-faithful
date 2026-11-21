@@ -33,19 +33,20 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Remain Faithful color system.
- * Change [gold], [goldLight], and [goldDeep] here (and the matching values in
- * res/values/colors.xml) when the gold moves to a brighter yellow.
- * Screens use these tokens. Do not hardcode brand colors elsewhere.
+ * [gold] is the away-kit yellow #F0D030, shared with iOS Color.rfGold and the
+ * website --wax token. Navy #12214C on this yellow, and the yellow on navy,
+ * both measure 10.22:1. The gradient stops measure 12.46:1 and 6.59:1.
+ * Keep res/values/colors.xml rf_gold on the same hex.
  */
 object RfColors {
     const val navyArgb: Int = 0xFF12214C.toInt()
-    const val goldArgb: Int = 0xFFD1AB4C.toInt()
+    const val goldArgb: Int = 0xFFF0D030.toInt()
 
     val navy = Color(navyArgb)
     val navyMid = Color(0xFF1C3066)
     val gold = Color(goldArgb)
-    val goldLight = Color(0xFFF2D685)
-    val goldDeep = Color(0xFFB88C2E)
+    val goldLight = Color(0xFFF8E78A)
+    val goldDeep = Color(0xFFC6A61E)
     val danger = Color(0xFF9E2429)
     val success = Color(0xFF33C773)
     val info = Color(0xFF478FEF)
@@ -59,8 +60,7 @@ object RfColors {
     val stroke = Color.White.copy(alpha = 0.16f)
     val scrim = Color(0xC712214C)
 
-    val page: Brush = Brush.verticalGradient(listOf(navy, navyMid))
-    val goldFill: Brush = Brush.verticalGradient(listOf(goldLight, goldDeep))
+    val page: Brush = Brush.verticalGradient(listOf(navy, navy))
 }
 
 object RfMetrics {
@@ -130,7 +130,7 @@ fun RfButton(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed && enabled) 0.96f else 1f, label = "press")
+    val scale by animateFloatAsState(if (pressed && enabled) 0.98f else 1f, label = "press")
     val container = when {
         destructive -> RfColors.danger
         secondary -> Color.Transparent
