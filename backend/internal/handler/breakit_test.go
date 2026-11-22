@@ -104,10 +104,19 @@ func TestUnconfirmedAccountCanCreateGroupInviteAndReport(t *testing.T) {
 		return rr
 	}
 
-	t.Run("unverified password account can create a group", func(t *testing.T) {
+	t.Run("unverified password account cannot create a group", func(t *testing.T) {
 		db := newMemDB()
 		db.addUser(memUser{id: 3, name: "Cam", email: "cam@example.com", verified: false})
 		rr := postGroup(&H{DB: db.open(t)}, 3)
+		if rr.Code != http.StatusForbidden || !strings.Contains(rr.Body.String(), "email_not_verified") {
+			t.Fatalf("status %d %s", rr.Code, rr.Body.String())
+		}
+	})
+
+	t.Run("app review mailbox can create a group before confirmation", func(t *testing.T) {
+		db := newMemDB()
+		db.addUser(memUser{id: 9, name: "Review", email: "review@remainfaithful.com", verified: false})
+		rr := postGroup(&H{DB: db.open(t)}, 9)
 		if rr.Code != http.StatusCreated {
 			t.Fatalf("status %d %s", rr.Code, rr.Body.String())
 		}

@@ -117,6 +117,10 @@ class ApiClient(
         post("/auth/forgot-password", mapOf("email" to email), auth = false)
     }
 
+    fun logout() {
+        post("/auth/logout", emptyMap())
+    }
+
     fun refresh() {
         val body = post("/auth/refresh", emptyMap())
         val token = body.optString("token")

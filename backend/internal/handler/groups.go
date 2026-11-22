@@ -54,7 +54,10 @@ func (h *H) ListMyGroups(w http.ResponseWriter, r *http.Request) {
 // POST /groups
 // Body: { "name": "...", "covenant": "..." }
 func (h *H) CreateGroup(w http.ResponseWriter, r *http.Request) {
-	userID, _ := rfauth.UserIDFromContext(r.Context())
+	userID, ok := h.requireConfirmedAccount(w, r)
+	if !ok {
+		return
+	}
 
 	var req struct {
 		Name     string `json:"name"`

@@ -62,7 +62,7 @@ export default function TermsPage() {
 
           <Section title="Changes to These Terms">
             <p>
-              We may update these Terms at any time. Material changes will be communicated via push notification or email. Continued use after changes constitutes acceptance.
+              We may update these Terms at any time. When we do, the date at the top of this page changes. Continued use after a change means you accept the updated terms.
             </p>
           </Section>
 

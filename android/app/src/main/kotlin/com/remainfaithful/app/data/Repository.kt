@@ -21,7 +21,9 @@ class Repository private constructor(context: Context) {
     var token: String?
         get() = prefs.getString(KEY_TOKEN, null)
         private set(value) {
-            prefs.edit().putString(KEY_TOKEN, value).apply()
+            val editor = prefs.edit()
+            if (value == null) editor.remove(KEY_TOKEN) else editor.putString(KEY_TOKEN, value)
+            editor.apply()
         }
 
     val isSignedIn: Boolean get() = !token.isNullOrBlank()

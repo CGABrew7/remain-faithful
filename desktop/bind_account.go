@@ -146,6 +146,12 @@ func (a *App) SignOut(unlocked bool) error {
 		_ = a.client.ReportDevice(ctx, id, kind, false)
 		cancel()
 	}
+	ctx, cancel = a.ctxTimeout()
+	err = a.client.Logout(ctx)
+	cancel()
+	if err != nil {
+		return a.soften(err)
+	}
 	return a.store.ClearSession()
 }
 

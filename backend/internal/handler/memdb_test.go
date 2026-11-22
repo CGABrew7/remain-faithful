@@ -600,6 +600,13 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 		m.linkSocial(q, args, true)
 		return []string{"ok"}, nil
 
+	case containsAll(q, "UPDATE users", "token_version = token_version + 1") && !containsAll(q, "password_hash"):
+		u := m.users[asInt64(args[0])]
+		if u != nil {
+			u.tokenVersion++
+		}
+		return []string{"ok"}, nil
+
 	case containsAll(q, "UPDATE users", "password_hash", "token_version"):
 		u := m.users[asInt64(args[1])]
 		if u != nil {

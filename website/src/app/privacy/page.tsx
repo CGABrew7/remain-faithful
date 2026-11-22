@@ -20,7 +20,7 @@ export default function PrivacyPage() {
         <div className="prose-content space-y-12">
           <Section title="Our Commitment">
             <p className="font-semibold text-ink leading-relaxed">
-              We do not sell your name or email. People you accept as partners, and members of a group you join, can see the name and email on your account, plus alert metadata. Apple or Google may receive a device token so alerts can be delivered. Website analytics run only if you allow them.
+              We do not sell your name or email. People you accept as partners, and members of a group you join, can see the name and email on your account, plus alert metadata. Apple or Google may receive a device token so alerts can be delivered. This website counts pages without cookies. Google Analytics and Microsoft Clarity load only after you allow them.
             </p>
             <p>
               Remain Faithful is an accountability app for adults. This policy describes what the iPhone app, the Android app, the desktop app, and this website collect today, what stays on your device, and what a partner can see.
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
 
             <Subsection title="Website Analytics">
               <p>
-                Website analytics stay off until you tap Allow analytics. The choice is saved in this browser. If you allow them, the site may load Google Analytics and Microsoft Clarity. Microsoft Clarity sets first-party cookies (_clck and _clsk) only after you allow analytics. The iPhone, Android, and desktop apps do not include this website analytics.
+                This website counts pages without cookies. That count runs on its own. Google Analytics and Microsoft Clarity stay off until you tap Allow analytics. The choice is saved in this browser. Microsoft Clarity sets first-party cookies (_clck and _clsk) only after you allow analytics. The iPhone, Android, and desktop apps do not include this website analytics.
               </p>
               <p>
                 The site also keeps a cookieless count of pages, referrer domain, campaign tags, country, region, and device type for 13 months, with a daily anonymous visitor id and no IP address.

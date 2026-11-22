@@ -1,8 +1,12 @@
 import Stripe from 'stripe'
 import { checkoutReturnUrls } from '@/lib/checkout-urls'
+import { donationsApiEnabled } from '@/lib/donations'
 import { guardPublicPost } from '@/lib/form-guard'
 
 export async function POST(request: Request) {
+  if (!donationsApiEnabled()) {
+    return Response.json({ error: 'Payments are turned off.' }, { status: 404 })
+  }
   try {
     const guarded = await guardPublicPost(request, {
       actions: ['donate'],

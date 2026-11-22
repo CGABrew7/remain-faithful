@@ -13,8 +13,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	rfauth "remain-faithful/backend/internal/auth"
+	mailclient "remain-faithful/backend/internal/email"
 
 	"github.com/gorilla/mux"
 )
@@ -100,7 +102,15 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 		}
 		acceptURL := siteBase() + "/accept-invite?token=" + token + "&type=partner"
 		if h.Email != nil {
+			if !reserveInviteMail(userID, time.Now()) {
+				writeError(w, http.StatusTooManyRequests, "You can send more invites tomorrow.")
+				return
+			}
 			if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
+				if errors.Is(sendErr, mailclient.ErrDailyCeiling) {
+					writeError(w, http.StatusTooManyRequests, "You can send more invites tomorrow.")
+					return
+				}
 				log.Printf("[invite] partner email error user=%d: %v", userID, sendErr)
 			}
 		}
@@ -129,7 +139,15 @@ func (h *H) InvitePartner(w http.ResponseWriter, r *http.Request) {
 	}
 	acceptURL := siteBase() + "/invite?token=" + token + "&type=partner"
 	if h.Email != nil {
+		if !reserveInviteMail(userID, time.Now()) {
+			writeError(w, http.StatusTooManyRequests, "You can send more invites tomorrow.")
+			return
+		}
 		if sendErr := h.Email.SendPartnerInvite(req.Email, inviterName, acceptURL); sendErr != nil {
+			if errors.Is(sendErr, mailclient.ErrDailyCeiling) {
+				writeError(w, http.StatusTooManyRequests, "You can send more invites tomorrow.")
+				return
+			}
 			log.Printf("[invite] partner email error user=%d: %v", userID, sendErr)
 		}
 	}
@@ -346,7 +364,13 @@ func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, em
 		}
 		acceptURL := fmt.Sprintf("%s/accept-invite?token=%s&type=group", siteBase(), token)
 		if h.Email != nil {
+			if !reserveInviteMail(inviterID, time.Now()) {
+				return groupInviteResult{}, &handlerError{http.StatusTooManyRequests, "You can send more invites tomorrow."}
+			}
 			if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
+				if errors.Is(sendErr, mailclient.ErrDailyCeiling) {
+					return groupInviteResult{}, &handlerError{http.StatusTooManyRequests, "You can send more invites tomorrow."}
+				}
 				log.Printf("[invite] group email error group=%d: %v", groupID, sendErr)
 			}
 		}
@@ -370,7 +394,13 @@ func (h *H) inviteEmailToGroup(ctx context.Context, inviterID, groupID int64, em
 	}
 	acceptURL := fmt.Sprintf("%s/invite?token=%s&type=group", siteBase(), token)
 	if h.Email != nil {
+		if !reserveInviteMail(inviterID, time.Now()) {
+			return groupInviteResult{}, &handlerError{http.StatusTooManyRequests, "You can send more invites tomorrow."}
+		}
 		if sendErr := h.Email.SendGroupInvite(email, inviterName, groupName, acceptURL); sendErr != nil {
+			if errors.Is(sendErr, mailclient.ErrDailyCeiling) {
+				return groupInviteResult{}, &handlerError{http.StatusTooManyRequests, "You can send more invites tomorrow."}
+			}
 			log.Printf("[invite] group email error group=%d: %v", groupID, sendErr)
 		}
 	}
@@ -521,17 +551,25 @@ func (h *H) requireVerifiedMailbox(w http.ResponseWriter, r *http.Request) (int6
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
 		return 0, "", false
 	}
-	if !verified {
+	if !verified && !isAppReviewMailbox(email) {
 		writeUnverifiedMailbox(w, appleID, email)
 		return 0, "", false
 	}
 	return userID, email, true
 }
 
-// requireConfirmedAccount allows a confirmed mailbox, and also an Apple or
-// Google sign-in. Those providers already checked the address when they
-// shared one. Direct relationship creation still uses this check. Partner
-// invites, group invites, group creation, events, and protection alerts do not.
+// appReviewEmail is the App Review demo mailbox. It can create and join
+// groups before that address is confirmed. The password is not in this repo.
+const appReviewEmail = "review@remainfaithful.com"
+
+func isAppReviewMailbox(email string) bool {
+	return strings.EqualFold(strings.TrimSpace(email), appReviewEmail)
+}
+
+// requireConfirmedAccount allows a confirmed mailbox, Apple or Google sign-in,
+// and the App Review demo mailbox. Relationship creation and group creation
+// use this check. Partner invites, group invites, events, and protection
+// alerts do not.
 func (h *H) requireConfirmedAccount(w http.ResponseWriter, r *http.Request) (int64, bool) {
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 	var email, appleID, googleID string
@@ -544,7 +582,7 @@ func (h *H) requireConfirmedAccount(w http.ResponseWriter, r *http.Request) (int
 		writeError(w, http.StatusInternalServerError, "could not verify your account")
 		return 0, false
 	}
-	if verified || strings.TrimSpace(appleID) != "" || strings.TrimSpace(googleID) != "" {
+	if verified || strings.TrimSpace(appleID) != "" || strings.TrimSpace(googleID) != "" || isAppReviewMailbox(email) {
 		return userID, true
 	}
 	writeUnverifiedMailbox(w, appleID, email)
@@ -560,7 +598,7 @@ func writeUnverifiedMailbox(w http.ResponseWriter, appleID, email string) {
 		return
 	}
 	writeCodedError(w, http.StatusForbidden, "email_not_verified",
-		"Confirm your email, then you can view and accept invites. You can resend the confirmation email.")
+		"Confirm your email, then you can create a group or accept an invite. You can resend the confirmation email.")
 }
 
 // AcceptPartnerInviteByID accepts a pending partner invite addressed to the caller.

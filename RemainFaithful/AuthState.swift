@@ -176,6 +176,7 @@ final class AuthState: ObservableObject {
         inMemoryToken = nil
         keychain.delete("authToken")
         keychain.delete("currentUser")
+        // Extensions read this copy. Sign-out and account deletion both come through here.
         sharedDefaults?.removeObject(forKey: "authToken")
         sharedDefaults?.removeObject(forKey: "authUserID")
         clearQueuedEvents()

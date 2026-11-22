@@ -140,6 +140,7 @@ func TestCreateBillingPortalRequiresJWT(t *testing.T) {
 }
 
 func TestCreateBillingPortalStripeDisabled(t *testing.T) {
+	t.Setenv("DONATIONS_ENABLED", "true")
 	h := &H{Stripe: &payment.Client{}}
 	req := httptest.NewRequest(http.MethodPost, "/donations/billing-portal", http.NoBody)
 	req = req.WithContext(rfauth.ContextWithUser(req.Context(), 42))
@@ -153,6 +154,33 @@ func TestCreateBillingPortalStripeDisabled(t *testing.T) {
 	body, _ := io.ReadAll(rr.Body)
 	if !strings.Contains(string(body), "payments not configured") {
 		t.Fatalf("body = %q", body)
+	}
+}
+
+func TestDonationsRefuseUnlessEnabled(t *testing.T) {
+	t.Setenv("DONATIONS_ENABLED", "")
+	t.Setenv("STRIPE_SECRET_KEY", "sk_test_flag_off")
+	prev := stripe.Key
+	t.Cleanup(func() { stripe.Key = prev })
+	h := &H{Stripe: payment.New()}
+	if h.Stripe == nil || !h.Stripe.Enabled() {
+		t.Fatal("stripe client should see the key")
+	}
+
+	checkout := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/donations/create-checkout-session", strings.NewReader(`{"amount_dollars":10}`))
+	req = req.WithContext(rfauth.ContextWithUser(req.Context(), 42))
+	h.CreateCheckoutSession(checkout, req)
+	if checkout.Code != http.StatusNotFound || !strings.Contains(checkout.Body.String(), "Payments are turned off.") {
+		t.Fatalf("checkout %d %s", checkout.Code, checkout.Body.String())
+	}
+
+	portal := httptest.NewRecorder()
+	preq := httptest.NewRequest(http.MethodPost, "/donations/billing-portal", http.NoBody)
+	preq = preq.WithContext(rfauth.ContextWithUser(preq.Context(), 42))
+	h.CreateBillingPortalSession(portal, preq)
+	if portal.Code != http.StatusNotFound || !strings.Contains(portal.Body.String(), "Payments are turned off.") {
+		t.Fatalf("portal %d %s", portal.Code, portal.Body.String())
 	}
 }
 

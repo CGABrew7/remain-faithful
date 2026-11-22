@@ -845,6 +845,12 @@ html.hero-still .hero-word span {
   }
 }
 
+@media (max-width: 639px) {
+  .hero-rings {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-rings {
     display: none;
