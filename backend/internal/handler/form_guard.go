@@ -139,6 +139,10 @@ func actionAllowed(action string, allowed []string) bool {
 func turnstileOK(ctx context.Context, token, action, remoteIP string, allowed []string) bool {
 	secret := strings.TrimSpace(os.Getenv("TURNSTILE_SECRET_KEY"))
 	if secret == "" {
+		if os.Getenv("APP_ENV") == "production" {
+			log.Printf("[turnstile] TURNSTILE_SECRET_KEY is not set; refusing verification")
+			return false
+		}
 		logTurnstileSkip()
 		return true
 	}

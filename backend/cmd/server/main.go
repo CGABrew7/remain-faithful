@@ -362,6 +362,7 @@ func routes(h *handler.H) http.Handler {
 		api.HandleFunc("/debug/test-push", h.SendTestPush).Methods(http.MethodPost)
 	}
 	api.HandleFunc("/auth/refresh", h.RefreshToken).Methods(http.MethodPost)
+	api.HandleFunc("/auth/logout", h.Logout).Methods(http.MethodPost)
 	// Short burst limit. ResendVerification also sends only a few confirmation emails per hour.
 	api.Handle("/auth/resend-verification", authenticatedRateLimiter(5)(http.HandlerFunc(h.ResendVerification))).Methods(http.MethodPost)
 	api.HandleFunc("/donations/create-checkout-session", h.CreateCheckoutSession).Methods(http.MethodPost)

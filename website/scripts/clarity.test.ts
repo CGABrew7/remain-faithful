@@ -63,7 +63,8 @@ describe('Clarity consent gate', () => {
   it('keeps the consent sentence and says Clarity cookies wait for that choice', () => {
     const privacy = readFileSync(new URL('../src/app/privacy/page.tsx', import.meta.url), 'utf8')
     const clarity = readFileSync(new URL('../src/components/MicrosoftClarity.tsx', import.meta.url), 'utf8')
-    assert.match(privacy, /Website analytics stay off until you tap Allow analytics\./)
+    assert.match(privacy, /This website counts pages without cookies\./)
+    assert.match(privacy, /Google Analytics and Microsoft Clarity stay off until you tap Allow analytics\./)
     assert.match(
       privacy,
       /Microsoft Clarity sets first-party cookies \(_clck and _clsk\) only after you allow analytics\./,

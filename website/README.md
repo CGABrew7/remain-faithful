@@ -37,7 +37,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `NEXT_PUBLIC_SITE_URL` | Yes | Canonical site URL (e.g. `https://www.remainfaithful.com`). Not used for Stripe Checkout return URLs. |
 | `NEXT_PUBLIC_GA_ID` | No | Google Analytics 4 Measurement ID (`G-XXXXXXXXXX`) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | No | Cloudflare Turnstile site key. Public. Set on Vercel. When unset, forms skip the widget. |
-| `TURNSTILE_SECRET_KEY` | No | Cloudflare Turnstile secret. Set on Vercel for the site API routes (invite, password reset, email confirmation, donate, owner sign-in). Also set the same value on Fly so the Go API can check `POST /contact` and `POST /waitlist`. When unset, that server skips the check and logs a warning. |
+| `TURNSTILE_SECRET_KEY` | Yes in production | Cloudflare Turnstile secret. Set on Vercel for the site API routes (invite, password reset, email confirmation, owner sign-in). Also set the same value on Fly so the Go API can check `POST /contact` and `POST /waitlist`. Production refuses those checks when the secret is missing. |
+| `DONATIONS_ENABLED` | No | Server donate routes stay off unless this is exactly `true`. Leave it unset while payments are on hold. |
 
 ## Deploying to Vercel
 

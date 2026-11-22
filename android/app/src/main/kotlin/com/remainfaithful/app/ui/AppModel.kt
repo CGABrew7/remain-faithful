@@ -353,6 +353,16 @@ class AppModel(app: Application) : AndroidViewModel(app) {
                     return@launchIo
                 }
                 runCatching { repo.reportMonitoring(false) }
+                try {
+                    repo.api().logout()
+                } catch (e: Exception) {
+                    if (e is ApiException && e.status == 401) {
+                        signOutLocal()
+                    } else {
+                        banner = "Couldn't sign out. Check your connection and try again."
+                    }
+                    return@launchIo
+                }
                 signOutLocal()
             }
         }

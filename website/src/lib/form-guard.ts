@@ -19,6 +19,10 @@ function warnTurnstileSkipped() {
   console.warn('[turnstile] TURNSTILE_SECRET_KEY is not set; skipping verification')
 }
 
+function turnstileRequired(): boolean {
+  return process.env.NODE_ENV === 'production'
+}
+
 export type TurnstileVerdict = 'skipped' | 'verified' | 'rejected'
 
 export async function verifyTurnstile(input: {
@@ -30,6 +34,10 @@ export async function verifyTurnstile(input: {
 }): Promise<TurnstileVerdict> {
   const secret = (process.env.TURNSTILE_SECRET_KEY || '').trim()
   if (!secret) {
+    if (turnstileRequired()) {
+      console.error('[turnstile] TURNSTILE_SECRET_KEY is not set; refusing verification')
+      return 'rejected'
+    }
     warnTurnstileSkipped()
     return 'skipped'
   }

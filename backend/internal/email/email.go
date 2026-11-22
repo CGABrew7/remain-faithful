@@ -251,6 +251,10 @@ func (c *Client) SendPasswordReset(toEmail, toName, resetURL string) error {
 }
 
 func (c *Client) send(toEmail, toName, subject, plain, htmlBody, replyTo string) error {
+	if !reserveGlobalSend(time.Now().UTC()) {
+		log.Printf("[email] daily ceiling reached; subject=%q", subject)
+		return ErrDailyCeiling
+	}
 	switch c.Provider() {
 	case "resend":
 		return c.sendResend(toEmail, toName, subject, plain, htmlBody, replyTo)

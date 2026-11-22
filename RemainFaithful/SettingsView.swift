@@ -502,11 +502,21 @@ struct SettingsView: View {
                 type: "signed_out",
                 detail: "Signed out. Monitoring on this phone has stopped."
             )
-            await MainActor.run {
-                if result == .failed {
+            if result == .failed {
+                await MainActor.run {
                     actionError = "Couldn't sign out. Check your connection and try again."
-                    return
                 }
+                return
+            }
+            do {
+                try await APIClient.shared.revokeSession()
+            } catch {
+                await MainActor.run {
+                    actionError = "Couldn't sign out. Check your connection and try again."
+                }
+                return
+            }
+            await MainActor.run {
                 ActivitySelectionManager.shared.resetForSignOut()
                 AppLockoutManager.shared.clearLocally()
                 ProtectionAlerts.dropCurrentUser()

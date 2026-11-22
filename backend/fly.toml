@@ -1,3 +1,5 @@
+# The API does not store the database. Postgres is a separate Fly app.
+# Backup and restore steps are in docs/runbooks/backups.md.
 app = "remain-faithful-api"
 primary_region = "ord"
 

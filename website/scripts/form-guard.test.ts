@@ -122,6 +122,7 @@ describe('public form guard', () => {
 
   it('skips verification and warns once when the secret is unset', async () => {
     resetTurnstileWarningForTests()
+    process.env.NODE_ENV = 'test'
     delete process.env.TURNSTILE_SECRET_KEY
     delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
     const warnings: string[] = []
@@ -132,6 +133,25 @@ describe('public form guard', () => {
     assert.equal(await verifyTurnstile({ token: 'token', remoteip: '', action: 'contact' }), 'skipped')
     assert.equal(warnings.length, 1)
     assert.match(warnings[0], /TURNSTILE_SECRET_KEY is not set/)
+  })
+
+  it('refuses verification in production when the secret is missing', async () => {
+    const previous = process.env.NODE_ENV
+    process.env.NODE_ENV = 'production'
+    delete process.env.TURNSTILE_SECRET_KEY
+    const errors: string[] = []
+    const originalError = console.error
+    console.error = (...args: unknown[]) => {
+      errors.push(args.map(String).join(' '))
+    }
+    try {
+      assert.equal(await verifyTurnstile({ token: 'token', remoteip: '', action: 'contact' }), 'rejected')
+      assert.match(errors.join('\n'), /TURNSTILE_SECRET_KEY is not set/)
+    } finally {
+      console.error = originalError
+      if (previous === undefined) delete process.env.NODE_ENV
+      else process.env.NODE_ENV = previous
+    }
   })
 
   it('verifies a token with the dummy test secret', async () => {

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
-import { donationsEnabled } from '../src/lib/donations.ts'
+import { donationsApiEnabled, donationsEnabled } from '../src/lib/donations.ts'
 
 describe('donation visibility', () => {
   it('stays off unless the flag is exactly true', () => {
@@ -14,6 +14,21 @@ describe('donation visibility', () => {
     assert.equal(donationsEnabled(), true)
     if (previous === undefined) delete process.env.NEXT_PUBLIC_DONATIONS_ENABLED
     else process.env.NEXT_PUBLIC_DONATIONS_ENABLED = previous
+  })
+
+  it('keeps donate routes off unless DONATIONS_ENABLED is exactly true', () => {
+    const previous = process.env.DONATIONS_ENABLED
+    delete process.env.DONATIONS_ENABLED
+    assert.equal(donationsApiEnabled(), false)
+    process.env.DONATIONS_ENABLED = 'false'
+    assert.equal(donationsApiEnabled(), false)
+    process.env.STRIPE_SECRET_KEY = 'sk_test_present'
+    assert.equal(donationsApiEnabled(), false)
+    delete process.env.STRIPE_SECRET_KEY
+    process.env.DONATIONS_ENABLED = 'true'
+    assert.equal(donationsApiEnabled(), true)
+    if (previous === undefined) delete process.env.DONATIONS_ENABLED
+    else process.env.DONATIONS_ENABLED = previous
   })
 
   it('gates the public donation surfaces', () => {

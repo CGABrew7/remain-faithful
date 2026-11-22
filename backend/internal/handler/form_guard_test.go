@@ -192,3 +192,16 @@ func TestTurnstileOnContactAndWaitlist(t *testing.T) {
 		t.Fatalf("missing token status %d rows %d", rr.Code, len(db.waitlistRows()))
 	}
 }
+
+func TestTurnstileFailsClosedInProduction(t *testing.T) {
+	t.Setenv("APP_ENV", "production")
+	t.Setenv("TURNSTILE_SECRET_KEY", "")
+	t.Setenv("CONTACT_TO_EMAIL", "support@remainfaithful.com")
+	h := &H{Email: &capturingEmail{}}
+	body := withLoadedAt(`{"name":"Ada","email":"prod@example.com","message":"Hello there","formAction":"contact"}`)
+	rr := httptest.NewRecorder()
+	h.Contact(rr, httptest.NewRequest(http.MethodPost, "/contact", strings.NewReader(body)))
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("status %d %s", rr.Code, rr.Body.String())
+	}
+}

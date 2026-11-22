@@ -175,6 +175,10 @@ func (c *Client) ForgotPassword(ctx context.Context, email string) error {
 	return c.call(ctx, http.MethodPost, "/auth/forgot-password", map[string]string{"email": email}, nil, false)
 }
 
+func (c *Client) Logout(ctx context.Context) error {
+	return c.call(ctx, http.MethodPost, "/auth/logout", map[string]string{}, nil, true)
+}
+
 func (c *Client) Refresh(ctx context.Context) (string, error) {
 	var resp struct {
 		Token string `json:"token"`

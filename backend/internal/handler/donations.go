@@ -8,7 +8,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"remain-faithful/backend/internal/apns"
@@ -31,10 +33,24 @@ type dbExecer interface {
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 }
 
+// donationsEnabled is the server switch for checkout and billing routes.
+// A Stripe key on its own does not turn those routes on.
+func donationsEnabled() bool {
+	return strings.TrimSpace(os.Getenv("DONATIONS_ENABLED")) == "true"
+}
+
+func refuseDonations(w http.ResponseWriter) {
+	writeError(w, http.StatusNotFound, "Payments are turned off.")
+}
+
 // CreateCheckoutSession creates a Stripe Checkout session for a donation.
-// Donations do not unlock features — the app stays free.
+// Donations do not unlock features. The app stays free.
 // POST /donations/create-checkout-session
 func (h *H) CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
+	if !donationsEnabled() {
+		refuseDonations(w)
+		return
+	}
 	userID, _ := rfauth.UserIDFromContext(r.Context())
 	email, _ := rfauth.EmailFromContext(r.Context())
 
@@ -68,6 +84,10 @@ func (h *H) CreateBillingPortalSession(w http.ResponseWriter, r *http.Request) {
 	userID, ok := rfauth.UserIDFromContext(r.Context())
 	if !ok {
 		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	if !donationsEnabled() {
+		refuseDonations(w)
 		return
 	}
 	if h.Stripe == nil || !h.Stripe.Enabled() {

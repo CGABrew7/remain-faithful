@@ -316,6 +316,30 @@ func (h *H) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"token": token})
 }
 
+// Logout ends every session for this account.
+// POST /auth/logout
+// The current token stops working, including on other devices, because the
+// account keeps one session version.
+func (h *H) Logout(w http.ResponseWriter, r *http.Request) {
+	userID, ok := rfauth.UserIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	res, err := h.DB.ExecContext(r.Context(),
+		`UPDATE users SET token_version = token_version + 1 WHERE id = $1`, userID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not sign out")
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
 // ForgotPassword generates a reset token and emails it to the user.
 // POST /auth/forgot-password
 // Body: { "email": "..." }

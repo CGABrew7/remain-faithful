@@ -269,6 +269,11 @@ final class APIClient {
         return resp
     }
 
+    /// Ends the server session. The caller clears the keychain and the app-group copy.
+    func revokeSession() async throws {
+        try await postVoid("/auth/logout", body: [String: String]())
+    }
+
     func logout() {
         AuthState.shared.clearSession()
     }
