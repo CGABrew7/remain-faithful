@@ -8,6 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		BO1000000000000000000002 /* BlockedOpenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BO1000000000000000000001 /* BlockedOpenView.swift */; };
+		CE1000000000000000000002 /* CoachEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1000000000000000000001 /* CoachEngine.swift */; };
+		CK1000000000000000000002 /* CoachCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CK1000000000000000000001 /* CoachCheckInView.swift */; };
+		CW1000000000000000000002 /* CoachWarmth.swift in Sources */ = {isa = PBXBuildFile; fileRef = CW1000000000000000000001 /* CoachWarmth.swift */; };
+		FS1000000000000000000002 /* FutureSelfStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FS1000000000000000000001 /* FutureSelfStore.swift */; };
+		T11000000000000000000006 /* CoachEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T11000000000000000000005 /* CoachEngineTests.swift */; };
+		T11000000000000000000008 /* FutureSelfStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T11000000000000000000007 /* FutureSelfStoreTests.swift */; };
 		CI1000000000000000000002 /* CheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CI1000000000000000000001 /* CheckInView.swift */; };
 		DC1000000000000000000002 /* DeepScanConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1000000000000000000001 /* DeepScanConsentView.swift */; };
 		SA1000000000000000000001 /* ShieldActionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = SA1000000000000000000004 /* ShieldActionExtension.swift */; };
@@ -138,6 +144,12 @@
 
 /* Begin PBXFileReference section */
 		BO1000000000000000000001 /* BlockedOpenView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlockedOpenView.swift; sourceTree = "<group>"; };
+		CE1000000000000000000001 /* CoachEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoachEngine.swift; sourceTree = "<group>"; };
+		CK1000000000000000000001 /* CoachCheckInView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoachCheckInView.swift; sourceTree = "<group>"; };
+		CW1000000000000000000001 /* CoachWarmth.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoachWarmth.swift; sourceTree = "<group>"; };
+		FS1000000000000000000001 /* FutureSelfStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FutureSelfStore.swift; sourceTree = "<group>"; };
+		T11000000000000000000005 /* CoachEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachEngineTests.swift; sourceTree = "<group>"; };
+		T11000000000000000000007 /* FutureSelfStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FutureSelfStoreTests.swift; sourceTree = "<group>"; };
 		CI1000000000000000000001 /* CheckInView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckInView.swift; sourceTree = "<group>"; };
 		DC1000000000000000000001 /* DeepScanConsentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeepScanConsentView.swift; sourceTree = "<group>"; };
 		SA1000000000000000000004 /* ShieldActionExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldActionExtension.swift; sourceTree = "<group>"; };
@@ -368,6 +380,10 @@
 				B10D00000000000000000006 /* ProtectionAlerts.swift */,
 				SS1000000000000000000001 /* SessionShield.swift */,
 				BO1000000000000000000001 /* BlockedOpenView.swift */,
+				CE1000000000000000000001 /* CoachEngine.swift */,
+				CK1000000000000000000001 /* CoachCheckInView.swift */,
+				CW1000000000000000000001 /* CoachWarmth.swift */,
+				FS1000000000000000000001 /* FutureSelfStore.swift */,
 				CI1000000000000000000001 /* CheckInView.swift */,
 				DC1000000000000000000001 /* DeepScanConsentView.swift */,
 				EDDA5BD449512137C79CCCE2 /* PrivacyInfo.xcprivacy */,
@@ -403,6 +419,8 @@
 				CF5000000000000000000013 /* NotificationRoutingTests.swift */,
 				C0FFEE8B0000000000000005 /* HonestyAndTourTests.swift */,
 				B10D00000000000000000008 /* Build10Tests.swift */,
+				T11000000000000000000005 /* CoachEngineTests.swift */,
+				T11000000000000000000007 /* FutureSelfStoreTests.swift */,
 			);
 			path = RemainFaithfulTests;
 			sourceTree = "<group>";
@@ -735,6 +753,10 @@
 				B10D00000000000000000005 /* ProtectionAlerts.swift in Sources */,
 				SS1000000000000000000002 /* SessionShield.swift in Sources */,
 				BO1000000000000000000002 /* BlockedOpenView.swift in Sources */,
+				CE1000000000000000000002 /* CoachEngine.swift in Sources */,
+				CK1000000000000000000002 /* CoachCheckInView.swift in Sources */,
+				CW1000000000000000000002 /* CoachWarmth.swift in Sources */,
+				FS1000000000000000000002 /* FutureSelfStore.swift in Sources */,
 				CI1000000000000000000002 /* CheckInView.swift in Sources */,
 				DC1000000000000000000002 /* DeepScanConsentView.swift in Sources */,
 			);
@@ -759,6 +781,8 @@
 				CF5000000000000000000033 /* NotificationRoutingTests.swift in Sources */,
 				C0FFEE8B0000000000000006 /* HonestyAndTourTests.swift in Sources */,
 				B10D00000000000000000007 /* Build10Tests.swift in Sources */,
+				T11000000000000000000006 /* CoachEngineTests.swift in Sources */,
+				T11000000000000000000008 /* FutureSelfStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

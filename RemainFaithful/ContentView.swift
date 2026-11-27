@@ -54,6 +54,14 @@ struct ContentView: View {
         )) {
             CheckInView()
         }
+        .sheet(isPresented: Binding(
+            get: { appState.showCoachCheckIn },
+            set: { appState.showCoachCheckIn = $0 }
+        )) {
+            CoachCheckInView {
+                appState.showCheckIn = true
+            }
+        }
         .overlayPreferenceValue(TourAnchorKey.self) { anchors in
             if tourVisible, tourSteps.indices.contains(tourStep) {
                 GeometryReader { proxy in

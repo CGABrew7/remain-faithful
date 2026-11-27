@@ -12,4 +12,6 @@
 
 **Check-in.** `POST /check-ins` after the user taps Send.
 
+**Coach nudge.** `POST /protection/alerts` with type `coach_nudge` and the fixed detail `Your partner would welcome a word from you today.` The main app sends it after the person opts in and taps Check in now. Not now does not send it. One accepted notice per local day. Screen Time extensions do not send it.
+
 **Android.** The Android build can still send the minute summaries and `Blocked app opened`. Those summaries stay accepted by the API.

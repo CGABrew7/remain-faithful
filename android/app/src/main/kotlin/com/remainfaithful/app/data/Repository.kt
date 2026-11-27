@@ -4,10 +4,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.remainfaithful.core.CoachKeys
+import com.remainfaithful.core.CoachPolicy
+import com.remainfaithful.core.DayOffset
+import com.remainfaithful.core.CoachSignals
 import com.remainfaithful.core.DevicePolicy
+import com.remainfaithful.core.FutureSelfFiles
 import com.remainfaithful.core.HeartbeatPolicy
 import com.remainfaithful.core.Payloads
 import java.time.LocalDate
+import java.time.ZonedDateTime
 
 class Repository private constructor(context: Context) {
     private val app = context.applicationContext
@@ -29,6 +35,8 @@ class Repository private constructor(context: Context) {
     val isSignedIn: Boolean get() = !token.isNullOrBlank()
 
     fun saveSession(session: AuthSession) {
+        val previous = userId
+        if (previous != 0L && previous != session.user.id) wipePersonal()
         token = session.token
         prefs.edit()
             .putLong(KEY_USER_ID, session.user.id)
@@ -125,6 +133,7 @@ class Repository private constructor(context: Context) {
         alertsOn = false
         blockingOn = false
         deepScanRunning = false
+        wipePersonal()
         token = null
         prefs.edit()
             .remove(KEY_USER_ID)
@@ -209,8 +218,93 @@ class Repository private constructor(context: Context) {
 
     fun protection(type: String, detail: String) {
         if (!isSignedIn) return
-        api.protection(Payloads.protection(type, detail, deviceId))
+        val offset = if (type == CoachPolicy.alertType) {
+            DayOffset.minutes(ZonedDateTime.now().offset.totalSeconds)
+        } else {
+            null
+        }
+        val named = if (type == CoachPolicy.alertType) null else deviceId
+        api.protection(Payloads.protection(type, detail, named), offset)
     }
+
+    fun wipePersonal() {
+        val editor = prefs.edit()
+        CoachKeys.all.forEach { editor.remove(it) }
+        editor.remove(KEY_BLUR)
+        editor.apply()
+        FutureSelfFiles.wipe(app.filesDir)
+    }
+
+    fun coachSignals(now: ZonedDateTime = ZonedDateTime.now()): CoachSignals {
+        val clock = CoachPolicy.clock(now)
+        val day = CoachPolicy.dayKey(clock)
+        val prompt = prefs.getLong(KEY_PROMPT, 0L)
+        val nudge = prefs.getLong(KEY_NUDGE, 0L)
+        val threshold = prefs.getLong(KEY_THRESHOLD, 0L)
+        val opens = if (prefs.getString(KEY_BLOCK_DAY, "") == day) prefs.getInt(KEY_BLOCK_COUNT, 0) else 0
+        return CoachSignals(
+            enabled = prefs.getBoolean(KEY_COACH, true),
+            partnerNudgeEnabled = prefs.getBoolean(KEY_PARTNER, false),
+            imAway = prefs.getBoolean(KEY_AWAY, false),
+            lateStartHour = prefs.getInt(KEY_LATE_START, CoachPolicy.defaultLateStart),
+            lateEndHour = prefs.getInt(KEY_LATE_END, CoachPolicy.defaultLateEnd),
+            missedCheckIn = prefs.getString(KEY_CHECKED, "") != day,
+            shieldOpensToday = opens,
+            thresholdFresh = threshold > 0L && now.toInstant().toEpochMilli() - threshold <= 12L * 60 * 60 * 1000,
+            recentSession = deepScanRunning || (lastFrameAt > 0L && System.currentTimeMillis() - lastFrameAt <= 2L * 60 * 60 * 1000),
+            lastPromptAt = prompt.takeIf { it > 0L },
+            lastNudge = nudge.takeIf { it > 0L }?.let { millis ->
+                CoachPolicy.clock(java.time.Instant.ofEpochMilli(millis).atZone(now.zone))
+            },
+        )
+    }
+
+    fun setCoach(on: Boolean) { prefs.edit().putBoolean(KEY_COACH, on).apply() }
+    fun setPartnerNudge(on: Boolean) { prefs.edit().putBoolean(KEY_PARTNER, on).apply() }
+    fun setAway(on: Boolean) { prefs.edit().putBoolean(KEY_AWAY, on).apply() }
+    fun setLateStart(hour: Int) { prefs.edit().putInt(KEY_LATE_START, hour).apply() }
+    fun setLateEnd(hour: Int) { prefs.edit().putInt(KEY_LATE_END, hour).apply() }
+
+    fun markCoachPrompt(now: ZonedDateTime = ZonedDateTime.now()) {
+        prefs.edit().putLong(KEY_PROMPT, now.toInstant().toEpochMilli()).apply()
+    }
+
+    fun markCoachNudge(now: ZonedDateTime = ZonedDateTime.now()) {
+        prefs.edit().putLong(KEY_NUDGE, now.toInstant().toEpochMilli()).apply()
+    }
+
+    fun markCheckedIn(now: ZonedDateTime = ZonedDateTime.now()) {
+        prefs.edit().putString(KEY_CHECKED, CoachPolicy.dayKey(CoachPolicy.clock(now))).apply()
+    }
+
+    fun noteShieldOpen(now: ZonedDateTime = ZonedDateTime.now()) {
+        val day = CoachPolicy.dayKey(CoachPolicy.clock(now))
+        val count = if (prefs.getString(KEY_BLOCK_DAY, "") == day) prefs.getInt(KEY_BLOCK_COUNT, 0) else 0
+        prefs.edit().putString(KEY_BLOCK_DAY, day).putInt(KEY_BLOCK_COUNT, count + 1).apply()
+    }
+
+    fun queueCoachNudge() {
+        if (userId == 0L) return
+        prefs.edit().putLong(KEY_PENDING_NUDGE, userId).apply()
+    }
+
+    fun pendingCoachNudgeFor(user: Long): Boolean {
+        val pending = prefs.getLong(KEY_PENDING_NUDGE, 0L)
+        if (pending == 0L) return false
+        if (pending != user) {
+            prefs.edit().remove(KEY_PENDING_NUDGE).apply()
+            return false
+        }
+        return true
+    }
+
+    fun clearCoachNudge() {
+        prefs.edit().remove(KEY_PENDING_NUDGE).apply()
+    }
+
+    var blurSensitivity: Float
+        get() = prefs.getFloat(KEY_BLUR, 0.55f)
+        set(value) { prefs.edit().putFloat(KEY_BLUR, value).apply() }
 
     companion object {
         @Volatile private var instance: Repository? = null
@@ -242,6 +336,19 @@ class Repository private constructor(context: Context) {
         private const val KEY_ALERTED = "alerted_packages"
         private const val KEY_DEVICE = "device_id"
         private const val KEY_REMOVED = "device_removed_notice"
+        private const val KEY_COACH = "coachEnabled"
+        private const val KEY_PARTNER = "coachPartnerNudgeEnabled"
+        private const val KEY_LATE_START = "coachLateNightStart"
+        private const val KEY_LATE_END = "coachLateNightEnd"
+        private const val KEY_AWAY = "imAway"
+        private const val KEY_PROMPT = "coachLastLocalPromptAt"
+        private const val KEY_NUDGE = "coachLastPartnerNudgeAt"
+        private const val KEY_THRESHOLD = "coachThresholdReachedAt"
+        private const val KEY_BLOCK_COUNT = "blockedOpenCountToday"
+        private const val KEY_BLOCK_DAY = "blockedOpenDay"
+        private const val KEY_CHECKED = "coachCheckedInDay"
+        private const val KEY_PENDING_NUDGE = "coachPendingNudgeUser"
+        private const val KEY_BLUR = "blurSensitivity"
     }
 }
 

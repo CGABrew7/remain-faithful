@@ -1,7 +1,14 @@
 package com.remainfaithful.app.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.net.Uri
+import androidx.core.content.ContextCompat
+import com.remainfaithful.app.voice.VoiceSession
+import com.remainfaithful.core.FutureSelfFiles
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,6 +52,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -109,16 +117,17 @@ private fun Onboarding(model: AppModel) {
         return
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(RfMetrics.gutter)) {
-        if (model.step in 1..6) {
-            val total = if (BuildConfig.DEEP_SCAN_ENABLED) 6 else 5
-            val shown = if (!BuildConfig.DEEP_SCAN_ENABLED && model.step >= 5) model.step - 1 else model.step
+        if (model.step in 1..7) {
+            val total = if (BuildConfig.DEEP_SCAN_ENABLED) 7 else 6
+            val shown = if (!BuildConfig.DEEP_SCAN_ENABLED && model.step >= 6) model.step - 1 else model.step
             Text("$shown of $total", color = RfColors.gold, fontSize = 13.sp)
             Spacer(Modifier.height(12.dp))
         }
         when (model.step) {
             1 -> CreateAccount(model)
-            2 -> InviteStep(model)
-            3 -> DisclosureStep(
+            2 -> VoiceStep(model) { model.step = 3 }
+            3 -> InviteStep(model)
+            4 -> DisclosureStep(
                 model,
                 Copy.usageLead,
                 Copy.usageTitle,
@@ -126,12 +135,12 @@ private fun Onboarding(model: AppModel) {
                 Copy.alertsRow,
                 Copy.blockingRow,
                 "Allow usage access",
-                nextStep = if (BuildConfig.DEEP_SCAN_ENABLED) 4 else 5,
+                nextStep = if (BuildConfig.DEEP_SCAN_ENABLED) 5 else 6,
             ) {
                 model.askSystem("usage")
             }
-            4 -> if (BuildConfig.DEEP_SCAN_ENABLED) DeepScanStep(model) else ChooseStep(model)
-            5 -> ChooseStep(model)
+            5 -> if (BuildConfig.DEEP_SCAN_ENABLED) DeepScanStep(model) else ChooseStep(model)
+            6 -> ChooseStep(model)
             else -> DoneStep(model)
         }
     }
@@ -219,7 +228,7 @@ private fun InviteStep(model: AppModel) {
         val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, Copy.sharePartner)
         context.startActivity(Intent.createChooser(send, "Share"))
     }, secondary = true)
-    RfButton(Copy.inviteSkip, onClick = { model.step = 3 }, secondary = true)
+    RfButton(Copy.inviteSkip, onClick = { model.step = 4 }, secondary = true)
 }
 
 @Composable
@@ -254,8 +263,13 @@ private fun DeepScanStep(model: AppModel) {
     Text(Copy.deepScanStep, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 12.dp))
     Text(Copy.deepScanLimits, color = RfColors.textSecondary)
     Spacer(Modifier.height(16.dp))
-    RfButton("Continue", onClick = { model.step = 5 })
-    RfButton(Copy.setUpLater, onClick = { model.step = 5 }, secondary = true)
+    if (com.remainfaithful.core.BlurPolicy.weightsReady()) {
+        Text(Copy.blurTitle, color = RfColors.gold, modifier = Modifier.padding(top = 12.dp))
+        Text(Copy.blurBody, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 8.dp))
+        Text(Copy.blurSensitivity, color = RfColors.textPrimary)
+    }
+    RfButton("Continue", onClick = { model.step = 6 })
+    RfButton(Copy.setUpLater, onClick = { model.step = 6 }, secondary = true)
 }
 
 @Composable
@@ -281,8 +295,8 @@ private fun ChooseStep(model: AppModel) {
         }
     }
     RfButton("Allow notifications", onClick = { model.askSystem("notifications") }, secondary = true)
-    RfButton("I'll do this later", onClick = { model.step = 6 }, secondary = true)
-    RfButton("Continue", onClick = { model.step = 6 })
+    RfButton("I'll do this later", onClick = { model.step = 7 }, secondary = true)
+    RfButton("Continue", onClick = { model.step = 7 })
 }
 
 @Composable
@@ -514,6 +528,60 @@ private fun SettingsScreen(model: AppModel) {
         item { SectionLabel("ACCOUNTABILITY") }
         item { SettingsRow("Manage Partners") { model.sheet = Sheet.Partners } }
         item { SettingsRow("Edit Profile") { model.sheet = Sheet.Profile } }
+        item { SectionLabel("CHECK-INS") }
+        item {
+            Row(Modifier.rfCard(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Check-ins", color = RfColors.textPrimary, modifier = Modifier.weight(1f))
+                Switch(
+                    checked = model.coachOn,
+                    onCheckedChange = { model.setCoach(it) },
+                    colors = SwitchDefaults.colors(checkedTrackColor = RfColors.gold, checkedThumbColor = RfColors.navy),
+                )
+            }
+        }
+        item {
+            Column(Modifier.rfCard()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(Copy.partnerTitle, color = RfColors.textPrimary, modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = model.partnerOn,
+                        onCheckedChange = { model.setPartnerNudge(it) },
+                        colors = SwitchDefaults.colors(checkedTrackColor = RfColors.gold, checkedThumbColor = RfColors.navy),
+                    )
+                }
+                Text(Copy.partnerBody, color = RfColors.textSecondary, modifier = Modifier.padding(top = 6.dp))
+            }
+        }
+        item {
+            Column(Modifier.rfCard()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(Copy.awayTitle, color = RfColors.textPrimary, modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = model.awayOn,
+                        onCheckedChange = { model.setAway(it) },
+                        colors = SwitchDefaults.colors(checkedTrackColor = RfColors.gold, checkedThumbColor = RfColors.navy),
+                    )
+                }
+                Text(Copy.awayBody, color = RfColors.textSecondary, modifier = Modifier.padding(top = 6.dp))
+            }
+        }
+        item {
+            Column(Modifier.rfCard()) {
+                Text("Late night starts", color = RfColors.textPrimary)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Earlier", color = RfColors.gold, modifier = Modifier.clickable { model.shiftLateStart(-1) }.padding(8.dp))
+                    Text(com.remainfaithful.core.CoachPolicy.hourLabel(model.lateStart), color = RfColors.textPrimary, modifier = Modifier.padding(horizontal = 8.dp))
+                    Text("Later", color = RfColors.gold, modifier = Modifier.clickable { model.shiftLateStart(1) }.padding(8.dp))
+                }
+                Text("Late night ends", color = RfColors.textPrimary, modifier = Modifier.padding(top = 8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Earlier", color = RfColors.gold, modifier = Modifier.clickable { model.shiftLateEnd(-1) }.padding(8.dp))
+                    Text(com.remainfaithful.core.CoachPolicy.hourLabel(model.lateEnd), color = RfColors.textPrimary, modifier = Modifier.padding(horizontal = 8.dp))
+                    Text("Later", color = RfColors.gold, modifier = Modifier.clickable { model.shiftLateEnd(1) }.padding(8.dp))
+                }
+            }
+        }
+        item { SettingsRow(Copy.voiceTitle) { model.sheet = Sheet.Voice } }
         item { SectionLabel("MONITORING") }
         item { SettingsRow("Notifications") { model.askSystem("notifications") } }
         item { SectionLabel("BLOCKING") }
@@ -635,6 +703,8 @@ private fun SheetHost(model: AppModel) {
                 Sheet.Profile -> ProfileSheet(model)
                 Sheet.Forgot -> ForgotSheet(model)
                 Sheet.RemoveDevice -> RemoveDeviceSheet(model)
+                Sheet.Coach -> CoachSheet(model)
+                Sheet.Voice -> VoiceStep(model) { model.sheet = null }
                 null -> Unit
             }
         }
@@ -817,6 +887,16 @@ private fun DeepScanManage(model: AppModel) {
     Text(Copy.deepScanTitle, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp)
     Text(Copy.deepScanSummary, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 8.dp))
     Text(Copy.deepScanLimits, color = RfColors.textSecondary)
+    if (com.remainfaithful.core.BlurPolicy.weightsReady()) {
+        Text(Copy.blurTitle, color = RfColors.gold, modifier = Modifier.padding(top = 12.dp))
+        Text(Copy.blurBody, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 8.dp))
+        Text("${Copy.blurSensitivity}: ${model.blurLabel()}", color = RfColors.textPrimary)
+        Row {
+            RfButton("Lower", onClick = { model.shiftBlur(-0.1f) }, secondary = true, modifier = Modifier.weight(1f))
+            Spacer(Modifier.width(8.dp))
+            RfButton("Higher", onClick = { model.shiftBlur(0.1f) }, secondary = true, modifier = Modifier.weight(1f))
+        }
+    }
     RfButton(if (model.deepScanOn) "Deep Scan is running" else "Start Deep Scan", onClick = { model.askSystem("capture") }, enabled = !model.deepScanOn)
 }
 
@@ -927,6 +1007,108 @@ private fun GoogleButton(title: String, enabled: Boolean, onClick: () -> Unit) {
     ) {
         Text("G", color = RfColors.info, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 10.dp))
         Text(title, color = RfColors.navy, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+private fun CoachSheet(model: AppModel) {
+    Text(Copy.checkInTitle, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 28.sp)
+    Text(Copy.checkInBody, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 12.dp))
+    RfButton(Copy.checkInNow, onClick = { model.acceptCoach() })
+    RfButton(Copy.notNow, onClick = { model.dismissCoach() }, secondary = true)
+}
+
+@Composable
+private fun VoiceStep(model: AppModel, onDone: () -> Unit) {
+    val context = LocalContext.current
+    val session = remember { VoiceSession(context.applicationContext) }
+    var recording by remember { mutableStateOf(false) }
+    DisposableEffect(session) {
+        onDispose {
+            if (session.recording) model.voiceNote = session.stop(save = true)
+        }
+    }
+    Text(Copy.voiceTitle, color = RfColors.textPrimary, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp)
+    Text(Copy.voiceBody, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 8.dp))
+    model.voiceNote?.let { Text(it, color = RfColors.gold) }
+    val allowed = model.micGranted || ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.RECORD_AUDIO,
+    ) == PackageManager.PERMISSION_GRANTED
+    RfButton(if (recording) Copy.voiceStop else Copy.voiceRecord, onClick = {
+        if (!allowed) {
+            model.voiceNote = Copy.voiceLater
+            model.askSystem("record")
+            return@RfButton
+        }
+        if (session.recording) {
+            model.voiceNote = session.stop(save = true)
+            recording = false
+        } else {
+            runCatching {
+                session.start(FutureSelfFiles.whyName)
+                recording = true
+            }.onFailure { model.voiceNote = Copy.voiceLater }
+        }
+    })
+    RfButton(Copy.voiceRemember, onClick = {
+        if (!allowed) {
+            model.askSystem("record")
+            return@RfButton
+        }
+        if (session.recording) {
+            model.voiceNote = session.stop(save = true)
+            recording = false
+        } else {
+            runCatching {
+                session.start(FutureSelfFiles.rememberName)
+                recording = true
+            }.onFailure { model.voiceNote = Copy.voiceLater }
+        }
+    }, secondary = true)
+    if (java.io.File(FutureSelfFiles.directory(context.filesDir), FutureSelfFiles.whyName).isFile) {
+        RfButton(Copy.voicePlayAgain, onClick = { playClip(context, FutureSelfFiles.whyName) }, secondary = true)
+        RfButton(Copy.voiceDelete, onClick = {
+            if (session.recording) {
+            session.stop(save = false)
+            recording = false
+        }
+            FutureSelfFiles.wipe(context.filesDir)
+            model.voiceNote = null
+        }, secondary = true)
+    }
+    Text(Copy.partnerTitle, color = RfColors.textPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))
+    Text(Copy.partnerBody, color = RfColors.textSecondary, modifier = Modifier.padding(vertical = 8.dp))
+    RfButton(if (model.partnerOn) "Partner check-ins are on" else Copy.partnerButton, onClick = {
+        model.setPartnerNudge(true)
+    }, secondary = true)
+    RfButton("Continue", onClick = {
+        if (session.recording) model.voiceNote = session.stop(save = true)
+        onDone()
+    })
+    RfButton(Copy.inviteSkip, onClick = {
+        if (session.recording) model.voiceNote = session.stop(save = true)
+        onDone()
+    }, secondary = true)
+}
+
+private fun playClip(context: android.content.Context, name: String) {
+    val file = java.io.File(FutureSelfFiles.directory(context.filesDir), name)
+    if (!file.isFile) return
+    val player = MediaPlayer()
+    player.setAudioAttributes(
+        AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+            .build(),
+    )
+    runCatching {
+        player.setDataSource(file.absolutePath)
+        player.setOnCompletionListener { it.release() }
+        player.prepare()
+        player.start()
+    }.onFailure {
+        player.release()
     }
 }
 

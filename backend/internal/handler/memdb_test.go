@@ -71,6 +71,7 @@ type memAlert struct {
 	alertType string
 	summary   string
 	subject   int64
+	created   time.Time
 }
 
 type memRel struct {
@@ -264,6 +265,11 @@ func asString(v any) string {
 	return s
 }
 
+func asTime(v any) time.Time {
+	t, _ := v.(time.Time)
+	return t
+}
+
 func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -379,6 +385,17 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 	case containsAll(q, "INSERT INTO check_ins"):
 		return []string{"id"}, [][]driver.Value{{int64(7)}}
 
+	case containsAll(q, "COUNT(*) FROM alerts", "subject_user_id", "alert_type"):
+		userID := asInt64(args[0])
+		since := asTime(args[1])
+		var n int64
+		for _, row := range m.alerts {
+			if row.subject == userID && row.alertType == "coach_nudge" && !row.created.Before(since) {
+				n++
+			}
+		}
+		return []string{"count"}, [][]driver.Value{{n}}
+
 	case containsAll(q, "INSERT INTO alerts"):
 		m.alerts = append(m.alerts, memAlert{
 			id:        m.nextAlert,
@@ -387,6 +404,7 @@ func (m *memDB) apply(q string, args []any) ([]string, [][]driver.Value) {
 			summary:   asString(args[2]),
 			subject:   asInt64(args[3]),
 			kind:      "protection",
+			created:   time.Now(),
 		})
 		m.nextAlert++
 		return []string{"ok"}, nil

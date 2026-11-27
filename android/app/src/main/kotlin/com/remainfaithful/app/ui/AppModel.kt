@@ -25,6 +25,8 @@ import com.remainfaithful.app.monitoring.MonitorService
 import com.remainfaithful.app.monitoring.UsageAccess
 import com.remainfaithful.app.data.RemoteDevice
 import com.remainfaithful.core.AuthRules
+import com.remainfaithful.core.CoachPolicy
+import com.remainfaithful.core.CoachReply
 import com.remainfaithful.core.DevicePolicy
 import com.remainfaithful.core.CategoryLabels
 import com.remainfaithful.core.Copy
@@ -42,9 +44,10 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 
 enum class Phase { Loading, Onboarding, Login, App }
-enum class Sheet { Panic, Feedback, Pin, Activity, How, Delete, Partners, Monitoring, DeepScan, Alert, Profile, Forgot, RemoveDevice }
+enum class Sheet { Panic, Feedback, Pin, Activity, How, Delete, Partners, Monitoring, DeepScan, Alert, Profile, Forgot, RemoveDevice, Coach, Voice }
 
 data class DeviceRow(
     val id: String,
@@ -117,6 +120,14 @@ class AppModel(app: Application) : AndroidViewModel(app) {
     var tourForced by mutableStateOf(false)
     var pendingAfterPin: (() -> Unit)? = null
 
+    var coachOn by mutableStateOf(true)
+    var partnerOn by mutableStateOf(false)
+    var awayOn by mutableStateOf(false)
+    var lateStart by mutableIntStateOf(CoachPolicy.defaultLateStart)
+    var lateEnd by mutableIntStateOf(CoachPolicy.defaultLateEnd)
+    var micGranted by mutableStateOf(false)
+    var voiceNote by mutableStateOf<String?>(null)
+
     var adult by mutableStateOf(false)
     var formName by mutableStateOf("")
     var formEmail by mutableStateOf("")
@@ -145,6 +156,7 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         blockingOn = repo.blockingOn
         lockoutOn = repo.lockoutOn
         deepScanOn = repo.deepScanRunning
+        loadCoach()
         chosen = repo.chosenPackages
         name = repo.userName
         email = repo.userEmail
@@ -175,6 +187,8 @@ class AppModel(app: Application) : AndroidViewModel(app) {
         usageGranted = UsageAccess.granted(context)
         overlayGranted = com.remainfaithful.app.monitoring.SettingsCompat.canDraw(context)
         deepScanOn = repo.deepScanRunning
+        loadCoach()
+        flushCoachNudge()
         if (phase == Phase.App) {
             adoptRemovedIfNeeded()
             syncMonitoring()
@@ -187,6 +201,93 @@ class AppModel(app: Application) : AndroidViewModel(app) {
                     runCatching { withContext(Dispatchers.IO) { reloadDevices() } }
                 }
                 runCatching { withContext(Dispatchers.IO) { repo.sendSignals(usageGranted) } }
+            }
+        }
+    }
+
+    fun loadCoach() {
+        val signals = repo.coachSignals()
+        coachOn = signals.enabled
+        partnerOn = signals.partnerNudgeEnabled
+        awayOn = signals.imAway
+        lateStart = signals.lateStartHour
+        lateEnd = signals.lateEndHour
+    }
+
+    fun setCoach(on: Boolean) {
+        coachOn = on
+        repo.setCoach(on)
+    }
+
+    fun setPartnerNudge(on: Boolean) {
+        partnerOn = on
+        repo.setPartnerNudge(on)
+    }
+
+    fun setAway(on: Boolean) {
+        awayOn = on
+        repo.setAway(on)
+    }
+
+    fun shiftLateStart(delta: Int) {
+        lateStart = (lateStart + delta + 24) % 24
+        repo.setLateStart(lateStart)
+    }
+
+    fun shiftLateEnd(delta: Int) {
+        lateEnd = (lateEnd + delta + 24) % 24
+        repo.setLateEnd(lateEnd)
+    }
+
+    fun blurLabel(): String = "${(repo.blurSensitivity * 100).toInt()}"
+
+    fun shiftBlur(delta: Float) {
+        repo.blurSensitivity = (repo.blurSensitivity + delta).coerceIn(0f, 1f)
+    }
+
+    fun acceptCoach() {
+        val now = ZonedDateTime.now()
+        val decision = CoachPolicy.evaluate(CoachPolicy.clock(now), repo.coachSignals(now), CoachReply.CheckIn)
+        repo.markCoachPrompt(now)
+        repo.markCheckedIn(now)
+        sheet = null
+        if (!decision.sendPartnerNudge) return
+        launchIo {
+            try {
+                repo.protection(CoachPolicy.alertType, Copy.partnerSentence)
+                repo.markCoachNudge(now)
+            } catch (e: ApiException) {
+                if (e.status == 429) repo.markCoachNudge(now) else repo.queueCoachNudge()
+            } catch (_: Exception) {
+                repo.queueCoachNudge()
+            }
+        }
+    }
+
+    fun dismissCoach() {
+        repo.markCoachPrompt()
+        sheet = null
+    }
+
+    private fun flushCoachNudge() {
+        if (!repo.isSignedIn || !repo.pendingCoachNudgeFor(repo.userId)) return
+        val now = ZonedDateTime.now()
+        val signals = repo.coachSignals(now)
+        if (!signals.partnerNudgeEnabled || CoachPolicy.nudgedToday(CoachPolicy.clock(now), signals)) {
+            repo.clearCoachNudge()
+            return
+        }
+        launchIo {
+            try {
+                repo.protection(CoachPolicy.alertType, Copy.partnerSentence)
+                repo.markCoachNudge()
+                repo.clearCoachNudge()
+            } catch (e: ApiException) {
+                if (e.status == 429) {
+                    repo.markCoachNudge()
+                    repo.clearCoachNudge()
+                }
+            } catch (_: Exception) {
             }
         }
     }

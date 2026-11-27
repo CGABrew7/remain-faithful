@@ -4,4 +4,5 @@
     <string name="monitoring_channel">Monitoring</string>
     <string name="alerts_channel">Alerts</string>
     <string name="urgent_channel">Urgent</string>
+    <string name="checkin_channel">Check-ins</string>
 </resources>

@@ -3,6 +3,8 @@ package com.remainfaithful.app.monitoring
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
@@ -11,9 +13,13 @@ import android.widget.TextView
 import com.remainfaithful.app.MainActivity
 import com.remainfaithful.app.theme.RfColors
 import com.remainfaithful.core.Copy
+import com.remainfaithful.core.FutureSelfFiles
+import com.remainfaithful.core.FutureSelfRules
+import java.io.File
 
 object ShieldWindow {
     private var view: LinearLayout? = null
+    private var player: MediaPlayer? = null
 
     fun show(context: Context, lockout: Boolean, deepScanEnabled: Boolean) {
         if (view != null) return
@@ -82,6 +88,27 @@ object ShieldWindow {
                 setOnClickListener { hide(app) }
             })
         }
+        val clip = File(FutureSelfFiles.directory(app.filesDir), FutureSelfFiles.whyName)
+        if (clip.isFile) {
+            layout.addView(TextView(app).apply {
+                text = Copy.voicePlayTitle
+                setTextColor(RfColors.goldArgb)
+                textSize = 16f
+                gravity = Gravity.CENTER
+                setPadding(0, 28, 0, 12)
+            })
+            layout.addView(Button(app).apply {
+                text = Copy.voicePlayAgain
+                setOnClickListener { play(app) }
+            })
+            layout.addView(Button(app).apply {
+                text = Copy.voiceSkip
+                setOnClickListener { stopVoice() }
+            })
+            if (FutureSelfRules.shouldAutoPlay(hasClip = true, alreadyPlayedThisOpen = false)) {
+                play(app)
+            }
+        }
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -94,9 +121,38 @@ object ShieldWindow {
     }
 
     fun hide(context: Context) {
+        stopVoice()
         val current = view ?: return
         val window = context.applicationContext.getSystemService(WindowManager::class.java)
         runCatching { window.removeView(current) }
         view = null
+    }
+
+    private fun play(context: Context) {
+        val clip = File(FutureSelfFiles.directory(context.applicationContext.filesDir), FutureSelfFiles.whyName)
+        if (!clip.isFile) return
+        stopVoice()
+        val next = MediaPlayer()
+        next.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build(),
+        )
+        runCatching {
+            next.setDataSource(clip.absolutePath)
+            next.setOnPreparedListener { it.start() }
+            next.prepareAsync()
+            player = next
+        }.onFailure {
+            next.release()
+        }
+    }
+
+    private fun stopVoice() {
+        val current = player ?: return
+        runCatching { current.stop() }
+        runCatching { current.release() }
+        player = null
     }
 }

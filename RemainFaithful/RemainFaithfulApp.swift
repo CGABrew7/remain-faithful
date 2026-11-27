@@ -89,13 +89,16 @@ struct RemainFaithfulApp: App {
                 // the app was closed (Darwin notification would have been missed).
                 AppLockoutManager.shared.syncShieldState()
                 AppState.shared.presentBlockedOpenIfNeeded()
+                CoachScheduler.evaluate()
             }
             .onOpenURL { url in
                 guard url.scheme == "remainfaithful" else { return }
                 if url.host == "blocked-open" {
                     AppState.shared.presentBlockedOpenIfNeeded()
-                } else if url.host == "check-in" {
+                } else                 if url.host == "check-in" {
                     AppState.shared.presentCheckIn()
+                } else if url.host == "coach" {
+                    AppState.shared.presentCoachCheckIn()
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
@@ -104,6 +107,7 @@ struct RemainFaithfulApp: App {
                 }
                 if newPhase == .active {
                     AppState.shared.presentBlockedOpenIfNeeded()
+                    CoachScheduler.evaluate()
                 }
                 guard newPhase == .active, AuthState.shared.isAuthenticated else { return }
                 Task {

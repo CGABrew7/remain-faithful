@@ -8,6 +8,9 @@ struct BlockedOpenView: View {
     @State private var sending = false
     @State private var sent = false
     @State private var errorText: String?
+    @State private var voicePlayed = false
+    @State private var voiceHidden = false
+    @StateObject private var player = FutureSelfPlayer()
 
     var body: some View {
         ZStack {
@@ -26,6 +29,22 @@ struct BlockedOpenView: View {
                 Text(openedAt.formatted(date: .abbreviated, time: .shortened))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(Color.rfGold)
+
+                if FutureSelfStore.exists(.why), !voiceHidden {
+                    Text(FutureSelfCopy.playTitle)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                    HStack(spacing: 12) {
+                        RFButton(title: FutureSelfCopy.playAgain, role: .secondary) {
+                            player.play(.why)
+                        }
+                        RFButton(title: FutureSelfCopy.skip, role: .secondary) {
+                            player.stop()
+                            voiceHidden = true
+                        }
+                        .accessibilityIdentifier("future-self-skip-playback")
+                    }
+                }
 
                 if let errorText {
                     Text(errorText)
@@ -56,6 +75,12 @@ struct BlockedOpenView: View {
             }
             .padding(24)
         }
+        .onAppear {
+            guard FutureSelfPlayback.shouldAutoPlay(hasClip: FutureSelfStore.exists(.why), alreadyPlayedThisOpen: voicePlayed) else { return }
+            voicePlayed = true
+            player.play(.why)
+        }
+        .onDisappear { player.stop() }
     }
 
     private func send() async {

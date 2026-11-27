@@ -219,8 +219,13 @@ class ApiClient(
         post("/users/device-token", body)
     }
 
-    fun protection(fields: Map<String, String>) {
-        post("/protection/alerts", fields)
+    fun protection(fields: Map<String, String>, offsetMinutes: Int? = null) {
+        val path = if (offsetMinutes == null) {
+            "/protection/alerts"
+        } else {
+            "/protection/alerts?offset_minutes=$offsetMinutes"
+        }
+        post(path, fields)
     }
 
     fun pinSet(): Boolean = get("/protection/pin").optBoolean("is_set")

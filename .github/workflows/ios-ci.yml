@@ -36,6 +36,14 @@ jobs:
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "Using simulator: $name"
 
+      - name: Screen Time extensions stay offline
+        run: |
+          set -euo pipefail
+          if grep -R -E -n "URLSession|APIClient" RemainFaithfulShieldConfig RemainFaithfulShieldAction RemainFaithfulDeviceActivity; then
+            echo "Screen Time extensions must not call the network."
+            exit 1
+          fi
+
       - name: Build and test
         run: |
           set -euo pipefail

@@ -38,21 +38,26 @@ enum ProtectionAlerts {
         }
     }
 
-    static func deliver(type: String, detail: String) async {
+    @discardableResult
+    static func deliver(type: String, detail: String) async -> Bool {
         guard APIClient.shared.isAuthenticated else {
             enqueue(type: type, detail: detail)
-            return
+            return false
         }
         let attempts = fallbackTypes(for: type)
         var lastWasNetwork = false
         for (index, candidate) in attempts.enumerated() {
             do {
                 try await APIClient.shared.sendProtectionAlert(type: candidate, detail: detail)
-                return
+                if candidate == CoachCopy.alertType { CoachStore.markNudge() }
+                return true
             } catch let error as APIError {
                 switch error {
                 case .network:
                     lastWasNetwork = true
+                case .server(let message, _) where message.contains("already sent today"):
+                    CoachStore.markNudge()
+                    return false
                 case .server where index < attempts.count - 1:
                     continue
                 default:
@@ -66,17 +71,21 @@ enum ProtectionAlerts {
         if lastWasNetwork {
             enqueue(type: type, detail: detail)
         }
+        return false
     }
 
     static func flush() async {
         guard APIClient.shared.isAuthenticated else { return }
-        let mine = queued().filter { $0.userID == currentUserID }
+        let mine = queued().filter { $0.userID == currentUserID && shouldFlush($0) }
         var remaining = queued().filter { $0.userID != currentUserID }
         for item in mine {
             do {
                 try await APIClient.shared.sendProtectionAlert(type: item.type, detail: item.detail)
+                if item.type == CoachCopy.alertType { CoachStore.markNudge() }
             } catch let error as APIError {
-                if case .network = error {
+                if case .server(let message, _) = error, message.contains("already sent today") {
+                    CoachStore.markNudge()
+                } else if case .network = error {
                     remaining.append(item)
                 } else if item.type == "signed_out" {
                     try? await APIClient.shared.sendProtectionAlert(
@@ -94,8 +103,21 @@ enum ProtectionAlerts {
     /// Drop this account's unsent notices after sign-out so the next person
     /// cannot upload them.
     static func dropCurrentUser() {
-        let kept = queued().filter { $0.userID != currentUserID }
-        save(kept)
+        save(AccountQueue.withoutUser(currentUserID, items: queued()))
+    }
+
+    /// A queued partner check-in leaves only while the person still opted in,
+    /// the daily cap is open, and the sentence is the fixed one.
+    private static func shouldFlush(_ item: Item) -> Bool {
+        guard item.type == CoachCopy.alertType else { return true }
+        guard item.detail == CoachCopy.partnerSentence else { return false }
+        let now = Date()
+        let signals = CoachStore.signals(now: now)
+        if !signals.partnerNudgeEnabled { return false }
+        if CoachEngine.nudgedToday(clock: CoachEngine.clock(from: now, timeZone: .current), signals: signals) {
+            return false
+        }
+        return true
     }
 
     private static func fallbackTypes(for type: String) -> [String] {

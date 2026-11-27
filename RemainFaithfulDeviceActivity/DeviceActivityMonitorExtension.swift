@@ -34,6 +34,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         activity: DeviceActivityName
     ) {
         super.eventDidReachThreshold(event, activity: activity)
+        defaults?.set(Date().timeIntervalSince1970, forKey: "coachThresholdReachedAt")
         syncShields()
     }
 

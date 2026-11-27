@@ -86,7 +86,7 @@ func deviceCollapseKey(deviceID string) string {
 // The label must already be an allowlisted device type.
 func protectionBody(name, alertType, deviceLabel string) string {
 	body := protectionAlertBody(name, alertType, "")
-	if deviceLabel == "" {
+	if deviceLabel == "" || alertType == "coach_nudge" {
 		return body
 	}
 	return body + " on their " + deviceLabel

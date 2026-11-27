@@ -359,7 +359,12 @@ final class APIClient {
     /// The server pushes this to the primary partner with notification_type: "PROTECTION_ALERT".
     func sendProtectionAlert(type: String, detail: String) async throws {
         guard isAuthenticated else { return }
-        try await postVoid("/protection/alerts", body: ["type": type, "detail": detail])
+        var path = "/protection/alerts"
+        if type == CoachCopy.alertType {
+            let minutes = TimeZone.current.secondsFromGMT() / 60
+            path += "?offset_minutes=\(minutes)"
+        }
+        try await postVoid(path, body: ["type": type, "detail": detail])
     }
 
     /// Returns true if any accountability partner has set a protection PIN for the current user.
