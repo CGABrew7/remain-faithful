@@ -54,6 +54,9 @@ final class AuthState: ObservableObject {
         if currentUser?.id != user.id {
             UserDefaults.standard.removeObject(forKey: Self.primaryGroupIDKey)
             clearQueuedEvents()
+            ProtectionAlerts.dropCurrentUser()
+            CoachStore.wipe()
+            FutureSelfStore.wipe()
         }
         inMemoryToken = token
         keychain.set(token, for: "authToken")
@@ -179,6 +182,9 @@ final class AuthState: ObservableObject {
         // Extensions read this copy. Sign-out and account deletion both come through here.
         sharedDefaults?.removeObject(forKey: "authToken")
         sharedDefaults?.removeObject(forKey: "authUserID")
+        ProtectionAlerts.dropCurrentUser()
+        CoachStore.wipe()
+        FutureSelfStore.wipe()
         clearQueuedEvents()
         UserDefaults.standard.removeObject(forKey: Self.primaryGroupIDKey)
         DispatchQueue.main.async {

@@ -132,6 +132,7 @@ struct CheckInView: View {
         draft.note = String(draft.note.prefix(140))
         do {
             try await APIClient.shared.sendCheckIn(draft)
+            CoachStore.markCheckedIn()
             sent = true
         } catch {
             errorText = "Still on this phone. Try again when you have a connection."

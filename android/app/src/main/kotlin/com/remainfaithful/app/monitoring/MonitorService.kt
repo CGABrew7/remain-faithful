@@ -20,12 +20,15 @@ import com.remainfaithful.app.R
 import com.remainfaithful.app.data.ApiException
 import com.remainfaithful.app.data.Repository
 import com.remainfaithful.app.theme.RfColors
+import com.remainfaithful.core.CoachPolicy
+import com.remainfaithful.core.CoachReply
 import com.remainfaithful.core.Copy
 import com.remainfaithful.core.DevicePolicy
 import com.remainfaithful.core.EventPolicy
 import com.remainfaithful.core.MonitorInput
 import com.remainfaithful.core.MonitoringPolicy
 import com.remainfaithful.core.Payloads
+import java.time.ZonedDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,6 +43,7 @@ class MonitorService : Service() {
     private var loop: Job? = null
     private var lastCheck = System.currentTimeMillis()
     private var lastHeartbeat = 0L
+    private var shieldVisible = false
     private val recentBlocked = mutableMapOf<String, Long>()
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -119,12 +123,27 @@ class MonitorService : Service() {
         }
         repo.markAlerted(decision.alertedPackages)
         if (decision.showShield && SettingsCompat.canDraw(this)) {
+            if (!shieldVisible) {
+                repo.noteShieldOpen()
+                shieldVisible = true
+            }
             ShieldWindow.show(this, repo.lockoutOn, com.remainfaithful.app.BuildConfig.DEEP_SCAN_ENABLED)
         } else {
+            shieldVisible = false
             ShieldWindow.hide(this)
             if (decision.showShield) {
                 Notify.alert(this, "Remain Faithful", "Your partner is standing with you.", "CONTENT_FLAGGED")
             }
+        }
+        val zoneNow = ZonedDateTime.now()
+        val coach = CoachPolicy.evaluate(
+            CoachPolicy.clock(zoneNow),
+            repo.coachSignals(zoneNow),
+            CoachReply.Pending,
+        )
+        if (coach.showPrompt) {
+            repo.markCoachPrompt(zoneNow)
+            Notify.alert(this, Copy.checkInTitle, Copy.checkInBody, CoachPolicy.notificationType)
         }
         if (now - lastHeartbeat > 120_000) {
             lastHeartbeat = now
@@ -220,7 +239,11 @@ object SettingsCompat {
 
 object Notify {
     fun alert(context: Context, title: String, body: String, type: String) {
-        val channel = if (type == "PANIC_ALERT") CHANNEL_URGENT else CHANNEL_ALERTS
+        val channel = when (type) {
+            "PANIC_ALERT" -> CHANNEL_URGENT
+            com.remainfaithful.core.CoachPolicy.notificationType -> CHANNEL_CHECKIN
+            else -> CHANNEL_ALERTS
+        }
         val pending = PendingIntent.getActivity(
             context,
             type.hashCode(),
@@ -242,6 +265,7 @@ object Notify {
 
     const val CHANNEL_ALERTS = "alerts"
     const val CHANNEL_URGENT = "urgent"
+    const val CHANNEL_CHECKIN = "checkins"
 }
 
 fun createChannels(context: Context) {
@@ -249,6 +273,7 @@ fun createChannels(context: Context) {
     manager.createNotificationChannel(NotificationChannel(MonitorService.CHANNEL_MONITOR, context.getString(R.string.monitoring_channel), NotificationManager.IMPORTANCE_LOW))
     manager.createNotificationChannel(NotificationChannel(Notify.CHANNEL_ALERTS, context.getString(R.string.alerts_channel), NotificationManager.IMPORTANCE_HIGH))
     manager.createNotificationChannel(NotificationChannel(Notify.CHANNEL_URGENT, context.getString(R.string.urgent_channel), NotificationManager.IMPORTANCE_HIGH))
+    manager.createNotificationChannel(NotificationChannel(Notify.CHANNEL_CHECKIN, context.getString(R.string.checkin_channel), NotificationManager.IMPORTANCE_DEFAULT))
 }
 
 class BootReceiver : BroadcastReceiver() {

@@ -317,6 +317,7 @@ object Payloads {
         "family_controls_revoked",
         "signed_out",
         "selection_cleared",
+        "coach_nudge",
     )
 
     fun deviceToken(token: String): Map<String, String> = mapOf(

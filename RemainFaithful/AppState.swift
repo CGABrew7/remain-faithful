@@ -41,6 +41,7 @@ final class AppState: ObservableObject {
     @Published var unreadAlertCount: Int = 0
     @Published var blockedOpenAt: Date?
     @Published var showCheckIn = false
+    @Published var showCoachCheckIn = false
     /// Simulator-only: bypass auth and show the dashboard with sample data.
     @Published var isDemoMode: Bool = false
 
@@ -53,6 +54,7 @@ final class AppState: ObservableObject {
     func presentBlockedOpenIfNeeded() {
         DispatchQueue.main.async {
             if let date = BlockedOpenRequest.pendingDate() {
+                CoachStore.noteShieldOpen(stamp: date.timeIntervalSince1970)
                 self.blockedOpenAt = date
             }
         }
@@ -60,6 +62,10 @@ final class AppState: ObservableObject {
 
     func presentCheckIn() {
         DispatchQueue.main.async { self.showCheckIn = true }
+    }
+
+    func presentCoachCheckIn() {
+        DispatchQueue.main.async { self.showCoachCheckIn = true }
     }
 
     func showPartnerAlert(senderName: String, category: String, event: ActivityEvent?) {

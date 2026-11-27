@@ -21,7 +21,9 @@ import com.remainfaithful.app.MainActivity
 import com.remainfaithful.app.R
 import com.remainfaithful.app.data.ApiException
 import com.remainfaithful.app.data.Repository
+import com.remainfaithful.core.BlurPolicy
 import com.remainfaithful.core.DevicePolicy
+import com.remainfaithful.core.FrameHygiene
 import com.remainfaithful.app.theme.RfColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,9 +34,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /**
- * User-started screen session. Frames are closed immediately and are never
- * written, logged, or uploaded. Android has no equivalent of Apple's on-device
- * sensitive-content API, so this session does not invent a category from pixels.
+ * User-started screen session. Each frame is closed in memory. Frames are never
+ * written, logged, or uploaded. A blur overlay can follow an on-phone score.
+ * No weight file ships in this build, so the overlay stays down until one is chosen.
  */
 class DeepScanService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -44,6 +46,7 @@ class DeepScanService : Service() {
     private var display: android.hardware.display.VirtualDisplay? = null
     private var notifiedStop = false
     private var ending = false
+    private var lastSampleAt = 0L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -69,16 +72,30 @@ class DeepScanService : Service() {
                 end(notify = true)
             }
         }, Handler(Looper.getMainLooper()))
-        reader = ImageReader.newInstance(32, 32, PixelFormat.RGBA_8888, 2)
+        val size = captureSize()
+        reader = ImageReader.newInstance(size.first, size.second, PixelFormat.RGBA_8888, 2)
         reader?.setOnImageAvailableListener({ imageReader ->
             val image = imageReader.acquireLatestImage() ?: return@setOnImageAvailableListener
-            image.close()
-            Repository.get(this).lastFrameAt = System.currentTimeMillis()
+            val now = System.currentTimeMillis()
+            try {
+                if (!FrameHygiene.closeBeforeUse) return@setOnImageAvailableListener
+                if (FrameHygiene.outputPath() != null) return@setOnImageAvailableListener
+                Repository.get(this).lastFrameAt = now
+                if (!BlurPolicy.weightsReady() || !BlurPolicy.shouldSample(now, lastSampleAt)) return@setOnImageAvailableListener
+                lastSampleAt = now
+                val sensitivity = Repository.get(this).blurSensitivity
+                val command = BlurPolicy.command(null, sensitivity)
+                Handler(Looper.getMainLooper()).post {
+                    BlurOverlay.apply(this, command, null)
+                }
+            } finally {
+                image.close()
+            }
         }, Handler(Looper.getMainLooper()))
         display = projection?.createVirtualDisplay(
             "rf-deep-scan",
-            32,
-            32,
+            size.first,
+            size.second,
             resources.displayMetrics.densityDpi,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
             reader?.surface,
@@ -114,6 +131,7 @@ class DeepScanService : Service() {
         display = null
         reader = null
         projection = null
+        BlurOverlay.hide(this)
         val repo = Repository.get(this)
         val wasRunning = repo.deepScanRunning
         repo.deepScanRunning = false
@@ -136,6 +154,12 @@ class DeepScanService : Service() {
             .setOngoing(true)
             .setContentIntent(pending)
             .build()
+    }
+
+    private fun captureSize(): Pair<Int, Int> {
+        if (!BlurPolicy.weightsReady()) return 32 to 32
+        val metrics = resources.displayMetrics
+        return BlurPolicy.workingSize(metrics.widthPixels, metrics.heightPixels)
     }
 
     companion object {

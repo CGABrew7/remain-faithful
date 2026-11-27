@@ -37,6 +37,13 @@ struct SettingsView: View {
     @State private var showSignOutConfirm   = false
     @State private var showDeepScanConsent  = false
     @State private var showCheckIn          = false
+    @State private var showFutureSelf       = false
+    @State private var coachOn              = true
+    @State private var partnerCheckInsOn    = false
+    @State private var awayOn               = false
+    @State private var lateStartHour        = CoachEngine.defaultLateStart
+    @State private var lateEndHour          = CoachEngine.defaultLateEnd
+    @State private var writingHelperOn      = true
 
     private var initials: String {
         let parts = userName.components(separatedBy: " ").filter { !$0.isEmpty }
@@ -56,6 +63,7 @@ struct SettingsView: View {
                     EmailConfirmBanner()
                     accountabilitySection
                     monitoringSection
+                    coachSection
                     screenTimeSection
                     protectionSection
                     privacySection
@@ -74,6 +82,24 @@ struct SettingsView: View {
         .task {
             await pinManager.refreshStatus()
             await AuthState.shared.refreshFromAPI()
+            loadCoach()
+        }
+        .sheet(isPresented: $showFutureSelf) {
+            NavigationStack {
+                ZStack {
+                    Color.rfNavy.ignoresSafeArea()
+                    ScrollView {
+                        FutureSelfRecordView(onDone: { showFutureSelf = false })
+                            .padding(24)
+                    }
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Done") { showFutureSelf = false }
+                            .foregroundStyle(Color.rfGold)
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showPINGate) {
             PINEntryView(
@@ -204,6 +230,121 @@ struct SettingsView: View {
             rowDivider
             SRow(icon: "doc.text.fill", tint: Color.rfGold, label: "View Covenant")   { showCovenant = true }
         }
+    }
+
+    // MARK: - Check-ins
+
+    private var coachSection: some View {
+        SettingsSection(title: "CHECK-INS") {
+            coachToggle(title: "Check-ins", isOn: coachBinding)
+            rowDivider
+            VStack(alignment: .leading, spacing: 8) {
+                coachToggle(title: CoachCopy.partnerTitle, isOn: partnerBinding)
+                Text(CoachCopy.partnerBody)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.62))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
+            rowDivider
+            VStack(alignment: .leading, spacing: 8) {
+                coachToggle(title: CoachCopy.awayTitle, isOn: awayBinding)
+                Text(CoachCopy.awayBody)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.62))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
+            rowDivider
+            hourRow(title: "Late night starts", hour: lateStartHour) { delta in
+                lateStartHour = (lateStartHour + delta + 24) % 24
+                CoachStore.setLateStart(lateStartHour)
+            }
+            rowDivider
+            hourRow(title: "Late night ends", hour: lateEndHour) { delta in
+                lateEndHour = (lateEndHour + delta + 24) % 24
+                CoachStore.setLateEnd(lateEndHour)
+            }
+            rowDivider
+            coachToggle(title: CoachCopy.writingHelper, isOn: writingBinding)
+            rowDivider
+            Button { showFutureSelf = true } label: {
+                HStack {
+                    Text(FutureSelfCopy.title)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.35))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+            .accessibilityIdentifier("future-self-settings")
+        }
+    }
+
+    private func coachToggle(title: String, isOn: Binding<Bool>) -> some View {
+        Toggle(title, isOn: isOn)
+            .font(.system(size: 15, weight: .medium))
+            .foregroundStyle(.white)
+            .tint(Color.rfGold)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+    }
+
+    private func hourRow(title: String, hour: Int, change: @escaping (Int) -> Void) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.white)
+            Spacer()
+            Button { change(-1) } label: {
+                Image(systemName: "minus.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Color.rfGold)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Earlier \(title)")
+            Text(CoachEngine.hourLabel(hour))
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color.rfGold)
+                .frame(minWidth: 64)
+            Button { change(1) } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Color.rfGold)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Later \(title)")
+        }
+        .padding(.horizontal, 16)
+    }
+
+    private var coachBinding: Binding<Bool> {
+        Binding(get: { coachOn }, set: { coachOn = $0; CoachStore.setEnabled($0) })
+    }
+    private var partnerBinding: Binding<Bool> {
+        Binding(get: { partnerCheckInsOn }, set: { partnerCheckInsOn = $0; CoachStore.setPartnerNudge($0) })
+    }
+    private var awayBinding: Binding<Bool> {
+        Binding(get: { awayOn }, set: { awayOn = $0; CoachStore.setAway($0) })
+    }
+    private var writingBinding: Binding<Bool> {
+        Binding(get: { writingHelperOn }, set: { writingHelperOn = $0; CoachStore.setWritingHelper($0) })
+    }
+
+    private func loadCoach() {
+        let signals = CoachStore.signals()
+        coachOn = signals.enabled
+        partnerCheckInsOn = signals.partnerNudgeEnabled
+        awayOn = signals.imAway
+        lateStartHour = signals.lateStartHour
+        lateEndHour = signals.lateEndHour
+        writingHelperOn = CoachStore.writingHelperOn
     }
 
     // MARK: - Monitoring

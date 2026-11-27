@@ -137,6 +137,9 @@ final class NotificationService: NSObject {
         case CheckInReminder.notificationType:
             AppState.shared.presentCheckIn()
 
+        case CoachCopy.notificationType:
+            AppState.shared.presentCoachCheckIn()
+
         case NotificationType.appDeleted,
              NotificationType.monitoringPaused,
              NotificationType.monitoringResumed,
@@ -165,6 +168,7 @@ final class NotificationService: NSObject {
         Task {
             // Drain any events the broadcast extension queued in shared defaults.
             await EventProcessor.shared.processPendingEvents()
+            CoachScheduler.evaluate()
             let mgr = ActivitySelectionManager.shared
             if mgr.isMonitoringEnabled || mgr.isShieldingEnabled || AppLockoutManager.shared.isEnabled {
                 try? await APIClient.shared.heartbeat(screen: "monitoring")

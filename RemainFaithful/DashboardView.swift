@@ -13,6 +13,7 @@ enum EventCategory: String {
     case socialMedia  = "Social Media"
     case gaming       = "Gaming"
     case unknown      = "Alert"
+    case coach        = "A word of support"
 
     var icon: String {
         switch self {
@@ -26,6 +27,7 @@ enum EventCategory: String {
         case .socialMedia:  "bubble.left.and.bubble.right.fill"
         case .gaming:       "gamecontroller.fill"
         case .unknown:      "bell.fill"
+        case .coach:        "heart.fill"
         }
     }
 
@@ -46,6 +48,8 @@ enum EventCategory: String {
              "selection_cleared", "heartbeat_silence", "wrong_pin_attempt",
              "pin_removed", "pin_changed", "protection", "tamper":
             self = .tamper
+        case "coach_nudge":
+            self = .coach
         default:
             self = .unknown
         }
@@ -63,6 +67,7 @@ enum EventCategory: String {
         case .socialMedia:  Color(red: 0.28, green: 0.56, blue: 0.95)
         case .gaming:       Color(red: 0.60, green: 0.30, blue: 0.90)
         case .unknown:      Color.rfGold
+        case .coach:        Color.rfGold
         }
     }
 
@@ -135,6 +140,12 @@ enum EventCategory: String {
                 "What does this alert mean on your end?",
                 "What was happening when it arrived?",
                 "What would a helpful next step look like today?"
+            ]
+        case .coach:
+            return [
+                "A short note from you would mean a lot.",
+                "How is the day going?",
+                "Want to check in together?"
             ]
         }
     }
@@ -238,6 +249,8 @@ private extension EventCategory {
             return "This is an older sample category. It is not a live screen capture."
         case .unknown:
             return "The phone sent an alert the app did not recognise. It is shown so it is not lost."
+        case .coach:
+            return CoachCopy.partnerSentence
         }
     }
 }

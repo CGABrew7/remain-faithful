@@ -25,8 +25,8 @@ struct OnboardingView: View {
     @State private var inviteLinkShared = false
 
     // Welcome is step 0 and is hidden from the dots.
-    // 1 account, 2 invite, 3 Screen Time, 4 Deep Scan, 5 apps, 6 status.
-    private let totalSteps = 7
+    // 1 account, 2 voice, 3 invite, 4 Screen Time, 5 Deep Scan, 6 apps, 7 status.
+    private let totalSteps = 8
 
     var body: some View {
         ZStack {
@@ -58,6 +58,11 @@ struct OnboardingView: View {
                         }
                         .transition(.push(from: .trailing))
                     case 2:
+                        FutureSelfRecordView(showsSkip: true, onDone: advance)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 12)
+                            .transition(.push(from: .trailing))
+                    case 3:
                         InvitePartnerStep(
                             onContinue: advance,
                             onSkip: advance,
@@ -65,13 +70,13 @@ struct OnboardingView: View {
                             linkShared: $inviteLinkShared
                         )
                             .transition(.push(from: .trailing))
-                    case 3:
+                    case 4:
                         MonitoringSetupStep(onContinue: advance, onSkip: advance)
                             .transition(.push(from: .trailing))
-                    case 4:
+                    case 5:
                         DeepScanStep(onContinue: advance, onLater: advance)
                             .transition(.push(from: .trailing))
-                    case 5:
+                    case 6:
                         AppPickerStep(onContinue: advance)
                             .transition(.push(from: .trailing))
                     default:

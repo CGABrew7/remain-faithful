@@ -101,6 +101,31 @@ object Copy {
     const val shieldLockout = "Open Remain Faithful and start Deep Scan to unlock."
     const val shieldOpen = "Your partner is standing with you."
     const val needHelp = "I need help"
+    const val checkInTitle = "A good time to check in"
+    const val checkInBody = "Take a moment with Remain Faithful. A short check-in can keep you steady."
+    const val checkInNow = "Check in now"
+    const val notNow = "Not now"
+    const val partnerTitle = "Ask your partner to reach out"
+    const val partnerBody = "If a hard stretch is starting, Remain Faithful can ask your partner to send you a word of support. They will not see what was on your screen, and they will not see which app you opened."
+    const val partnerButton = "Turn on partner check-ins"
+    const val partnerSentence = "Your partner would welcome a word from you today."
+    const val awayTitle = "I'm away"
+    const val awayBody = "Turn this on while your usual routine is off. Remain Faithful will check in with you a little more carefully until you turn it off."
+    const val voiceTitle = "Record why you started"
+    const val voiceBody = "In a weak moment, Remain Faithful can play this back to you. It stays on this phone."
+    const val voiceRecord = "Start recording"
+    const val voiceStop = "Stop recording"
+    const val voicePlayTitle = "Hear why you started"
+    const val voicePlayAgain = "Play again"
+    const val voiceSkip = "Skip"
+    const val voiceRemember = "What you want to remember"
+    const val voiceLater = "You can record this later in Settings."
+    const val voiceShort = "Hold a little longer, then save."
+    const val voiceDelete = "Delete recording"
+    const val voiceSaved = "Saved on this phone."
+    const val blurTitle = "Blur what should stay hidden"
+    const val blurBody = "While Deep Scan is on, Remain Faithful can look at this screen on the phone and blur sensitive images. The screen is not uploaded. You will see the system capture notice the whole time."
+    const val blurSensitivity = "Blur sensitivity"
     const val termsUrl = "https://remainfaithful.com/terms"
     const val privacyUrl = "https://remainfaithful.com/privacy"
     const val supportEmail = "support@remainfaithful.com"
@@ -137,6 +162,10 @@ object Copy {
             shieldLockoutPin, pinActive, pinMissing,
             overlayTitle, overlayBody, notifyTitle, notifyBody, ideas, contact, rate, how, replay,
             morning, afternoon, evening, glad, verseLabel, shieldLockout, shieldOpen, needHelp,
+            checkInTitle, checkInBody, checkInNow, notNow, partnerTitle, partnerBody, partnerButton,
+            partnerSentence, awayTitle, awayBody, voiceTitle, voiceBody, voiceRecord, voiceStop,
+            voicePlayTitle, voicePlayAgain, voiceSkip, voiceRemember, voiceLater, voiceShort,
+            voiceDelete, voiceSaved, blurTitle, blurBody, blurSensitivity,
         )
         val verses = Verses.all.flatMap { listOf(it.text, it.ref) }
         val starters = Conversation.starters.values.flatten()
@@ -225,6 +254,11 @@ object Conversation {
             "What would make the next hour easier?",
             "Do you want Blocking on for this app, or is an Alert enough?",
         ),
+        "coach_nudge" to listOf(
+            "A short note from you would mean a lot.",
+            "How is the day going?",
+            "Want to check in together?",
+        ),
         "clean" to listOf(
             "What's been helping this week?",
             "Is there a pressure point we should name before it grows?",
@@ -259,11 +293,12 @@ object CategoryLabels {
         "selection_cleared", "heartbeat_silence", "wrong_pin_attempt",
         "pin_removed", "pin_changed", "protection", "tamper",
         -> "Monitoring Change"
+        "coach_nudge" -> "A word of support"
         else -> "Alert"
     }
 
     fun starterKey(api: String): String = when (api.lowercase().replace(' ', '_')) {
-        "adult_content", "gambling", "violence", "self_harm", "app_usage", "clean" ->
+        "adult_content", "gambling", "violence", "self_harm", "app_usage", "clean", "coach_nudge" ->
             api.lowercase().replace(' ', '_')
         "monitoring_disabled", "shielding_disabled", "signed_out",
         "family_controls_revoked", "deep_scan_stopped", "lockout_disabled",

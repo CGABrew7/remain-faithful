@@ -84,6 +84,7 @@ var allowedProtectionTypes = map[string]struct{}{
 	"family_controls_revoked": {},
 	"signed_out":              {},
 	"selection_cleared":       {},
+	"coach_nudge":             {},
 }
 
 type ProtectionNotice struct {
@@ -164,6 +165,9 @@ func ValidateProtection(n ProtectionNotice) error {
 		return errors.New("unknown protection alert type")
 	}
 	if n.Type == "heartbeat_silence" {
+		return errors.New("unknown protection alert type")
+	}
+	if n.Type == "coach_nudge" && n.Detail != "Your partner would welcome a word from you today." {
 		return errors.New("unknown protection alert type")
 	}
 	if len(n.Detail) > 200 || leaked(n.Detail) {

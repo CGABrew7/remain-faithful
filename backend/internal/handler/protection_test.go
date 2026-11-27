@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	rfauth "remain-faithful/backend/internal/auth"
 )
@@ -25,6 +26,7 @@ func TestIsClientProtectionAlertType(t *testing.T) {
 		"family_controls_revoked",
 		"signed_out",
 		"selection_cleared",
+		"coach_nudge",
 	}
 	for _, typ := range iosTypes {
 		if !isClientProtectionAlertType(typ) {
@@ -71,6 +73,7 @@ func TestProtectionAlertBodyKnownTypesIgnoreDetail(t *testing.T) {
 		{"pin_changed", "Alex's protection PIN was changed"},
 		{"family_controls_revoked", "Alex revoked Family Controls authorization"},
 		{"heartbeat_silence", "Alex's device has stopped sending heartbeats"},
+		{"coach_nudge", "Your partner would welcome a word from you today."},
 	}
 
 	for _, tc := range cases {
@@ -172,6 +175,81 @@ func TestSendProtectionAlertAcceptsClientType(t *testing.T) {
 	}
 	if !strings.Contains(rr.Body.String(), `"status":"ok"`) {
 		t.Fatalf("body = %q, want status ok", rr.Body.String())
+	}
+}
+
+func TestCoachNudgeRejectsExtraFieldsAndFreeDetail(t *testing.T) {
+	h := &H{}
+	cases := []string{
+		`{"type":"coach_nudge","detail":"opened Instagram"}`,
+		`{"type":"coach_nudge","detail":"Your partner would welcome a word from you today.","app":"Instagram"}`,
+		`{"type":"coach_nudge","detail":"Your partner would welcome a word from you today.","pattern":"sunday"}`,
+		`{"type":"coach_nudge","detail":"Your partner would welcome a word from you today.","device_id":"phone-1","device_kind":"android"}`,
+		`{"type":"signed_out","detail":"Signed out.","score":0.9}`,
+	}
+	for _, body := range cases {
+		req := httptest.NewRequest(http.MethodPost, "/protection/alerts", strings.NewReader(body))
+		req = req.WithContext(rfauth.ContextWithUser(req.Context(), 1))
+		rr := httptest.NewRecorder()
+		h.SendProtectionAlert(rr, req)
+		if rr.Code != http.StatusBadRequest {
+			t.Fatalf("body %s status = %d, want 400 (%s)", body, rr.Code, rr.Body.String())
+		}
+	}
+}
+
+func TestCoachNudgeOnePerLocalDay(t *testing.T) {
+	resetCoachCaps()
+	t.Cleanup(resetCoachCaps)
+
+	db := newMemDB()
+	db.addUser(memUser{id: 1, name: "Alex", email: "alex@example.com"})
+	h := &H{DB: db.open(t)}
+	const body = `{"type":"coach_nudge","detail":"Your partner would welcome a word from you today."}`
+
+	first := httptest.NewRequest(http.MethodPost, "/protection/alerts?offset_minutes=-300", strings.NewReader(body))
+	first = first.WithContext(rfauth.ContextWithUser(first.Context(), 1))
+	rr := httptest.NewRecorder()
+	h.SendProtectionAlert(rr, first)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("first status = %d body %s", rr.Code, rr.Body.String())
+	}
+
+	second := httptest.NewRequest(http.MethodPost, "/protection/alerts?offset_minutes=-300", strings.NewReader(body))
+	second = second.WithContext(rfauth.ContextWithUser(second.Context(), 1))
+	again := httptest.NewRecorder()
+	h.SendProtectionAlert(again, second)
+	if again.Code != http.StatusTooManyRequests {
+		t.Fatalf("second status = %d body %s", again.Code, again.Body.String())
+	}
+	if strings.Contains(again.Body.String(), "Instagram") || strings.Contains(again.Body.String(), "Alex") {
+		t.Fatalf("rate limit body leaked detail: %s", again.Body.String())
+	}
+}
+
+func TestCoachNudgeStoredRowBlocksAnotherDayCount(t *testing.T) {
+	db := newMemDB()
+	db.alerts = append(db.alerts, memAlert{
+		subject:   4,
+		alertType: "coach_nudge",
+		summary:   coachNudgeDetail,
+		created:   time.Now(),
+	})
+	h := &H{DB: db.open(t)}
+	used, err := h.coachNudgeStored(t.Context(), 4, time.Now().Add(-time.Hour))
+	if err != nil || !used {
+		t.Fatalf("stored=%v err=%v", used, err)
+	}
+	other, err := h.coachNudgeStored(t.Context(), 9, time.Now().Add(-time.Hour))
+	if err != nil || other {
+		t.Fatalf("other user stored=%v err=%v", other, err)
+	}
+}
+
+func TestProtectionBodyKeepsCoachSentenceFixed(t *testing.T) {
+	got := protectionBody("Alex", "coach_nudge", "Android phone")
+	if got != "Your partner would welcome a word from you today." {
+		t.Fatalf("body = %q", got)
 	}
 }
 

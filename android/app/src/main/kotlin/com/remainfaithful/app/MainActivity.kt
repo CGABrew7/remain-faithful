@@ -24,6 +24,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var model: AppModel
 
     private val notifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    private val microphone = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (::model.isInitialized) model.micGranted = granted
+    }
 
     private val capture = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data
@@ -52,6 +55,7 @@ class MainActivity : ComponentActivity() {
                         "notifications" -> if (Build.VERSION.SDK_INT >= 33) {
                             notifications.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                         }
+                        "record" -> microphone.launch(android.Manifest.permission.RECORD_AUDIO)
                         "capture" -> if (BuildConfig.DEEP_SCAN_ENABLED) {
                             val manager = getSystemService(android.media.projection.MediaProjectionManager::class.java)
                             capture.launch(manager.createScreenCaptureIntent())
@@ -88,10 +92,12 @@ class MainActivity : ComponentActivity() {
                 model.pendingAfterPin = { }
                 model.sheet = Sheet.Pin
             }
+            OPEN_COACH -> model.sheet = Sheet.Coach
         }
         when (intent?.getStringExtra(EXTRA_PUSH_TYPE)) {
             "PANIC_ALERT" -> model.sheet = Sheet.Panic
             "CONTENT_FLAGGED", "PROTECTION_ALERT" -> model.tab = 0
+            "COACH_CHECK_IN" -> model.sheet = Sheet.Coach
         }
     }
 
@@ -101,5 +107,6 @@ class MainActivity : ComponentActivity() {
         const val OPEN_PANIC = "panic"
         const val OPEN_DEEP_SCAN = "deep_scan"
         const val OPEN_PIN = "pin"
+        const val OPEN_COACH = "coach"
     }
 }

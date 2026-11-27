@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,6 +17,14 @@ import (
 
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
+)
+
+// coachNudgeDetail is the only sentence a partner receives for a check-in nudge.
+const coachNudgeDetail = "Your partner would welcome a word from you today."
+
+var (
+	coachCapMu sync.Mutex
+	coachCap   = map[string]struct{}{}
 )
 
 // Per-user rate-limit state for POST /protection/pin/verify.
@@ -66,6 +76,7 @@ var clientProtectionAlertTypes = map[string]struct{}{
 	"family_controls_revoked": {}, // RemainFaithfulApp
 	"signed_out":              {}, // SettingsView, build 10
 	"selection_cleared":       {}, // ActivitySelectionManager, all chosen apps removed
+	"coach_nudge":             {}, // main app, after an opt-in check-in
 }
 
 // serverOnlyProtectionAlertTypes are generated internally (heartbeat sweep).
@@ -112,7 +123,9 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 		DeviceID   string `json:"device_id"`
 		DeviceKind string `json:"device_kind"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
@@ -123,6 +136,30 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 	if isServerOnlyProtectionAlertType(req.Type) || !isClientProtectionAlertType(req.Type) {
 		writeError(w, http.StatusBadRequest, "unknown protection alert type")
 		return
+	}
+	var coachKey string
+	if req.Type == "coach_nudge" {
+		if req.Detail != coachNudgeDetail || req.DeviceID != "" || req.DeviceKind != "" {
+			writeError(w, http.StatusBadRequest, "unknown protection alert type")
+			return
+		}
+		local := time.Now().In(offsetLocation(requestOffsetMinutes(r)))
+		coachKey = fmt.Sprintf("%d-%04d%02d%02d", userID, local.Year(), int(local.Month()), local.Day())
+		if coachCapTaken(coachKey) {
+			writeError(w, http.StatusTooManyRequests, "a partner check-in was already sent today")
+			return
+		}
+		since := localMidnight(time.Now(), requestOffsetMinutes(r)).UTC()
+		used, err := h.coachNudgeStored(r.Context(), userID, since)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to record protection alert")
+			return
+		}
+		if used {
+			coachCapMark(coachKey)
+			writeError(w, http.StatusTooManyRequests, "a partner check-in was already sent today")
+			return
+		}
 	}
 	// Shipped iOS 1.0.2 sends type and detail only. Detail is still ignored.
 	// A newer client may name the device type so the sentence can say
@@ -171,7 +208,47 @@ func (h *H) SendProtectionAlert(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to record protection alert")
 		return
 	}
+	if coachKey != "" {
+		coachCapMark(coachKey)
+	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func coachCapTaken(key string) bool {
+	coachCapMu.Lock()
+	defer coachCapMu.Unlock()
+	_, ok := coachCap[key]
+	return ok
+}
+
+func coachCapMark(key string) {
+	coachCapMu.Lock()
+	coachCap[key] = struct{}{}
+	coachCapMu.Unlock()
+}
+
+func resetCoachCaps() {
+	coachCapMu.Lock()
+	coachCap = map[string]struct{}{}
+	coachCapMu.Unlock()
+}
+
+func (h *H) coachNudgeStored(ctx context.Context, userID int64, since time.Time) (bool, error) {
+	if h == nil || h.DB == nil {
+		return false, nil
+	}
+	var n int
+	err := h.DB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM alerts
+		WHERE subject_user_id = $1 AND alert_type = 'coach_nudge' AND created_at >= $2
+	`, userID, since).Scan(&n)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return n > 0, nil
 }
 
 // sendProtectionAlertToPartners fans out a PROTECTION_ALERT push to all
@@ -318,6 +395,8 @@ func protectionAlertBody(name, alertType, _ string) string {
 		return name + " revoked Family Controls authorization"
 	case "signed_out":
 		return name + " signed out"
+	case "coach_nudge":
+		return coachNudgeDetail
 	case "app_removed":
 		return name + "'s app was removed from a device"
 	case "heartbeat_silence":
